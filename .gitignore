@@ -1,0 +1,19 @@
+# 相依套件與建置輸出
+node_modules
+dist
+dist-ssr
+coverage
+*.local
+
+# 日誌
+logs
+*.log
+
+# 編輯器與作業系統
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+Thumbs.db
+*.suo
+*.sw?
