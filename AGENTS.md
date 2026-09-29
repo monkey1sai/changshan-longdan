@@ -25,7 +25,7 @@ Run from the repository root with Node.js `^22.12.0 || ^24.0.0 || >=26.0.0`:
 - `npm run preview` — serve the `dist/` build.
 - `npm run package:itch` — build, check itch.io HTML5 limits and write `release/changshan-longdan-web.zip` (ignored by Git).
 
-Builds must keep relative asset paths (`base: './'`) because itch.io serves games from a subdirectory inside an iframe. Keep `public/THIRD_PARTY_LICENSES.txt` in sync with bundled third-party code. Store-page copy and upload settings live in `docs/itch-page.md`.
+Builds must keep relative asset paths (`base: './'`) because itch.io serves games from a subdirectory inside an iframe. Keep `public/THIRD_PARTY_LICENSES.txt` in sync with bundled third-party code. Store-page copy, upload settings and the current itch.io release record live in `docs/itch-page.md`; update the record (file size, SHA-256, source commit) whenever a new build is uploaded.
 
 ## Coding Style
 

@@ -5,6 +5,18 @@ itch.io 專案頁的填寫內容與上傳步驟。帳號註冊、上傳與收款
 - 遊戲壓縮檔：執行 `npm run package:itch`，產生 `release/changshan-longdan-web.zip`
 - 封面與截圖：`release/itch/`（開發版以 `__game` 擺出場面後截圖並裁切；`release/` 不進版控）
 
+## 上架狀態
+
+| 項目 | 內容 |
+| --- | --- |
+| 專案頁 | https://monkey1sai.itch.io/changshan-longdan |
+| 編輯頁 | https://itch.io/game/edit/5071537 |
+| 公開 | Public，2026-09-29 起 |
+| 定價 | $0 or donate，建議贊助 US$2 |
+| 收款 | Collected by itch.io, paid later；稅務問卷已於 2026-09-29 完成 |
+| 目前上傳檔 | `changshan-longdan-web.zip`，180,847 bytes，SHA-256 `ef88ab6981fc347f421fd4c2b5b5f1fc36845e68d63c1aed8b617a012a84c8aa`，由 commit `cfa1696` 的原始碼建置 |
+| 實際驗證 | 2026-09-29 在公開頁按 Run game → 出陣，戰鬥畫面與鍵盤連擊正常 |
+
 ## 欄位
 
 | 欄位 | 填寫內容 |
@@ -84,4 +96,4 @@ Built with Three.js (MIT License).
 
 ## 更新版本
 
-改完遊戲後重新執行 `npm run package:itch`，到專案的 Edit 頁刪掉舊壓縮檔、上傳新檔，並同樣勾選 **This file will be played in the browser**。
+改完遊戲後重新執行 `npm run package:itch`，到專案的 Edit 頁刪掉舊壓縮檔、上傳新檔，並同樣勾選 **This file will be played in the browser**。上傳後更新上方「上架狀態」表的檔案大小、SHA-256 與 commit。

@@ -2,6 +2,8 @@
 
 在瀏覽器裡玩的 PS2 風格一騎當千動作遊戲（musou-like）：趙雲單騎對上三百名魏兵。以 Vite + TypeScript + Three.js 製作；人物、城池與龍全部由程式產生體素模型，音效與配樂全部以 WebAudio 即時合成，沒有任何外部模型、貼圖或音檔。
 
+**線上試玩**：[monkey1sai.itch.io/changshan-longdan](https://monkey1sai.itch.io/changshan-longdan)（itch.io，免費，歡迎自由贊助）
+
 ## 特色
 
 - **連段系統**：一般連擊 N1–N6；打出第 k 下普攻後按蓄力放出 C(k+1)（C1–C6）；空中普攻為跳擊（JA）、空中蓄力為跳躍蓄力（JC）；閃避附無敵時間。
@@ -42,7 +44,7 @@ npm run package:itch  # 建置並打包成 itch.io 用的 release/changshan-long
 
 ## 上架 itch.io
 
-`npm run package:itch` 會檢查 itch.io 的 HTML5 限制（`index.html` 在根目錄、不含絕對路徑、檔案數與大小上限）後才打包；建置使用相對路徑（`vite.config.ts` 的 `base: './'`），可在子目錄與 iframe 中執行。建置會附上 `THIRD_PARTY_LICENSES.txt`（Three.js 的 MIT 授權全文）。專案頁欄位、中英文說明與上傳步驟見 [docs/itch-page.md](docs/itch-page.md)。
+`npm run package:itch` 會檢查 itch.io 的 HTML5 限制（`index.html` 在根目錄、不含絕對路徑、檔案數與大小上限）後才打包；建置使用相對路徑（`vite.config.ts` 的 `base: './'`），可在子目錄與 iframe 中執行。建置會附上 `THIRD_PARTY_LICENSES.txt`（Three.js 的 MIT 授權全文）。目前的上架狀態（網址、定價、上傳檔雜湊）、專案頁欄位、中英文說明與上傳步驟見 [docs/itch-page.md](docs/itch-page.md)。
 
 ## 結構
 
