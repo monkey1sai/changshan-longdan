@@ -61,6 +61,8 @@ export class Input {
 
   constructor(target: Window, surface: HTMLElement) {
     target.addEventListener('keydown', (e) => {
+      const element = e.target as HTMLElement | null
+      if (element?.closest?.('button, select, input, textarea, [contenteditable="true"]')) return
       if (GAME_KEYS.has(e.code)) e.preventDefault()
       this.held.add(e.code)
       if (e.repeat) return
@@ -69,6 +71,10 @@ export class Input {
     })
     target.addEventListener('keyup', (e) => this.held.delete(e.code))
     target.addEventListener('blur', () => this.clear())
+    target.addEventListener('focusin', (e) => {
+      const element = e.target as HTMLElement | null
+      if (element?.closest?.('button, select, input, textarea, [contenteditable="true"]')) this.clear()
+    })
     surface.addEventListener('mousedown', (e) => {
       if (e.button === 0) {
         this.pressed.add('attack')

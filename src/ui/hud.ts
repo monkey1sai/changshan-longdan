@@ -1,8 +1,9 @@
 import { Kind, type EnemyStore } from '../entities/enemies.ts'
 import { BARRACKS, INNER, KEEP, WALL_THICK } from '../world/layout.ts'
-import { MOVES, type MoveId } from '../combat/moves.ts'
+import type { MoveId } from '../combat/moves.ts'
 import type { PlayerState } from '../entities/player.ts'
 import { combatGuide } from './combat-guide.ts'
+import { moveName, subscribe, t } from './i18n.ts'
 
 export interface HudState {
   ko: number
@@ -46,12 +47,19 @@ export class Hud {
   private readonly minimap: CanvasRenderingContext2D
   private readonly last = { ko: -1, remain: -1, hp: -1, musou: -1, ready: false, combo: -1 }
   private bannerTime = 0
+  private cached: HudState | null = null
+  private bannerProvider: (() => string) | null = null
 
   constructor() {
     const canvas = must<HTMLCanvasElement>('minimap')
     const ctx = canvas.getContext('2d')
     if (ctx === null) throw new Error('無法建立小地圖')
     this.minimap = ctx
+    subscribe(() => {
+      Object.assign(this.last, { ko: -1, remain: -1, hp: -1, musou: -1, ready: false, combo: -1 })
+      if (this.cached !== null) this.update(this.cached, 0)
+      if (this.bannerTime > 0 && this.bannerProvider !== null) this.banner.textContent = this.bannerProvider()
+    })
   }
 
   setVisible(visible: boolean): void {
@@ -59,6 +67,7 @@ export class Hud {
   }
 
   update(s: HudState, dt: number): void {
+    this.cached = s
     const l = this.last
     if (s.ko !== l.ko) {
       this.ko.textContent = String(s.ko)
@@ -96,7 +105,7 @@ export class Hud {
       l.combo = s.combo
     }
     this.comboLife.style.transform = `scaleX(${s.comboTime})`
-    const name = s.moveId === null ? (s.playerState === 'guard' ? '架槍守勢' : '龍膽槍法') : MOVES[s.moveId].name
+    const name = s.moveId === null ? (s.playerState === 'guard' ? t('hud.guard') : t('hud.style')) : moveName(s.moveId)
     const hint = combatGuide(s.playerState, s.moveId, s.counterReady)
     if (this.moveName.textContent !== name) this.moveName.textContent = name
     if (this.moveHint.textContent !== hint) this.moveHint.textContent = hint
@@ -109,8 +118,9 @@ export class Hud {
     }
   }
 
-  showBanner(text: string, seconds = 2.2, tone = ''): void {
-    this.banner.textContent = text
+  showBanner(text: string | (() => string), seconds = 2.2, tone = ''): void {
+    this.bannerProvider = typeof text === 'function' ? text : null
+    this.banner.textContent = typeof text === 'function' ? text() : text
     this.banner.className = `banner visible ${tone}`
     this.bannerTime = seconds
   }

@@ -17,6 +17,7 @@ import { Trail } from './fx/trail.ts'
 import { ThreatMarkers } from './fx/threat-markers.ts'
 import { Pipeline, type PostSettings } from './render/pipeline.ts'
 import { Hud } from './ui/hud.ts'
+import { translate } from './ui/i18n.ts'
 import { Screens } from './ui/screens.ts'
 import { CameraRig } from './view/camera-rig.ts'
 import { PlayerModel } from './view/player-model.ts'
@@ -200,7 +201,7 @@ export class Game {
     this.music?.setMode('battle')
     this.audio?.setMusicLevel(MUSIC_LEVEL)
     this.audio?.uiConfirm()
-    this.hud.showBanner('出陣！', 2)
+    this.hud.showBanner(() => translate('出陣！', 'To Battle!'), 2)
   }
 
   private resetBattle(): void {
@@ -436,10 +437,11 @@ export class Game {
     this.audio?.shatter(kills.length, this.pan(kills[0].x, kills[0].z))
     kills.length = 0
     if (Math.floor(before / 100) < Math.floor(this.ko / 100) && this.enemies.aliveCount > 0) {
-      this.hud.showBanner(`${Math.floor(this.ko / 100) * 100} 人斬！`, 2, 'gold')
+      const milestone = Math.floor(this.ko / 100) * 100
+      this.hud.showBanner(() => translate(`${milestone} 人斬！`, `${milestone} KOs!`), 2, 'gold')
       this.audio?.milestone()
     } else if (before < 150 && this.ko >= 150 && this.enemies.aliveCount > 0) {
-      this.hud.showBanner('魏軍 半數潰滅', 2)
+      this.hud.showBanner(() => translate('魏軍 半數潰滅', 'Half the Wei Army Defeated'), 2)
     }
   }
 
@@ -481,14 +483,14 @@ export class Game {
         this.mode = 'victory'
         this.slowmo = 1.6
         this.endTimer = 2.4
-        this.hud.showBanner('完全勝利', 3, 'gold')
+        this.hud.showBanner(() => translate('完全勝利', 'Complete Victory'), 3, 'gold')
         this.audio?.victory()
         this.audio?.setMusicLevel(0.2)
       } else if (this.player.state === 'dead') {
         this.mode = 'defeat'
         this.slowmo = 1.2
         this.endTimer = 2.4
-        this.hud.showBanner('趙雲 敗走…', 3)
+        this.hud.showBanner(() => translate('趙雲 敗走…', 'Zhao Yun Has Fallen…'), 3)
         this.audio?.defeat()
         this.audio?.setMusicLevel(0.12)
       }
@@ -565,7 +567,7 @@ export class Game {
     const ready = this.player.musouReady
     if (ready && !this.musouWasReady && this.mode === 'playing') {
       this.audio?.musouReady()
-      this.hud.showBanner('龍膽 就緒', 1.4, 'gold')
+      this.hud.showBanner(() => translate('龍膽 就緒', 'Longdan Ready'), 1.4, 'gold')
     }
     this.musouWasReady = ready
   }
@@ -609,8 +611,8 @@ export class Game {
     if (this.perf !== null && !this.perf.hidden) {
       this.perf.textContent =
         `FPS ${Math.round(1 / this.frameAvg)} · draw ${this.pipeline.sceneDrawCalls} · ` +
-        `tris ${Math.round(this.pipeline.sceneTriangles / 1000)}k · 存活 ${this.enemies.aliveCount} · ` +
-        `碎片 ${this.fragments.active} · 解析度 ${this.pipeline.qualityScale.toFixed(2)}`
+        `tris ${Math.round(this.pipeline.sceneTriangles / 1000)}k · ${translate('存活', 'alive')} ${this.enemies.aliveCount} · ` +
+        `${translate('碎片', 'fragments')} ${this.fragments.active} · ${translate('解析度', 'scale')} ${this.pipeline.qualityScale.toFixed(2)}`
     }
   }
 

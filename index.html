@@ -8,68 +8,71 @@
   </head>
   <body>
     <canvas id="scene"></canvas>
+    <label class="language-control"><span data-en="Language">語言</span>
+      <select id="language-select"><option value="zh-Hant">繁體中文</option><option value="en">English</option></select>
+    </label>
 
     <div id="hud" class="hud" hidden>
       <div class="ko-panel">
-        <div class="ko-label">擊破</div>
+        <div class="ko-label" data-en="KOs">擊破</div>
         <div id="ko" class="ko-count">0</div>
-        <div class="remain">殘存魏兵 <b id="remain">300</b></div>
+        <div class="remain"><span data-en="Wei remaining">殘存魏兵</span> <b id="remain">300</b></div>
         <div class="battle-track"><div id="battle-progress"></div></div>
       </div>
       <canvas id="minimap" class="minimap" width="176" height="176"></canvas>
       <div class="player-panel">
         <div class="portrait">趙</div>
         <div class="bars">
-          <div class="name">趙雲<span>子龍</span></div>
+          <div class="name"><b data-en="Zhao Yun">趙雲</b><span data-en="Zilong">子龍</span></div>
           <div class="bar hp"><div id="hp-fill" class="fill"></div></div>
-          <div id="musou-bar" class="bar musou"><div id="musou-fill" class="fill"></div><span class="tag">龍膽</span></div>
+          <div id="musou-bar" class="bar musou"><div id="musou-fill" class="fill"></div><span class="tag" data-en="LONGDAN">龍膽</span></div>
         </div>
       </div>
       <div id="combo" class="combo"><span id="combo-count">0</span><small>HITS</small><div class="combo-track"><div id="combo-life"></div></div></div>
       <div id="move-panel" class="move-panel">
-        <div class="move-eyebrow">常山趙子龍 <span>招式指南</span></div>
+        <div class="move-eyebrow"><b data-en="ZHAO YUN">常山趙子龍</b> <span data-en="MOVE GUIDE">招式指南</span></div>
         <div id="move-name" class="move-name">龍膽槍法</div>
         <div id="chain-steps" class="chain-steps" aria-label="普攻連段進度"><i>一</i><i>二</i><i>三</i><i>四</i><i>五</i><i>六</i></div>
         <div id="move-hint" class="move-hint"></div>
       </div>
-      <div id="musou-prompt" class="musou-prompt" hidden>L／○ 龍膽亂舞 <span>已就緒</span></div>
+      <div id="musou-prompt" class="musou-prompt" hidden><b data-en="L / ○ Longdan Frenzy">L／○ 龍膽亂舞</b> <span data-en="READY">已就緒</span></div>
       <div id="banner" class="banner"></div>
       <div id="cutin" class="cutin">
-        <div class="cutin-band"><span class="cutin-name">趙雲</span><span class="cutin-move">龍膽亂舞・蒼龍破陣</span></div>
+        <div class="cutin-band"><span class="cutin-name" data-en="Zhao Yun">趙雲</span><span class="cutin-move" data-en="Longdan Frenzy · Azure Dragon">龍膽亂舞・蒼龍破陣</span></div>
       </div>
-      <div class="hint">WASD 移動 · F 防禦 · 空白鍵 跳躍 · Q／E 轉視角 · R 回正 · Esc 暫停</div>
+      <div class="hint" data-en="WASD Move · F Guard · Space Jump · Q / E Camera · R Recenter · Esc Pause">WASD 移動 · F 防禦 · 空白鍵 跳躍 · Q／E 轉視角 · R 回正 · Esc 暫停</div>
     </div>
 
     <section id="title" class="screen title">
       <div class="panel">
-        <h1>常山龍膽</h1>
-        <p class="subtitle">趙子龍 單騎破魏三百<span class="seal">趙</span></p>
-        <button id="start" class="primary" type="button">出陣</button>
-        <p class="prompt">按 Enter、J 或點擊「出陣」開始</p>
+        <h1 data-en="Changshan Longdan">常山龍膽</h1>
+        <p class="subtitle"><b data-en="One warrior. Three hundred foes.">趙子龍 單騎破魏三百</b><span class="seal">趙</span></p>
+        <button id="start" class="primary" type="button" data-en="To Battle">出陣</button>
+        <p class="prompt" data-en="Press Enter, J or click To Battle to begin">按 Enter、J 或點擊「出陣」開始</p>
         <table class="controls">
-          <tr><th>操作</th><th>鍵盤／滑鼠</th><th>手把</th></tr>
-          <tr><td>移動</td><td>WASD／方向鍵</td><td>左搖桿</td></tr>
-          <tr><td>普攻 □</td><td>J／滑鼠左鍵（可按住）</td><td>□／X（可按住）</td></tr>
-          <tr><td>蓄力 △</td><td>K／滑鼠右鍵</td><td>△／Y</td></tr>
-          <tr><td>龍膽 ○</td><td>L（氣滿時）</td><td>○／B</td></tr>
-          <tr><td>跳躍 ×</td><td>空白鍵</td><td>×／A</td></tr>
-          <tr><td>閃避</td><td>Shift</td><td>R1／RB</td></tr>
-          <tr><td>防禦／反擊</td><td>按住 F；精準格擋後 J</td><td>L1／LB；格擋後 □／X</td></tr>
-          <tr><td>視角</td><td>Q／E 旋轉、滾輪縮放</td><td>右搖桿</td></tr>
-          <tr><td>鏡頭回正</td><td>R</td><td>按下右搖桿</td></tr>
-          <tr><td>暫停</td><td>Esc／P</td><td>Start</td></tr>
+          <tr><th data-en="Action">操作</th><th data-en="Keyboard / Mouse">鍵盤／滑鼠</th><th data-en="Gamepad">手把</th></tr>
+          <tr><td data-en="Move">移動</td><td data-en="WASD / Arrow keys">WASD／方向鍵</td><td data-en="Left stick">左搖桿</td></tr>
+          <tr><td data-en="Attack □">普攻 □</td><td data-en="J / Left click (hold)">J／滑鼠左鍵（可按住）</td><td data-en="□ / X (hold)">□／X（可按住）</td></tr>
+          <tr><td data-en="Charge △">蓄力 △</td><td data-en="K / Right click">K／滑鼠右鍵</td><td>△／Y</td></tr>
+          <tr><td data-en="Longdan ○">龍膽 ○</td><td data-en="L (full gauge)">L（氣滿時）</td><td>○／B</td></tr>
+          <tr><td data-en="Jump ×">跳躍 ×</td><td data-en="Space">空白鍵</td><td>×／A</td></tr>
+          <tr><td data-en="Dodge">閃避</td><td>Shift</td><td>R1／RB</td></tr>
+          <tr><td data-en="Guard / Counter">防禦／反擊</td><td data-en="Hold F; J after perfect guard">按住 F；精準格擋後 J</td><td data-en="L1 / LB; then □ / X">L1／LB；格擋後 □／X</td></tr>
+          <tr><td data-en="Camera">視角</td><td data-en="Q / E rotate, wheel zoom">Q／E 旋轉、滾輪縮放</td><td data-en="Right stick">右搖桿</td></tr>
+          <tr><td data-en="Recenter">鏡頭回正</td><td>R</td><td data-en="Press right stick">按下右搖桿</td></tr>
+          <tr><td data-en="Pause">暫停</td><td>Esc／P</td><td>Start</td></tr>
         </table>
-        <p class="combo-help">按住普攻連打六段，途中按蓄力分支：挑空、空連、迴旋掃兵、百烈槍與天龍破。<br />閃避中接普攻可突進；迎擊瞬間防禦，再按普攻反擊。戰鬥右下角會提示可接招式。</p>
-        <p class="credit">人物、城池與龍皆為程式生成的體素模型 · 所有音效與配樂以 WebAudio 即時合成<br />使用 Three.js（MIT 授權，授權全文見 THIRD_PARTY_LICENSES.txt）</p>
+        <p class="combo-help" data-en="Hold Attack for a six-hit combo. Mix in Charge for launchers, aerial strings, wide sweeps and spear barrages.&#10;Attack while dodging to dash. Guard just as a strike lands, then Attack to counter. Follow the move guide in battle.">按住普攻連打六段，途中按蓄力分支：挑空、空連、迴旋掃兵、百烈槍與天龍破。&#10;閃避中接普攻可突進；迎擊瞬間防禦，再按普攻反擊。戰鬥右下角會提示可接招式。</p>
+        <p class="credit" data-en="Procedural voxel characters, castle and dragon · Real-time WebAudio music and sound&#10;Built with Three.js (MIT License; see THIRD_PARTY_LICENSES.txt)">人物、城池與龍皆為程式生成的體素模型 · 所有音效與配樂以 WebAudio 即時合成&#10;使用 Three.js（MIT 授權，授權全文見 THIRD_PARTY_LICENSES.txt）</p>
       </div>
     </section>
 
     <section id="pause" class="screen" hidden>
       <div class="panel">
-        <h1 style="font: 900 64px var(--font-brush); color: var(--gold); margin: 0 0 16px">暫停</h1>
-        <button id="resume" class="primary" type="button">繼續</button>
-        <p class="prompt">按 Esc 或 Enter 繼續</p>
-        <p class="combo-help">按住 J 連段 · K 蓄力分支 · Shift → J 突進<br />F 正面防禦 · 精準格擋後 J 反擊 · L 龍膽亂舞<br />Q／E 轉視角 · R 鏡頭回正<br />切換視窗時會自動暫停。</p>
+        <h1 class="pause-title" data-en="Paused">暫停</h1>
+        <button id="resume" class="primary" type="button" data-en="Resume">繼續</button>
+        <p class="prompt" data-en="Press Esc or Enter to resume">按 Esc 或 Enter 繼續</p>
+        <p class="combo-help" data-en="Hold J for combos · K charge branch · Shift then J dash&#10;F frontal guard · J after a perfect guard to counter · L Longdan Frenzy&#10;Q / E camera · R recenter&#10;The game pauses when you switch windows.">按住 J 連段 · K 蓄力分支 · Shift → J 突進&#10;F 正面防禦 · 精準格擋後 J 反擊 · L 龍膽亂舞&#10;Q／E 轉視角 · R 鏡頭回正&#10;切換視窗時會自動暫停。</p>
       </div>
     </section>
 
@@ -77,8 +80,8 @@
       <div class="panel">
         <h2 id="result-title"></h2>
         <div id="result-stats" class="stats"></div>
-        <button id="retry" class="primary" type="button">再戰</button>
-        <p class="prompt">按 Enter 再戰</p>
+        <button id="retry" class="primary" type="button" data-en="Fight Again">再戰</button>
+        <p class="prompt" data-en="Press Enter to fight again">按 Enter 再戰</p>
       </div>
     </section>
 

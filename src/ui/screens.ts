@@ -1,3 +1,5 @@
+import { subscribe, t } from './i18n.ts'
+
 export interface ResultStats {
   win: boolean
   ko: number
@@ -32,6 +34,13 @@ export class Screens {
   private readonly result = must('result')
   private readonly resultTitle = must('result-title')
   private readonly resultStats = must('result-stats')
+  private lastResult: ResultStats | null = null
+
+  constructor() {
+    subscribe(() => {
+      if (this.lastResult !== null && !this.result.hidden) this.renderResult(this.lastResult)
+    })
+  }
 
   onStart(handler: () => void): void {
     must<HTMLButtonElement>('start').addEventListener('click', handler)
@@ -54,14 +63,20 @@ export class Screens {
   }
 
   showResult(s: ResultStats): void {
-    this.resultTitle.textContent = s.win ? '完全勝利' : '趙雲 敗走'
+    this.lastResult = { ...s }
+    this.renderResult(this.lastResult)
+    this.result.hidden = false
+  }
+
+  private renderResult(s: ResultStats): void {
+    this.resultTitle.textContent = s.win ? t('result.victory') : t('result.defeat')
     this.resultTitle.className = s.win ? 'win' : 'lose'
     const rows: [string, string][] = [
-      ['擊破數', String(s.ko)],
-      ['最大連擊', String(s.maxCombo)],
-      ['戰鬥時間', clock(s.seconds)],
-      ['受到傷害', String(Math.round(s.damage))],
-      ['評價', rank(s)],
+      [t('result.ko'), String(s.ko)],
+      [t('result.maxCombo'), String(s.maxCombo)],
+      [t('result.time'), clock(s.seconds)],
+      [t('result.damage'), String(Math.round(s.damage))],
+      [t('result.rank'), rank(s)],
     ]
     this.resultStats.replaceChildren(
       ...rows.map(([label, value]) => {
@@ -74,7 +89,6 @@ export class Screens {
         return row
       }),
     )
-    this.result.hidden = false
   }
 
   hideResult(): void {

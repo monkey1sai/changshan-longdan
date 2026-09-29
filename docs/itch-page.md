@@ -1,6 +1,6 @@
 # itch.io 上架資料
 
-itch.io 專案頁的填寫內容與上傳步驟。帳號註冊、上傳與收款設定都要由作者本人操作。
+itch.io 專案頁的填寫內容與上傳步驟。更新既有遊戲需作者明確授權；帳號註冊、定價、收款與稅務設定不包含在一般版本更新範圍內。
 
 - 遊戲壓縮檔：執行 `npm run package:itch`，產生 `release/changshan-longdan-web.zip`
 - 封面與截圖：`release/itch/`（開發版以 `__game` 擺出場面後截圖並裁切；`release/` 不進版控）
@@ -50,11 +50,13 @@ itch.io 專案頁的填寫內容與上傳步驟。帳號註冊、上傳與收款
 - 集滿龍膽氣發動「龍膽亂舞・蒼龍破陣」：青龍繞身盤旋後俯衝撞地，全螢幕轉為金墨色調
 - 黃昏城池、飄揚的軍旗、火焰與濃煙、景深與光暈
 - 所有模型由程式生成，所有音效與配樂以 WebAudio 即時合成
+- 右上角即時切換繁體中文／English；記住偏好，戰鬥不中斷
+- 按住普攻自動連段、閃避突進與精準格擋反擊，搭配即時招式指南
 
 **操作**（建議使用鍵盤或手把，先點一下遊戲畫面讓它接收鍵盤）
 
-- 鍵盤：移動 WASD／方向鍵、普攻 J／滑鼠左鍵、蓄力 K／滑鼠右鍵、龍膽 L、跳躍 空白鍵、閃避 Shift、視角 Q／E、暫停 Esc
-- 手把：□ 普攻、△ 蓄力、○ 龍膽、× 跳躍、R1 閃避
+- 鍵盤：移動 WASD／方向鍵、按住 J／滑鼠左鍵普攻、蓄力 K／滑鼠右鍵、龍膽 L、跳躍 空白鍵、閃避 Shift、防禦 F、精準格擋後 J 反擊、Shift → J 突進、視角 Q／E、R 回正、暫停 Esc
+- 手把：□ 普攻、△ 蓄力、○ 龍膽、× 跳躍、R1 閃避、L1 防禦、右搖桿按下回正
 
 建議使用電腦版 Chrome、Edge 或 Firefox，需要支援 WebGL2，並按右下角的全螢幕按鈕遊玩。遊戲會依效能自動調整渲染解析度。喜歡的話歡迎贊助，是對作者最直接的鼓勵。
 
@@ -72,13 +74,15 @@ Changshan Longdan is a PS2-style, musou-like action game that runs right in your
 - Fill the Longdan gauge to unleash Longdan Frenzy: Azure Dragon, as a dragon circles you and crashes down while the screen turns to gold and ink
 - A castle at dusk with waving banners, fire and smoke, depth of field and bloom
 - Every model is procedural, and all sound effects and music are synthesized in real time with WebAudio
+- Switch between English and Traditional Chinese at the top right, with a saved preference and no battle restart
+- Hold Attack for combos, dash out of a dodge, or counter after a perfect guard; an in-battle move guide shows follow-ups
 
 **Controls** (keyboard or gamepad recommended; click the game once so it receives keyboard input)
 
-- Keyboard: move WASD / arrow keys, attack J / left click, charge K / right click, Longdan L, jump Space, dodge Shift, camera Q / E, pause Esc
-- Gamepad: □/X attack, △/Y charge, ○/B Longdan, ×/A jump, R1/RB dodge
+- Keyboard: move WASD / arrow keys, hold J / left click to attack, charge K / right click, Longdan L, jump Space, dodge Shift, guard F, J after a perfect guard to counter, Shift then J to dash, camera Q / E, recenter R, pause Esc
+- Gamepad: □/X attack, △/Y charge, ○/B Longdan, ×/A jump, R1/RB dodge, L1/LB guard, press right stick to recenter
 
-In-game text is in Traditional Chinese; the controls above cover everything you need. Best on desktop Chrome, Edge or Firefox with WebGL2 support, played with the fullscreen button at the bottom right. The game scales its render resolution automatically to keep the frame rate smooth. If you enjoy it, a donation is the most direct way to support the developer.
+Choose English or Traditional Chinese from the Language menu at the top right. Best on desktop Chrome, Edge or Firefox with WebGL2 support, played with the fullscreen button at the bottom right. The game scales its render resolution automatically to keep the frame rate smooth. If you enjoy it, a donation is the most direct way to support the developer.
 
 Built with Three.js (MIT License).
 
@@ -96,4 +100,4 @@ Built with Three.js (MIT License).
 
 ## 更新版本
 
-改完遊戲後重新執行 `npm run package:itch`，到專案的 Edit 頁刪掉舊壓縮檔、上傳新檔，並同樣勾選 **This file will be played in the browser**。上傳後更新上方「上架狀態」表的檔案大小、SHA-256 與 commit。
+先提交遊戲原始碼，再執行 `npm run package:itch`。到既有專案的 Edit 頁更新 browser build，保留公開狀態、定價、收款與嵌入設定；新檔需勾選 **This file will be played in the browser**。上傳並實際在公開頁驗證後，才更新上方「上架狀態」表的檔案大小、SHA-256 與 source commit。保留前一版 release metadata 以供回滾。

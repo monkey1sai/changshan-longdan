@@ -11,6 +11,16 @@ function setup() {
 afterEach(() => vi.unstubAllGlobals())
 
 describe('Input', () => {
+  it('操作語言選單時不攔截鍵盤或保留遊戲按鍵', () => {
+    const { input, target, key } = setup()
+    key('KeyW')
+    Object.assign(target, { closest: () => target })
+    target.dispatchEvent(new Event('focusin'))
+    expect(key('ArrowDown')).toBe(true)
+    expect(key('Enter')).toBe(true)
+    key('KeyJ')
+    expect(input.poll()).toMatchObject({ moveX: 0, moveY: 0, attack: false, confirm: false })
+  })
   it('按住普攻連發，放開停止', () => {
     const { input, key } = setup()
     key('KeyJ')
