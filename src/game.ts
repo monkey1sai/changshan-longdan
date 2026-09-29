@@ -1,4 +1,4 @@
-import { Color, FogExp2, PMREMGenerator, Scene, Vector2, Vector3 } from 'three'
+import { Color, FogExp2, Group, PMREMGenerator, Scene, Vector2, Vector3 } from 'three'
 import { AudioEngine } from './audio/audio-engine.ts'
 import { Music } from './audio/music.ts'
 import type { HitFx, HitWindow } from './combat/moves.ts'
@@ -25,8 +25,10 @@ import { SoldierView } from './view/soldier-view.ts'
 import { buildCastle } from './world/castle.ts'
 import { FireField, type FireSource } from './world/fire.ts'
 import { Flags } from './world/flags.ts'
-import { BIG_FIRES, BRAZIERS, obstacles, PLAY_LIMIT, PLAYER_START, SQUADS } from './world/layout.ts'
+import { BIG_FIRES, BRAZIERS, obstacles, PLAY_LIMIT, PLAYER_START } from './world/layout.ts'
 import { Lighting } from './world/lights.ts'
+import { levelObstacles, levelSpawns, type LevelId } from './world/levels.ts'
+import { buildManor, type ManorBuild } from './world/manor.ts'
 import { Sky } from './world/sky.ts'
 import { createFlagTexture, createGroundTexture } from './world/textures.ts'
 
@@ -50,7 +52,7 @@ export class Game {
   private readonly scene = new Scene()
   private readonly rig: CameraRig
   private readonly input: Input
-  private readonly arena = new Arena(PLAY_LIMIT, obstacles())
+  private arena = new Arena(PLAY_LIMIT, obstacles())
   private readonly player = new Player()
   private readonly enemies = new EnemyStore(CAPACITY)
   private readonly model = new PlayerModel()
@@ -66,6 +68,9 @@ export class Game {
   private readonly flags: Flags
   private readonly fire: FireField
   private readonly lighting: Lighting
+  private readonly fortress: Group
+  private manor: ManorBuild | null = null
+  private level: LevelId = 'fortress'
   private readonly hud = new Hud()
   private readonly screens = new Screens()
   private readonly rng = createRng(99)
@@ -110,6 +115,7 @@ export class Game {
     this.input = new Input(window, canvas)
 
     const castle = buildCastle(createGroundTexture())
+    this.fortress = castle.group
     this.scene.add(castle.group, this.sky.mesh)
     this.scene.fog = new FogExp2(new Color(0.38, 0.27, 0.27), 0.0045)
     this.flags = new Flags(castle.flags, createFlagTexture())
@@ -151,6 +157,8 @@ export class Game {
     this.screens.onStart(() => this.startBattle())
     this.screens.onRetry(() => this.startBattle())
     this.screens.onResume(() => this.setPaused(false))
+    this.screens.onReturnToTitle(() => this.returnToTitle())
+    this.screens.onLevelSelect((level) => this.selectLevel(level))
 
     this.resetBattle()
     this.rig.snap(this.player.pos, PLAYER_START.facing)
@@ -191,6 +199,7 @@ export class Game {
 
   private startBattle(): void {
     this.ensureAudio()
+    this.selectLevel(this.screens.selectedLevel())
     this.resetBattle()
     this.mode = 'playing'
     this.screens.showTitle(false)
@@ -206,8 +215,8 @@ export class Game {
 
   private resetBattle(): void {
     this.player.reset(PLAYER_START.x, PLAYER_START.z, PLAYER_START.facing)
-    this.enemies.reset(squadSpawns(SQUADS, createRng(7)))
-    this.soldiers.applyColors(this.enemies, createRng(8))
+    this.enemies.reset(squadSpawns(levelSpawns(this.level), createRng(7)))
+    this.soldiers.applyColors(this.enemies, createRng(8), this.level)
     this.fragments.clear()
     this.sparks.clear()
     this.dust.clear()
@@ -228,6 +237,46 @@ export class Game {
     this.wasMusou = false
     this.musouWasReady = false
     Object.assign(this.post, { musou: 0, flash: 0, aberration: 0, radial: 0, danger: 0, bars: 0 })
+  }
+
+  private selectLevel(level: LevelId): void {
+    if (this.level === level) return
+    this.level = level
+    this.arena = new Arena(PLAY_LIMIT, levelObstacles(level))
+    const otherworld = level === 'moonlit-manor'
+    if (otherworld && this.manor === null) {
+      this.manor = buildManor()
+      this.scene.add(this.manor.group)
+    }
+    this.fortress.visible = !otherworld
+    if (this.manor !== null) this.manor.group.visible = otherworld
+    this.flags.mesh.visible = !otherworld
+    this.fire.group.visible = !otherworld
+    this.lighting.setFireLightsEnabled(!otherworld)
+    this.lighting.sun.color.set(otherworld ? '#d3d2ff' : '#ffbb8c')
+    this.lighting.sun.intensity = otherworld ? 2.5 : 2.9
+    this.sky.setManor(otherworld)
+    if (this.scene.fog instanceof FogExp2) {
+      this.scene.fog.color.set(otherworld ? '#777494' : '#614545')
+      this.scene.fog.density = otherworld ? 0.0035 : 0.0045
+    }
+    this.hud.setLevel(level)
+    this.resetBattle()
+    this.rig.snap(this.player.pos, PLAYER_START.facing)
+  }
+
+  private returnToTitle(): void {
+    this.mode = 'title'
+    this.input.clear()
+    this.player.clearQueuedActions()
+    this.resetBattle()
+    this.rig.snap(this.player.pos, PLAYER_START.facing)
+    this.hud.setVisible(false)
+    this.screens.showPause(false)
+    this.screens.hideResult()
+    this.screens.showTitle(true)
+    this.music?.setMode('title')
+    this.audio?.setMusicLevel(MUSIC_LEVEL)
   }
 
   private setPaused(paused: boolean): void {
@@ -441,7 +490,9 @@ export class Game {
       this.hud.showBanner(() => translate(`${milestone} 人斬！`, `${milestone} KOs!`), 2, 'gold')
       this.audio?.milestone()
     } else if (before < 150 && this.ko >= 150 && this.enemies.aliveCount > 0) {
-      this.hud.showBanner(() => translate('魏軍 半數潰滅', 'Half the Wei Army Defeated'), 2)
+      this.hud.showBanner(() => this.level === 'fortress'
+        ? translate('魏軍 半數潰滅', 'Half the Wei Army Defeated')
+        : translate('影兵 半數潰散', 'Half the Shadows Defeated'), 2)
     }
   }
 
@@ -530,6 +581,9 @@ export class Game {
     const camera = this.rig.camera
     const sizeScale = this.pipeline.renderer.domElement.height / (2 * Math.tan((camera.fov * Math.PI) / 360))
     this.sky.update(camera, this.clock)
+    if (this.level === 'moonlit-manor' && this.manor !== null) {
+      for (let i = 0; i < this.manor.people.length; i++) this.manor.people[i].position.y = Math.sin(this.clock * 2.1 + i * 1.3) * 0.045
+    }
     this.flags.update(this.clock)
     this.fire.update(this.clock, this.rig.focus, sizeScale)
     this.lighting.update(this.rig.focus, this.clock)
@@ -624,6 +678,7 @@ export class Game {
         get state() {
           return {
             mode: game.mode,
+            level: game.level,
             ko: game.ko,
             alive: game.enemies.aliveCount,
             hp: game.player.hp,

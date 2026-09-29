@@ -15,6 +15,7 @@ import { smoothstep } from '../core/math.ts'
 import { Kind, State, type EnemyStore } from '../entities/enemies.ts'
 import { withInstanceFlash } from '../render/materials.ts'
 import { VoxelBuilder } from '../world/voxel-builder.ts'
+import type { LevelId } from '../world/levels.ts'
 
 const hex = (h: string) => new Color(h)
 export const SOLDIER_COLORS = {
@@ -175,13 +176,17 @@ export class SoldierView {
   }
 
   /** 每名士兵的色調變化；隊長採用深靛金調，配合長翎形成辨識點。 */
-  applyColors(store: EnemyStore, rng: () => number): void {
+  applyColors(store: EnemyStore, rng: () => number, level: LevelId = 'fortress'): void {
     const c = new Color()
     for (let i = 0; i < store.count; i++) {
-      if (store.kind[i] === Kind.Captain) c.setRGB(0.48, 0.42, 0.68)
+      if (store.kind[i] === Kind.Captain) {
+        if (level === 'fortress') c.setRGB(0.48, 0.42, 0.68)
+        else c.setRGB(4.8, 0.32, 0.68)
+      }
       else {
         const v = 0.82 + rng() * 0.26
-        c.setRGB(v, v, v * (0.95 + rng() * 0.1))
+        if (level === 'fortress') c.setRGB(v, v, v * (0.95 + rng() * 0.1))
+        else c.setRGB(v * 3.7, v * 0.42, v * 0.55)
       }
       this.torso.mesh.setColorAt(i, c)
       this.arms.mesh.setColorAt(i * 2, c)

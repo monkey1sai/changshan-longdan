@@ -1,9 +1,10 @@
 import { Kind, type EnemyStore } from '../entities/enemies.ts'
 import { BARRACKS, INNER, KEEP, WALL_THICK } from '../world/layout.ts'
+import { MANOR_HALL, MANOR_HOUSES, type LevelId } from '../world/levels.ts'
 import type { MoveId } from '../combat/moves.ts'
 import type { PlayerState } from '../entities/player.ts'
 import { combatGuide } from './combat-guide.ts'
-import { moveName, subscribe, t } from './i18n.ts'
+import { moveName, subscribe, t, translate } from './i18n.ts'
 
 export interface HudState {
   ko: number
@@ -30,6 +31,8 @@ export class Hud {
   private readonly root = must('hud')
   private readonly ko = must('ko')
   private readonly remain = must('remain')
+  private readonly remainLabel = must('remain-label')
+  private readonly stageName = must('stage-name')
   private readonly hpFill = must('hp-fill')
   private readonly musouFill = must('musou-fill')
   private readonly musouBar = must('musou-bar')
@@ -49,6 +52,7 @@ export class Hud {
   private bannerTime = 0
   private cached: HudState | null = null
   private bannerProvider: (() => string) | null = null
+  private level: LevelId = 'fortress'
 
   constructor() {
     const canvas = must<HTMLCanvasElement>('minimap')
@@ -56,10 +60,24 @@ export class Hud {
     if (ctx === null) throw new Error('無法建立小地圖')
     this.minimap = ctx
     subscribe(() => {
+      this.renderLevel()
       Object.assign(this.last, { ko: -1, remain: -1, hp: -1, musou: -1, ready: false, combo: -1 })
       if (this.cached !== null) this.update(this.cached, 0)
       if (this.bannerTime > 0 && this.bannerProvider !== null) this.banner.textContent = this.bannerProvider()
     })
+    this.renderLevel()
+  }
+
+  setLevel(level: LevelId): void {
+    this.level = level
+    this.renderLevel()
+  }
+
+  private renderLevel(): void {
+    this.stageName.textContent = this.level === 'fortress'
+      ? translate('魏軍城池', 'Wei Fortress') : translate('月影宅邸', 'Moonlit Manor')
+    this.remainLabel.textContent = this.level === 'fortress'
+      ? translate('殘存魏兵', 'Wei remaining') : translate('殘存影兵', 'Shadows remaining')
   }
 
   setVisible(visible: boolean): void {
@@ -147,7 +165,9 @@ export class Hud {
     ctx.lineWidth = 2
     ctx.strokeRect(X(-INNER), Z(-INNER), INNER * 2 * s, INNER * 2 * s)
     ctx.fillStyle = 'rgba(40, 32, 30, 0.9)'
-    for (const r of [KEEP, ...BARRACKS]) ctx.fillRect(X(r.minX), Z(r.minZ), (r.maxX - r.minX) * s, (r.maxZ - r.minZ) * s)
+    for (const r of this.level === 'fortress' ? [KEEP, ...BARRACKS] : [MANOR_HALL, ...MANOR_HOUSES]) {
+      ctx.fillRect(X(r.minX), Z(r.minZ), (r.maxX - r.minX) * s, (r.maxZ - r.minZ) * s)
+    }
 
     for (let i = 0; i < store.count; i++) {
       if (store.alive[i] === 0) continue

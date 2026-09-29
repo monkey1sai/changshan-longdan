@@ -1,4 +1,5 @@
-import { subscribe, t } from './i18n.ts'
+import { subscribe, t, translate } from './i18n.ts'
+import { isLevelId, type LevelId } from '../world/levels.ts'
 
 export interface ResultStats {
   win: boolean
@@ -34,12 +35,16 @@ export class Screens {
   private readonly result = must('result')
   private readonly resultTitle = must('result-title')
   private readonly resultStats = must('result-stats')
+  private readonly missionSubtitle = must('mission-subtitle')
+  private readonly stageStory = must('stage-story')
   private lastResult: ResultStats | null = null
 
   constructor() {
     subscribe(() => {
+      this.renderLevelCopy()
       if (this.lastResult !== null && !this.result.hidden) this.renderResult(this.lastResult)
     })
+    this.renderLevelCopy()
   }
 
   onStart(handler: () => void): void {
@@ -52,6 +57,43 @@ export class Screens {
 
   onResume(handler: () => void): void {
     must<HTMLButtonElement>('resume').addEventListener('click', handler)
+  }
+
+  onReturnToTitle(handler: () => void): void {
+    must<HTMLButtonElement>('change-level').addEventListener('click', handler)
+    must<HTMLButtonElement>('result-level').addEventListener('click', handler)
+  }
+
+  onLevelSelect(handler: (level: LevelId) => void): void {
+    document.querySelectorAll<HTMLInputElement>('input[name="level"]').forEach((radio) => {
+      radio.addEventListener('change', () => {
+        if (radio.checked && isLevelId(radio.value)) {
+          this.renderLevelCopy()
+          handler(radio.value)
+        }
+      })
+    })
+  }
+
+  selectedLevel(): LevelId {
+    const selected = document.querySelector<HTMLInputElement>('input[name="level"]:checked')?.value ?? ''
+    return isLevelId(selected) ? selected : 'fortress'
+  }
+
+  private renderLevelCopy(): void {
+    if (this.selectedLevel() === 'moonlit-manor') {
+      this.missionSubtitle.textContent = translate('月影邊境 守護村落三百影', 'Moonlit Frontier · 300 Shadows to Defeat')
+      this.stageStory.textContent = translate(
+        '星燈使迦蘭與巡林者燐歌在宅邸前求援；擊退夜林影兵，守住村落。',
+        'Lantern mage Kalan and forest scout Rinka call for aid at the manor. Defeat the night-forest shadows and defend the village.',
+      )
+      return
+    }
+    this.missionSubtitle.textContent = translate('趙子龍 單騎破魏三百', 'One warrior. Three hundred foes.')
+    this.stageStory.textContent = translate(
+      '黃昏城池，魏兵列陣；以龍膽槍法突破三百人的包圍。',
+      'At dusk, Wei soldiers form ranks around the fortress. Break through all three hundred with the Dragon Spear.',
+    )
   }
 
   showTitle(visible: boolean): void {

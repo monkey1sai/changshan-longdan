@@ -15,6 +15,7 @@ void main() {
 const FRAGMENT = /* glsl */ `
 uniform vec3 uSunDir;
 uniform float uTime;
+uniform float uManor;
 varying vec3 vDir;
 
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
@@ -54,6 +55,11 @@ void main() {
   float cloud = smoothstep(0.5, 0.78, fbm(uv)) * band;
   vec3 lit = mix(vec3(0.32, 0.12, 0.2), vec3(2.2, 0.95, 0.42), pow(sd, 2.5) * 0.9 + 0.1);
   col = mix(col, lit, cloud * 0.8);
+  float moon = max(dot(d, normalize(vec3(-0.35, 0.62, -0.62))), 0.0);
+  vec3 otherworld = mix(vec3(0.31, 0.29, 0.52), vec3(0.055, 0.09, 0.21), smoothstep(0.0, 0.72, h));
+  otherworld += vec3(0.17, 0.12, 0.24) * cloud;
+  otherworld += vec3(1.7, 1.85, 2.5) * pow(moon, 100.0);
+  col = mix(col, otherworld, uManor);
   gl_FragColor = vec4(col, 1.0);
 }
 `
@@ -65,7 +71,7 @@ export class Sky {
 
   constructor() {
     this.material = new ShaderMaterial({
-      uniforms: { uSunDir: { value: SUN_DIR }, uTime: { value: 0 } },
+      uniforms: { uSunDir: { value: SUN_DIR }, uTime: { value: 0 }, uManor: { value: 0 } },
       vertexShader: VERTEX,
       fragmentShader: FRAGMENT,
       side: BackSide,
@@ -79,5 +85,9 @@ export class Sky {
   update(camera: Camera, time: number): void {
     this.mesh.position.copy(camera.position)
     this.material.uniforms.uTime.value = time
+  }
+
+  setManor(selected: boolean): void {
+    this.material.uniforms.uManor.value = selected ? 1 : 0
   }
 }

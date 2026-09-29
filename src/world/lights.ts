@@ -11,6 +11,7 @@ export class Lighting {
   private readonly sources: readonly FireSource[]
   private readonly order: number[]
   private readonly dist: Float32Array
+  private fireLightsEnabled = true
 
   constructor(scene: Scene, sources: readonly FireSource[]) {
     this.sources = sources
@@ -40,6 +41,10 @@ export class Lighting {
     }
   }
 
+  setFireLightsEnabled(enabled: boolean): void {
+    this.fireLightsEnabled = enabled
+  }
+
   update(focus: Vector3, time: number): void {
     const fx = Math.round(focus.x / 2) * 2
     const fz = Math.round(focus.z / 2) * 2
@@ -54,6 +59,10 @@ export class Lighting {
     this.order.sort((a, b) => this.dist[a] - this.dist[b])
     for (let k = 0; k < this.points.length; k++) {
       const light = this.points[k]
+      if (!this.fireLightsEnabled) {
+        light.intensity = 0
+        continue
+      }
       const idx = this.order[k]
       if (idx === undefined) {
         light.intensity = 0

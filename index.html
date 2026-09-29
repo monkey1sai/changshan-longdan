@@ -16,10 +16,11 @@
       <div class="ko-panel">
         <div class="ko-label" data-en="KOs">擊破</div>
         <div id="ko" class="ko-count">0</div>
-        <div class="remain"><span data-en="Wei remaining">殘存魏兵</span> <b id="remain">300</b></div>
+        <div class="remain"><span id="remain-label">殘存魏兵</span> <b id="remain">300</b></div>
         <div class="battle-track"><div id="battle-progress"></div></div>
       </div>
       <canvas id="minimap" class="minimap" width="176" height="176"></canvas>
+      <div id="stage-name" class="stage-name"></div>
       <div class="player-panel">
         <div class="portrait">趙</div>
         <div class="bars">
@@ -46,7 +47,13 @@
     <section id="title" class="screen title">
       <div class="panel">
         <h1 data-en="Changshan Longdan">常山龍膽</h1>
-        <p class="subtitle"><b data-en="One warrior. Three hundred foes.">趙子龍 單騎破魏三百</b><span class="seal">趙</span></p>
+        <p class="subtitle"><b id="mission-subtitle">趙子龍 單騎破魏三百</b><span class="seal">趙</span></p>
+        <fieldset class="level-picker">
+          <legend data-en="Choose a stage">選擇關卡</legend>
+          <label class="level-option"><input type="radio" name="level" value="fortress" checked /><span class="level-card"><strong data-en="Wei Fortress">魏軍城池</strong><small data-en="Dusk siege · 300 Wei soldiers">黃昏攻城 · 三百魏兵</small></span></label>
+          <label class="level-option"><input type="radio" name="level" value="moonlit-manor" /><span class="level-card"><strong data-en="Moonlit Manor">月影宅邸</strong><small data-en="Otherworld village · enchanted forest">異世界村落 · 魔法森林</small></span></label>
+        </fieldset>
+        <p id="stage-story" class="stage-story">黃昏城池，魏兵列陣；以龍膽槍法突破三百人的包圍。</p>
         <button id="start" class="primary" type="button" data-en="To Battle">出陣</button>
         <p class="prompt" data-en="Press Enter, J or click To Battle to begin">按 Enter、J 或點擊「出陣」開始</p>
         <table class="controls">
@@ -63,7 +70,7 @@
           <tr><td data-en="Pause">暫停</td><td>Esc／P</td><td>Start</td></tr>
         </table>
         <p class="combo-help" data-en="Hold Attack for a six-hit combo. Mix in Charge for launchers, aerial strings, wide sweeps and spear barrages.&#10;Attack while dodging to dash. Guard just as a strike lands, then Attack to counter. Follow the move guide in battle.">按住普攻連打六段，途中按蓄力分支：挑空、空連、迴旋掃兵、百烈槍與天龍破。&#10;閃避中接普攻可突進；迎擊瞬間防禦，再按普攻反擊。戰鬥右下角會提示可接招式。</p>
-        <p class="credit" data-en="Procedural voxel characters, castle and dragon · Real-time WebAudio music and sound&#10;Built with Three.js (MIT License; see THIRD_PARTY_LICENSES.txt)">人物、城池與龍皆為程式生成的體素模型 · 所有音效與配樂以 WebAudio 即時合成&#10;使用 Three.js（MIT 授權，授權全文見 THIRD_PARTY_LICENSES.txt）</p>
+        <p class="credit" data-en="Procedural voxel characters, stages and dragon · Real-time WebAudio music and sound&#10;Built with Three.js (MIT License; see THIRD_PARTY_LICENSES.txt)">人物、關卡與龍皆為程式生成的體素模型 · 所有音效與配樂以 WebAudio 即時合成&#10;使用 Three.js（MIT 授權，授權全文見 THIRD_PARTY_LICENSES.txt）</p>
       </div>
     </section>
 
@@ -71,6 +78,7 @@
       <div class="panel">
         <h1 class="pause-title" data-en="Paused">暫停</h1>
         <button id="resume" class="primary" type="button" data-en="Resume">繼續</button>
+        <button id="change-level" class="secondary" type="button" data-en="Choose Stage">選擇關卡</button>
         <p class="prompt" data-en="Press Esc or Enter to resume">按 Esc 或 Enter 繼續</p>
         <p class="combo-help" data-en="Hold J for combos · K charge branch · Shift then J dash&#10;F frontal guard · J after a perfect guard to counter · L Longdan Frenzy&#10;Q / E camera · R recenter&#10;The game pauses when you switch windows.">按住 J 連段 · K 蓄力分支 · Shift → J 突進&#10;F 正面防禦 · 精準格擋後 J 反擊 · L 龍膽亂舞&#10;Q／E 轉視角 · R 鏡頭回正&#10;切換視窗時會自動暫停。</p>
       </div>
@@ -81,6 +89,7 @@
         <h2 id="result-title"></h2>
         <div id="result-stats" class="stats"></div>
         <button id="retry" class="primary" type="button" data-en="Fight Again">再戰</button>
+        <button id="result-level" class="secondary" type="button" data-en="Choose Stage">選擇關卡</button>
         <p class="prompt" data-en="Press Enter to fight again">按 Enter 再戰</p>
       </div>
     </section>
