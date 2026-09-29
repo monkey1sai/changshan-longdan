@@ -14,8 +14,12 @@ itch.io 專案頁的填寫內容與上傳步驟。更新既有遊戲需作者明
 | 公開 | Public，2026-09-29 起 |
 | 定價 | $0 or donate，建議贊助 US$2 |
 | 收款 | Collected by itch.io, paid later；稅務問卷已於 2026-09-29 完成 |
-| 目前上傳檔 | `changshan-longdan-web.zip`，180,847 bytes，SHA-256 `ef88ab6981fc347f421fd4c2b5b5f1fc36845e68d63c1aed8b617a012a84c8aa`，由 commit `cfa1696` 的原始碼建置 |
-| 實際驗證 | 2026-09-29 在公開頁按 Run game → 出陣，戰鬥畫面與鍵盤連擊正常 |
+| 目前上傳檔 | `changshan-longdan-web.zip`，188,446 bytes，SHA-256 `e8c731d28b5954a4306bc595ed955a2218a48eb7606edd536f413d2cd1d0a796`，由 source commit `ca0205e5e5acca0a199186edc25788b776b7859f` 建置，2026-09-29 上傳 |
+| 實際驗證 | 2026-09-29 使用可見 Chrome 在公開頁按 Run game，切換英文 → To Battle，以鍵盤普攻／蓄力／暫停；中英切換保持 HP，重新載入 iframe 保留英文偏好。實際 iframe 960×540，無水平溢位，console error 0；下載伺服器 ZIP 的 bytes／SHA-256 與本機成品一致 |
+| 本版變更 | `118f241` 戰鬥操作與場景辨識改善；`ca0205e` 即時中英文介面。商店中英操作說明已更新並重新載入核對 |
+| 前版回滾 | source `cfa1696`，180,847 bytes，SHA-256 `ef88ab6981fc347f421fd4c2b5b5f1fc36845e68d63c1aed8b617a012a84c8aa`；原檔已下載核對並保存在本機 `release/rollback/changshan-longdan-cfa1696.zip`（不進版控） |
+
+本版封裝包含 4 個檔案：根目錄 `index.html`、`THIRD_PARTY_LICENSES.txt`、CSS 與 JS。正式頁載入 `assets/index-2GF4U9GT.js`，與本機封裝相符。上傳後保留 Public、$0 or donate／建議 US$2、960×540、Fullscreen button 設定；未修改收款、稅務或帳號權限。公開頁驗證截圖與 JSON 存在本次工作附件 `bilingual-release/`；本機 DEV 結算情境與正式站驗收分開記錄。
 
 ## 欄位
 
