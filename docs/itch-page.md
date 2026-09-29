@@ -14,12 +14,14 @@ itch.io 專案頁的填寫內容與上傳步驟。更新既有遊戲需作者明
 | 公開 | Public，2026-09-29 起 |
 | 定價 | $0 or donate，建議贊助 US$2 |
 | 收款 | Collected by itch.io, paid later；稅務問卷已於 2026-09-29 完成 |
-| 目前上傳檔 | `changshan-longdan-web.zip`，188,446 bytes，SHA-256 `e8c731d28b5954a4306bc595ed955a2218a48eb7606edd536f413d2cd1d0a796`，由 source commit `ca0205e5e5acca0a199186edc25788b776b7859f` 建置，2026-09-29 上傳 |
-| 實際驗證 | 2026-09-29 使用可見 Chrome 在公開頁按 Run game，切換英文 → To Battle，以鍵盤普攻／蓄力／暫停；中英切換保持 HP，重新載入 iframe 保留英文偏好。實際 iframe 960×540，無水平溢位，console error 0；下載伺服器 ZIP 的 bytes／SHA-256 與本機成品一致 |
-| 本版變更 | `118f241` 戰鬥操作與場景辨識改善；`ca0205e` 即時中英文介面。商店中英操作說明已更新並重新載入核對 |
-| 前版回滾 | source `cfa1696`，180,847 bytes，SHA-256 `ef88ab6981fc347f421fd4c2b5b5f1fc36845e68d63c1aed8b617a012a84c8aa`；原檔已下載核對並保存在本機 `release/rollback/changshan-longdan-cfa1696.zip`（不進版控） |
+| 目前上傳檔 | `changshan-longdan-web.zip`，4,389,170 bytes，SHA-256 `df5d6af7dbbee3e120faffe6ad53acb4f199eada0876e3b68306cda6709238b7`，由 source commit `dfc52909c75edae4f9706b4f1a88114f44391483` 建置，2026-09-29 16:17（Asia/Taipei）上傳 |
+| 實際驗證 | 2026-09-29 使用可見 Chrome，僅透過網頁 API，在公開頁按 Run game → To Battle；960×540 遊戲中顯示精細角色，主畫布點擊與按鍵操作後觀察到 6 HITS，再以 P 暫停。browser logs 未返回 error/warn。從 itch.io 下載新版 ZIP，其 bytes／SHA-256 與本機成品一致 |
+| 本版變更 | `dfc5290` 導入 Quaternius CC0 人體底模與 Blender 趙雲改造、骨架接合、平滑長槍與連續披風；保留原戰鬥規則及載入失敗回退。商店中英角色來源說明已更新，重新開啟公開頁核對成功 |
+| 前版回滾 | source `ca0205e5e5acca0a199186edc25788b776b7859f`，188,446 bytes，SHA-256 `e8c731d28b5954a4306bc595ed955a2218a48eb7606edd536f413d2cd1d0a796`；原檔已從 itch.io 下載核對並保存在本機 `release/rollback/changshan-longdan-ca0205e.zip`（不進版控） |
 
-本版封裝包含 4 個檔案：根目錄 `index.html`、`THIRD_PARTY_LICENSES.txt`、CSS 與 JS。正式頁載入 `assets/index-2GF4U9GT.js`，與本機封裝相符。上傳後保留 Public、$0 or donate／建議 US$2、960×540、Fullscreen button 設定；未修改收款、稅務或帳號權限。公開頁驗證截圖與 JSON 存在本次工作附件 `bilingual-release/`；本機 DEV 結算情境與正式站驗收分開記錄。
+本版封裝包含 5 個檔案：根目錄 `index.html`、`THIRD_PARTY_LICENSES.txt`、`assets/index-DevWvxf2.css`、`assets/index-CZjsXZUQ.js` 與 `models/zhaoyun.glb`。實際遊戲 iframe 位於 `https://html-classic.itch.zone/html/19463509/index.html`。上傳後保留 Public、$0 or donate／建議 US$2、960×540、Fullscreen button 設定；未修改收款、稅務或帳號權限。完整驗證與限制見 `docs/character-validation.md`；正式站截圖保存在本次工作附件 `itch-zhaoyun-live.png`。
+
+此次由 `codex/zhaoyun-character` 分支發布，未合併預設分支。需回滾時，在同一 Edit 頁重新上傳上述前版 ZIP、勾選 browser build 並儲存，再從公開頁驗證；不要刪除專案或更動定價。更早的 `cfa1696` 發布紀錄仍可從 Git 歷史查閱。
 
 ## 欄位
 

@@ -35,9 +35,19 @@
 
 這是約兩秒的本機環境觀察，不是新舊同場景效能比較，也不是長時間壓力測試。沒有證據可宣稱效能提升，亦不保證所有裝置或無雙密集特效仍為 60 FPS。
 
+## VERIFIED：itch.io 正式發布
+
+- 使用者明確授權「commit push；發布 itch」後，角色版本提交為 `dfc52909c75edae4f9706b4f1a88114f44391483`，推送至 `origin/codex/zhaoyun-character`，再從此提交建置發布包。未合併預設分支。
+- 本輪重新執行 94 項測試與 `npm run package:itch`，均通過。ZIP 為 4,389,170 bytes、5 個檔案，SHA-256 `df5d6af7dbbee3e120faffe6ad53acb4f199eada0876e3b68306cda6709238b7`。
+- 2026-09-29 16:17（Asia/Taipei）更新既有 itch.io 專案 `5071537` 的 browser build；下載伺服器成品，bytes 與 SHA-256 完全一致。上一版已下載核對並保留本機回滾副本。
+- 實際在可見 Chrome 的公開頁 `https://monkey1sai.itch.io/changshan-longdan` 按 Run game → To Battle；iframe 為 `https://html-classic.itch.zone/html/19463509/index.html`，場景畫布 960×540。確認新版角色出現、戰場 300 人、主畫布點擊及按鍵操作後顯示 6 HITS、P 顯示 Paused。browser logs 未返回 error/warn。
+- 正式站曾送出 W、J、K；本輪未量測移動距離，也未獨立判定 K 的蓄力分支是否完成。不可將送出按鍵等同全部動作驗收。原先本機新舊模型與全部招式的確定性測試仍是獨立證據。
+- 商店編輯器第一次 HTML 儲存未保留；補上編輯器鍵盤事件後成功，重新載入編輯頁並重新開啟公開頁，確認中英角色來源及 CC0 授權說明皆已更新。
+- 保留公開狀態、定價、嵌入尺寸、全螢幕按鈕與既有封面／截圖；沒有更動收款、稅務或帳號權限。正式站截圖：`C:/Users/IOT/.codex/visualizations/2026/09/29/01a0ec02-0edd-7e92-b8ff-0c32d9ea7cce/itch-zhaoyun-live.png`。
+
 ## 限制
 
 - 定位為風格化角色樣板；尚未做服飾史考據、逐指精密抓握、布料碰撞或長時間穿插檢查。
 - 未擴充敵兵、高精度場景、水面或後製。
-- 未發布到 itch.io；既有線上版本與 release record 不變。
+- 正式發布後未做長時間壓力測試、手把與其他瀏覽器驗證；未重新驗收音訊或全螢幕功能。
 - 本機角色工坊保留新舊對照，方便下一輪造型調整。
