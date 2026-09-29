@@ -53,7 +53,7 @@ itch.io 專案頁的填寫內容與上傳步驟。更新既有遊戲需作者明
 - 三百名魏兵同時在場：列陣、包圍、輪流出手，被擊破時炸成體素碎片
 - 集滿龍膽氣發動「龍膽亂舞・蒼龍破陣」：青龍繞身盤旋後俯衝撞地，全螢幕轉為金墨色調
 - 黃昏城池、飄揚的軍旗、火焰與濃煙、景深與光暈
-- 所有模型由程式生成，所有音效與配樂以 WebAudio 即時合成
+- 趙雲採用 Quaternius CC0 人物底模並以 Blender 改造，士兵與場景由程式生成；所有音效與配樂以 WebAudio 即時合成
 - 右上角即時切換繁體中文／English；記住偏好，戰鬥不中斷
 - 按住普攻自動連段、閃避突進與精準格擋反擊，搭配即時招式指南
 
@@ -64,7 +64,7 @@ itch.io 專案頁的填寫內容與上傳步驟。更新既有遊戲需作者明
 
 建議使用電腦版 Chrome、Edge 或 Firefox，需要支援 WebGL2，並按右下角的全螢幕按鈕遊玩。遊戲會依效能自動調整渲染解析度。喜歡的話歡迎贊助，是對作者最直接的鼓勵。
 
-使用 Three.js（MIT 授權）。
+使用 Three.js（MIT 授權）；人物底模來自 Quaternius Universal Base Characters（CC0 1.0）。
 
 ## English description
 
@@ -77,7 +77,7 @@ Changshan Longdan is a PS2-style, musou-like action game that runs right in your
 - 300 soldiers on the field at once: they hold formation, surround you and take turns attacking, then shatter into voxels when defeated
 - Fill the Longdan gauge to unleash Longdan Frenzy: Azure Dragon, as a dragon circles you and crashes down while the screen turns to gold and ink
 - A castle at dusk with waving banners, fire and smoke, depth of field and bloom
-- Every model is procedural, and all sound effects and music are synthesized in real time with WebAudio
+- Zhao Yun uses a Quaternius CC0 character base customized in Blender; soldiers and environments are procedural, and all sound effects and music are synthesized in real time with WebAudio
 - Switch between English and Traditional Chinese at the top right, with a saved preference and no battle restart
 - Hold Attack for combos, dash out of a dodge, or counter after a perfect guard; an in-battle move guide shows follow-ups
 
@@ -88,7 +88,7 @@ Changshan Longdan is a PS2-style, musou-like action game that runs right in your
 
 Choose English or Traditional Chinese from the Language menu at the top right. Best on desktop Chrome, Edge or Firefox with WebGL2 support, played with the fullscreen button at the bottom right. The game scales its render resolution automatically to keep the frame rate smooth. If you enjoy it, a donation is the most direct way to support the developer.
 
-Built with Three.js (MIT License).
+Built with Three.js (MIT License). Character base: Quaternius Universal Base Characters (CC0 1.0).
 
 ## 上傳步驟
 

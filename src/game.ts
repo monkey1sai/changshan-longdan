@@ -624,6 +624,9 @@ export class Game {
         get state() {
           return {
             mode: game.mode,
+            character: game.model.assetStatus,
+            characterError: game.model.assetError,
+            characterTriangles: game.model.characterTriangles,
             ko: game.ko,
             alive: game.enemies.aliveCount,
             hp: game.player.hp,
