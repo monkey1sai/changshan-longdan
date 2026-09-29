@@ -1,4 +1,6 @@
 import { Color, FogExp2, Group, PMREMGenerator, Scene, Vector2, Vector3 } from 'three'
+import { createAssetPack } from './assets/default-pack.ts'
+import type { AssetPack, EffectViews } from './assets/pack.ts'
 import { AudioEngine } from './audio/audio-engine.ts'
 import { Music } from './audio/music.ts'
 import type { HitFx, HitWindow } from './combat/moves.ts'
@@ -8,37 +10,23 @@ import { clamp, createRng, damp } from './core/math.ts'
 import { Arena } from './entities/arena.ts'
 import { EnemyStore, squadSpawns, type HitInfo } from './entities/enemies.ts'
 import { MUSOU_MAX, Player, type AimFn, type PlayerControls } from './entities/player.ts'
-import { Dragon } from './fx/dragon.ts'
-import { Dust } from './fx/dust.ts'
-import { Fragments } from './fx/fragments.ts'
-import { Shockwaves } from './fx/shockwave.ts'
-import { Sparks } from './fx/sparks.ts'
-import { Trail } from './fx/trail.ts'
-import { ThreatMarkers } from './fx/threat-markers.ts'
 import { Pipeline, type PostSettings } from './render/pipeline.ts'
 import { Hud } from './ui/hud.ts'
 import { translate } from './ui/i18n.ts'
 import { Screens } from './ui/screens.ts'
 import { CameraRig } from './view/camera-rig.ts'
-import { PlayerModel } from './view/player-model.ts'
-import { SoldierView } from './view/soldier-view.ts'
-import { buildCastle } from './world/castle.ts'
 import { FireField, type FireSource } from './world/fire.ts'
 import { Flags } from './world/flags.ts'
 import { BIG_FIRES, BRAZIERS, obstacles, PLAY_LIMIT, PLAYER_START } from './world/layout.ts'
 import { Lighting } from './world/lights.ts'
 import { levelObstacles, levelSpawns, type LevelId } from './world/levels.ts'
-import { buildManor, type ManorBuild } from './world/manor.ts'
 import { Sky } from './world/sky.ts'
-import { createFlagTexture, createGroundTexture } from './world/textures.ts'
+import { createFlagTexture } from './world/textures.ts'
 
 type Mode = 'title' | 'playing' | 'paused' | 'victory' | 'defeat'
 
 const CAPACITY = 320
 const MUSIC_LEVEL = 0.42
-const SHOCK = new Color(3.2, 2.2, 1.2)
-const GOLD = new Color(5, 3.4, 1.1)
-const WHITE = new Color(6, 6, 5)
 
 /** 龍頭撞擊：盤旋中每 0.12 秒一次，把附近敵兵撞上天。 */
 const DRAGON_HIT: HitWindow = {
@@ -55,21 +43,23 @@ export class Game {
   private arena = new Arena(PLAY_LIMIT, obstacles())
   private readonly player = new Player()
   private readonly enemies = new EnemyStore(CAPACITY)
-  private readonly model = new PlayerModel()
-  private readonly soldiers = new SoldierView(CAPACITY)
-  private readonly fragments = new Fragments()
-  private readonly sparks = new Sparks()
-  private readonly dust = new Dust()
-  private readonly trail = new Trail()
-  private readonly threats = new ThreatMarkers(CAPACITY)
-  private readonly waves = new Shockwaves()
-  private readonly dragon = new Dragon()
+  private readonly assets: AssetPack
+  private readonly model: ReturnType<AssetPack['createPlayer']>
+  private readonly soldiers: ReturnType<AssetPack['createEnemies']>
+  private readonly fragments: EffectViews['fragments']
+  private readonly sparks: EffectViews['sparks']
+  private readonly dust: EffectViews['dust']
+  private readonly trail: EffectViews['trail']
+  private readonly threats: EffectViews['threats']
+  private readonly waves: EffectViews['waves']
+  private readonly dragon: EffectViews['dragon']
   private readonly sky = new Sky()
   private readonly flags: Flags
   private readonly fire: FireField
   private readonly lighting: Lighting
   private readonly fortress: Group
-  private manor: ManorBuild | null = null
+  private readonly fortressVisual: ReturnType<AssetPack['createFortress']>
+  private manor: ReturnType<AssetPack['createManor']> | null = null
   private level: LevelId = 'fortress'
   private readonly hud = new Hud()
   private readonly screens = new Screens()
@@ -109,12 +99,24 @@ export class Game {
   private minimapTick = 0
   private readonly perf = document.getElementById('perf')
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, assets: AssetPack = createAssetPack()) {
+    this.assets = assets
+    this.model = assets.createPlayer()
+    this.soldiers = assets.createEnemies(CAPACITY)
+    const effects = assets.createEffects(CAPACITY)
+    this.fragments = effects.fragments
+    this.sparks = effects.sparks
+    this.dust = effects.dust
+    this.trail = effects.trail
+    this.threats = effects.threats
+    this.waves = effects.waves
+    this.dragon = effects.dragon
     this.pipeline = new Pipeline(canvas)
     this.rig = new CameraRig(window.innerWidth / window.innerHeight)
     this.input = new Input(window, canvas)
 
-    const castle = buildCastle(createGroundTexture())
+    const castle = assets.createFortress()
+    this.fortressVisual = castle
     this.fortress = castle.group
     this.scene.add(castle.group, this.sky.mesh)
     this.scene.fog = new FogExp2(new Color(0.38, 0.27, 0.27), 0.0045)
@@ -245,7 +247,7 @@ export class Game {
     this.arena = new Arena(PLAY_LIMIT, levelObstacles(level))
     const otherworld = level === 'moonlit-manor'
     if (otherworld && this.manor === null) {
-      this.manor = buildManor()
+      this.manor = this.assets.createManor()
       this.scene.add(this.manor.group)
     }
     this.fortress.visible = !otherworld
@@ -386,7 +388,7 @@ export class Game {
 
   private groundFx(fx: HitFx, x: number, z: number, radius: number): void {
     if (fx === 'shockwave') {
-      this.waves.ring(x, z, radius * 1.1, 0.45, SHOCK)
+      this.waves.ring(x, z, radius * 1.1, 0.45, this.assets.colors.shock)
       this.dust.ring(x, z, radius, 26, this.rng)
       this.rig.addTrauma(0.3)
       this.post.radial = Math.max(this.post.radial, 0.5)
@@ -395,9 +397,9 @@ export class Game {
     // 無雙收尾：龍在趙雲前方 6 公尺撞地
     const fxX = x + Math.sin(this.player.facing) * 6
     const fxZ = z + Math.cos(this.player.facing) * 6
-    this.waves.ring(fxX, fxZ, 12, 0.8, GOLD)
-    this.waves.ring(fxX, fxZ, 6, 0.5, WHITE)
-    this.waves.pillar(fxX, fxZ, 3, 34, 0.9, GOLD)
+    this.waves.ring(fxX, fxZ, 12, 0.8, this.assets.colors.gold)
+    this.waves.ring(fxX, fxZ, 6, 0.5, this.assets.colors.white)
+    this.waves.pillar(fxX, fxZ, 3, 34, 0.9, this.assets.colors.gold)
     this.dust.ring(fxX, fxZ, 9, 56, this.rng)
     this.audio?.musouBlast()
     this.post.flash = 0.5
@@ -512,7 +514,7 @@ export class Game {
         this.rig.addTrauma(perfect ? 0.12 : 0.04)
         if (perfect) {
           this.hitstop = Math.max(this.hitstop, 0.06)
-          this.waves.ring(p.x, p.z, 2.4, 0.3, WHITE)
+          this.waves.ring(p.x, p.z, 2.4, 0.3, this.assets.colors.white)
         }
         continue
       }
@@ -679,6 +681,15 @@ export class Game {
           return {
             mode: game.mode,
             level: game.level,
+            assets: {
+              pack: game.assets.id,
+              character: game.model.assetStatus,
+              characterError: game.model.assetError,
+              enemies: game.soldiers.assetStatus,
+              enemyError: game.soldiers.assetError,
+              fortress: game.fortressVisual.slot.status,
+              manor: game.manor?.slot.status ?? 'unloaded',
+            },
             ko: game.ko,
             alive: game.enemies.aliveCount,
             hp: game.player.hp,

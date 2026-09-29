@@ -1,5 +1,13 @@
 import { BoxGeometry, Color, DynamicDrawUsage, Group, InstancedMesh, Matrix4, Mesh, MeshBasicMaterial, Quaternion, Vector3 } from 'three'
 import { easeOutCubic, smoothstep } from '../core/math.ts'
+import { ModelSlot, type ModelAsset } from '../assets/model.ts'
+import type { BufferGeometry } from 'three'
+
+export interface DragonVisualOptions {
+  head?: ModelAsset
+  /** Geometry in a unit box, instanced along the existing dragon path. */
+  createSegment?: () => BufferGeometry
+}
 
 const SEGMENTS = 44
 const SPACING = 0.62
@@ -32,6 +40,8 @@ function basic(color: Color): MeshBasicMaterial {
 /** 無雙召喚的蒼龍：繞趙雲盤旋、升空後俯衝撞地。身體各節沿龍頭走過的路徑依弧長跟隨。 */
 export class Dragon {
   readonly group = new Group()
+  readonly ready: Promise<void>
+  readonly headSlot: ModelSlot
   readonly headPos = new Vector3()
   private readonly head = new Group()
   private readonly jaw = new Group()
@@ -46,10 +56,11 @@ export class Dragon {
   private startFacing = 0
   private readonly center = new Vector3()
 
-  constructor() {
+  constructor(options: DragonVisualOptions = {}) {
     const box = new BoxGeometry(1, 1, 1)
+    const segment = options.createSegment?.() ?? box
     const make = (count: number) => {
-      const mesh = new InstancedMesh(box, basic(new Color(1, 1, 1)), count)
+      const mesh = new InstancedMesh(segment, basic(new Color(1, 1, 1)), count)
       mesh.instanceMatrix.setUsage(DynamicDrawUsage)
       mesh.frustumCulled = false
       this.group.add(mesh)
@@ -98,6 +109,11 @@ export class Dragon {
     add(this.jaw, skin, 0, -0.12, 0.55, 0.7, 0.2, 1.0)
     for (const s of [-1, 1]) add(this.jaw, white, s * 0.25, 0.02, 0.9, 0.08, 0.14, 0.08)
     this.head.add(this.jaw)
+    const fallback = new Group()
+    fallback.add(...[...this.head.children])
+    this.headSlot = new ModelSlot(fallback, options.head)
+    this.head.add(this.headSlot.group)
+    this.ready = this.headSlot.ready
     this.head.scale.setScalar(1.35)
     this.group.add(this.head)
     this.group.visible = false

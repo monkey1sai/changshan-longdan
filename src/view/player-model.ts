@@ -1,10 +1,21 @@
 import { Color, Group, Matrix4, Mesh, MeshStandardMaterial, Object3D, Quaternion, Vector3 } from 'three'
+import { LONGDAN_SPEAR, ZHAOYUN, type CharacterAsset, type WeaponAsset } from '../assets/character.ts'
+import { disposeObject, loadModel, ModelSlot } from '../assets/model.ts'
+import { SPEAR_ANIMATION, type PlayerAnimation } from '../assets/player-animation.ts'
 import type { MoveId } from '../combat/moves.ts'
 import { solveTwoBone } from '../core/ik.ts'
-import { clamp, smoothstep, TAU } from '../core/math.ts'
+import { clamp, smoothstep } from '../core/math.ts'
 import type { Player } from '../entities/player.ts'
 import { VoxelBuilder } from '../world/voxel-builder.ts'
-import { AIR, blankPose, copyPose, crossfade, DOWN, GUARD, HURT, mixPose, movePose, ROLL, RUN, STANCE } from './player-poses.ts'
+import { blankPose, copyPose, crossfade } from './player-poses.ts'
+import { CharacterSkin } from './character-skin.ts'
+import { RefinedCape } from './player-equipment.ts'
+
+export interface PlayerVisualOptions {
+  character: CharacterAsset | null
+  weapon: WeaponAsset
+  animation: PlayerAnimation
+}
 
 const hex = (h: string) => new Color(h)
 const Z = {
@@ -71,6 +82,13 @@ const basis = new Matrix4()
 /** 趙雲的體素模型：姿勢驅動、雙臂 IK 握槍、披風以 Verlet 模擬。 */
 export class PlayerModel {
   readonly group = new Group()
+  readonly ready: Promise<void>
+  assetStatus: 'loading' | 'ready' | 'voxel' | 'fallback' = 'voxel'
+  assetError: string | null = null
+  private skin: CharacterSkin | null = null
+  private cloth: RefinedCape | null = null
+  private readonly options: PlayerVisualOptions
+  private weaponSlot: ModelSlot | null = null
   /** 槍尖與槍身中段的世界座標，給刀光使用。 */
   readonly tip = new Vector3()
   readonly tipBase = new Vector3()
@@ -104,7 +122,10 @@ export class PlayerModel {
   private lastMove: MoveId | null = null
   private lastMoveTime = 0
 
-  constructor() {
+  constructor(style: 'refined' | 'voxel' | PlayerVisualOptions = 'refined') {
+    this.options = typeof style === 'string'
+      ? { character: style === 'refined' ? ZHAOYUN : null, weapon: LONGDAN_SPEAR, animation: SPEAR_ANIMATION }
+      : style
     const metal = new MeshStandardMaterial({ vertexColors: true, roughness: 0.32, metalness: 0.65 })
     const cloth = new MeshStandardMaterial({ vertexColors: true, roughness: 0.78, metalness: 0 })
     this.blade = new MeshStandardMaterial({ color: '#eaf6ff', emissive: '#7cc8ff', emissiveIntensity: 1.8, roughness: 0.2, metalness: 0.6 })
@@ -167,6 +188,49 @@ export class PlayerModel {
       this.capePts.push(new Vector3())
       this.capePrev.push(new Vector3())
     }
+    // Weapon replacement is independent of body loading and failure.
+    if (style !== 'voxel') {
+      for (const object of this.spear.children) object.visible = false
+      this.weaponSlot = new ModelSlot(this.options.weapon.createFallback(this.blade), this.options.weapon.model)
+      this.spear.add(this.weaponSlot.group)
+    }
+    this.ready = Promise.all([
+      this.options.character ? this.loadCharacter(this.options.character) : Promise.resolve(),
+      this.weaponSlot?.ready,
+    ]).then(() => {})
+  }
+
+  get characterTriangles(): number {
+    return this.skin?.triangles ?? 0
+  }
+
+  /** Fallback stays visible until the complete local GLB has passed rig validation. */
+  private async loadCharacter(asset: CharacterAsset): Promise<void> {
+    this.assetStatus = 'loading'
+    let scene: Group | undefined
+    try {
+      scene = await loadModel(asset)
+      const skin = new CharacterSkin(scene, {
+        hips: this.hips, torso: this.torso, head: this.head,
+        upperL: this.upperL, upperR: this.upperR, foreL: this.foreL, foreR: this.foreR,
+        thighL: this.thighL, thighR: this.thighR, kneeL: this.kneeL, kneeR: this.kneeR,
+        spear: this.spear,
+      }, asset.rig)
+      // Keep the pose hierarchy and IK controllers; replace only their visible meshes.
+      const weaponMeshes = new Set<Object3D>()
+      this.spear.traverse((object) => weaponMeshes.add(object))
+      this.group.traverse((object) => { if (object instanceof Mesh && !weaponMeshes.has(object)) object.visible = false })
+      this.cloth = new RefinedCape()
+      this.group.add(this.cloth.mesh)
+      this.group.add(scene)
+      this.skin = skin
+      this.assetStatus = 'ready'
+    } catch (error) {
+      if (scene) disposeObject(scene)
+      this.assetStatus = 'fallback'
+      this.assetError = error instanceof Error ? error.message : String(error)
+      console.warn('精細角色載入失敗，保留原角色：', this.assetError)
+    }
   }
 
   /** 瞬間移動（重新開局）後呼叫，避免披風被拉長。 */
@@ -183,19 +247,21 @@ export class PlayerModel {
       this.lastKey = key
     }
     this.fade = Math.min(1, this.fade + dt / this.fadeTime)
-    this.targetPose(player)
+    this.options.animation.sample(player, this.target)
     if (this.fade < 1) crossfade(this.pose, this.from, this.target, smoothstep(0, 1, this.fade))
     else copyPose(this.pose, this.target)
 
     this.apply(player)
     this.solveArms(player)
-    if (dt > 0) this.updateCape(dt, time) // 命中停頓時披風也要凍結
+    this.skin?.update()
+    if (dt > 0 || !this.capeReady) this.updateCape(dt, time) // 初始化後，命中停頓也凍結披風
+    this.cloth?.update(this.capePts, right, fwd)
 
     const musou = player.state === 'musou'
     this.blade.emissive.set(musou ? '#ffc766' : '#7cc8ff')
     this.blade.emissiveIntensity = musou ? 4 + Math.sin(time * 30) * 1.2 : 1.8
-    this.spear.localToWorld(this.tip.set(0, 0, 2.7))
-    this.spear.localToWorld(this.tipBase.set(0, 0, 1.25))
+    this.spear.localToWorld(this.tip.set(0, 0, this.options.weapon.tip))
+    this.spear.localToWorld(this.tipBase.set(0, 0, this.options.weapon.trailBase))
   }
 
   private poseKey(player: Player): string {
@@ -209,48 +275,6 @@ export class PlayerModel {
     }
     this.lastMove = null
     return player.state
-  }
-
-  private targetPose(player: Player): void {
-    const t = this.target
-    switch (player.state) {
-      case 'move': {
-        const run = smoothstep(0.3, 6.5, player.speed)
-        mixPose(t, STANCE, RUN, run)
-        t.crouch += Math.sin(player.runPhase * 2) * 0.035 * run
-        break
-      }
-      case 'jump':
-        copyPose(t, AIR)
-        break
-      case 'guard':
-        copyPose(t, GUARD)
-        break
-      case 'attack':
-      case 'musou':
-        if (player.move !== null) movePose(player.move.id, player.moveTime, t)
-        break
-      case 'dodge':
-        if (player.dodgeBack) {
-          copyPose(t, HURT)
-          t.lean = -0.15
-        } else {
-          copyPose(t, ROLL)
-          t.flip = TAU * smoothstep(0.02, 0.36, player.stateTime)
-          t.lean = 0.9
-          t.crouch = -0.35
-        }
-        break
-      case 'hurt':
-        copyPose(t, HURT)
-        break
-      case 'down':
-        mixPose(t, DOWN, STANCE, smoothstep(0.95, 1.3, player.stateTime))
-        break
-      case 'dead':
-        copyPose(t, DOWN)
-        break
-    }
   }
 
   private apply(player: Player): void {
@@ -303,12 +327,12 @@ export class PlayerModel {
     this.shoulderAnchorL.getWorldPosition(shoulderL)
     this.shoulderAnchorR.getWorldPosition(shoulderR)
     this.root.getWorldQuaternion(rootQ)
-    this.spear.localToWorld(gripR.set(0, 0, 0))
+    this.spear.localToWorld(gripR.set(0, 0, this.options.weapon.gripRight))
     this.spear.getWorldQuaternion(q)
     axis.set(0, 0, 1).applyQuaternion(q)
 
     // 左手握在槍身上離左肩最近的點；不握槍時自然擺在腰側
-    const t = clamp(v1.subVectors(shoulderL, gripR).dot(axis), 0.25, 1.1)
+    const t = clamp(v1.subVectors(shoulderL, gripR).dot(axis), ...this.options.weapon.gripLeftRange)
     gripL.copy(gripR).addScaledVector(axis, t)
     const swing = player.state === 'move' ? Math.sin(player.runPhase) * 0.3 * smoothstep(0.3, 6.5, player.speed) : 0
     this.torso.localToWorld(v2.set(0.36, 0.12, 0.12 - swing))

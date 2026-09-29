@@ -16,6 +16,8 @@ import { Kind, State, type EnemyStore } from '../entities/enemies.ts'
 import { withInstanceFlash } from '../render/materials.ts'
 import { VoxelBuilder } from '../world/voxel-builder.ts'
 import type { LevelId } from '../world/levels.ts'
+import { ENEMY_PARTS, enemyMeshes, type EnemyPose, type EnemyVisualOptions } from '../assets/enemy.ts'
+import { disposeObject, loadModel } from '../assets/model.ts'
 
 const hex = (h: string) => new Color(h)
 export const SOLDIER_COLORS = {
@@ -154,6 +156,11 @@ interface Part {
 /** 以實例化網格繪製所有魏兵，依 AI 狀態計算每名士兵的姿勢。 */
 export class SoldierView {
   readonly group = new Group()
+  readonly ready: Promise<void>
+  assetStatus: 'procedural' | 'loading' | 'ready' | 'fallback' = 'procedural'
+  assetError: string | null = null
+  private readonly options: EnemyVisualOptions
+  private readonly pose: EnemyPose = { legR: 0, legL: 0, armRx: 0, armLx: 0, abduct: 0, lean: 0, nod: 0, tumble: 0, lift: 0, weapon: 0 }
   private readonly legs: Part
   private readonly arms: Part
   private readonly torso: Part
@@ -163,7 +170,8 @@ export class SoldierView {
   private readonly shield: Part
   private readonly plume: Part
 
-  constructor(capacity: number) {
+  constructor(capacity: number, options: EnemyVisualOptions = {}) {
+    this.options = options
     const material = withInstanceFlash(new MeshStandardMaterial({ vertexColors: true, roughness: 0.62, metalness: 0.12 }))
     this.legs = this.part(legGeometry(), material, capacity * 2)
     this.arms = this.part(armGeometry(), material, capacity * 2)
@@ -173,6 +181,38 @@ export class SoldierView {
     this.sword = this.part(swordGeometry(), material, capacity)
     this.shield = this.part(shieldGeometry(), material, capacity)
     this.plume = this.part(plumeGeometry(), material, capacity)
+    this.ready = options.model ? this.loadParts(options.model) : Promise.resolve()
+  }
+
+  private async loadParts(asset: NonNullable<EnemyVisualOptions['model']>): Promise<void> {
+    this.assetStatus = 'loading'
+    let scene: Group | undefined
+    try {
+      scene = await loadModel(asset)
+      const meshes = enemyMeshes(scene, asset)
+      const oldMaterials = new Set<MeshStandardMaterial>()
+      for (const role of ENEMY_PARTS) {
+        const target = this[role]
+        const source = meshes[role]
+        const geometry = source.geometry.clone()
+        geometry.setAttribute('instanceFlash', target.flashAttr)
+        target.mesh.geometry.dispose()
+        oldMaterials.add(target.mesh.material as MeshStandardMaterial)
+        target.mesh.geometry = geometry
+        target.mesh.material = withInstanceFlash((source.material as MeshStandardMaterial).clone())
+      }
+      for (const material of oldMaterials) material.dispose()
+      // New materials retain source textures; release only original mesh resources.
+      const geometries = new Set(Object.values(meshes).map((mesh) => mesh.geometry))
+      const materials = new Set(Object.values(meshes).map((mesh) => mesh.material as MeshStandardMaterial))
+      for (const geometry of geometries) geometry.dispose()
+      for (const material of materials) material.dispose()
+      this.assetStatus = 'ready'
+    } catch (error) {
+      if (scene) disposeObject(scene)
+      this.assetStatus = 'fallback'
+      this.assetError = error instanceof Error ? error.message : String(error)
+    }
   }
 
   /** 每名士兵的色調變化；隊長採用深靛金調，配合長翎形成辨識點。 */
@@ -281,6 +321,13 @@ export class SoldierView {
         }
       }
 
+      if (this.options.animate) {
+        const p = this.pose
+        p.legR = legR; p.legL = legL; p.armRx = armRx; p.armLx = armLx; p.abduct = abduct
+        p.lean = lean; p.nod = nod; p.tumble = tumble; p.lift = lift; p.weapon = weapon
+        this.options.animate(store, i, time, p)
+        ;({ legR, legL, armRx, armLx, abduct, lean, nod, tumble, lift, weapon } = p)
+      }
       const s = store.scale[i]
       scaleVec.set(s, s, s)
       quat.setFromAxisAngle(UP, store.yaw[i])
