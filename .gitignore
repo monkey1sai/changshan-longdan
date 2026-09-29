@@ -17,3 +17,6 @@ logs
 Thumbs.db
 *.suo
 *.sw?
+
+# 上架用的打包輸出
+release

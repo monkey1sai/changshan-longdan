@@ -532,7 +532,7 @@ export class Game {
     const ready = this.player.musouReady
     if (ready && !this.musouWasReady && this.mode === 'playing') {
       this.audio?.musouReady()
-      this.hud.showBanner('無雙 就緒', 1.4, 'gold')
+      this.hud.showBanner('龍膽 就緒', 1.4, 'gold')
     }
     this.musouWasReady = ready
   }
