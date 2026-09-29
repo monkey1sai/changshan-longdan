@@ -14,6 +14,7 @@ import { Fragments } from './fx/fragments.ts'
 import { Shockwaves } from './fx/shockwave.ts'
 import { Sparks } from './fx/sparks.ts'
 import { Trail } from './fx/trail.ts'
+import { ThreatMarkers } from './fx/threat-markers.ts'
 import { Pipeline, type PostSettings } from './render/pipeline.ts'
 import { Hud } from './ui/hud.ts'
 import { Screens } from './ui/screens.ts'
@@ -57,6 +58,7 @@ export class Game {
   private readonly sparks = new Sparks()
   private readonly dust = new Dust()
   private readonly trail = new Trail()
+  private readonly threats = new ThreatMarkers(CAPACITY)
   private readonly waves = new Shockwaves()
   private readonly dragon = new Dragon()
   private readonly sky = new Sky()
@@ -66,7 +68,7 @@ export class Game {
   private readonly hud = new Hud()
   private readonly screens = new Screens()
   private readonly rng = createRng(99)
-  private readonly post: PostSettings = { focus: 9, musou: 0, flash: 0, aberration: 0, radial: 0, danger: 0, bars: 0, exposure: 1 }
+  private readonly post: PostSettings = { focus: 9, musou: 0, flash: 0, aberration: 0, radial: 0, danger: 0, bars: 0, exposure: 1, dof: 0.8 }
   private readonly hits: HitInfo[] = []
   private readonly tmp = new Vector3()
   private readonly controls: PlayerControls = { moveX: 0, moveZ: 0, attack: false, charge: false, jump: false, dodge: false, musou: false }
@@ -130,11 +132,16 @@ export class Game {
       this.sparks.mesh,
       this.dust.points,
       this.trail.mesh,
+      this.threats.mesh,
       this.waves.group,
       this.dragon.group,
     )
 
     window.addEventListener('resize', () => this.resize())
+    window.addEventListener('blur', () => this.setPaused(true))
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) this.setPaused(true)
+    })
     this.resize()
     // 瀏覽器規定音訊必須在使用者互動後才能播放
     const unlock = () => this.ensureAudio()
@@ -155,9 +162,11 @@ export class Game {
 
   private readonly frame = (now: number): void => {
     requestAnimationFrame(this.frame)
-    const realDt = this.last === 0 ? 1 / 60 : Math.min(0.05, (now - this.last) / 1000)
+    const frameDt = this.last === 0 ? 1 / 60 : (now - this.last) / 1000
+    const realDt = Math.min(0.05, frameDt)
     this.last = now
-    this.tick(realDt, this.input.poll(), true)
+    this.tick(realDt, this.input.poll(realDt), true)
+    if (!document.hidden && frameDt < 0.25) this.trackPerformance(frameDt)
   }
 
   private tick(realDt: number, input: InputFrame, render: boolean): void {
@@ -167,7 +176,6 @@ export class Game {
     this.simClock += simDt
     this.updateVisuals(realDt, simDt, input)
     if (render) this.pipeline.render(this.scene, this.rig.camera, this.post, this.clock)
-    this.trackPerformance(realDt)
   }
 
   private ensureAudio(): void {
@@ -188,7 +196,7 @@ export class Game {
     this.screens.showPause(false)
     this.screens.hideResult()
     this.hud.setVisible(true)
-    this.rig.yaw = PLAYER_START.facing
+    this.rig.snap(this.player.pos, PLAYER_START.facing)
     this.music?.setMode('battle')
     this.audio?.setMusicLevel(MUSIC_LEVEL)
     this.audio?.uiConfirm()
@@ -225,6 +233,8 @@ export class Game {
     if (paused && this.mode !== 'playing') return
     if (!paused && this.mode !== 'paused') return
     this.mode = paused ? 'paused' : 'playing'
+    this.input.clear()
+    this.player.clearQueuedActions()
     this.screens.showPause(paused)
     this.audio?.setMusicLevel(paused ? 0.12 : MUSIC_LEVEL)
   }
@@ -268,6 +278,8 @@ export class Game {
     c.jump = active && input.jump
     c.dodge = active && input.dodge
     c.musou = active && input.musou
+    c.guard = active && input.guard === true
+    if (active && input.recenter) this.rig.recenter(this.player.facing)
 
     if (this.hitstop > 0) {
       this.hitstop -= realDt
@@ -435,8 +447,23 @@ export class Game {
     const p = this.player.pos
     for (const s of this.enemies.strikes) {
       this.audio?.enemySwing(this.pan(s.x, s.z))
-      if (!this.player.takeHit(s.damage, s.heavy, s.x, s.z)) continue
-      this.damageTaken += s.damage
+      const hpBefore = this.player.hp
+      const eventStart = this.player.events.length
+      const hurt = this.player.takeHit(s.damage, s.heavy, s.x, s.z)
+      const event = this.player.events[eventStart]
+      this.damageTaken += hpBefore - this.player.hp
+      if (this.player.hp > 0 && (event?.type === 'parry' || event?.type === 'guardBlock')) {
+        const perfect = event.type === 'parry'
+        this.audio?.hit('pierce', 1, this.pan(s.x, s.z))
+        this.sparks.burst(p.x, p.y + 1.2, p.z, Math.sin(this.player.facing), Math.cos(this.player.facing), perfect ? 18 : 6, perfect, this.rng)
+        this.rig.addTrauma(perfect ? 0.12 : 0.04)
+        if (perfect) {
+          this.hitstop = Math.max(this.hitstop, 0.06)
+          this.waves.ring(p.x, p.z, 2.4, 0.3, WHITE)
+        }
+        continue
+      }
+      if (!hurt) continue
       this.combo = 0
       this.comboTimer = 0
       this.audio?.playerHurt(s.heavy)
@@ -496,6 +523,7 @@ export class Game {
     const danger = this.mode === 'playing' && hpRatio < 0.3 ? (0.55 + 0.45 * Math.sin(this.clock * 5)) * (1 - hpRatio / 0.3 + 0.3) : 0
     p.danger = damp(p.danger, clamp(danger, 0, 1), 6, realDt)
     p.focus = this.rig.focusDistance
+    p.dof = damp(p.dof, this.mode === 'title' ? 0.8 : 0.12, 5, realDt)
 
     const camera = this.rig.camera
     const sizeScale = this.pipeline.renderer.domElement.height / (2 * Math.tan((camera.fov * Math.PI) / 360))
@@ -506,6 +534,7 @@ export class Game {
 
     this.model.update(this.player, simDt, this.clock)
     this.soldiers.update(this.enemies, this.clock)
+    this.threats.update(this.enemies, this.simClock)
     this.fragments.update(simDt)
     this.sparks.update(simDt)
     this.dust.update(simDt, sizeScale)
@@ -522,6 +551,10 @@ export class Game {
           musou: this.player.musou,
           musouReady: this.player.musouReady,
           combo: this.combo,
+          comboTime: Math.max(0, this.comboTimer) / 2.4,
+          moveId: this.player.move?.id ?? null,
+          playerState: this.player.state,
+          counterReady: this.player.counterReady,
         },
         realDt,
       )
@@ -595,7 +628,11 @@ export class Game {
             musou: game.player.musou,
             playerState: game.player.state,
             move: game.player.move?.id ?? null,
+            counterReady: game.player.counterReady,
+            facing: game.player.facing,
+            cameraYaw: game.rig.yaw,
             combo: game.combo,
+            damageTaken: game.damageTaken,
             maxCombo: game.maxCombo,
             fps: Math.round(1 / game.frameAvg),
             quality: game.pipeline.qualityScale,
@@ -620,6 +657,15 @@ export class Game {
         setTimeScale: (scale: number) => {
           game.debugTimeScale = scale
         },
+        /** 開發驗證：從指定方向送入單一敵方攻擊，沿用正式格擋／受傷／敗北流程。 */
+        strike: (damage: number, heavy = false, fromX = game.player.pos.x, fromZ = game.player.pos.z - 2) => {
+          if (game.mode !== 'playing') return
+          game.enemies.strikes.length = 0
+          game.enemies.strikes.push({ damage, heavy, x: fromX, z: fromZ })
+          game.resolveStrikes()
+          game.enemies.strikes.length = 0
+          game.checkEnd(0)
+        },
         /**
          * 以固定 1/60 秒逐幀推進（分頁不可見、rAF 暫停時也能驗證）。
          * input 的按鍵只在第一幀按下；moveX、moveY、camTurn 每幀都套用。最後一幀才渲染。
@@ -630,7 +676,7 @@ export class Game {
             dodge: false, musou: false, pause: false, confirm: false, debug: false,
           }
           for (let i = 0; i < frames; i++) {
-            const held = { moveX: input.moveX ?? 0, moveY: input.moveY ?? 0, camTurn: input.camTurn ?? 0 }
+            const held = { moveX: input.moveX ?? 0, moveY: input.moveY ?? 0, camTurn: input.camTurn ?? 0, guard: input.guard ?? false }
             game.tick(1 / 60, i === 0 ? { ...idle, ...input } : { ...idle, ...held }, i === frames - 1)
           }
           return (window as unknown as { __game: { state: unknown } }).__game.state

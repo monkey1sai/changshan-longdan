@@ -314,6 +314,21 @@ function buildWrecks(b: VoxelBuilder, glow: VoxelBuilder, rng: () => number): vo
   }
 }
 
+/** 戰場殘留的焦土與餘燼；全部貼地，僅是合併網格上的視覺層，不加入碰撞或路徑障礙。 */
+function buildBattlefieldScars(b: VoxelBuilder, glow: VoxelBuilder, rng: () => number): void {
+  const scars: [number, number, number, number][] = [
+    [-36, 24, 8, 4], [-18, -12, 11, 3], [25, 18, 9, 3.5], [40, -20, 7, 3],
+    [-42, -30, 6, 2.5], [13, 42, 10, 3],
+  ]
+  for (const [x, z, w, d] of scars) {
+    b.box(x, 0.012, z, w, 0.024, d, P.char, rng() * TAU)
+    b.box(x + (rng() - 0.5) * w * 0.35, 0.03, z + (rng() - 0.5) * d * 0.35, w * 0.45, 0.018, d * 0.32, P.ash, rng() * TAU)
+    for (let i = 0; i < 3; i++) {
+      glow.box(x + (rng() - 0.5) * w * 0.65, 0.045, z + (rng() - 0.5) * d * 0.65, 0.09, 0.025, 0.09, GLOW.ember)
+    }
+  }
+}
+
 /** 城外遠山：兩圈鋸齒狀的剪影，頂端朝向夕陽的一側泛橙光。 */
 function buildMountains(rng: () => number): Mesh {
   const positions: number[] = []
@@ -367,6 +382,7 @@ export function buildCastle(groundTexture: Texture): CastleBuild {
   buildBarracks(b)
   buildBraziers(b, glow, rng)
   buildWrecks(b, glow, rng)
+  buildBattlefieldScars(b, glow, rng)
 
   const group = new Group()
   const structure = new Mesh(b.build(), new MeshStandardMaterial({ vertexColors: true, roughness: 0.88, metalness: 0.02 }))

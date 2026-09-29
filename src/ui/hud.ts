@@ -1,5 +1,8 @@
 import { Kind, type EnemyStore } from '../entities/enemies.ts'
 import { BARRACKS, INNER, KEEP, WALL_THICK } from '../world/layout.ts'
+import { MOVES, type MoveId } from '../combat/moves.ts'
+import type { PlayerState } from '../entities/player.ts'
+import { combatGuide } from './combat-guide.ts'
 
 export interface HudState {
   ko: number
@@ -9,6 +12,10 @@ export interface HudState {
   musou: number // 0..100
   musouReady: boolean
   combo: number
+  comboTime: number
+  moveId: MoveId | null
+  playerState: PlayerState
+  counterReady: number
 }
 
 function must<T extends HTMLElement>(id: string): T {
@@ -29,6 +36,13 @@ export class Hud {
   private readonly comboCount = must('combo-count')
   private readonly banner = must('banner')
   private readonly cutin = must('cutin')
+  private readonly moveName = must('move-name')
+  private readonly moveHint = must('move-hint')
+  private readonly movePanel = must('move-panel')
+  private readonly chain = must('chain-steps').children
+  private readonly comboLife = must('combo-life')
+  private readonly battleProgress = must('battle-progress')
+  private readonly musouPrompt = must('musou-prompt')
   private readonly minimap: CanvasRenderingContext2D
   private readonly last = { ko: -1, remain: -1, hp: -1, musou: -1, ready: false, combo: -1 }
   private bannerTime = 0
@@ -49,6 +63,7 @@ export class Hud {
     if (s.ko !== l.ko) {
       this.ko.textContent = String(s.ko)
       l.ko = s.ko
+      this.battleProgress.style.width = `${100 * s.ko / Math.max(1, s.ko + s.remain)}%`
     }
     if (s.remain !== l.remain) {
       this.remain.textContent = String(s.remain)
@@ -67,6 +82,7 @@ export class Hud {
     }
     if (s.musouReady !== l.ready) {
       this.musouBar.classList.toggle('ready', s.musouReady)
+      this.musouPrompt.hidden = !s.musouReady
       l.ready = s.musouReady
     }
     if (s.combo !== l.combo) {
@@ -79,6 +95,14 @@ export class Hud {
       }
       l.combo = s.combo
     }
+    this.comboLife.style.transform = `scaleX(${s.comboTime})`
+    const name = s.moveId === null ? (s.playerState === 'guard' ? '架槍守勢' : '龍膽槍法') : MOVES[s.moveId].name
+    const hint = combatGuide(s.playerState, s.moveId, s.counterReady)
+    if (this.moveName.textContent !== name) this.moveName.textContent = name
+    if (this.moveHint.textContent !== hint) this.moveHint.textContent = hint
+    this.movePanel.classList.toggle('counter-ready', s.counterReady > 0)
+    const normal = s.moveId?.startsWith('N') ? Number(s.moveId.slice(1)) : 0
+    for (let i = 0; i < this.chain.length; i++) this.chain[i].classList.toggle('lit', i < normal)
     if (this.bannerTime > 0) {
       this.bannerTime -= dt
       if (this.bannerTime <= 0) this.banner.classList.remove('visible')

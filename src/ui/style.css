@@ -356,6 +356,75 @@ body {
 
 /* ── 畫面 ──────────────────────────────────────────── */
 
+.battle-track, .combo-track {
+  height: 3px;
+  margin-top: 9px;
+  background: #e8c46a26;
+  overflow: hidden;
+}
+.battle-track > div, .combo-track > div {
+  height: 100%;
+  background: var(--gold);
+}
+.battle-track > div { width: 0; transition: width 0.3s; }
+.combo-track > div { transform-origin: left; }
+.move-panel {
+  position: absolute;
+  right: 22px;
+  bottom: 38px;
+  width: 355px;
+  padding: 13px 18px 15px;
+  background: linear-gradient(110deg, #11151deb, #11151dcc);
+  border-left: 2px solid #9cbcb0;
+  box-shadow: 0 8px 24px #0004;
+}
+.move-eyebrow { color: #b5c7bd; font-size: 11px; letter-spacing: 0.15em; }
+.move-eyebrow span { float: right; color: #d1b57a; }
+.move-name { margin-top: 5px; font: 700 28px var(--font-brush); color: #fff0cb; }
+.chain-steps { display: flex; gap: 7px; margin: 8px 0 10px; }
+.chain-steps i {
+  display: grid;
+  place-items: center;
+  width: 27px;
+  height: 23px;
+  border: 1px solid #a99a7355;
+  font: 12px var(--font-ui);
+  color: #a8a69e;
+  transition: background 0.08s, color 0.08s;
+}
+.chain-steps i.lit { background: #e8c46a; color: #251c14; border-color: #e8c46a; }
+.move-hint { font-size: 13px; line-height: 1.5; min-height: 20px; color: #eee3c9; }
+.move-panel.counter-ready { border-color: #b8fff2; box-shadow: 0 0 24px #51c9b333; }
+.move-panel.counter-ready .move-hint { color: #b8fff2; }
+.musou-prompt {
+  position: absolute;
+  bottom: 132px;
+  left: 116px;
+  padding: 7px 12px;
+  background: #2b1c10e8;
+  border: 1px solid #e8c46a;
+  color: #ffdf96;
+  font-size: 14px;
+}
+.musou-prompt span { margin-left: 16px; font-size: 11px; color: #fff4d6; }
+
+@media (max-width: 900px) {
+  .move-panel { width: 295px; bottom: 136px; padding: 10px 14px; }
+  .move-name { font-size: 23px; }
+  .move-hint { font-size: 12px; }
+  .musou-prompt { bottom: 128px; left: 22px; }
+}
+@media (max-width: 520px) {
+  .move-panel { right: 12px; bottom: 126px; width: 270px; }
+  .player-panel { left: 12px; gap: 10px; }
+  .portrait { width: 56px; height: 56px; font-size: 32px; }
+  .bars { width: calc(100vw - 96px); }
+  .musou-prompt { bottom: 270px; left: auto; right: 12px; }
+  .controls th, .controls td { padding: 4px 5px; font-size: 12px; }
+  .panel { padding: 24px 14px; }
+  .banner { padding: 8px 22px; font-size: 30px; }
+}
+
 .screen {
   position: fixed;
   inset: 0;

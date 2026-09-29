@@ -4,7 +4,7 @@ export type Reaction = 'flinch' | 'launch' | 'knockback' | 'blowaway' | 'knockdo
 export type MoveId =
   | 'N1' | 'N2' | 'N3' | 'N4' | 'N5' | 'N6'
   | 'C1' | 'C2' | 'C3' | 'C4' | 'C5' | 'C6'
-  | 'JA' | 'JC' | 'MUSOU'
+  | 'JA' | 'JC' | 'DASH' | 'COUNTER' | 'MUSOU'
 export type HitSfx = 'light' | 'heavy' | 'pierce'
 export type HitFx = 'shockwave' | 'blast'
 
@@ -181,6 +181,20 @@ const JC: MoveDef = {
   height: { keys: [[0, 1], [0.3, 1.05], [0.46, 0]], relative: true },
 }
 
+/** 閃避中接普攻的短突刺；不納入一般 N1–N6 連段。 */
+const DASH: MoveDef = {
+  id: 'DASH', name: '疾風突', duration: 0.46, cancel: 0.28,
+  hits: [hit(0.1, 0.18, line(4.2, 1.55), 20, 'knockback', { push: 8, hitstop: 0.07, shake: 0.26, sfx: 'pierce' })],
+  lunge: [{ t0: 0, t1: 0.16, distance: 2.25 }], trail: [[0.05, 0.22]], swings: [0.06],
+}
+
+/** 完美格擋後的定向反擊；高擊退讓玩家重新取得敵群節奏。 */
+const COUNTER: MoveDef = {
+  id: 'COUNTER', name: '龍膽返', duration: 0.58, cancel: 0.4, armor: true,
+  hits: [hit(0.12, 0.22, arc(4.1, 85), 34, 'blowaway', { push: 13, lift: 3, hitstop: 0.1, shake: 0.48, sfx: 'heavy', fx: 'shockwave' })],
+  lunge: [{ t0: 0.02, t1: 0.16, distance: 0.85 }], trail: [[0.06, 0.26]], swings: [0.08],
+}
+
 // ── 無雙亂舞 ────────────────────────────────────────────────
 
 export const MUSOU_FINALE = 3.02
@@ -202,4 +216,4 @@ const MUSOU: MoveDef = {
   trail: [[0.3, 3.2]], swings: [0.35, 0.8, 1.25, 1.7, 2.15, 2.98],
 }
 
-export const MOVES: Record<MoveId, MoveDef> = { N1, N2, N3, N4, N5, N6, C1, C2, C3, C4, C5, C6, JA, JC, MUSOU }
+export const MOVES: Record<MoveId, MoveDef> = { N1, N2, N3, N4, N5, N6, C1, C2, C3, C4, C5, C6, JA, JC, DASH, COUNTER, MUSOU }

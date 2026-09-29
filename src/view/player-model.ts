@@ -4,7 +4,7 @@ import { solveTwoBone } from '../core/ik.ts'
 import { clamp, smoothstep, TAU } from '../core/math.ts'
 import type { Player } from '../entities/player.ts'
 import { VoxelBuilder } from '../world/voxel-builder.ts'
-import { AIR, blankPose, copyPose, crossfade, DOWN, HURT, mixPose, movePose, ROLL, RUN, STANCE } from './player-poses.ts'
+import { AIR, blankPose, copyPose, crossfade, DOWN, GUARD, HURT, mixPose, movePose, ROLL, RUN, STANCE } from './player-poses.ts'
 
 const hex = (h: string) => new Color(h)
 const Z = {
@@ -223,6 +223,9 @@ export class PlayerModel {
       case 'jump':
         copyPose(t, AIR)
         break
+      case 'guard':
+        copyPose(t, GUARD)
+        break
       case 'attack':
       case 'musou':
         if (player.move !== null) movePose(player.move.id, player.moveTime, t)
@@ -393,6 +396,11 @@ export class PlayerModel {
     b.cloth.box(0, 0.12, 0, 0.4, 0.22, 0.26, Z.green)
     b.cloth.box(0, 0.57, 0, 0.28, 0.08, 0.24, Z.green)
     b.metal.box(0, 0.37, 0, 0.48, 0.34, 0.3, Z.silver)
+    // 胸甲的魚鱗片與雙層金邊，讓遠景仍能分辨白袍銀甲的英雄輪廓。
+    for (const y of [0.26, 0.38, 0.5]) {
+      b.metal.box(0, y, 0.17, 0.34, 0.035, 0.025, Z.silverDark)
+      b.metal.box(0, y + 0.012, 0.19, 0.09, 0.045, 0.025, Z.gold)
+    }
     b.metal.box(0, 0.38, 0.155, 0.3, 0.2, 0.02, Z.silverDark)
     b.metal.box(0, 0.4, 0.168, 0.1, 0.1, 0.01, Z.gold)
     b.metal.box(0, 0.36, -0.155, 0.4, 0.3, 0.02, Z.silverDark)
@@ -421,6 +429,10 @@ export class PlayerModel {
     b.cloth.box(0, 0.5, -0.02, 0.08, 0.14, 0.08, Z.red)
     b.cloth.box(0, 0.6, -0.08, 0.07, 0.12, 0.1, Z.red)
     b.cloth.box(0, 0.64, -0.18, 0.06, 0.08, 0.14, Z.red)
+    // 銀盔長翎：不新增物件，直接併入頭部既有的體素網格。
+    b.cloth.box(0, 0.78, -0.1, 0.055, 0.22, 0.08, Z.white)
+    b.cloth.box(0, 0.91, -0.16, 0.045, 0.12, 0.12, Z.white)
+    b.cloth.box(0, 0.7, -0.08, 0.08, 0.035, 0.14, Z.red)
     b.metal.box(0, 0.37, 0, 0.3, 0.12, 0.3, Z.silver)
     b.metal.box(0, 0.32, 0.03, 0.31, 0.04, 0.3, Z.gold)
     b.metal.box(0, 0.41, 0.15, 0.12, 0.12, 0.04, Z.gold)
@@ -433,6 +445,7 @@ export class PlayerModel {
     for (const z of [-0.5, 0.5, 1.4]) b.metal.box(0, 0, z, 0.07, 0.07, 0.06, Z.gold)
     b.metal.box(0, 0, -1.05, 0.08, 0.08, 0.12, Z.gold)
     b.metal.box(0, 0, 2.12, 0.12, 0.12, 0.1, Z.gold)
+    b.metal.box(0, 0, 2.27, 0.17, 0.045, 0.13, Z.gold)
     b.cloth.box(0, -0.04, 2.0, 0.16, 0.18, 0.1, Z.red)
     b.cloth.box(0, -0.16, 1.96, 0.1, 0.14, 0.06, Z.red)
     return b

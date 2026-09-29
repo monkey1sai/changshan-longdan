@@ -109,8 +109,12 @@ function shieldGeometry(): BufferGeometry {
 
 function plumeGeometry(): BufferGeometry {
   return new VoxelBuilder()
-    .box(0, 0.12, -0.02, 0.06, 0.24, 0.2, S.red)
-    .box(0, 0.22, -0.12, 0.05, 0.16, 0.14, S.red)
+    // 隊長的三叉長翎：只給 Captain 啟用，從人群中讀得出指揮單位。
+    .box(0, 0.16, -0.02, 0.08, 0.34, 0.22, S.red)
+    .box(0, 0.34, -0.14, 0.065, 0.22, 0.16, S.red)
+    .box(-0.11, 0.23, -0.08, 0.05, 0.2, 0.12, S.red)
+    .box(0.11, 0.23, -0.08, 0.05, 0.2, 0.12, S.red)
+    .box(0, 0.02, 0.02, 0.13, 0.05, 0.13, S.trim)
     .build()
 }
 
@@ -170,11 +174,11 @@ export class SoldierView {
     this.plume = this.part(plumeGeometry(), material, capacity)
   }
 
-  /** 每名士兵的色調變化；隊長盔甲偏黑。在 EnemyStore.reset 之後呼叫。 */
+  /** 每名士兵的色調變化；隊長採用深靛金調，配合長翎形成辨識點。 */
   applyColors(store: EnemyStore, rng: () => number): void {
     const c = new Color()
     for (let i = 0; i < store.count; i++) {
-      if (store.kind[i] === Kind.Captain) c.setRGB(0.42, 0.4, 0.5)
+      if (store.kind[i] === Kind.Captain) c.setRGB(0.48, 0.42, 0.68)
       else {
         const v = 0.82 + rng() * 0.26
         c.setRGB(v, v, v * (0.95 + rng() * 0.1))

@@ -58,6 +58,8 @@ export const AIR = P({ lean: 0.1, crouch: 0, gx: -0.25, gy: 1.2, gz: 0, yaw: -2.
 export const HURT = P({ lean: -0.35, twist: 0.25, crouch: -0.1, gx: -0.3, gy: 1.1, gz: -0.05, yaw: -1.9, pitch: 0.6, lh: 0, stance: 0.2 })
 export const DOWN = P({ lean: 0, flip: -Math.PI / 2, crouch: -0.7, gx: -0.35, gy: 0.95, gz: 0, yaw: -1.6, pitch: 0.1, lh: 0, stance: 0 })
 export const ROLL = P({ lean: 0.4, crouch: -0.45, gx: -0.2, gy: 1.0, gz: 0.1, yaw: -2.6, pitch: 0.3, lh: 0, stance: 0 })
+/** 橫槍護身：槍刃朝上，讓防禦在遠距也有清楚輪廓。 */
+export const GUARD = P({ lean: -0.08, twist: -0.24, crouch: -0.14, gx: -0.3, gy: 1.36, gz: 0.18, yaw: -0.72, pitch: 0.52, roll: -0.08, stance: 0.88, lh: 1 })
 
 interface Key {
   t: number
@@ -86,6 +88,20 @@ function barrage(): Key[] {
 }
 
 const ANIMS: Record<Exclude<MoveId, 'MUSOU'>, Key[]> = {
+  DASH: [
+    k(0, { ...GUARD, gx: -0.34, gy: 1.04, gz: -0.1, yaw: -0.22, pitch: -0.18, lean: 0.32, crouch: -0.26, lh: 0 }),
+    k(0.055, { gx: -0.2, gy: 1.08, gz: 0.08, yaw: -0.08, pitch: -0.08, lean: 0.38, crouch: -0.25, stance: 1.05, lh: 0 }),
+    k(0.13, { ...THRUST, gx: -0.13, gy: 1.12, gz: 0.88, pitch: -0.04, lean: 0.48, crouch: -0.22, stance: 1.25 }),
+    k(0.24, { ...THRUST, gx: -0.13, gy: 1.12, gz: 0.88, pitch: -0.04, lean: 0.48, crouch: -0.22, stance: 1.25 }),
+    k(0.38),
+  ],
+  COUNTER: [
+    k(0, GUARD),
+    k(0.075, { gx: 0.08, gy: 1.48, gz: -0.02, yaw: 1.28, pitch: 0.72, twist: 0.62, lean: -0.2, crouch: -0.08, stance: 0.72, lh: 0 }),
+    k(0.18, { ...BIG_THRUST, gx: -0.08, gy: 1.24, gz: 0.9, yaw: -0.1, pitch: 0.08, twist: 0.18, lean: 0.55, crouch: -0.2, stance: 1.25 }),
+    k(0.36, { ...BIG_THRUST, gx: -0.08, gy: 1.24, gz: 0.9, yaw: -0.1, pitch: 0.08, twist: 0.18, lean: 0.55, crouch: -0.2, stance: 1.25 }),
+    k(0.62),
+  ],
   N1: [k(0), k(0.06, { gx: -0.2, gy: 1.15, gz: -0.05, yaw: 0.05, pitch: 0, lean: 0, twist: -0.35 }), k(0.12, THRUST), k(0.24, THRUST), k(0.42)],
   N2: [
     k(0),

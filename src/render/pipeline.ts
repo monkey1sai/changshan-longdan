@@ -25,6 +25,7 @@ export interface PostSettings {
   danger: number // 低血量紅暈 0..1
   bars: number // 電影黑邊 0..1
   exposure: number
+  dof: number // 戰鬥降低景深，保留敵群與場景輪廓
 }
 
 interface Chain {
@@ -72,7 +73,7 @@ export class Pipeline {
   private readonly bright = pass(BRIGHT_FRAGMENT, {
     tInput: { value: null },
     uTexel: { value: new Vector2() },
-    uThreshold: { value: 1.1 },
+    uThreshold: { value: 1.5 },
     uKnee: { value: 0.6 },
   })
   private readonly blur = pass(BLUR_FRAGMENT, { tInput: { value: null }, uDir: { value: new Vector2() } })
@@ -105,7 +106,7 @@ export class Pipeline {
       uFocus: { value: 9 },
       uFocusRange: { value: 6 },
       uDof: { value: 1 },
-      uBloom: { value: 0.55 },
+      uBloom: { value: 0.22 },
       uExposure: { value: 1 },
       uMusou: { value: 0 },
       uFlash: { value: 0 },
@@ -180,6 +181,7 @@ export class Pipeline {
     u.uNear.value = camera.near
     u.uFar.value = camera.far
     u.uFocus.value = s.focus
+    u.uDof.value = s.dof
     u.uFocusRange.value = Math.max(7, s.focus * 0.9)
     u.uMusou.value = s.musou
     u.uFlash.value = s.flash

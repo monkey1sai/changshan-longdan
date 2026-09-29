@@ -20,10 +20,10 @@ const apex = new Vector3()
 const impact = new Vector3()
 
 // 線性 HDR 顏色：交給 bloom 發光
-const BODY_HEAD = new Color(0.3, 2.2, 3.6)
-const BODY_TAIL = new Color(0.12, 0.6, 2.2)
-const GOLD = new Color(3.6, 2.4, 0.6)
-const BELLY = new Color(2.6, 2.3, 1.2)
+const BODY_HEAD = new Color(0.08, 0.65, 1.3)
+const BODY_TAIL = new Color(0.03, 0.25, 0.72)
+const GOLD = new Color(1.8, 1.05, 0.2)
+const BELLY = new Color(0.7, 0.65, 0.4)
 
 function basic(color: Color): MeshBasicMaterial {
   return new MeshBasicMaterial({ color })
@@ -66,8 +66,8 @@ export class Dragon {
       this.belly.setColorAt(i, c.copy(BELLY).multiplyScalar(1 - k * 0.6))
     }
 
-    const skin = basic(new Color(0.35, 2.4, 3.4))
-    const light = basic(new Color(0.7, 3.0, 3.8))
+    const skin = basic(new Color(0.09, 0.75, 1.15))
+    const light = basic(new Color(0.16, 1.2, 1.7))
     const gold = basic(GOLD)
     const eye = basic(new Color(12, 11, 7))
     const white = basic(new Color(3.5, 3.5, 3.2))

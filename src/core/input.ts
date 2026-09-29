@@ -8,12 +8,14 @@ export interface InputFrame {
   jump: boolean
   dodge: boolean
   musou: boolean
+  guard?: boolean
+  recenter?: boolean
   pause: boolean
   confirm: boolean
   debug: boolean
 }
 
-type Action = 'attack' | 'charge' | 'jump' | 'dodge' | 'musou' | 'pause' | 'confirm' | 'debug'
+type Action = 'attack' | 'charge' | 'jump' | 'dodge' | 'musou' | 'pause' | 'confirm' | 'debug' | 'recenter'
 
 const KEY_ACTIONS = new Map<string, Action>([
   ['KeyJ', 'attack'],
@@ -26,9 +28,10 @@ const KEY_ACTIONS = new Map<string, Action>([
   ['KeyP', 'pause'],
   ['Enter', 'confirm'],
   ['F3', 'debug'],
+  ['KeyR', 'recenter'],
 ])
 
-const GAME_KEYS = new Set([...KEY_ACTIONS.keys(), 'KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyQ', 'KeyE', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'])
+const GAME_KEYS = new Set([...KEY_ACTIONS.keys(), 'KeyF', 'KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyQ', 'KeyE', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'])
 
 // 標準手把配置：0 ×、1 ○、2 □、3 △、5 R1、7 R2、9 Start
 const PAD_ACTIONS: [number, Action][] = [
@@ -40,6 +43,7 @@ const PAD_ACTIONS: [number, Action][] = [
   [7, 'dodge'],
   [9, 'pause'],
   [0, 'confirm'],
+  [11, 'recenter'],
 ]
 
 function deadzone(v: number): number {
@@ -52,6 +56,8 @@ export class Input {
   private readonly pressed = new Set<Action>()
   private readonly padPrev: boolean[] = []
   private wheel = 0
+  private mouseAttack = false
+  private attackRepeat = 0
 
   constructor(target: Window, surface: HTMLElement) {
     target.addEventListener('keydown', (e) => {
@@ -62,10 +68,16 @@ export class Input {
       if (action !== undefined) this.pressed.add(action)
     })
     target.addEventListener('keyup', (e) => this.held.delete(e.code))
-    target.addEventListener('blur', () => this.held.clear())
+    target.addEventListener('blur', () => this.clear())
     surface.addEventListener('mousedown', (e) => {
-      if (e.button === 0) this.pressed.add('attack')
+      if (e.button === 0) {
+        this.pressed.add('attack')
+        this.mouseAttack = true
+      }
       else if (e.button === 2) this.pressed.add('charge')
+    })
+    target.addEventListener('mouseup', (e) => {
+      if (e.button === 0) this.mouseAttack = false
     })
     surface.addEventListener('contextmenu', (e) => e.preventDefault())
     surface.addEventListener(
@@ -78,7 +90,15 @@ export class Input {
     )
   }
 
-  poll(): InputFrame {
+  clear(): void {
+    this.held.clear()
+    this.pressed.clear()
+    this.mouseAttack = false
+    this.attackRepeat = 0
+    this.wheel = 0
+  }
+
+  poll(dt = 1 / 60): InputFrame {
     const k = (code: string) => (this.held.has(code) ? 1 : 0)
     let moveX = Math.max(k('KeyD'), k('ArrowRight')) - Math.max(k('KeyA'), k('ArrowLeft'))
     let moveY = Math.max(k('KeyW'), k('ArrowUp')) - Math.max(k('KeyS'), k('ArrowDown'))
@@ -97,6 +117,22 @@ export class Input {
       pad.buttons.forEach((b, i) => {
         this.padPrev[i] = b.pressed
       })
+    } else {
+      this.padPrev.length = 0
+    }
+
+    // 按住普攻可連段；蓄力與防禦優先，不讓連發覆蓋手動分支。
+    const guard = this.held.has('KeyF') || pad?.buttons[4]?.pressed === true
+    const attackHeld = this.held.has('KeyJ') || this.mouseAttack || pad?.buttons[2]?.pressed === true
+    this.attackRepeat = Math.max(0, this.attackRepeat - dt)
+    if (!attackHeld) this.attackRepeat = 0
+    else if (!guard && this.attackRepeat === 0) {
+      this.pressed.add('attack')
+      this.attackRepeat = 0.18
+    }
+    if (this.pressed.has('charge')) {
+      this.pressed.delete('attack')
+      this.attackRepeat = 0.48
     }
 
     const len = Math.hypot(moveX, moveY)
@@ -114,6 +150,8 @@ export class Input {
       jump: this.pressed.has('jump'),
       dodge: this.pressed.has('dodge'),
       musou: this.pressed.has('musou'),
+      guard,
+      recenter: this.pressed.has('recenter'),
       pause: this.pressed.has('pause'),
       confirm: this.pressed.has('confirm'),
       debug: this.pressed.has('debug'),

@@ -46,4 +46,9 @@ describe('nextMove', () => {
     expect(nextMove(ground('C4'), 'attack')).toBe('N1')
     expect(nextMove(ground('C4'), 'charge')).toBe('C1')
   })
+
+  it('機動與反擊招式收招後可重新起一般連段', () => {
+    expect(nextMove(ground('DASH'), 'attack')).toBe('N1')
+    expect(nextMove(ground('COUNTER'), 'charge')).toBe('C1')
+  })
 })

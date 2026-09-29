@@ -14,6 +14,7 @@
         <div class="ko-label">擊破</div>
         <div id="ko" class="ko-count">0</div>
         <div class="remain">殘存魏兵 <b id="remain">300</b></div>
+        <div class="battle-track"><div id="battle-progress"></div></div>
       </div>
       <canvas id="minimap" class="minimap" width="176" height="176"></canvas>
       <div class="player-panel">
@@ -24,12 +25,19 @@
           <div id="musou-bar" class="bar musou"><div id="musou-fill" class="fill"></div><span class="tag">龍膽</span></div>
         </div>
       </div>
-      <div id="combo" class="combo"><span id="combo-count">0</span><small>HITS</small></div>
+      <div id="combo" class="combo"><span id="combo-count">0</span><small>HITS</small><div class="combo-track"><div id="combo-life"></div></div></div>
+      <div id="move-panel" class="move-panel">
+        <div class="move-eyebrow">常山趙子龍 <span>招式指南</span></div>
+        <div id="move-name" class="move-name">龍膽槍法</div>
+        <div id="chain-steps" class="chain-steps" aria-label="普攻連段進度"><i>一</i><i>二</i><i>三</i><i>四</i><i>五</i><i>六</i></div>
+        <div id="move-hint" class="move-hint"></div>
+      </div>
+      <div id="musou-prompt" class="musou-prompt" hidden>L／○ 龍膽亂舞 <span>已就緒</span></div>
       <div id="banner" class="banner"></div>
       <div id="cutin" class="cutin">
         <div class="cutin-band"><span class="cutin-name">趙雲</span><span class="cutin-move">龍膽亂舞・蒼龍破陣</span></div>
       </div>
-      <div class="hint">J 普攻 · K 蓄力 · L 龍膽 · 空白鍵 跳躍 · Shift 閃避 · Q／E 轉視角 · Esc 暫停</div>
+      <div class="hint">WASD 移動 · F 防禦 · 空白鍵 跳躍 · Q／E 轉視角 · R 回正 · Esc 暫停</div>
     </div>
 
     <section id="title" class="screen title">
@@ -41,15 +49,17 @@
         <table class="controls">
           <tr><th>操作</th><th>鍵盤／滑鼠</th><th>手把</th></tr>
           <tr><td>移動</td><td>WASD／方向鍵</td><td>左搖桿</td></tr>
-          <tr><td>普攻 □</td><td>J／滑鼠左鍵</td><td>□／X</td></tr>
+          <tr><td>普攻 □</td><td>J／滑鼠左鍵（可按住）</td><td>□／X（可按住）</td></tr>
           <tr><td>蓄力 △</td><td>K／滑鼠右鍵</td><td>△／Y</td></tr>
           <tr><td>龍膽 ○</td><td>L（氣滿時）</td><td>○／B</td></tr>
           <tr><td>跳躍 ×</td><td>空白鍵</td><td>×／A</td></tr>
           <tr><td>閃避</td><td>Shift</td><td>R1／RB</td></tr>
+          <tr><td>防禦／反擊</td><td>按住 F；精準格擋後 J</td><td>L1／LB；格擋後 □／X</td></tr>
           <tr><td>視角</td><td>Q／E 旋轉、滾輪縮放</td><td>右搖桿</td></tr>
+          <tr><td>鏡頭回正</td><td>R</td><td>按下右搖桿</td></tr>
           <tr><td>暫停</td><td>Esc／P</td><td>Start</td></tr>
         </table>
-        <p class="combo-help">普攻連打 N1→N6；打出第 k 下普攻後按蓄力，放出 C(k+1)（C1–C6）。<br />空中按普攻為跳擊、按蓄力為跳躍蓄力。擊破三百魏兵即為完全勝利。</p>
+        <p class="combo-help">按住普攻連打六段，途中按蓄力分支：挑空、空連、迴旋掃兵、百烈槍與天龍破。<br />閃避中接普攻可突進；迎擊瞬間防禦，再按普攻反擊。戰鬥右下角會提示可接招式。</p>
         <p class="credit">人物、城池與龍皆為程式生成的體素模型 · 所有音效與配樂以 WebAudio 即時合成<br />使用 Three.js（MIT 授權，授權全文見 THIRD_PARTY_LICENSES.txt）</p>
       </div>
     </section>
@@ -59,6 +69,7 @@
         <h1 style="font: 900 64px var(--font-brush); color: var(--gold); margin: 0 0 16px">暫停</h1>
         <button id="resume" class="primary" type="button">繼續</button>
         <p class="prompt">按 Esc 或 Enter 繼續</p>
+        <p class="combo-help">按住 J 連段 · K 蓄力分支 · Shift → J 突進<br />F 正面防禦 · 精準格擋後 J 反擊 · L 龍膽亂舞<br />Q／E 轉視角 · R 鏡頭回正<br />切換視窗時會自動暫停。</p>
       </div>
     </section>
 

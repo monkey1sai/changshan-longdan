@@ -1,5 +1,5 @@
 import { PerspectiveCamera, Vector3 } from 'three'
-import { clamp, damp, lerp } from '../core/math.ts'
+import { clamp, damp, dampAngle, lerp } from '../core/math.ts'
 import { PLAY_LIMIT } from '../world/layout.ts'
 
 const TITLE_LOOK = new Vector3(0, 4, -6)
@@ -16,6 +16,8 @@ export class CameraRig {
   private punch = 0
   private musou = 0
   private title = 1
+  private zoomedDistance = 9.2
+  private recenterYaw: number | null = null
   private readonly desired = new Vector3()
   private readonly look = new Vector3()
   private readonly orbit = new Vector3()
@@ -36,7 +38,14 @@ export class CameraRig {
 
   snap(target: Vector3, yaw: number): void {
     this.yaw = yaw
+    this.recenterYaw = null
+    this.forward.set(Math.sin(yaw), 0, Math.cos(yaw))
+    this.right.set(-Math.cos(yaw), 0, Math.sin(yaw))
     this.focus.set(target.x, target.y + 1.35, target.z)
+  }
+
+  recenter(facing: number): void {
+    this.recenterYaw = facing
   }
 
   get focusDistance(): number {
@@ -46,7 +55,10 @@ export class CameraRig {
 
   update(dt: number, target: Vector3, turn: number, zoom: number, musou: boolean, titleMode: boolean, time: number): void {
     this.yaw -= turn * 2.4 * dt
+    if (Math.abs(turn) > 0.01) this.recenterYaw = null
+    if (this.recenterYaw !== null) this.yaw = dampAngle(this.yaw, this.recenterYaw, 10, dt)
     this.distance = clamp(this.distance + zoom * 0.7, 5.5, 13)
+    this.zoomedDistance = damp(this.zoomedDistance, this.distance, 10, dt)
     this.title = damp(this.title, titleMode ? 1 : 0, 2.2, dt)
     this.musou = damp(this.musou, musou ? 1 : 0, 5, dt)
     this.focus.x = damp(this.focus.x, target.x, 10, dt)
@@ -57,7 +69,7 @@ export class CameraRig {
     this.right.set(-Math.cos(this.yaw), 0, Math.sin(this.yaw))
     // 無雙時拉高拉遠並緩慢環繞，讓盤旋的龍整條入鏡
     const yaw = this.yaw + this.musou * Math.sin(time * 0.6) * 0.45
-    const dist = lerp(this.distance, 11, this.musou)
+    const dist = lerp(this.zoomedDistance, 11, this.musou)
     const height = lerp(4.4, 4.8, this.musou)
     const edge = PLAY_LIMIT + 0.5
     this.desired.set(

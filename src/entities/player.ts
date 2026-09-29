@@ -5,7 +5,7 @@ import { nextStamp } from '../combat/stamp.ts'
 import { damp, dampAngle, sampleKeys, smoothstep } from '../core/math.ts'
 import type { Arena } from './arena.ts'
 
-export type PlayerState = 'move' | 'jump' | 'attack' | 'musou' | 'dodge' | 'hurt' | 'down' | 'dead'
+export type PlayerState = 'move' | 'jump' | 'attack' | 'musou' | 'dodge' | 'guard' | 'hurt' | 'down' | 'dead'
 
 export interface ActiveHit {
   window: HitWindow
@@ -23,6 +23,8 @@ export type PlayerEvent =
   | { type: 'jump' }
   | { type: 'land'; heavy: boolean }
   | { type: 'dodge' }
+  | { type: 'guardBlock'; damage: number; heavy: boolean }
+  | { type: 'parry' }
   | { type: 'musouStart' }
   | { type: 'hurt'; heavy: boolean }
   | { type: 'death' }
@@ -35,6 +37,8 @@ export interface PlayerControls {
   jump: boolean
   dodge: boolean
   musou: boolean
+  /** 按住防禦；可省略，省略時等同 false，維持既有呼叫端相容。 */
+  guard?: boolean
 }
 
 export type AimFn = (x: number, z: number, maxDist: number) => { x: number; z: number } | null
@@ -45,6 +49,10 @@ const GRAVITY = 30
 const JUMP_SPEED = 10.5
 const DODGE_SPEED = 15
 const DODGE_TIME = 0.42
+const DASH_CANCEL_TIME = 0.1
+const GUARD_ARC_COS = Math.cos(Math.PI * 0.36) // 前方約 65 度半角
+const PARRY_TIME = 0.16
+const COUNTER_TIME = 0.72
 const BUFFER = 0.45 // 預輸入緩衝：需涵蓋最長的可接招時間（N5 為 0.36 秒）
 const IDLE: PlayerControls = { moveX: 0, moveZ: 0, attack: false, charge: false, jump: false, dodge: false, musou: false }
 
@@ -64,6 +72,12 @@ export class Player {
   speed = 0
   runPhase = 0
   dodgeBack = false
+  /** 本次連續防禦已維持多久，供 HUD 與姿勢使用。 */
+  guardTimer = 0
+  /** 剛起防時的完美格擋窗口；歸零後只保留一般格擋。 */
+  parryTimer = 0
+  /** 成功完美格擋後按普攻可消耗的反擊窗口。 */
+  counterReady = 0
   readonly events: PlayerEvent[] = []
   readonly activeHits: ActiveHit[] = []
   private buffered: ChargeButton | null = null
@@ -88,6 +102,9 @@ export class Player {
     this.musou = 0
     this.invuln = 0
     this.speed = 0
+    this.guardTimer = 0
+    this.parryTimer = 0
+    this.counterReady = 0
     this.buffered = null
     this.jumpBuffer = 0
     this.dodgeBuffer = 0
@@ -102,11 +119,21 @@ export class Player {
 
   /** 記錄按鍵；命中停頓（hit-stop）期間也要呼叫，避免吃鍵。 */
   queue(c: PlayerControls): void {
-    if (c.attack) this.bufferButton('attack')
+    // 蓄力優先於自動普攻脈衝，避免長按普攻把尚未消耗的 C 路線覆蓋掉。
+    if (c.attack && this.buffered !== 'charge') this.bufferButton('attack')
     if (c.charge) this.bufferButton('charge')
     if (c.jump) this.jumpBuffer = BUFFER
     if (c.dodge) this.dodgeBuffer = BUFFER
     if (c.musou) this.musouBuffer = BUFFER
+  }
+
+  /** 暫停或焦點遺失時捨棄尚未執行的單次輸入，避免恢復後誤出招。 */
+  clearQueuedActions(): void {
+    this.buffered = null
+    this.bufferAge = 0
+    this.jumpBuffer = 0
+    this.dodgeBuffer = 0
+    this.musouBuffer = 0
   }
 
   update(dt: number, c: PlayerControls, aim: AimFn, arena: Arena): void {
@@ -117,11 +144,14 @@ export class Player {
     this.jumpBuffer = Math.max(0, this.jumpBuffer - dt)
     this.dodgeBuffer = Math.max(0, this.dodgeBuffer - dt)
     this.musouBuffer = Math.max(0, this.musouBuffer - dt)
+    this.parryTimer = Math.max(0, this.parryTimer - dt)
+    this.counterReady = Math.max(0, this.counterReady - dt)
     this.queue(c)
     this.invuln = Math.max(0, this.invuln - dt)
     this.stateTime += dt
 
     if (this.musouBuffer > 0 && this.musouReady && this.canMusou()) this.startMusou()
+    else if (c.guard === true && this.canGuard()) this.startGuard()
     else if (this.dodgeBuffer > 0 && this.canDodge()) this.startDodge(c)
 
     switch (this.state) {
@@ -136,7 +166,10 @@ export class Player {
         this.updateAttack(dt, c, aim)
         break
       case 'dodge':
-        this.updateDodge(dt)
+        this.updateDodge(dt, c, aim)
+        break
+      case 'guard':
+        this.updateGuard(dt, c, aim)
         break
       case 'hurt':
         this.updateStagger(dt, 0.4)
@@ -154,6 +187,28 @@ export class Player {
   /** 受到攻擊；回傳是否真的受傷（無敵、閃避、無雙中不受傷）。 */
   takeHit(damage: number, heavy: boolean, fromX: number, fromZ: number): boolean {
     if (this.state === 'dead' || this.state === 'musou' || this.invuln > 0) return false
+    if (this.state === 'guard' && this.isGuardingSource(fromX, fromZ)) {
+      if (this.parryTimer > 0) {
+        this.parryTimer = 0
+        this.counterReady = COUNTER_TIME
+        this.gainMusou(12)
+        this.events.push({ type: 'parry' })
+        return false
+      }
+      const blocked = heavy ? damage * 0.45 : damage * 0.25
+      this.hp = Math.max(0, this.hp - blocked)
+      this.gainMusou(heavy ? 3 : 2)
+      this.events.push({ type: 'guardBlock', damage: blocked, heavy })
+      if (this.hp <= 0) {
+        this.state = 'dead'
+        this.stateTime = 0
+        this.counterReady = 0
+        this.events.push({ type: 'death' })
+      }
+      return true
+    }
+    // 非格擋命中會中斷先前的完美格擋反擊權，不能把反擊帶進受傷狀態。
+    this.counterReady = 0
     const armored = this.state === 'attack' && this.move?.armor === true
     this.hp = Math.max(0, this.hp - (armored ? damage * 0.5 : damage))
     this.gainMusou(4)
@@ -161,6 +216,7 @@ export class Player {
       this.state = 'dead'
       this.stateTime = 0
       this.move = null
+      this.counterReady = 0
       this.events.push({ type: 'death' })
       return true
     }
@@ -193,7 +249,32 @@ export class Player {
   }
 
   private canMusou(): boolean {
-    return (this.state === 'move' || this.state === 'attack' || this.state === 'hurt') && this.pos.y < 0.05
+    return (this.state === 'move' || this.state === 'attack' || this.state === 'guard' || this.state === 'hurt') && this.pos.y < 0.05
+  }
+
+  private canGuard(): boolean {
+    if (this.pos.y >= 0.05) return false
+    if (this.state === 'move' || this.state === 'guard') return true
+    return this.state === 'attack' && this.move !== null && this.move.airborne !== true && this.moveTime >= this.move.cancel
+  }
+
+  private startGuard(): void {
+    if (this.state === 'guard') return
+    this.state = 'guard'
+    this.stateTime = 0
+    this.move = null
+    this.moveTime = 0
+    this.normalCount = 0
+    this.vel.set(0, 0, 0)
+    this.guardTimer = 0
+    this.parryTimer = PARRY_TIME
+  }
+
+  private isGuardingSource(fromX: number, fromZ: number): boolean {
+    const dx = fromX - this.pos.x
+    const dz = fromZ - this.pos.z
+    const distance = Math.hypot(dx, dz) || 1
+    return (Math.sin(this.facing) * dx + Math.cos(this.facing) * dz) / distance >= GUARD_ARC_COS
   }
 
   private canDodge(): boolean {
@@ -225,6 +306,7 @@ export class Player {
     this.normalCount = 0
     this.dodgeBuffer = 0
     this.buffered = null
+    this.counterReady = 0
     this.invuln = Math.max(this.invuln, 0.34)
     this.events.push({ type: 'dodge' })
   }
@@ -277,6 +359,11 @@ export class Player {
       this.facing = dampAngle(this.facing, Math.atan2(c.moveX, c.moveZ), 14, dt)
     }
     this.runPhase += this.speed * dt * 1.25
+    if (this.counterReady > 0 && this.buffered === 'attack') {
+      this.counterReady = 0
+      this.startMove('COUNTER', c, aim)
+      return
+    }
     if (this.jumpBuffer > 0) {
       this.startJump(c)
       return
@@ -285,6 +372,24 @@ export class Player {
       const next = nextMove({ current: null, normalCount: 0, airborne: false, canChain: true }, this.buffered)
       if (next !== null) this.startMove(next, c, aim)
     }
+  }
+
+  private updateGuard(dt: number, c: PlayerControls, aim: AimFn): void {
+    this.guardTimer += dt
+    this.speed = 0
+    if (c.moveX * c.moveX + c.moveZ * c.moveZ > 0.01) {
+      this.facing = dampAngle(this.facing, Math.atan2(c.moveX, c.moveZ), 10, dt)
+    }
+    if (this.counterReady > 0 && this.buffered === 'attack') {
+      this.counterReady = 0
+      this.startMove('COUNTER', c, aim)
+      return
+    }
+    if (c.guard !== true) {
+      this.toMove()
+      return
+    }
+    if (this.dodgeBuffer > 0) this.startDodge(c)
   }
 
   private updateJump(dt: number, c: PlayerControls, aim: AimFn): void {
@@ -372,6 +477,11 @@ export class Player {
         this.startJump(c)
         return
       }
+      const lastHit = m.hits[m.hits.length - 1]?.t1 ?? 0
+      if (this.buffered === null && m.airborne !== true && this.pos.y <= 0.01 && hasInput && t >= lastHit) {
+        this.toMove()
+        return
+      }
     }
 
     if (t >= m.duration) {
@@ -387,11 +497,15 @@ export class Player {
     }
   }
 
-  private updateDodge(dt: number): void {
+  private updateDodge(dt: number, c: PlayerControls, aim: AimFn): void {
     const v = DODGE_SPEED * (1 - smoothstep(0.08, DODGE_TIME, this.stateTime))
     this.pos.x += this.dodgeDir.x * v * dt
     this.pos.z += this.dodgeDir.z * v * dt
     this.speed = v
+    if (this.stateTime >= DASH_CANCEL_TIME && this.buffered === 'attack') {
+      this.startMove('DASH', c, aim)
+      return
+    }
     if (this.stateTime >= DODGE_TIME) this.toMove()
   }
 

@@ -11,6 +11,13 @@ describe('MOVES', () => {
     }
   })
 
+  it('機動突刺與完美格擋反擊都有獨立判定', () => {
+    expect(MOVES.DASH.id).toBe('DASH')
+    expect(MOVES.COUNTER.id).toBe('COUNTER')
+    expect(MOVES.DASH.hits[0].damage).toBeGreaterThan(MOVES.N1.hits[0].damage)
+    expect(MOVES.COUNTER.hits[0].damage).toBeGreaterThan(MOVES.DASH.hits[0].damage)
+  })
+
   it.each(ALL)('%s 的時間軸合理', (id) => {
     const m = MOVES[id]
     expect(m.cancel).toBeLessThanOrEqual(m.duration)
