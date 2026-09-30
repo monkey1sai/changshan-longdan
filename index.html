@@ -36,6 +36,7 @@
         <div id="move-hint" class="move-hint"></div>
       </div>
       <div id="musou-prompt" class="musou-prompt" hidden><b data-en="L / ○ Longdan Frenzy">L／○ 龍膽亂舞</b> <span data-en="READY">已就緒</span></div>
+      <div id="officer-hud" class="officer-hud" hidden><span id="officer-name">魏軍隊長</span><div class="officer-bar"><i id="officer-hp"></i></div></div>
       <div id="banner" class="banner"></div>
       <div id="cutin" class="cutin">
         <div class="cutin-band"><span class="cutin-name" data-en="Zhao Yun">趙雲</span><span class="cutin-move" data-en="Longdan Frenzy · Azure Dragon">龍膽亂舞・蒼龍破陣</span></div>
@@ -47,6 +48,14 @@
       <div class="panel">
         <h1 data-en="Changshan Longdan">常山龍膽</h1>
         <p class="subtitle"><b data-en="One warrior. Three hundred foes.">趙子龍 單騎破魏三百</b><span class="seal">趙</span></p>
+        <label class="difficulty-picker"><span data-en="Difficulty">難度</span>
+          <select id="difficulty-select">
+            <option value="beginner" data-en="Beginner">初級</option>
+            <option value="normal" selected data-en="Normal">普通</option>
+            <option value="hard" data-en="Hard">上級</option>
+            <option value="chaos" data-en="Chaos">修羅</option>
+          </select>
+        </label>
         <button id="start" class="primary" type="button" data-en="To Battle">出陣</button>
         <p class="prompt" data-en="Press Enter, J or click To Battle to begin">按 Enter、J 或點擊「出陣」開始</p>
         <table class="controls">
