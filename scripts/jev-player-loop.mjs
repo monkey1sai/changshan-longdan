@@ -32,6 +32,10 @@ const trace = row => appendFile(resolve(output, 'trace.jsonl'), JSON.stringify(r
 let browser, server, page
 let documentId = 0
 const started = performance.now()
+const checkDeadline = () => {
+  report.elapsedMs = performance.now() - started
+  if (report.elapsedMs >= scenario.maxDurationMs) throw new Error('Scenario execution limit')
+}
 try {
   const { chromium } = await import(process.env.PLAYWRIGHT_MODULE ? pathToFileURL(resolve(process.env.PLAYWRIGHT_MODULE)).href : 'playwright')
   server = await createServer({ root, server: { host: '127.0.0.1', port: 0, strictPort: true } })
@@ -63,7 +67,8 @@ try {
   let observation = await capture()
   const initialDocumentId = documentId
   while (stageIndex < scenario.stages.length) {
-    report.elapsedMs = performance.now() - started
+    // A completed goal must not bypass the execution deadline.
+    checkDeadline()
     report.lastObservation = observation
     const stage = scenario.stages[stageIndex]
     if (!observation.focused) throw new Error('Visible focused browser required')
@@ -77,12 +82,13 @@ try {
       lastProgress = performance.now()
       continue
     }
-    if (report.pageErrors.length) throw new Error('Browser runtime error')
-    if (observation.mode === 'defeat') throw new Error('Player defeated')
-    if (observation.mode === 'victory') throw new Error('Victory reached before required conditions passed')
-    if (report.steps >= scenario.maxSteps || report.elapsedMs >= scenario.maxDurationMs) throw new Error('Scenario execution limit')
-    if (performance.now() - lastProgress > scenario.noProgressMs) throw new Error('No visible KO or stage progress within configured limit')
     const actions = offers(observation, hints, navigation, stage)
+    const retryAllowed = stage.allowed?.includes('click_retry')
+      && actions.some(action => action.id === 'click_retry')
+    if (observation.mode === 'defeat' && !retryAllowed) throw new Error('Player defeated')
+    if (observation.mode === 'victory' && !retryAllowed) throw new Error('Victory reached before required conditions passed')
+    if (report.steps >= scenario.maxSteps) throw new Error('Scenario execution limit')
+    if (performance.now() - lastProgress > scenario.noProgressMs) throw new Error('No visible KO or stage progress within configured limit')
     if (!actions.length) throw new Error('No currently legal configured action')
     const request = requestDecision(scenario.goal, stage, observation, navigation, actions)
     const decisionKey = cacheKey(request)
@@ -113,6 +119,8 @@ try {
     } else report.cacheHits++
     // Refresh after network latency; changed conditions discard the decision.
     const current = source === 'jev' ? await capture() : observation
+    // Provider latency and observation time can exhaust the remaining budget.
+    checkDeadline()
     const currentActions = offers(current, hints, navigation, stage)
     if (current.documentId !== observation.documentId
         || cacheKey(requestDecision(scenario.goal, stage, current, navigation, currentActions)) !== decisionKey) {
@@ -127,7 +135,12 @@ try {
     const needsHeld = stage.until.some(c => c.field === 'moveName' || c.field === 'moveHint')
     const held = await execute(page, { ...action, observeHeld: needsHeld ? capture : undefined })
     const after = await capture()
-    navigation = updateNavigation(navigation, action, current, after)
+    if (action.id === 'click_retry' && after.mode === 'playing') {
+      navigation = { forward: null, right: null, blocked: 0 }
+      lastKo = after.ko ?? 0
+      lastScreenshotKo = lastKo
+      lastProgress = performance.now()
+    } else navigation = updateNavigation(navigation, action, current, after)
     report.steps++
     if (source === 'cache') report.executedCacheSteps++
     await trace({ type: 'step', step: report.steps, stage: stage.id, source, action, before: current, held, after, navigation, durationMs: performance.now() - actionStart })
@@ -142,6 +155,8 @@ try {
     await save()
   }
   if (report.pageErrors.length) throw new Error('Browser runtime error')
+  // Stage screenshots also count toward the deadline.
+  checkDeadline()
   report.status = 'PASS'
   report.finalObservation = observation
 } catch (error) {

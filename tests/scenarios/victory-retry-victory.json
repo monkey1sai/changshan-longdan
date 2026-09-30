@@ -1,0 +1,41 @@
+{
+  "id": "victory-retry-victory",
+  "goal": "只用真人可見畫面與鍵盤滑鼠，完成兩次三百擊破，驗證勝利後再戰。",
+  "maxSteps": 1000,
+  "maxDurationMs": 2400000,
+  "noProgressMs": 90000,
+  "confidenceThreshold": 0.6,
+  "stages": [
+    {
+      "id": "start",
+      "goal": "按出陣開始遊戲",
+      "until": [{ "field": "mode", "op": "eq", "value": "playing" }]
+    },
+    {
+      "id": "first-victory",
+      "goal": "校準方向，接近敵人並攻擊，氣滿時使用龍膽亂舞，直到完全勝利。",
+      "until": [
+        { "field": "mode", "op": "eq", "value": "victory" },
+        { "field": "ko", "op": "eq", "value": 300 }
+      ]
+    },
+    {
+      "id": "retry",
+      "goal": "在完全勝利結果頁按再戰，確認新一局開始且擊破與敵兵數重設。",
+      "allowed": ["click_retry"],
+      "until": [
+        { "field": "mode", "op": "eq", "value": "playing" },
+        { "field": "ko", "op": "eq", "value": 0 },
+        { "field": "remaining", "op": "eq", "value": 300 }
+      ]
+    },
+    {
+      "id": "second-victory",
+      "goal": "重新校準方向，接近敵人並攻擊，氣滿時使用龍膽亂舞，再次完成三百擊破。",
+      "until": [
+        { "field": "mode", "op": "eq", "value": "victory" },
+        { "field": "ko", "op": "eq", "value": 300 }
+      ]
+    }
+  ]
+}

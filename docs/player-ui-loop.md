@@ -1,6 +1,8 @@
 # 真人可見 UI 的可重用遊玩迴圈
 
-已驗證兩個完整通關情境，數據、截圖與失敗紀錄見 [2026-09-29 實測報告](player-ui-loop-results-2026-09-29.md)。
+既有兩個完整通關情境見 [2026-09-29 實測報告](player-ui-loop-results-2026-09-29.md)。
+逾時／再戰修復與「通關 → 再戰 → 再通關」實測見
+[2026-09-30 驗證紀錄](player-ui-loop-results-2026-09-30.md)。
 
 此流程專供「真人在網頁上看得到、按得到」的功能驗證。舊的六項案例分類與使用 debug hooks 的固定回歸，仍是不同證據；不能把它們的準確率解讀為此流程的操作成功率。
 
@@ -14,6 +16,8 @@ npm run build
 # 若 Playwright 由環境提供，先將 PLAYWRIGHT_MODULE 指向其 index.mjs。
 npm run test:player:loop -- --live --scenario=tests/scenarios/victory.json
 npm run test:player:loop -- --live --scenario=tests/scenarios/pause-resume-victory.json
+# 驗證勝利後再戰與第二次通關：
+npm run test:player:loop -- --live --scenario=tests/scenarios/victory-retry-victory.json
 ```
 
 腳本啟動專用 loopback Vite 與獨立可見 Chrome。執行時保持視窗可見且有焦點；結束時關閉自己建立的 browser/server。不要用另一個程式切換視窗，否則遊戲會自動暫停，測試亦會停止或依當前情境的合法選項處理。
@@ -25,7 +29,7 @@ npm run test:player:loop -- --live --scenario=tests/scenarios/pause-resume-victo
 3. 以情境目標、當前階段、距離類別、血量風險及可用動作詢問 Jev。Jev 選一個登錄表 ID，不能提供任意 JS、selector、命令或直接回報 PASS。
 4. API 回覆須通過模型、候選 ID、機率分布及門檻驗證。網路等待後重讀畫面；決策條件已變則丟棄，不執行過期動作。
 5. 經 Chrome protocol 實際點擊或按鍵。每個連續動作有有限時間，按住的鍵在 finally 釋放。
-6. 再讀畫面，由程式檢查階段條件。全部必要階段通過，且沒有瀏覽器錯誤才 PASS；戰敗、逾時、無進展、缺少證據或不接受的決策均留下失敗報告。300 擊破後可先短暫等待結算頁；過場本身不等於所有驗收條件通過。
+6. 再讀畫面，由程式檢查階段條件。全部必要階段通過、仍在時間上限內，且沒有瀏覽器錯誤才 PASS；非預期戰敗／勝利、逾時、無進展、缺少證據或不接受的決策均留下失敗報告。300 擊破後可先短暫等待結算頁；過場本身不等於所有驗收條件通過。
 
 小地圖辨識只拿玩家綠色標記及敵方紅／金色標記的像素位置。它不讀遊戲角色位置、敵人陣列或碰撞資料。方向先用實際 W、D 移動的畫面差異校準。沒有從源碼硬編敵軍位置或通關路線。
 
@@ -46,6 +50,12 @@ npm run test:player:loop -- --live --scenario=tests/scenarios/pause-resume-victo
 
 再加入只允許 click_resume 的「繼續」階段，最後仍要求 victory 與 300 擊破。這樣使用同一執行器驗證新條件。
 
+要在勝利或敗北結果頁驗證「再戰」，下一個階段須明確設定
+allowed: ["click_retry"]，且當下確實觀察到可用的再戰按鈕。未明確允許、
+按鈕不可見或不可用時仍停止，不會自行重開來掩蓋失敗。再戰成功返回戰鬥後，
+重設方向校準、擊破進度與無進展計時。完整情境見
+tests/scenarios/victory-retry-victory.json。
+
 目前可驗證的欄位：mode、ko、remaining、hpRatio、musouReady、moveName、moveHint、resultText。運算為 eq、gte、lte、contains；無證據的 null 不會通過。
 
 戰鬥結束覆蓋畫面後，不讀被遮住的 HUD 數字。勝利須從實際結果標題辨識，300 擊破取自結果統計。若新功能沒有出現在上述觀察欄位，必須先擴充可見 UI 擷取器與測試，不能只改一句題目就宣稱有驗證。
@@ -59,6 +69,15 @@ npm run test:player:loop -- --live --scenario=tests/scenarios/pause-resume-victo
 完整可見觀察保存在 trace.jsonl；送給模型的是決策所需摘要。要新增需要更多資訊的題目，應擴充決策欄位及快取失效條件，不能沿用省略該資訊的摘要。快取次數只是避免重複呼叫的量測，不是對所有未來題目的正確率或 token 改善保證。
 
 confidenceThreshold 預設 0.6，是本地低風險遊戲操作的可調保守門檻，尚未校準成正確率。可用動作與驗收條件由程式約束，不能以高信心取代結果檢查。maxSteps、maxDurationMs、noProgressMs 是單次執行的停止條件，不是費用授權上限。
+
+maxDurationMs 從瀏覽器準備前開始計時；每輪先檢查期限，網路回覆與重讀畫面後
+也在輸入前重新檢查，最後一個階段截圖後再次檢查才接受 PASS。動作若跨越期限，
+即使完成目標也記為 INCOMPLETE。這是驗收與停止邊界，並非強制中斷已在進行的
+單次按鍵、網路等待或截圖；那些操作仍依各自有界 timeout／finally 完成。
+
+npm test 包含直接執行 CLI runner 原始碼的離線回歸，模擬 UI、供應商與時鐘，
+涵蓋逾時、網路等待、截圖耗時、明確再戰及新一局進度。不讀實際憑證、不呼叫 API，
+也不以模擬結果取代可見 Chrome 實測。
 
 尚未覆蓋：手把、主觀手感、音效、全部招式、所有碰撞路徑與不同 GPU / 視窗尺寸。這是本機可見 Chrome 的功能證據，沒有部署，也不代表線上版本通過。
 
