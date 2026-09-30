@@ -6,6 +6,7 @@ export type TranslationParams = Record<string, string | number>
 const zhHant = {
   'hud.style': '龍膽槍法',
   'hud.guard': '架槍守勢',
+  'hud.officer': '魏軍隊長',
   'result.victory': '完全勝利',
   'result.defeat': '趙雲 敗走',
   'result.ko': '擊破數',
@@ -37,7 +38,7 @@ const zhHant = {
 export type TranslationKey = keyof typeof zhHant
 
 const en: Record<TranslationKey, string> = {
-  'hud.style': 'Dragon Spear Style', 'hud.guard': 'Guard Stance',
+  'hud.style': 'Dragon Spear Style', 'hud.guard': 'Guard Stance', 'hud.officer': 'Wei Captain',
   'result.victory': 'Complete Victory', 'result.defeat': 'Zhao Yun Has Fallen',
   'result.ko': 'KOs', 'result.maxCombo': 'Max Combo', 'result.time': 'Battle Time', 'result.damage': 'Damage Taken', 'result.rank': 'Rank',
   'guide.dead': 'Zhao Yun has fallen · Press Enter after results to fight again',
