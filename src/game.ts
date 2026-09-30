@@ -5,8 +5,10 @@ import type { HitFx, HitWindow } from './combat/moves.ts'
 import { nextStamp } from './combat/stamp.ts'
 import { Input, type InputFrame } from './core/input.ts'
 import { clamp, createRng, damp } from './core/math.ts'
+import { DIFFICULTIES, type DifficultyId } from './core/difficulty.ts'
 import { Arena } from './entities/arena.ts'
 import { EnemyStore, squadSpawns, type HitInfo } from './entities/enemies.ts'
+import { BattleDirector } from './entities/battle-director.ts'
 import { MUSOU_MAX, Player, type AimFn, type PlayerControls } from './entities/player.ts'
 import { Dragon } from './fx/dragon.ts'
 import { Dust } from './fx/dust.ts'
@@ -53,6 +55,9 @@ export class Game {
   private readonly arena = new Arena(PLAY_LIMIT, obstacles())
   private readonly player = new Player()
   private readonly enemies = new EnemyStore(CAPACITY)
+  private readonly director = new BattleDirector()
+  private difficulty: DifficultyId = 'normal'
+  private directorPhase = 'opening'
   private readonly model = new PlayerModel()
   private readonly soldiers = new SoldierView(CAPACITY)
   private readonly fragments = new Fragments()
@@ -206,6 +211,9 @@ export class Game {
 
   private resetBattle(): void {
     this.player.reset(PLAYER_START.x, PLAYER_START.z, PLAYER_START.facing)
+    this.director.reset()
+    this.directorPhase = 'opening'
+    this.enemies.setPressure(DIFFICULTIES[this.difficulty])
     this.enemies.reset(squadSpawns(SQUADS, createRng(7)))
     this.soldiers.applyColors(this.enemies, createRng(8))
     this.fragments.clear()
@@ -292,6 +300,12 @@ export class Game {
     if (active) this.battleTime += dt
 
     this.player.update(dt, c, this.aim, this.arena)
+    const pressure = this.director.update(this.ko, DIFFICULTIES[this.difficulty])
+    this.enemies.setPressure(DIFFICULTIES[this.difficulty], pressure.engageRange, pressure.maxAttackers)
+    if (pressure.phase.id !== this.directorPhase) {
+      this.directorPhase = pressure.phase.id
+      this.hud.showBanner(pressure.phase.message, 2)
+    }
     this.enemies.update(dt, this.player.pos.x, this.player.pos.y, this.player.pos.z, this.arena)
     this.handlePlayerEvents()
     this.resolvePlayerHits()
