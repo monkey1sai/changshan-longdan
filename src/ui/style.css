@@ -637,3 +637,10 @@ html[lang="en"] .move-eyebrow { letter-spacing: 0.08em; }
   .title h1 { font-size: 70px; }
   .subtitle { margin-bottom: 12px; }
 }
+
+
+.difficulty-picker { display: flex; align-items: center; justify-content: center; gap: .65rem; margin: .8rem 0; }
+.difficulty-picker select { background: rgba(18,14,16,.92); color: #f2d18a; border: 1px solid rgba(232,196,106,.55); padding: .4rem .7rem; }
+.officer-hud { position: fixed; top: 8%; left: 50%; transform: translateX(-50%); width: min(360px, 46vw); text-align: center; color: #f4d58a; text-shadow: 0 2px 4px #000; pointer-events: none; }
+.officer-bar { height: 8px; margin-top: 5px; background: rgba(20,8,8,.78); border: 1px solid rgba(238,194,100,.75); }
+.officer-bar i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg,#8e1b16,#df4938); transition: width .08s linear; }
