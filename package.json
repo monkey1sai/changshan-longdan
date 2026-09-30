@@ -12,7 +12,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc",
-    "package:itch": "npm run build && node scripts/package-itch.mjs"
+    "package:itch": "npm run build && node scripts/package-itch.mjs",
+    "check": "npm test && npm run build"
   },
   "devDependencies": {
     "@types/three": "^0.186.0",
