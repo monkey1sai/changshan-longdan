@@ -153,7 +153,7 @@ export class Game {
     const unlock = () => this.ensureAudio()
     window.addEventListener('pointerdown', unlock)
     window.addEventListener('keydown', unlock)
-    this.screens.onStart(() => this.startBattle())
+    this.screens.onStart(() => { this.difficulty = this.screens.selectedDifficulty(); this.startBattle() })
     this.screens.onRetry(() => this.startBattle())
     this.screens.onResume(() => this.setPaused(false))
 
@@ -574,6 +574,7 @@ export class Game {
         },
         realDt,
       )
+      this.hud.updateOfficer(this.enemies, this.player.pos.x, this.player.pos.z)
       if (++this.minimapTick % 3 === 0) {
         this.hud.drawMinimap(this.enemies, this.player.pos.x, this.player.pos.z, this.player.facing, this.rig.yaw)
       }
