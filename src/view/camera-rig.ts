@@ -1,6 +1,7 @@
 import { PerspectiveCamera, Vector3 } from 'three'
 import { clamp, damp, dampAngle, lerp } from '../core/math.ts'
 import { PLAY_LIMIT } from '../world/layout.ts'
+import { cameraClearance } from './camera-clearance.ts'
 
 const TITLE_LOOK = new Vector3(0, 4, -6)
 
@@ -78,6 +79,13 @@ export class CameraRig {
       clamp(this.focus.z - Math.cos(yaw) * dist, -edge, edge),
     )
     this.look.set(this.focus.x, this.focus.y + 0.15 + this.musou * 1.2, this.focus.z)
+
+    // 戰鬥鏡頭的 boom 若穿過營房、主堡或場地邊界，就沿 focus→camera 線段自動收近。
+    // 標題環繞鏡頭刻意在城外，不套用此限制。
+    if (this.title <= 0.001) {
+      const clear = cameraClearance(this.focus.x, this.focus.z, this.desired.x, this.desired.z)
+      if (clear < 1) this.desired.lerp(this.focus, 1 - clear)
+    }
 
     if (this.title > 0.001) {
       const a = time * 0.045
