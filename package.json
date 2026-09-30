@@ -11,6 +11,12 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "vitest run",
+    "test:browser": "node scripts/test-browser.mjs",
+    "test:jev:dry": "node --experimental-strip-types scripts/jev-dry-run.mjs",
+    "test:jev:live": "node --experimental-strip-types scripts/jev-benchmark.mjs",
+    "test:jev:context": "node --experimental-strip-types scripts/jev-context-ablation.mjs",
+    "test:jev:ui": "node --experimental-strip-types scripts/jev-ui-start.mjs",
+    "test:player:loop": "node --experimental-strip-types scripts/jev-player-loop.mjs",
     "typecheck": "tsc",
     "package:itch": "npm run build && node scripts/package-itch.mjs"
   },

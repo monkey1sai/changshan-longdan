@@ -1,0 +1,65 @@
+{
+  "id": "pause-resume-victory",
+  "goal": "只用真人可見畫面與鍵盤滑鼠，擊敗三百名魏兵，完成遊戲。",
+  "maxSteps": 500,
+  "maxDurationMs": 1200000,
+  "noProgressMs": 90000,
+  "confidenceThreshold": 0.6,
+  "stages": [
+    {
+      "id": "start",
+      "goal": "按出陣開始遊戲",
+      "until": [
+        {
+          "field": "mode",
+          "op": "eq",
+          "value": "playing"
+        }
+      ]
+    },
+    {
+      "id": "pause",
+      "goal": "按 Esc 暫停並驗證暫停畫面",
+      "allowed": [
+        "pause"
+      ],
+      "until": [
+        {
+          "field": "mode",
+          "op": "eq",
+          "value": "paused"
+        }
+      ]
+    },
+    {
+      "id": "resume",
+      "goal": "按繼續返回戰鬥",
+      "allowed": [
+        "click_resume"
+      ],
+      "until": [
+        {
+          "field": "mode",
+          "op": "eq",
+          "value": "playing"
+        }
+      ]
+    },
+    {
+      "id": "victory",
+      "goal": "完成操作方向校準，接近敵人、普攻，氣滿時使用龍膽亂舞，直到完全勝利。",
+      "until": [
+        {
+          "field": "mode",
+          "op": "eq",
+          "value": "victory"
+        },
+        {
+          "field": "ko",
+          "op": "eq",
+          "value": 300
+        }
+      ]
+    }
+  ]
+}

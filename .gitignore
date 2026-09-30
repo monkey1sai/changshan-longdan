@@ -3,6 +3,7 @@ node_modules
 dist
 dist-ssr
 coverage
+artifacts/
 *.local
 
 # 日誌

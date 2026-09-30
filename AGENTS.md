@@ -35,6 +35,20 @@ TypeScript strict mode with `erasableSyntaxOnly` (no enums or parameter properti
 
 Add or update Vitest tests for every change to combat, AI, player or layout logic. Visual and feel changes must be checked in a real browser with `npm run dev`; a passing test run is not visual verification. In dev builds `window.__game` exposes `state`, `advance(frames, input)` and other hooks for scripted checks. Chrome pauses `requestAnimationFrame` for hidden or occluded windows, so scripted runs in a background tab are supporting evidence only; confirm frame rate and input feel in a visible window.
 
+## Player-visible feature verification
+
+For tasks limited to what a player can see and operate in the browser, use the
+reusable loop documented in docs/player-ui-loop.md. Change or add scenario stages
+under tests/scenarios/ for the requested conditions, then run test:player:loop in
+visible, focused Chrome. Verify outcomes from visible UI; Jev selects an action
+and does not decide PASS.
+
+Do not supply debug hooks, hidden game state, direct damage, forced HP/musou or
+synthetic frame advancement as player actions or evidence for this scope. Keep
+hook-based unit/regression evidence explicitly separate. If a new feature needs
+an observation or input the adapter does not support, add and test that visible
+adapter capability before claiming coverage. Preserve failure traces.
+
 ## Commits
 
 Use concise imperative subjects, optionally scoped (for example `combat: add jump charge`). Do not commit `node_modules/`, `dist/` or other generated output.
