@@ -3,6 +3,7 @@ import type { HitWindow } from '../combat/moves.ts'
 import { createRng, damp, dampAngle, range, TAU, wrapAngle } from '../core/math.ts'
 import { SpatialHash } from '../core/spatial-hash.ts'
 import type { Arena } from './arena.ts'
+import { DIFFICULTIES, type DifficultyProfile } from '../core/difficulty.ts'
 
 export const Kind = { Spear: 0, Sword: 1, Captain: 2 } as const
 export type Kind = (typeof Kind)[keyof typeof Kind]
@@ -62,11 +63,9 @@ export interface Strike {
 
 export const GRAVITY = 25
 export const BODY_RADIUS = 0.42
-const ENGAGE_RANGE = 26
-const RELEASE_RANGE = 34
-const MAX_ENGAGED = 42
+const RELEASE_RANGE = 42
+const MAX_ENGAGED = 54
 const MIN_ENGAGED = 20
-const MAX_ATTACKERS = 4
 const RING_SIZE = 9
 
 /** 以 SoA typed array 保存全部魏兵，負責 AI、物理與受擊反應。 */
@@ -109,6 +108,9 @@ export class EnemyStore {
   private engageTimer = 0
   private tokenTimer = 0
   private attackers = 0
+  private difficulty: DifficultyProfile = DIFFICULTIES.normal
+  private engageRange = DIFFICULTIES.normal.engageRange
+  private maxAttackers = DIFFICULTIES.normal.maxAttackers
   private readonly rng: () => number
 
   constructor(capacity: number, seed = 7) {
@@ -148,6 +150,12 @@ export class EnemyStore {
     return this.attackers
   }
 
+  setPressure(difficulty: DifficultyProfile, engageRange = difficulty.engageRange, maxAttackers = difficulty.maxAttackers): void {
+    this.difficulty = difficulty
+    this.engageRange = engageRange
+    this.maxAttackers = maxAttackers
+  }
+
   reset(spawns: readonly Spawn[]): void {
     if (spawns.length > this.capacity) throw new Error(`士兵數 ${spawns.length} 超過容量 ${this.capacity}`)
     this.count = spawns.length
@@ -168,7 +176,7 @@ export class EnemyStore {
       this.vz[i] = 0
       this.yaw[i] = s.yaw
       this.kind[i] = s.kind
-      this.hp[i] = captain ? 230 : range(this.rng, 40, 52)
+      this.hp[i] = captain ? 230 * this.difficulty.captainHp : range(this.rng, 40, 52)
       this.maxHp[i] = this.hp[i]
       this.state[i] = State.Formation
       this.stateTime[i] = this.rng() * 2
@@ -369,7 +377,7 @@ export class EnemyStore {
     const dz = pz - this.z[i]
     const inReach = Math.hypot(dx, dz) < (captain ? 2.9 : 2.4) && py < 1.4
     if (inReach && Math.abs(wrapAngle(Math.atan2(dx, dz) - this.yaw[i])) < 1.0) {
-      this.strikes.push({ damage: captain ? 70 : 26, heavy: captain, x: this.x[i], z: this.z[i] })
+      this.strikes.push({ damage: (captain ? 70 : 26) * this.difficulty.enemyDamage, heavy: captain, x: this.x[i], z: this.z[i] })
     }
   }
 
@@ -463,7 +471,7 @@ export class EnemyStore {
     for (const i of order) {
       const d = Math.sqrt(this.dist2[i])
       const keep = this.engaged[i] === 1 && d < RELEASE_RANGE
-      if (engaged < MAX_ENGAGED && (d < ENGAGE_RANGE || keep)) {
+      if (engaged < MAX_ENGAGED && (d < this.engageRange || keep)) {
         this.engaged[i] = 1
         this.ring[i] = 2.7 + 1.25 * Math.floor(engaged / RING_SIZE)
         engaged++
@@ -485,7 +493,7 @@ export class EnemyStore {
 
   private assignTokens(dt: number, px: number, pz: number): void {
     this.tokenTimer -= dt
-    if (this.tokenTimer > 0 || this.attackers >= MAX_ATTACKERS) return
+    if (this.tokenTimer > 0 || this.attackers >= this.maxAttackers) return
     let best = -1
     let bestD = 64
     for (let i = 0; i < this.count; i++) {
