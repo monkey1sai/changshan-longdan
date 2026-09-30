@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "assets": [
+    {
+      "id": "example-village-prop",
+      "type": "model",
+      "source": "REPLACE_WITH_SOURCE",
+      "license": "REPLACE_WITH_LICENSE",
+      "author": "REPLACE_WITH_AUTHOR",
+      "files": [
+        "public/assets/..."
+      ],
+      "styleTags": [
+        "stylized",
+        "three-kingdoms"
+      ],
+      "integration": {
+        "scaleMeters": 1,
+        "lodRequired": true
+      },
+      "status": "candidate"
+    }
+  ]
+}
