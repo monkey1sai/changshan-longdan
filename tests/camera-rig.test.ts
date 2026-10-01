@@ -21,4 +21,31 @@ describe('CameraRig', () => {
     rig.update(1 / 60, new Vector3(), 0, 0, false, false, 0)
     expect(rig.yaw).toBe(turned)
   })
+
+  it.each([
+    ['南牆', new Vector3(0, 0, 54.55), Math.PI],
+    ['東牆', new Vector3(54.55, 0, 40), -Math.PI / 2],
+    ['營房', new Vector3(38.9, 0, 0), -Math.PI / 2],
+  ])('靠近%s收短鏡頭時仍保持俯視高度', (_name, target, yaw) => {
+    const rig = new CameraRig(1.6)
+    rig.snap(target, yaw)
+    for (let frame = 0; frame < 360; frame++) {
+      rig.update(1 / 60, target, 0, 0, false, false, frame / 60)
+    }
+    expect(Math.hypot(rig.camera.position.x - target.x, rig.camera.position.z - target.z)).toBeLessThan(rig.distance)
+    expect(rig.camera.position.y - rig.focus.y).toBeCloseTo(4.4)
+    expect(Math.abs(rig.camera.position.x)).toBeLessThan(56)
+    expect(Math.abs(rig.camera.position.z)).toBeLessThan(56)
+  })
+
+  it('開闊區域保持原本鏡頭距離與高度', () => {
+    const rig = new CameraRig(1.6)
+    const target = new Vector3()
+    rig.snap(target, Math.PI)
+    for (let frame = 0; frame < 360; frame++) {
+      rig.update(1 / 60, target, 0, 0, false, false, frame / 60)
+    }
+    expect(rig.camera.position.z).toBeCloseTo(9.2)
+    expect(rig.camera.position.y - rig.focus.y).toBeCloseTo(4.4)
+  })
 })

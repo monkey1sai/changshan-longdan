@@ -80,11 +80,14 @@ export class CameraRig {
     )
     this.look.set(this.focus.x, this.focus.y + 0.15 + this.musou * 1.2, this.focus.z)
 
-    // 戰鬥鏡頭的 boom 若穿過營房、主堡或場地邊界，就沿 focus→camera 線段自動收近。
+    // 水平 boom 穿過營房、主堡或場地邊界時收近，但保持俯視高度，避免進入角色模型。
     // 標題環繞鏡頭刻意在城外，不套用此限制。
     if (this.title <= 0.001) {
       const clear = cameraClearance(this.focus.x, this.focus.z, this.desired.x, this.desired.z)
-      if (clear < 1) this.desired.lerp(this.focus, 1 - clear)
+      if (clear < 1) {
+        this.desired.x = lerp(this.focus.x, this.desired.x, clear)
+        this.desired.z = lerp(this.focus.z, this.desired.z, clear)
+      }
     }
 
     if (this.title > 0.001) {
