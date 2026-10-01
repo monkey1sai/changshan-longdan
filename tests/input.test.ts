@@ -10,11 +10,20 @@ function setup(allowTitleStart = () => false) {
 }
 afterEach(() => vi.unstubAllGlobals())
 
+function focusControl(target: EventTarget, tag: string, id: string) {
+  const blur = vi.fn()
+  Object.assign(target, {
+    closest: () => target,
+    matches: (selectors: string) => selectors.split(',').some(s => s.trim() === tag || s.trim() === `#${id}`),
+    blur,
+  })
+  return blur
+}
+
 describe('Input', () => {
   it.each(['Enter', 'KeyJ'])('標題選單保有焦點時 %s 可出陣，且不留下普攻', (code) => {
     const { input, target, key } = setup(() => true)
-    const blur = vi.fn()
-    Object.assign(target, { closest: () => target, matches: (selector: string) => selector.includes('select'), blur })
+    const blur = focusControl(target, 'select', 'difficulty-select')
     expect(key(code)).toBe(false)
     expect(input.poll()).toMatchObject({ confirm: true, attack: false })
     expect(input.poll(1)).toMatchObject({ confirm: false, attack: false })
@@ -22,7 +31,7 @@ describe('Input', () => {
   })
   it('標題按鈕的 Enter 保留原生 click，J 則可出陣', () => {
     const { input, target, key } = setup(() => true)
-    Object.assign(target, { closest: () => target, matches: (selector: string) => selector.includes('#start'), blur: vi.fn() })
+    focusControl(target, 'button', 'start')
     expect(key('Enter')).toBe(true)
     expect(input.poll().confirm).toBe(false)
     expect(key('KeyJ')).toBe(false)
@@ -54,8 +63,7 @@ describe('Input', () => {
   })
   it('標題的語言選單保留原生 Enter/J，不出陣或移除焦點', () => {
     const { input, target, key } = setup(() => true)
-    const blur = vi.fn()
-    Object.assign(target, { closest: () => target, matches: (selector: string) => selector === 'select', blur })
+    const blur = focusControl(target, 'select', 'language-select')
     expect(key('Enter')).toBe(true)
     expect(key('KeyJ')).toBe(true)
     expect(input.poll()).toMatchObject({ confirm: false, attack: false })
