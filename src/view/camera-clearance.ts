@@ -24,7 +24,7 @@ export function cameraClearance(
     const x = fx + (cx - fx) * t
     const z = fz + (cz - fz) * t
     if (Math.abs(x) > edge || Math.abs(z) > edge || BLOCKERS.some((rect) => inside(rect, x, z, margin))) {
-      return Math.max(0.18, (i - 1) / samples)
+      return (i - 1) / samples
     }
   }
   return 1

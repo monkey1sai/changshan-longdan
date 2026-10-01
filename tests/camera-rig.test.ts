@@ -48,4 +48,22 @@ describe('CameraRig', () => {
     expect(rig.camera.position.z).toBeCloseTo(9.2)
     expect(rig.camera.position.y - rig.focus.y).toBeCloseTo(4.4)
   })
+
+  it.each([
+    [new Vector3(48.5, 0, 13.55), Math.PI],
+    [new Vector3(39.55, 0, 0), -Math.PI / 2],
+    [new Vector3(-39.55, 0, 0), Math.PI / 2],
+  ])('緊貼障礙正上方俯視時，畫面上方仍與移動前方一致', (target, yaw) => {
+    const rig = new CameraRig(1.6)
+    rig.snap(target, yaw)
+    for (let frame = 0; frame < 360; frame++) {
+      rig.update(1 / 60, target, 0, 0, false, false, frame / 60)
+    }
+    expect(rig.camera.position.x).toBeCloseTo(rig.focus.x)
+    expect(rig.camera.position.z).toBeCloseTo(rig.focus.z)
+    rig.camera.updateMatrixWorld()
+    const ahead = rig.focus.clone().addScaledVector(rig.forward, 2).project(rig.camera)
+    expect(ahead.y).toBeGreaterThan(0)
+    expect(Math.abs(ahead.x)).toBeLessThan(0.001)
+  })
 })

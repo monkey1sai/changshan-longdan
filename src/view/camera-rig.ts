@@ -97,6 +97,11 @@ export class CameraRig {
       this.look.lerp(TITLE_LOOK, this.title)
     }
     this.camera.position.copy(this.desired)
+    this.camera.up.set(0, 1, 0)
+    // 極近障礙時可能正上方俯視，以鏡頭朝向定義畫面上方，避免 lookAt 的垂直退化。
+    if (Math.abs(this.desired.x - this.look.x) < 1e-4 && Math.abs(this.desired.z - this.look.z) < 1e-4) {
+      this.camera.up.set(Math.sin(yaw), 0, Math.cos(yaw))
+    }
     this.camera.lookAt(this.look)
 
     const s = this.trauma * this.trauma
