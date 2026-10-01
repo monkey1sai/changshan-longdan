@@ -1,7 +1,7 @@
 import { PerspectiveCamera, Vector3 } from 'three'
 import { clamp, damp, dampAngle, lerp } from '../core/math.ts'
 import { PLAY_LIMIT } from '../world/layout.ts'
-import { cameraClearance } from './camera-clearance.ts'
+import { cameraClearance, clearCameraOverhang } from './camera-clearance.ts'
 
 const TITLE_LOOK = new Vector3(0, 4, -6)
 
@@ -88,6 +88,7 @@ export class CameraRig {
         this.desired.x = lerp(this.focus.x, this.desired.x, clear)
         this.desired.z = lerp(this.focus.z, this.desired.z, clear)
       }
+      clearCameraOverhang(this.desired)
     }
 
     if (this.title > 0.001) {
@@ -98,8 +99,8 @@ export class CameraRig {
     }
     this.camera.position.copy(this.desired)
     this.camera.up.set(0, 1, 0)
-    // 極近障礙時可能正上方俯視，以鏡頭朝向定義畫面上方，避免 lookAt 的垂直退化。
-    if (Math.abs(this.desired.x - this.look.x) < 1e-4 && Math.abs(this.desired.z - this.look.z) < 1e-4) {
+    // 收到正上方或被屋簷推到角色前側時，仍以移動前方定義畫面上方。
+    if (this.title <= 0.001) {
       this.camera.up.set(Math.sin(yaw), 0, Math.cos(yaw))
     }
     this.camera.lookAt(this.look)
