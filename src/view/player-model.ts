@@ -1,10 +1,13 @@
 import { Color, Group, Matrix4, Mesh, MeshStandardMaterial, Object3D, Quaternion, Vector3 } from 'three'
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import type { MoveId } from '../combat/moves.ts'
 import { solveTwoBone } from '../core/ik.ts'
 import { clamp, smoothstep, TAU } from '../core/math.ts'
 import type { Player } from '../entities/player.ts'
 import { VoxelBuilder } from '../world/voxel-builder.ts'
 import { AIR, blankPose, copyPose, crossfade, DOWN, GUARD, HURT, mixPose, movePose, ROLL, RUN, STANCE } from './player-poses.ts'
+import { CharacterSkin } from './character-skin.ts'
+import { RefinedCape, refinedSpear } from './player-equipment.ts'
 
 const hex = (h: string) => new Color(h)
 const Z = {
@@ -71,6 +74,11 @@ const basis = new Matrix4()
 /** 趙雲的體素模型：姿勢驅動、雙臂 IK 握槍、披風以 Verlet 模擬。 */
 export class PlayerModel {
   readonly group = new Group()
+  readonly ready: Promise<void>
+  assetStatus: 'loading' | 'ready' | 'voxel' | 'fallback' = 'voxel'
+  assetError: string | null = null
+  private skin: CharacterSkin | null = null
+  private cloth: RefinedCape | null = null
   /** 槍尖與槍身中段的世界座標，給刀光使用。 */
   readonly tip = new Vector3()
   readonly tipBase = new Vector3()
@@ -104,7 +112,7 @@ export class PlayerModel {
   private lastMove: MoveId | null = null
   private lastMoveTime = 0
 
-  constructor() {
+  constructor(style: 'refined' | 'voxel' = 'refined') {
     const metal = new MeshStandardMaterial({ vertexColors: true, roughness: 0.32, metalness: 0.65 })
     const cloth = new MeshStandardMaterial({ vertexColors: true, roughness: 0.78, metalness: 0 })
     this.blade = new MeshStandardMaterial({ color: '#eaf6ff', emissive: '#7cc8ff', emissiveIntensity: 1.8, roughness: 0.2, metalness: 0.6 })
@@ -167,6 +175,37 @@ export class PlayerModel {
       this.capePts.push(new Vector3())
       this.capePrev.push(new Vector3())
     }
+    this.ready = style === 'refined' ? this.loadCharacter() : Promise.resolve()
+  }
+
+  get characterTriangles(): number {
+    return this.skin?.triangles ?? 0
+  }
+
+  /** Fallback stays visible until the complete local GLB has passed rig validation. */
+  private async loadCharacter(): Promise<void> {
+    this.assetStatus = 'loading'
+    try {
+      const gltf = await new GLTFLoader().loadAsync(`${import.meta.env.BASE_URL}models/zhaoyun.glb`)
+      const skin = new CharacterSkin(gltf.scene, {
+        hips: this.hips, torso: this.torso, head: this.head,
+        upperL: this.upperL, upperR: this.upperR, foreL: this.foreL, foreR: this.foreR,
+        thighL: this.thighL, thighR: this.thighR, kneeL: this.kneeL, kneeR: this.kneeR,
+        spear: this.spear,
+      })
+      // Keep the pose hierarchy and IK controllers; replace only their visible meshes.
+      this.group.traverse((object) => { if (object instanceof Mesh) object.visible = false })
+      this.spear.add(refinedSpear(this.blade))
+      this.cloth = new RefinedCape()
+      this.group.add(this.cloth.mesh)
+      this.group.add(gltf.scene)
+      this.skin = skin
+      this.assetStatus = 'ready'
+    } catch (error) {
+      this.assetStatus = 'fallback'
+      this.assetError = error instanceof Error ? error.message : String(error)
+      console.warn('精細角色載入失敗，保留原角色：', this.assetError)
+    }
   }
 
   /** 瞬間移動（重新開局）後呼叫，避免披風被拉長。 */
@@ -189,7 +228,9 @@ export class PlayerModel {
 
     this.apply(player)
     this.solveArms(player)
-    if (dt > 0) this.updateCape(dt, time) // 命中停頓時披風也要凍結
+    this.skin?.update()
+    if (dt > 0 || !this.capeReady) this.updateCape(dt, time) // 初始化後，命中停頓也凍結披風
+    this.cloth?.update(this.capePts, right, fwd)
 
     const musou = player.state === 'musou'
     this.blade.emissive.set(musou ? '#ffc766' : '#7cc8ff')

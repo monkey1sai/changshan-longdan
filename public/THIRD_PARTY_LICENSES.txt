@@ -1,6 +1,23 @@
 Third-party software included in this game build
 ================================================
 
+Zhao Yun character base model
+----------------------------
+Author: Quaternius
+Pack: Universal Base Characters, Standard edition / Superhero Male
+Source: https://quaternius.com/packs/universalbasecharacters.html
+Download: https://quaternius.itch.io/universal-base-characters
+License: CC0 1.0 Universal (Public Domain Dedication)
+https://creativecommons.org/publicdomain/zero/1.0/
+
+The humanoid geometry, UVs, original skin weights and eye/normal textures
+come from this CC0 pack. Armour, helmet, costume materials and plume were
+added for this game in Blender. The runtime GLB embeds its textures and
+does not contact the source website.
+
+The original pack license is preserved in art-source/QUATERNIUS-LICENSE.txt.
+
+
 three.js (https://threejs.org/) is distributed under the MIT License:
 
 The MIT License
