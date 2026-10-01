@@ -31,6 +31,7 @@ export interface FireSpot {
 
 export interface CastleBuild {
   group: Group
+  barracksRoofs: Mesh[]
   flags: FlagSpot[]
   fires: FireSpot[] // 城上額外的火（角樓烽火）
 }
@@ -264,7 +265,7 @@ function buildKeep(b: VoxelBuilder, glow: VoxelBuilder, rng: () => number, flags
   }
 }
 
-function buildBarracks(b: VoxelBuilder): void {
+function buildBarracks(b: VoxelBuilder, roofs: VoxelBuilder[]): void {
   BARRACKS.forEach((r, idx) => {
     const burning = idx === 2 || idx === 3
     const cx = (r.minX + r.maxX) / 2
@@ -280,7 +281,9 @@ function buildBarracks(b: VoxelBuilder): void {
     const doorX = r.minX > 0 ? r.minX + 0.55 : r.maxX - 0.55
     b.box(doorX, 1.6, cz, 0.15, 3.0, 2.2, P.wood)
     for (const dz of [-4, 4]) b.box(doorX, 2.4, cz + dz, 0.12, 1.2, 1.8, P.woodLight)
-    roof(b, cx, wallH + 0.35, cz, r.maxZ - r.minZ + BARRACKS_ROOF_PADDING, r.maxX - r.minX + BARRACKS_ROOF_PADDING, 4, burning ? P.ash : P.roof, burning ? P.char : P.gold, true)
+    const roofBuilder = new VoxelBuilder()
+    roof(roofBuilder, cx, wallH + 0.35, cz, r.maxZ - r.minZ + BARRACKS_ROOF_PADDING, r.maxX - r.minX + BARRACKS_ROOF_PADDING, 4, burning ? P.ash : P.roof, burning ? P.char : P.gold, true)
+    roofs.push(roofBuilder)
   })
 }
 
@@ -374,12 +377,13 @@ export function buildCastle(groundTexture: Texture): CastleBuild {
   const glow = new VoxelBuilder()
   const flags: FlagSpot[] = []
   const fires: FireSpot[] = []
+  const roofBuilders: VoxelBuilder[] = []
 
   buildWalls(b, rng, flags)
   buildGatehouse(b, glow, flags)
   for (const sx of [-1, 1]) for (const sz of [-1, 1]) buildTower(b, rng, sx * 60, sz * 60, flags, fires)
   buildKeep(b, glow, rng, flags)
-  buildBarracks(b)
+  buildBarracks(b, roofBuilders)
   buildBraziers(b, glow, rng)
   buildWrecks(b, glow, rng)
   buildBattlefieldScars(b, glow, rng)
@@ -389,6 +393,13 @@ export function buildCastle(groundTexture: Texture): CastleBuild {
   structure.castShadow = true
   structure.receiveShadow = true
   group.add(structure)
+  const barracksRoofs = roofBuilders.map((builder) => {
+    const mesh = new Mesh(builder.build(), structure.material)
+    mesh.castShadow = true
+    mesh.receiveShadow = true
+    group.add(mesh)
+    return mesh
+  })
   group.add(new Mesh(glow.build(), new MeshBasicMaterial({ vertexColors: true })))
 
   const inner = new Mesh(new PlaneGeometry(INNER * 2, INNER * 2), new MeshStandardMaterial({ map: groundTexture, roughness: 0.95 }))
@@ -403,5 +414,5 @@ export function buildCastle(groundTexture: Texture): CastleBuild {
   group.add(outside)
 
   group.add(buildMountains(rng))
-  return { group, flags, fires }
+  return { group, flags, fires, barracksRoofs }
 }
