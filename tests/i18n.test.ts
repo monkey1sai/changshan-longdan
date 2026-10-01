@@ -7,6 +7,17 @@ afterEach(() => {
 })
 
 describe('i18n', () => {
+  it('戰場階段有中英訊息，切換語系後可重新取得', () => {
+    for (const phase of ['opening', 'pressure', 'surge', 'finale'] as const) {
+      setLocale('zh-Hant')
+      const chinese = t(`battle.${phase}`)
+      expect(chinese).toMatch(/[\u4e00-\u9fff]/)
+      setLocale('en')
+      expect(t(`battle.${phase}`)).not.toMatch(/[\u4e00-\u9fff]/)
+      expect(t(`battle.${phase}`)).not.toBe(chinese)
+    }
+  })
+
   it('繁中與英文的動態翻譯鍵完全一致', () => {
     expect(Object.keys(translations.en).sort()).toEqual(Object.keys(translations['zh-Hant']).sort())
   })

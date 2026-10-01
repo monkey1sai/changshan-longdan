@@ -297,7 +297,7 @@ export class EnemyStore {
       case State.Windup:
         this.brake(i, dt, 10)
         this.yaw[i] = dampAngle(this.yaw[i], Math.atan2(px - this.x[i], pz - this.z[i]), 8, dt)
-        if (t >= (this.kind[i] === Kind.Captain ? 0.85 : 0.55)) this.strike(i, px, py, pz)
+        if (t >= (this.kind[i] === Kind.Captain ? 0.85 : 0.55) * this.difficulty.windup) this.strike(i, px, py, pz)
         break
       case State.Strike:
         this.brake(i, dt, 6)

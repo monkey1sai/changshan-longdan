@@ -5,14 +5,13 @@ export interface BattlePhase {
   minKo: number
   engageBonus: number
   attackerBonus: number
-  message: string
 }
 
 const PHASES: BattlePhase[] = [
-  { id: 'opening', minKo: 0, engageBonus: 0, attackerBonus: 0, message: '魏軍列陣' },
-  { id: 'pressure', minKo: 60, engageBonus: 4, attackerBonus: 0, message: '敵軍壓上！' },
-  { id: 'surge', minKo: 150, engageBonus: 8, attackerBonus: 1, message: '增援逼近！' },
-  { id: 'finale', minKo: 240, engageBonus: 12, attackerBonus: 2, message: '最後包圍！' },
+  { id: 'opening', minKo: 0, engageBonus: 0, attackerBonus: 0 },
+  { id: 'pressure', minKo: 60, engageBonus: 4, attackerBonus: 0 },
+  { id: 'surge', minKo: 150, engageBonus: 8, attackerBonus: 1 },
+  { id: 'finale', minKo: 240, engageBonus: 12, attackerBonus: 2 },
 ]
 
 export interface BattlePressure {

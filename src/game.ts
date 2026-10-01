@@ -19,7 +19,7 @@ import { Trail } from './fx/trail.ts'
 import { ThreatMarkers } from './fx/threat-markers.ts'
 import { Pipeline, type PostSettings } from './render/pipeline.ts'
 import { Hud } from './ui/hud.ts'
-import { translate } from './ui/i18n.ts'
+import { t, translate } from './ui/i18n.ts'
 import { Screens } from './ui/screens.ts'
 import { CameraRig } from './view/camera-rig.ts'
 import { PlayerModel } from './view/player-model.ts'
@@ -153,7 +153,7 @@ export class Game {
     const unlock = () => this.ensureAudio()
     window.addEventListener('pointerdown', unlock)
     window.addEventListener('keydown', unlock)
-    this.screens.onStart(() => { this.difficulty = this.screens.selectedDifficulty(); this.startBattle() })
+    this.screens.onStart(() => this.startBattle())
     this.screens.onRetry(() => this.startBattle())
     this.screens.onResume(() => this.setPaused(false))
 
@@ -195,6 +195,7 @@ export class Game {
   }
 
   private startBattle(): void {
+    if (this.mode === 'title') this.difficulty = this.screens.selectedDifficulty()
     this.ensureAudio()
     this.resetBattle()
     this.mode = 'playing'
@@ -304,7 +305,7 @@ export class Game {
     this.enemies.setPressure(DIFFICULTIES[this.difficulty], pressure.engageRange, pressure.maxAttackers)
     if (pressure.phase.id !== this.directorPhase) {
       this.directorPhase = pressure.phase.id
-      this.hud.showBanner(pressure.phase.message, 2)
+      this.hud.showBanner(() => t(`battle.${pressure.phase.id}`), 2)
     }
     this.enemies.update(dt, this.player.pos.x, this.player.pos.y, this.player.pos.z, this.arena)
     this.handlePlayerEvents()

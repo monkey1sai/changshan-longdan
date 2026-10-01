@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { DIFFICULTIES } from '../src/core/difficulty.ts'
 import { Arena } from '../src/entities/arena.ts'
-import { EnemyStore, Kind, type Spawn } from '../src/entities/enemies.ts'
+import { EnemyStore, Kind, State, type Spawn } from '../src/entities/enemies.ts'
 
 const arena = new Arena(100, [])
 const soldiers: Spawn[] = Array.from({ length: 24 }, (_, i) => ({
@@ -41,4 +41,27 @@ describe('EnemyStore difficulty pressure', () => {
     expect(chaosMax).toBeLessThanOrEqual(DIFFICULTIES.chaos.maxAttackers)
     expect(chaosMax).toBeGreaterThan(easyMax)
   })
+})
+
+
+describe('difficulty attack timing and damage', () => {
+  for (const kind of [Kind.Spear, Kind.Captain]) {
+    for (const profile of Object.values(DIFFICULTIES)) {
+      it(`${profile.id}: kind ${kind} respects its telegraph before dealing scaled damage`, () => {
+        const store = new EnemyStore(1, 3)
+        store.setPressure(profile)
+        store.reset([{ x: 0, z: 0, yaw: 0, kind }])
+        store.state[0] = State.Windup
+        const duration = (kind === Kind.Captain ? 0.85 : 0.55) * profile.windup
+        store.stateTime[0] = duration - 0.02
+        store.update(0.01, 0, 0, 1, arena)
+        expect(store.state[0]).toBe(State.Windup)
+        expect(store.strikes).toHaveLength(0)
+        store.update(0.02, 0, 0, 1, arena)
+        expect(store.state[0]).toBe(State.Strike)
+        expect(store.strikes).toHaveLength(1)
+        expect(store.strikes[0].damage).toBeCloseTo((kind === Kind.Captain ? 70 : 26) * profile.enemyDamage)
+      })
+    }
+  }
 })
