@@ -22,7 +22,7 @@ describe('Input', () => {
   })
   it('標題按鈕的 Enter 保留原生 click，J 則可出陣', () => {
     const { input, target, key } = setup(() => true)
-    Object.assign(target, { closest: () => target, matches: (selector: string) => selector.includes('button'), blur: vi.fn() })
+    Object.assign(target, { closest: () => target, matches: (selector: string) => selector.includes('#start'), blur: vi.fn() })
     expect(key('Enter')).toBe(true)
     expect(input.poll().confirm).toBe(false)
     expect(key('KeyJ')).toBe(false)
@@ -51,6 +51,15 @@ describe('Input', () => {
     expect(key('Enter')).toBe(true)
     key('KeyJ')
     expect(input.poll()).toMatchObject({ moveX: 0, moveY: 0, attack: false, confirm: false })
+  })
+  it('標題的語言選單保留原生 Enter/J，不出陣或移除焦點', () => {
+    const { input, target, key } = setup(() => true)
+    const blur = vi.fn()
+    Object.assign(target, { closest: () => target, matches: (selector: string) => selector === 'select', blur })
+    expect(key('Enter')).toBe(true)
+    expect(key('KeyJ')).toBe(true)
+    expect(input.poll()).toMatchObject({ confirm: false, attack: false })
+    expect(blur).not.toHaveBeenCalled()
   })
   it('按住普攻連發，放開停止', () => {
     const { input, key } = setup()
