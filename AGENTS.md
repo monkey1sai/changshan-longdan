@@ -2,7 +2,7 @@
 
 ## Project Structure
 
-A PS2-style musou action game for the browser (Zhao Yun vs. 300 Wei soldiers), built with Vite, TypeScript and Three.js. All models are procedural voxels and all audio is synthesized with WebAudio; the repository contains no binary assets.
+A PS2-style musou action game for the browser (Zhao Yun vs. 300 Wei soldiers), built with Vite, TypeScript and Three.js. The player uses a licensed CC0 humanoid customized in Blender and shipped as `public/models/zhaoyun.glb`; soldiers/world remain procedural voxels and audio is synthesized with WebAudio. Keep character provenance, editable source and rebuild instructions in `art-source/`.
 
 - `index.html` — page shell, HUD markup and title/pause/result screens.
 - `src/main.ts` — entry point; `src/game.ts` — main loop, mode switching and system wiring.
@@ -12,6 +12,7 @@ A PS2-style musou action game for the browser (Zhao Yun vs. 300 Wei soldiers), b
 - `src/world/` — castle layout (shared by rendering and collision), geometry, sky, flags, fire, lights, textures.
 - `src/view/`, `src/fx/`, `src/render/`, `src/audio/`, `src/ui/` — rendering, effects, post-processing, audio, DOM UI.
 - `tests/` — Vitest tests for the pure-logic modules.
+- `art-source/` — licensed character base, editable Blender source and provenance; `public/models/` — shipped GLB. These character assets are intentional versioned deliverables. Download caches, screenshots, `dist/` and release ZIPs remain ignored.
 
 ## Commands
 

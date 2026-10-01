@@ -20,3 +20,9 @@ Thumbs.db
 
 # 上架用的打包輸出
 release
+
+# Character preparation cache and local verification evidence
+art-source/quaternius-standard.zip
+art-source/quaternius/
+art-source/*.blend1
+artifacts/

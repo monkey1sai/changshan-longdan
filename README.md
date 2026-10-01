@@ -1,10 +1,12 @@
 # 常山龍膽
 
-在瀏覽器裡玩的 PS2 風格一騎當千動作遊戲（musou-like）：趙雲單騎對上三百名魏兵。以 Vite + TypeScript + Three.js 製作；人物、城池與龍全部由程式產生體素模型，音效與配樂全部以 WebAudio 即時合成，沒有任何外部模型、貼圖或音檔。
+在瀏覽器裡玩的 PS2 風格一騎當千動作遊戲（musou-like）：趙雲單騎對上三百名魏兵。以 Vite + TypeScript + Three.js 製作；趙雲採用 Quaternius CC0 人體底模，經 Blender 製作銀甲綠袍後以 GLB 載入。士兵、城池與龍仍由程式產生體素模型，音效與配樂全部以 WebAudio 即時合成。
 
 **線上試玩**：[monkey1sai.itch.io/changshan-longdan](https://monkey1sai.itch.io/changshan-longdan)（itch.io，免費，歡迎自由贊助）
 
 ## 特色
+
+- **精細趙雲樣板**：連續曲面人體、骨架蒙皮、開面銀盔、甲片、綠袍與連續布面披風。保留既有招式、雙臂 IK 及槍尖座標；GLB 載入失敗時保留原始體素角色。此修改尚未上傳到線上版本。
 
 - **中英介面**：右上角可隨時切換繁體中文／English，涵蓋操作說明、招式指南、戰鬥提示與結算；不重開戰局，並在可用的瀏覽器儲存空間記住偏好。
 
@@ -52,6 +54,12 @@ npm run build      # 型別檢查後建置到 dist/
 npm run preview    # 預覽 dist/ 的建置結果
 npm run package:itch  # 建置並打包成 itch.io 用的 release/changshan-longdan-web.zip
 ```
+
+## 角色工坊與來源
+
+開發伺服器啟動後開啟 `/character.html`，可切換新舊角色、近看臉部、旋轉視角，並檢查持槍、跑步、揮槍、蓄力、防禦和翻滾。這是開發用樣板頁，預設正式建置只包含遊戲入口。
+
+角色的 CC0 授權、底模來源、Blender 可編輯檔及重建方式見 [art-source/README.md](art-source/README.md)。遊戲從同站相對路徑 `models/zhaoyun.glb` 載入，不需要外部資產服務。驗收時須分別確認模型外觀、招式判定、可見瀏覽器幀率；單元測試不代表視覺通過。
 
 ## 上架 itch.io
 

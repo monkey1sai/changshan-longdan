@@ -14,12 +14,12 @@ itch.io 專案頁的填寫內容與上傳步驟。更新既有遊戲需作者明
 | 公開 | Public，2026-09-29 起 |
 | 定價 | $0 or donate，建議贊助 US$2 |
 | 收款 | Collected by itch.io, paid later；稅務問卷已於 2026-09-29 完成 |
-| 目前上傳檔 | `changshan-longdan-web.zip`，188,446 bytes，SHA-256 `e8c731d28b5954a4306bc595ed955a2218a48eb7606edd536f413d2cd1d0a796`，由 source commit `ca0205e5e5acca0a199186edc25788b776b7859f` 建置，2026-09-29 上傳 |
-| 實際驗證 | 2026-09-29 使用可見 Chrome 在公開頁按 Run game，切換英文 → To Battle，以鍵盤普攻／蓄力／暫停；中英切換保持 HP，重新載入 iframe 保留英文偏好。實際 iframe 960×540，無水平溢位，console error 0；下載伺服器 ZIP 的 bytes／SHA-256 與本機成品一致 |
-| 本版變更 | `118f241` 戰鬥操作與場景辨識改善；`ca0205e` 即時中英文介面。商店中英操作說明已更新並重新載入核對 |
+| 目前上傳檔 | `changshan-longdan-web.zip`，4,389,170 bytes，SHA-256 `df5d6af7dbbee3e120faffe6ad53acb4f199eada0876e3b68306cda6709238b7`；`codex/zhaoyun-character` 發布紀錄綁定 source `dfc52909c75edae4f9706b4f1a88114f44391483`，2026-09-29 上傳。2026-10-01 重新下載，完整 ZIP 雜湊與模型 blob 相符 |
+| 實際驗證 | 2026-10-01 以可見 Chrome／MCP 在既有公開頁出陣，原生 J／K 20 次輸入觀察 7 HITS，再以 Esc 暫停；Resume 後截圖可見 GLB 人物。iframe 960×540；採集的 error／warning 為空。這是既有線上包驗證，不是本輪整合候選的部署證據 |
+| 本版變更 | `dfc5290` 導入 Quaternius CC0 底模的 Blender 趙雲改造、骨架接合及連續披風，保留載入失敗回退。該人物版曾從獨立分支發布；本輪將來源整合到 main 的獨立 PR，尚未上傳新包 |
 | 前版回滾 | source `cfa1696`，180,847 bytes，SHA-256 `ef88ab6981fc347f421fd4c2b5b5f1fc36845e68d63c1aed8b617a012a84c8aa`；原檔已下載核對並保存在本機 `release/rollback/changshan-longdan-cfa1696.zip`（不進版控） |
 
-本版封裝包含 4 個檔案：根目錄 `index.html`、`THIRD_PARTY_LICENSES.txt`、CSS 與 JS。正式頁載入 `assets/index-2GF4U9GT.js`，與本機封裝相符。上傳後保留 Public、$0 or donate／建議 US$2、960×540、Fullscreen button 設定；未修改收款、稅務或帳號權限。公開頁驗證截圖與 JSON 存在本次工作附件 `bilingual-release/`；本機 DEV 結算情境與正式站驗收分開記錄。
+目前線上 ZIP 包含五個檔案：`index.html`、`THIRD_PARTY_LICENSES.txt`、`assets/index-DevWvxf2.css`、`assets/index-CZjsXZUQ.js`、`models/zhaoyun.glb`。正式 iframe 為 `https://html-classic.itch.zone/html/19463509/index.html`。回滾用的線上原 ZIP、來源綁定與可見截圖保存在本次 repository 外的 `pr3-fixes/ship-20261001/` 證據目錄。保留 Public、$0 or donate／建議 US$2、960×540、Fullscreen button；本輪未修改收款、稅務、帳號權限或上傳檔。後續須在新包上傳並驗證後才更新本表，不能把本地候選標為已發布。
 
 ## 欄位
 
@@ -53,7 +53,7 @@ itch.io 專案頁的填寫內容與上傳步驟。更新既有遊戲需作者明
 - 三百名魏兵同時在場：列陣、包圍、輪流出手，被擊破時炸成體素碎片
 - 集滿龍膽氣發動「龍膽亂舞・蒼龍破陣」：青龍繞身盤旋後俯衝撞地，全螢幕轉為金墨色調
 - 黃昏城池、飄揚的軍旗、火焰與濃煙、景深與光暈
-- 所有模型由程式生成，所有音效與配樂以 WebAudio 即時合成
+- 趙雲採用 Quaternius CC0 人物底模並以 Blender 改造，士兵與場景由程式生成；所有音效與配樂以 WebAudio 即時合成
 - 右上角即時切換繁體中文／English；記住偏好，戰鬥不中斷
 - 按住普攻自動連段、閃避突進與精準格擋反擊，搭配即時招式指南
 
@@ -64,7 +64,7 @@ itch.io 專案頁的填寫內容與上傳步驟。更新既有遊戲需作者明
 
 建議使用電腦版 Chrome、Edge 或 Firefox，需要支援 WebGL2，並按右下角的全螢幕按鈕遊玩。遊戲會依效能自動調整渲染解析度。喜歡的話歡迎贊助，是對作者最直接的鼓勵。
 
-使用 Three.js（MIT 授權）。
+使用 Three.js（MIT 授權）；人物底模來自 Quaternius Universal Base Characters（CC0 1.0）。
 
 ## English description
 
@@ -77,7 +77,7 @@ Changshan Longdan is a PS2-style, musou-like action game that runs right in your
 - 300 soldiers on the field at once: they hold formation, surround you and take turns attacking, then shatter into voxels when defeated
 - Fill the Longdan gauge to unleash Longdan Frenzy: Azure Dragon, as a dragon circles you and crashes down while the screen turns to gold and ink
 - A castle at dusk with waving banners, fire and smoke, depth of field and bloom
-- Every model is procedural, and all sound effects and music are synthesized in real time with WebAudio
+- Zhao Yun uses a Quaternius CC0 character base customized in Blender; soldiers and environments are procedural, and all sound effects and music are synthesized in real time with WebAudio
 - Switch between English and Traditional Chinese at the top right, with a saved preference and no battle restart
 - Hold Attack for combos, dash out of a dodge, or counter after a perfect guard; an in-battle move guide shows follow-ups
 
@@ -88,7 +88,7 @@ Changshan Longdan is a PS2-style, musou-like action game that runs right in your
 
 Choose English or Traditional Chinese from the Language menu at the top right. Best on desktop Chrome, Edge or Firefox with WebGL2 support, played with the fullscreen button at the bottom right. The game scales its render resolution automatically to keep the frame rate smooth. If you enjoy it, a donation is the most direct way to support the developer.
 
-Built with Three.js (MIT License).
+Built with Three.js (MIT License). Character base: Quaternius Universal Base Characters (CC0 1.0).
 
 ## 上傳步驟
 
