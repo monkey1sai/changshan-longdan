@@ -65,7 +65,7 @@ export class Input {
       const control = element?.closest?.<HTMLElement>('button, select, input, textarea, [contenteditable="true"]')
       if (control) {
         // 標題的選單可直接出陣；按鈕 Enter 交給原生 click，避免重複觸發。
-        if (allowTitleStart() && control.matches('button, select') &&
+        if (allowTitleStart() && control.matches('#difficulty-select, #start') &&
           (e.code === 'KeyJ' || (e.code === 'Enter' && control.matches('select')))) {
           e.preventDefault()
           if (!e.repeat) {
