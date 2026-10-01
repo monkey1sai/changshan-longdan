@@ -59,10 +59,22 @@ export class Input {
   private mouseAttack = false
   private attackRepeat = 0
 
-  constructor(target: Window, surface: HTMLElement) {
+  constructor(target: Window, surface: HTMLElement, allowTitleStart: () => boolean = () => false) {
     target.addEventListener('keydown', (e) => {
       const element = e.target as HTMLElement | null
-      if (element?.closest?.('button, select, input, textarea, [contenteditable="true"]')) return
+      const control = element?.closest?.<HTMLElement>('button, select, input, textarea, [contenteditable="true"]')
+      if (control) {
+        // 標題的選單可直接出陣；按鈕 Enter 交給原生 click，避免重複觸發。
+        if (allowTitleStart() && control.matches('button, select') &&
+          (e.code === 'KeyJ' || (e.code === 'Enter' && control.matches('select')))) {
+          e.preventDefault()
+          if (!e.repeat) {
+            control.blur()
+            this.pressed.add('confirm')
+          }
+        }
+        return
+      }
       if (GAME_KEYS.has(e.code)) e.preventDefault()
       this.held.add(e.code)
       if (e.repeat) return
