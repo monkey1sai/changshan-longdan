@@ -1,4 +1,4 @@
-import { Color, FogExp2, PMREMGenerator, Scene, Vector2, Vector3 } from 'three'
+import { Color, FogExp2, PMREMGenerator, Scene, Vector2, Vector3, type Mesh } from 'three'
 import { AudioEngine } from './audio/audio-engine.ts'
 import { Music } from './audio/music.ts'
 import type { HitFx, HitWindow } from './combat/moves.ts'
@@ -20,6 +20,7 @@ import { Hud } from './ui/hud.ts'
 import { translate } from './ui/i18n.ts'
 import { Screens } from './ui/screens.ts'
 import { CameraRig } from './view/camera-rig.ts'
+import { updateRoofCutaway } from './view/roof-cutaway.ts'
 import { PlayerModel } from './view/player-model.ts'
 import { SoldierView } from './view/soldier-view.ts'
 import { buildCastle } from './world/castle.ts'
@@ -49,6 +50,7 @@ export class Game {
   private readonly pipeline: Pipeline
   private readonly scene = new Scene()
   private readonly rig: CameraRig
+  private readonly barracksRoofs: Mesh[]
   private readonly input: Input
   private readonly arena = new Arena(PLAY_LIMIT, obstacles())
   private readonly player = new Player()
@@ -110,6 +112,7 @@ export class Game {
     this.input = new Input(window, canvas)
 
     const castle = buildCastle(createGroundTexture())
+    this.barracksRoofs = castle.barracksRoofs
     this.scene.add(castle.group, this.sky.mesh)
     this.scene.fog = new FogExp2(new Color(0.38, 0.27, 0.27), 0.0045)
     this.flags = new Flags(castle.flags, createFlagTexture())
@@ -515,6 +518,7 @@ export class Game {
     this.wasMusou = musou
 
     this.rig.update(realDt, this.player.pos, this.mode === 'playing' ? input.camTurn : 0, input.zoom, musou, this.mode === 'title', this.clock)
+    updateRoofCutaway(this.barracksRoofs, this.player.pos.x, this.player.pos.z, this.mode === 'title')
     const p = this.post
     p.musou = damp(p.musou, musou ? 1 : 0, musou ? 12 : 4, realDt)
     p.bars = damp(p.bars, musou ? 1 : 0, 8, realDt)
