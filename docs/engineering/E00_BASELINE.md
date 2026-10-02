@@ -134,7 +134,17 @@ rules API 另回 HTTP 403：`Upgrade to GitHub Pro or make this repository publi
 
 `stepVerdict: BLOCKED`；`nextStepAllowed: false`；`mergeSha: null`；`postMergeValidationAndCompatibility: NOT_RUN`；`releaseOrPaidActionPerformed: false`。
 
-剩餘阻礙：PR #8 的規格尚無獨立正式核准；PR #3/#5/#6/#7 仍 Draft，正式核准與 P0 證據未齊，PR #7 另有合併衝突；正式 reviewer 尚未指定或取得原始證據；PR #10 未有最終 SHA 的正式 APPROVED／合併授權／合併後確認。首版候選 CI 與 threads 查核已完成，不再列作未執行；收尾新候選另行驗證。不得因 main 未受保護、新 main 或 PR #9 的歷史豁免而自行刪除門檻。
+13:03 捕獲時的阻礙：PR #8 的規格尚無獨立正式核准；PR #3/#5/#6/#7 仍 Draft，正式核准與 P0 證據未齊，PR #7 另有合併衝突；當時正式 reviewer 尚未指定或取得原始證據；PR #10 未有最終 SHA 的正式 APPROVED／合併授權／合併後確認。首版候選 CI 與 threads 查核已完成，不再列作未執行。下方續作紀錄更新審查人選與 P0 準備，不改寫原始 snapshot。不得因 main 未受保護、新 main 或 PR #9 的歷史豁免而自行刪除門檻。
+
+### 使用者指定人工審查後的續作
+
+使用者已明確回覆「由我人工審查，你先做驗證再給我審查」。審查人選已指定為使用者，本機產物交付給同一台電腦的使用者；不再把「尚未指定 reviewer」列為目前缺少的輸入。實際開啟產物、審查結論與對候選的核准仍待取得，不能由代理代填。
+
+已在隔離分支 `codex/p0-current-zhaoyun-integration`、工作樹 `C:/Repos/changshan-longdan/.worktrees/p0-current-zhaoyun-integration` 以 c48 為基準普通 merge PR #3→#5→#6；程式候選 `3a27331e688633896a914c8ab441bc0025e73bb3`，19 檔／156 tests、TypeScript、build、itch 封裝通過。使用者趙雲相關 8 檔與 c48 hashes 相同；PR #7 的舊模型不合入，實際 GLB 衝突與處置提案留供審查。
+
+可見本機 Chrome 已核對四難度 × 按鈕／Enter／J 共 12 入口、小視窗、暫停與語言、真實 GLB 失敗的可見 fallback 與 J 普攻。獨立移動、真實失焦、完整鏡頭／隊長／自然勝敗、公平性、聽感、實體手把與同版本兩平台 CI 的缺口仍分列，不視為全部 P0 通過。完整證據索引與使用者審查項目在該工作樹的 `docs/engineering/P0_CURRENT_CHARACTER_REVIEW.md` 與 ignored `release/p0-20261002/`。
+
+使用者與實作代理為不同審查人，但目前 GitHub 帳號是 PR 作者，不能在 GitHub 自我 APPROVE。因此準備了限定本輪的人工審查路徑修訂提案供使用者審查，沒有自動生效、沒有偽填 GitHub APPROVED、沒有更改保護或權限。E00 保持 BLOCKED，E01 尚未開始；本地續作候選不等於遠端 #10 最新 head 或新候選 CI 已通過。
 
 回復 source 的程序已在新的 task-owned clone 實測；要自行檢查可在**新的空目錄**執行：
 
@@ -145,4 +155,4 @@ git -C '<新的空目錄>/restored' checkout --detach c48ecd9a39abbc42ecf34ed376
 
 先依 snapshot 核對 bundle SHA-256，再執行。這是建立新 checkout，不是覆蓋目前作品。GLB 已包含於 bundle；Blender source 與前版 ZIP 由 `preserved/` 的相應 hash 找回。若撤回本步，僅對 E00 文件 commit 做普通 revert；不 reset/clean 既有工作樹、不刪原始 `.blend`、不自動上傳回滾版。
 
-本步推送與 Draft PR 已按既有授權完成；本次「把 E00 收尾」用於補齊本步文件與交付證據，保持 BLOCKED。下一個必要輸入是合格獨立人類 reviewer 與受限的證據存取方式，並完成 #8／相依 P0 門檻。若要改完成規則，須先由使用者明確決定並留下經審查的規格修訂，本代理不代為豁免。實作 PR 已回連 #8；E00 在同版本門檻、明確授權合併與合併後查核全部齊備才 DONE，之後才開始 E01。沒有授予其他 PR 合併或發布權限。
+本步推送與 Draft PR 已按既有授權完成；續作補齊本機 P0 候選與具體人工審查交接，保持 BLOCKED。下一個必要輸入是使用者對固定候選與規則修訂提案的審查結論，以及尚缺的 #8／相依 P0 證據；審查人選不再待指定。若要改完成規則，須先由使用者明確決定並留下經審查的規格修訂，本代理不代為豁免。實作 PR 已回連 #8；E00 在同版本門檻、明確授權合併與合併後查核全部齊備才 DONE，之後才開始 E01。沒有授予其他 PR 合併或發布權限。
