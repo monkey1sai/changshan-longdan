@@ -1,28 +1,30 @@
 # E00：可回復版本基線與逐步證據紀錄
 
-日期：2026-10-02（Asia/Taipei）。狀態：**BLOCKED；本機準備已完成，尚未通過 E00 完成門檻，不可進入 E01。**
+日期：2026-10-02（Asia/Taipei）。狀態：**BLOCKED；可回復基線、Draft PR 與首版兩平台 CI 已交付；正式審查及合併後門檻未完成，不可進入 E01。**
 
 依據 [PR #8 的執行計畫](https://github.com/monkey1sai/changshan-longdan/blob/389a9a657edbdc94da18c7bdb75d62081787b54d/docs/engineering/MUSOU_EXECUTION_PLAN.md) 與 [逐步模板](https://github.com/monkey1sai/changshan-longdan/blob/389a9a657edbdc94da18c7bdb75d62081787b54d/docs/engineering/MUSOU_STEP_RECORD.template.md)。機器可讀版本、完整 SHA-256 與原始產物索引在 [e00-baseline.snapshot.json](./e00-baseline.snapshot.json)。本文件只保存來源、回復方式與本輪證據；未接入候選 profile，未修改玩法、模型或其他 PR。
+
+snapshot 固定捕獲時間為 `2026-10-02T12:17:45.6771107+08:00`，保留推送前的原始狀態，不改寫其 `implementationPr=null` 或 CI `NOT_RUN`。後續交付與 `2026-10-02T13:03:00+08:00` 的即時查核記在本文件 D/E 節及 [實作 PR #10](https://github.com/monkey1sai/changshan-longdan/pull/10)。最終候選 SHA、CI 與 advisory 審查附在 PR，避免把 commit SHA 回寫自身。
 
 ## A. 開始前範圍審查
 
 | 欄位 | 本輪紀錄 |
 | --- | --- |
 | stepId / 變量 | E00 / V12 |
-| implementationPr | null；尚未推送或建立實作 PR |
+| implementationPr | [PR #10](https://github.com/monkey1sai/changshan-longdan/pull/10)；OPEN / Draft；分支已推送 |
 | implementer | 本次 Codex 主代理 |
 | independentReviewer | 本次獨立唯讀 `e00_review` reviewer；範圍盤點屬 advisory，非 GitHub APPROVED |
 | reviewedPlanSha | `389a9a657edbdc94da18c7bdb75d62081787b54d`；規格仍 Draft，未正式核准 |
 | sourceBaseSha | `c48ecd9a39abbc42ecf34ed3761248e11af7c29d` |
 | requiredScenarioIdsAndSubcases | S01–S08 既有證據盤點；不繼承歷史 PASS |
-| allowedPaths | 本文件、snapshot JSON；ignored `release/e00/20261002/` 保存本機原始證據 |
+| allowedPaths | 本文件、snapshot JSON；ignored `release/e00/20261002/` 保存本機原始證據；收尾只修正本文件與 PR #10 的交付紀錄 |
 | forbiddenChanges | runtime、候選 profile、來源 Blender、既有 worktree、其他 PR、發布、付費、權限與憑證 |
 | preImplementationReview | 已完成唯讀範圍盤點，允許本機準備；完整候選審查另記錄 |
-| mergeAuthorization / paidActionAuthorization | null / null |
+| mergeAuthorization / paidActionAuthorization | null / null；先前「不合併或發布」仍保留，本次收尾沒有授權豁免正式審查 |
 
 已存在 runner：`npm run check`、`npm run package:itch`、`git bundle verify`。本步不建立 Unity、trace 或新 gameplay runner。獨立 scope reviewer 指出的 bundle、同輪回歸與最新 source manifest，均在本輪準備中補齊；正式核准與前置 P0 缺口仍保留。
 
-### 即時版本盤點
+### 原始捕獲時的版本盤點
 
 以下為本輪讀取 GitHub 與 Git 的結果；PR 回覆的 base SHA 都是 `a42c9294c32ac8ff566bc019dc5465b9dc7ad1d9`，不得與即時 main 混用。原始 JSON 與各 head 的 check-runs 均已保存。
 
@@ -98,17 +100,41 @@ Node `v22.22.0`、npm `11.6.2`；選定來源為 c48。畫面使用可見 Chrome
 
 | 輪次 | 候選 | 已完成／仍缺少 |
 | --- | --- | --- |
-| 本輪 E00 準備 | SHA 另存 candidate-record.json | 本地基線回歸、恢復及負例已記錄；完整候選 advisory review 另記錄；正式 APPROVED、candidate CI、review threads 均未取得 |
+| 首版 E00 交付 | `af771bd2a1ca2d1968c3e46f1d2fe2608ebcbb3e` | 已推送並建立 Draft PR #10；本地回歸、恢復及負例通過；獨立 advisory 接受 BLOCKED 候選；Windows／Ubuntu exact-head CI success |
+| 本次文件收尾 | 最終 SHA 由 PR #10 指定 | 修正過時交付狀態、補齊完整分頁的 review/threads 與 main 查核；新候選須另有同 SHA CI 與 advisory，不沿用首版作為新候選結果 |
 
 scope reviewer 與實作者不同，但 session advisory 不是 GitHub 計數核准。本地自檢不能授予正式 APPROVED；PR #8 的作者 COMMENT 不移用到本候選。未以其他 PR 的 head CI 當作 E00 candidate CI。
 
-`formalIndependentReview: NOT_RUN`；`formalReviewCommitSha: null`；`formalReviewUrlOrId: null`；`latestCiHeadShaAndResults: null`；`unresolvedReviewThreads: null`；`finalSameVersionVerdict: BLOCKED`。本地 snapshot 只能供本機 reviewer 閱讀，尚未提供外部可讀的大型證據產物。
+首版 CI：[Game CI run 36965775638](https://github.com/monkey1sai/changshan-longdan/actions/runs/36965775638)，head `af771bd2a1ca2d1968c3e46f1d2fe2608ebcbb3e`，兩個 job 均 completed/success；locked dependency install、test/typecheck/build、itch 封裝、tracked files unchanged 均 success。此結果只綁定首版；收尾後的最新 CI 以 PR 的新 head 記錄為準。
+
+### 13:03 同輪唯讀門檻查核
+
+| 門檻 | VERIFIED 結果 | 對完成的影響 |
+| --- | --- | --- |
+| 最新 main / PR #10 base | `c48ecd9a39abbc42ecf34ed3761248e11af7c29d`，沒有 base 漂移 | 保持選定來源；不代表正式核准 |
+| PR #10 狀態 | OPEN / Draft，首版 head af771bd；MERGEABLE / CLEAN；auto-merge null | 未合併，沒有自動合併 |
+| PR #8 review / threads | 完整分頁已讀；只有作者 COMMENTED，0 個未解決 threads | 未取得獨立正式 APPROVED |
+| PR #10 review / threads | 完整分頁已讀；reviews 空，0 個未解決 threads | 未取得獨立正式 APPROVED |
+| 可用協作者 | 完整分頁只有 `monkey1sai`，是 PR 作者且具 admin 權限 | 沒有列出的獨立人類 reviewer；作者權限不替代獨立核准 |
+| PR #3/#5/#6 | 仍 OPEN / Draft；兩平台 CI success；reviews 空 | P0／正式審查缺口未結案 |
+| PR #7 | 仍 OPEN / Draft；兩平台 CI success；reviews 空；CONFLICTING / DIRTY | 不可直接與新 main 合併；本步沒有修復或合併其他 PR |
+| main 保護 | branch API 顯示 `protected=false`、checks enforcement off | 未有自動強制 gate；仍依 #8 計畫與人工門檻執行 |
+
+rules API 另回 HTTP 403：`Upgrade to GitHub Pro or make this repository public to enable this feature.` 此端點無法查得的 rules 狀態保持 UNKNOWN；未改方案、隱私、保護或權限。PR #8 回覆的 base SHA 仍是舊 a42，最新 main 則為 c48，兩者明確分列。原始回覆保存在 `release/e00/20261002/closeout/`。
+
+`formalIndependentReview: NOT_RUN`；`formalReviewCommitSha: null`；`formalReviewUrlOrId: null`；`unresolvedReviewThreads: 0`（13:03 捕獲，合併前須重讀）；`finalSameVersionVerdict: BLOCKED`。已完成的 session advisory 不是 GitHub APPROVED。
+
+### 原始證據交接
+
+首版證據包 `release/e00/e00-evidence-af771bd.zip`：65,538,099 bytes，60 entries，SHA-256 `3b3586325ec2d993e543794d5d032bfefa51968a2a18b33034920e229f56f05d`；60 項已解壓逐一核對。包含 Git bundle、原始／整理 Blender、現版／回滾 ZIP、來源清單、logs、截圖與 advisory。它固定對應首版，不拿來冒充收尾後新候選；新候選的差異、驗證與 review 另外綁定 SHA。
+
+大型證據仍 `local_only`，沒有上傳；指定正式 reviewer 後，須讓該 reviewer 實際開啟原始產物，才能填 `reviewerOpenedArtifacts`。此儲存庫是 private，不以公開 release 或公開分享連結傳出完整來源及使用者模型。
 
 ## E. 停止、回滾與下一步門檻
 
 `stepVerdict: BLOCKED`；`nextStepAllowed: false`；`mergeSha: null`；`postMergeValidationAndCompatibility: NOT_RUN`；`releaseOrPaidActionPerformed: false`。
 
-剩餘阻礙：PR #8 的規格尚無獨立正式核准；PR #3/#5/#6/#7 仍 Draft，正式核准與 P0 證據未齊；E00 未推送、未建立實作 PR、無候選 CI／正式 APPROVED／threads 查核／合併授權／合併後確認。不得因新 main 或 PR #9 的歷史豁免而自行刪除這些門檻。
+剩餘阻礙：PR #8 的規格尚無獨立正式核准；PR #3/#5/#6/#7 仍 Draft，正式核准與 P0 證據未齊，PR #7 另有合併衝突；正式 reviewer 尚未指定或取得原始證據；PR #10 未有最終 SHA 的正式 APPROVED／合併授權／合併後確認。首版候選 CI 與 threads 查核已完成，不再列作未執行；收尾新候選另行驗證。不得因 main 未受保護、新 main 或 PR #9 的歷史豁免而自行刪除門檻。
 
 回復 source 的程序已在新的 task-owned clone 實測；要自行檢查可在**新的空目錄**執行：
 
@@ -119,4 +145,4 @@ git -C '<新的空目錄>/restored' checkout --detach c48ecd9a39abbc42ecf34ed376
 
 先依 snapshot 核對 bundle SHA-256，再執行。這是建立新 checkout，不是覆蓋目前作品。GLB 已包含於 bundle；Blender source 與前版 ZIP 由 `preserved/` 的相應 hash 找回。若撤回本步，僅對 E00 文件 commit 做普通 revert；不 reset/clean 既有工作樹、不刪原始 `.blend`、不自動上傳回滾版。
 
-需要使用者授權本步推送／Draft PR，以及由合格獨立 reviewer 處理正式核准與相依 P0 缺口。實作 PR 的說明需回連 #8；E00 在同版本門檻、授權合併與合併後查核全部齊備才 DONE，之後才開始 E01。本機準備沒有授予後續階段、其他 PR 合併或發布權限。
+本步推送與 Draft PR 已按既有授權完成；本次「把 E00 收尾」用於補齊本步文件與交付證據，保持 BLOCKED。下一個必要輸入是合格獨立人類 reviewer 與受限的證據存取方式，並完成 #8／相依 P0 門檻。若要改完成規則，須先由使用者明確決定並留下經審查的規格修訂，本代理不代為豁免。實作 PR 已回連 #8；E00 在同版本門檻、明確授權合併與合併後查核全部齊備才 DONE，之後才開始 E01。沒有授予其他 PR 合併或發布權限。
