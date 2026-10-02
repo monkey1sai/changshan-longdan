@@ -38,3 +38,11 @@ Add or update Vitest tests for every change to combat, AI, player or layout logi
 ## Commits
 
 Use concise imperative subjects, optionally scoped (for example `combat: add jump charge`). Do not commit `node_modules/`, `dist/` or other generated output.
+
+## Musou Engineering Variables
+
+Before changing combat, animation, crowd AI, camera, assets, performance or engine architecture, read `docs/engineering/MUSOU_VARIABLES.md` and `docs/engineering/musou-profile.proposed.json` alongside the existing `docs/art/` workflow.
+
+Keep source baselines, proposed tuning and measured results separate. The proposed profile is NOT connected to runtime; do not claim that creating or editing it changes gameplay. Preserve existing moves, character assets, visible load-failure fallback and weapon tip/tipBase contracts. Unity migration requires a separately reviewed decision; do not silently remove the web delivery or existing TypeScript implementation.
+
+For each implementation PR, identify changed variable groups and affected S01-S08 acceptance scenarios. Record exact commit/profile/asset versions and distinguish unit tests, rendered checks, natural play and human sensory review. Engine MCP or test runners are valid when they provide equivalent evidence; desktop clicking is not intrinsically required. Never substitute headless results, a screenshot or CI success for complete visual/feel acceptance. Preserve missing evidence and failures. Complete each implementation phase with tests, actual evidence, review and merge before proceeding to the next. No paid asset generation without explicit authorization.
