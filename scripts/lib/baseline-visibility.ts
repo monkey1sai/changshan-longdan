@@ -34,8 +34,9 @@ function idMaterial(instancesPerEnemy: number) {
       }`,
     fragmentShader: `
       flat in uint vEnemyId;
+      layout(location = 0) out vec4 idColor;
       void main() {
-        gl_FragColor = vec4(vec3(float(vEnemyId & 255u), float((vEnemyId >> 8u) & 255u), float((vEnemyId >> 16u) & 255u)) / 255.0, 1.0);
+        idColor = vec4(vec3(float(vEnemyId & 255u), float((vEnemyId >> 8u) & 255u), float((vEnemyId >> 16u) & 255u)) / 255.0, 1.0);
       }`,
     blending: NoBlending, toneMapped: false, depthTest: true, depthWrite: false, depthFunc: LessEqualDepth,
   })
@@ -69,12 +70,17 @@ export function captureEnemyVisibility(renderer: WebGLRenderer, scene: Scene, ca
   const saved = { target: renderer.getRenderTarget(), viewport: renderer.getViewport(new Vector4()),
     scissor: renderer.getScissor(new Vector4()), scissorTest: renderer.getScissorTest(),
     clearColor: renderer.getClearColor(new Color()), clearAlpha: renderer.getClearAlpha(),
-    autoClear: renderer.autoClear, shadows: renderer.shadowMap.enabled, background: scene.background }
+    autoClear: renderer.autoClear, shadows: renderer.shadowMap.enabled, background: scene.background,
+    shaderError: renderer.debug.onShaderError }
   const start = performance.now()
   let depthSubmitMs = 0
   let idSubmitMs = 0
   let readbackMs = 0
   try {
+    // A compile failure is a failed measurement, never an asserted zero visible count.
+    renderer.debug.onShaderError = (gl, program, vertex, fragment) => {
+      throw new Error(`diagnostic shader compilation failed: ${gl.getProgramInfoLog(program)}; ${gl.getShaderInfoLog(vertex)}; ${gl.getShaderInfoLog(fragment)}`)
+    }
     scene.updateMatrixWorld()
     for (const part of parts) {
       const mesh = part.mesh.clone(false)
@@ -124,6 +130,7 @@ export function captureEnemyVisibility(renderer: WebGLRenderer, scene: Scene, ca
     scene.background = saved.background
     renderer.autoClear = saved.autoClear
     renderer.shadowMap.enabled = saved.shadows
+    renderer.debug.onShaderError = saved.shaderError
     renderer.setRenderTarget(saved.target)
     renderer.setViewport(saved.viewport)
     renderer.setScissor(saved.scissor)

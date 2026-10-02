@@ -116,6 +116,7 @@ function imageData(pixels: Uint8Array, width: number, height: number, colored: b
 captureButton.addEventListener('click', async () => {
   try {
     if (document.hidden || port.model.assetStatus.state !== 'ready') throw new Error('visible page and ready Zhao Yun asset required')
+    if (!['playing', 'paused'].includes(port.mode)) throw new Error('start a battle before capturing population')
     const counts = population()
     const before = gameplayFingerprint()
     const renderBefore = rendererFingerprint()
@@ -133,7 +134,7 @@ captureButton.addEventListener('click', async () => {
     colorCanvas.height = result.height
     colorCanvas.getContext('2d')!.putImageData(imageData(result.pixels, result.width, result.height, true), 0, 0)
     const { pixels, ...measurement } = result
-    const sample = { sample: debug.samples.length, capture: 'normal constructor/natural UI start; live snapshot, not deterministic kernel replay',
+    const sample = { sample: debug.samples.length, capture: 'normal constructor; live battle snapshot with recorded mode, not deterministic kernel replay',
       provenance: debug.provenance, clocks, population: { alive: counts.alive, visible: result.visible,
         engaged: counts.engaged, tokenAttackers: counts.tokenAttackers, frustumProxy: counts.frustumProxy },
       assetStatus: { ...port.model.assetStatus }, viewport: [innerWidth, innerHeight], focus: document.hasFocus(),
@@ -168,7 +169,11 @@ function visibilitySelfTests() {
   wall.visible = false
   scene.add(wall)
   const results: { name: string; result: 'PASS'; ids?: number[] }[] = []
+  debug.selfTests = { result: 'IN_PROGRESS', tests: results }
   const run = (name: string, alive: boolean[], expected: number[]) => {
+    // Depth uses the original GPU buffer, while ID clones copy CPU matrices.
+    // Match production SoldierView.update's upload marker after each fixture change.
+    enemies.instanceMatrix.needsUpdate = true
     const result = captureEnemyVisibility(renderer, scene, camera, [{ mesh: enemies, instancesPerEnemy: 1 }], alive)
     if (JSON.stringify(result.visibleIds) !== JSON.stringify(expected)) throw new Error(`${name}: unexpected IDs ${result.visibleIds}`)
     results.push({ name, result: 'PASS', ids: result.visibleIds })
@@ -221,9 +226,11 @@ function visibilitySelfTests() {
 testButton.addEventListener('click', () => {
   try {
     debug.selfTests = visibilitySelfTests()
+    captureButton.disabled = port.model.assetStatus.state !== 'ready'
     status.textContent = '可見數正負例：7／7 PASS\n深度遮擋、恢復、敵人互擋、死亡、視錐外、alpha 缺口、例外恢復均通過。'
   } catch (error) {
-    debug.selfTests = { result: 'FAIL', error: String(error) }
+    debug.selfTests = { ...(debug.selfTests as object ?? {}), result: 'FAIL', error: String(error) }
+    captureButton.disabled = true
     debug.errors.push(String(error))
     status.textContent = `FAIL：${String(error)}`
   }
@@ -254,12 +261,12 @@ async function verifySource() {
   }
   debug.provenance = { sourceHead: manifest.sourceHead, workingTreeStatus: manifest.workingTreeStatus,
     effectiveProfileHash: manifest.effectiveProfileHash, runnerHashes: manifest.runnerHashes, assetHashes: manifest.assetHashes,
-    reviewedPlan: manifest.reviewedPlan, input: 'native live gameplay; no deterministic replay claim' }
+    reviewedPlan: manifest.reviewedPlan, input: 'live browser snapshot; mode recorded; no deterministic replay claim' }
   testButton.disabled = false
   const waitReady = () => {
     if (port.model.assetStatus.state === 'ready') {
-      captureButton.disabled = false
-      status.textContent = `來源雜湊符合；趙雲 ready\n版本 ${manifest.sourceHead.slice(0, 7)}\n請出陣後讀取快照。`
+      captureButton.disabled = (debug.selfTests as { result?: string } | null)?.result !== 'PASS'
+      status.textContent = `來源雜湊符合；趙雲 ready\n版本 ${manifest.sourceHead.slice(0, 7)}\n先執行可見數負例自測，再出陣讀取快照。`
     } else if (port.model.assetStatus.state === 'failed') status.textContent = '趙雲載入失敗；保留缺口，不能採作正式角色樣本。'
     else requestAnimationFrame(waitReady)
   }
