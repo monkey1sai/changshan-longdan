@@ -1,4 +1,5 @@
 import { subscribe, t } from './i18n.ts'
+import type { DifficultyId } from '../core/difficulty.ts'
 
 export interface ResultStats {
   win: boolean
@@ -44,6 +45,11 @@ export class Screens {
 
   onStart(handler: () => void): void {
     must<HTMLButtonElement>('start').addEventListener('click', handler)
+  }
+
+  selectedDifficulty(): DifficultyId {
+    const value = must<HTMLSelectElement>('difficulty-select').value
+    return value === 'beginner' || value === 'hard' || value === 'chaos' ? value : 'normal'
   }
 
   onRetry(handler: () => void): void {

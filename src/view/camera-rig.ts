@@ -1,7 +1,7 @@
 import { PerspectiveCamera, Vector3 } from 'three'
 import { clamp, damp, dampAngle, lerp } from '../core/math.ts'
 import { PLAY_LIMIT } from '../world/layout.ts'
-import { cameraClearance } from './camera-clearance.ts'
+import { cameraClearance, clearCameraOverhang } from './camera-clearance.ts'
 
 const TITLE_LOOK = new Vector3(0, 4, -6)
 
@@ -80,11 +80,15 @@ export class CameraRig {
     )
     this.look.set(this.focus.x, this.focus.y + 0.15 + this.musou * 1.2, this.focus.z)
 
-    // 戰鬥鏡頭的 boom 若穿過營房、主堡或場地邊界，就沿 focus→camera 線段自動收近。
+    // 水平 boom 穿過營房、主堡或場地邊界時收近，但保持俯視高度，避免進入角色模型。
     // 標題環繞鏡頭刻意在城外，不套用此限制。
     if (this.title <= 0.001) {
       const clear = cameraClearance(this.focus.x, this.focus.z, this.desired.x, this.desired.z)
-      if (clear < 1) this.desired.lerp(this.focus, 1 - clear)
+      if (clear < 1) {
+        this.desired.x = lerp(this.focus.x, this.desired.x, clear)
+        this.desired.z = lerp(this.focus.z, this.desired.z, clear)
+      }
+      clearCameraOverhang(this.desired)
     }
 
     if (this.title > 0.001) {
@@ -94,6 +98,11 @@ export class CameraRig {
       this.look.lerp(TITLE_LOOK, this.title)
     }
     this.camera.position.copy(this.desired)
+    this.camera.up.set(0, 1, 0)
+    // 收到正上方或被屋簷推到角色前側時，仍以移動前方定義畫面上方。
+    if (this.title <= 0.001) {
+      this.camera.up.set(Math.sin(yaw), 0, Math.cos(yaw))
+    }
     this.camera.lookAt(this.look)
 
     const s = this.trauma * this.trauma
