@@ -44,6 +44,9 @@ export class Hud {
   private readonly comboLife = must('combo-life')
   private readonly battleProgress = must('battle-progress')
   private readonly musouPrompt = must('musou-prompt')
+  private readonly officerHud = must('officer-hud')
+  private readonly officerName = must('officer-name')
+  private readonly officerHp = must('officer-hp')
   private readonly minimap: CanvasRenderingContext2D
   private readonly last = { ko: -1, remain: -1, hp: -1, musou: -1, ready: false, combo: -1 }
   private bannerTime = 0
@@ -123,6 +126,22 @@ export class Hud {
     this.banner.textContent = typeof text === 'function' ? text() : text
     this.banner.className = `banner visible ${tone}`
     this.bannerTime = seconds
+  }
+
+  updateOfficer(store: EnemyStore, px: number, pz: number): void {
+    let best = -1
+    let bestD = 18 * 18
+    for (let i = 0; i < store.count; i++) {
+      if (store.alive[i] === 0 || store.kind[i] !== Kind.Captain) continue
+      const dx = store.x[i] - px
+      const dz = store.z[i] - pz
+      const d2 = dx * dx + dz * dz
+      if (d2 < bestD) { best = i; bestD = d2 }
+    }
+    this.officerHud.hidden = best < 0
+    if (best < 0) return
+    this.officerName.textContent = t('hud.officer')
+    this.officerHp.style.width = `${100 * store.hp[best] / Math.max(1, store.maxHp[best])}%`
   }
 
   playCutin(): void {
