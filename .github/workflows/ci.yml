@@ -34,6 +34,17 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Test, typecheck and build
         run: npm run check
+      - name: Capture E01 production-kernel traces without changing gameplay
+        id: e01_trace
+        run: npm run trace:baseline -- --out release/e01/ci-capture
+      - name: Preserve E01 traces and scoped profile for review
+        if: ${{ always() && (steps.e01_trace.outcome == 'success' || steps.e01_trace.outcome == 'failure') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: e01-kernel-${{ matrix.os }}
+          path: release/e01/ci-capture/
+          if-no-files-found: error
+          retention-days: 7
       - name: Validate itch.io package without publishing
         run: node scripts/package-itch.mjs
       - name: Verify tracked files are unchanged
