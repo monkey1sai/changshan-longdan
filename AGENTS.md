@@ -36,6 +36,13 @@ TypeScript strict mode with `erasableSyntaxOnly` (no enums or parameter properti
 
 Add or update Vitest tests for every change to combat, AI, player or layout logic. Visual and feel changes must be checked in a real browser with `npm run dev`; a passing test run is not visual verification. In dev builds `window.__game` exposes `state`, `advance(frames, input)` and other hooks for scripted checks. Chrome pauses `requestAnimationFrame` for hidden or occluded windows, so scripted runs in a background tab are supporting evidence only; confirm frame rate and input feel in a visible window.
 
+## Model Asset Collaboration
+
+- 需要新增、替換或修改模型、材質、骨架、動畫、碰撞代理或 LOD 時，預設先向 `mmo-asset-pipeline` 美術工程師提出需求，依 [模型資產協作契約](docs/art/asset-collaboration.md) 取得交付、在遊戲內驗收並回饋修改。
+- 缺少美術工作區時，依契約安全 clone 已確認來源；不得覆寫既有工作。美術流程保持通用，遊戲風格、引擎與玩法要求由需求傳入。
+- [既有美術 SOP](docs/art/README.md) 的製作與 QA 閘門繼續適用；本契約補充跨 repo 委託、交付與追溯責任。既有程序式 voxel 說明是目前實作描述，不是禁止依本契約委託新資產。
+- 收到模型不代表完成；此規則不授予付費生成、私有資料外傳、push、merge 或部署權限。
+
 ## Commits
 
 Use concise imperative subjects, optionally scoped (for example `combat: add jump charge`). Do not commit `node_modules/`, `dist/` or other generated output.

@@ -5,6 +5,9 @@
 它是一套提供給 **Codex / Claude Code / 其他 AI Agent 重複執行的遊戲美術製造與整合 SOP**：每次收到新的角色、場景、道具、UI 或 VFX 任務，都走同一條可驗證流程。
 
 ## Agent Workflow
+
+模型相關工作預設先依 [模型資產協作契約](asset-collaboration.md) 向 `mmo-asset-pipeline` 美術工程師提出需求；以下製作與驗收步驟仍適用，遊戲端負責整合、遊戲內驗收及退修回饋。
+
 1. **Visual Target Intake** — 讀取使用者 reference、目標平台、鏡頭、風格與品質要求；缺資料時明確標記未知，不自行發明。
 2. **Art Direction Extraction** — 從 reference 萃取比例、shape language、palette、material、lighting、camera、VFX 規則，形成/更新 Art Bible。
 3. **Asset Plan** — 將需求拆成 model / texture / material / rig / animation / environment / UI / VFX；決定生成、採購、重用或修改。
