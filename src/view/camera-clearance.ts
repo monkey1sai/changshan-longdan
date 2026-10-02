@@ -1,9 +1,31 @@
-import { PLAY_LIMIT, obstacles, type Rect } from '../world/layout.ts'
+import { BARRACKS, BARRACKS_ROOF_OVERHANG, PLAY_LIMIT, obstacles, type Rect } from '../world/layout.ts'
 
-const BLOCKERS = obstacles()
+const ROOFS = BARRACKS.map((r) => ({
+  minX: r.minX - BARRACKS_ROOF_OVERHANG,
+  maxX: r.maxX + BARRACKS_ROOF_OVERHANG,
+  minZ: r.minZ - BARRACKS_ROOF_OVERHANG,
+  maxZ: r.maxZ + BARRACKS_ROOF_OVERHANG,
+}))
+const BLOCKERS = [...obstacles().filter((r) => !BARRACKS.includes(r)), ...ROOFS]
 
 function inside(rect: Rect, x: number, z: number, margin: number): boolean {
   return x >= rect.minX - margin && x <= rect.maxX + margin && z >= rect.minZ - margin && z <= rect.maxZ + margin
+}
+
+/** focus 可以走進屋簷下；收短後仍須將相機推出屋簷，保留近裁切面與震動空間。 */
+export function clearCameraOverhang(position: { x: number; z: number }, margin = 0.35): void {
+  for (const r of ROOFS) {
+    if (!inside(r, position.x, position.z, margin)) continue
+    const left = position.x - r.minX + margin
+    const right = r.maxX + margin - position.x
+    const front = position.z - r.minZ + margin
+    const back = r.maxZ + margin - position.z
+    const nearest = Math.min(left, right, front, back)
+    if (nearest === left) position.x = r.minX - margin
+    else if (nearest === right) position.x = r.maxX + margin
+    else if (nearest === front) position.z = r.minZ - margin
+    else position.z = r.maxZ + margin
+  }
 }
 
 /**
@@ -24,7 +46,7 @@ export function cameraClearance(
     const x = fx + (cx - fx) * t
     const z = fz + (cz - fz) * t
     if (Math.abs(x) > edge || Math.abs(z) > edge || BLOCKERS.some((rect) => inside(rect, x, z, margin))) {
-      return Math.max(0.18, (i - 1) / samples)
+      return (i - 1) / samples
     }
   }
   return 1

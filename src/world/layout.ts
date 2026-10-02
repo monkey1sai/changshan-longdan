@@ -25,6 +25,15 @@ export const BARRACKS: Rect[] = [
   { minX: -53, maxX: -40, minZ: 14, maxZ: 28 },
 ]
 
+// 屋簷外框供幾何與相機共用；玩家仍以牆身矩形碰撞。
+export const BARRACKS_ROOF_PADDING = 1.6
+export const ROOF_TRIM_PADDING = 0.5
+export const ROOF_CORNER_OFFSET = 0.15
+export const ROOF_CORNER_SIZE = 0.55
+export const BARRACKS_ROOF_OVERHANG = BARRACKS_ROOF_PADDING / 2 + Math.max(ROOF_TRIM_PADDING / 2, ROOF_CORNER_OFFSET + ROOF_CORNER_SIZE / 2)
+export const ROOF_CUTAWAY_ENTER = 0.6
+export const ROOF_CUTAWAY_EXIT = 1
+
 export const BRAZIERS: { x: number; z: number }[] = [
   ...[40, 26, 12, -2, -16].flatMap((z) => [{ x: -8, z }, { x: 8, z }]),
   { x: -11, z: -28.5 },
