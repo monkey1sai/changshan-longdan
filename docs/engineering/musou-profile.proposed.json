@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 1,
+  "profileId": "changshan-longdan-musou-v1-proposed",
+  "status": "proposed_not_playtested",
+  "capturedDate": "2026-10-02",
+  "timezone": "Asia/Taipei",
+  "runtimeConnected": false,
+  "referenceDocument": "MUSOU_VARIABLES.md",
+  "sourceSnapshot": {
+    "repository": "monkey1sai/changshan-longdan",
+    "mainCommit": "a42c9294c32ac8ff566bc019dc5465b9dc7ad1d9",
+    "currentEngine": "Three.js/TypeScript/Vite",
+    "unityMigrationStatus": "proposed_not_implemented",
+    "pr3": { "head": "1583ff1c286a7940223e7ee48ec1209c1e699bbc", "draft": true, "merged": false },
+    "pr7": { "head": "2f14f7038d0f0a99ca94e1295842f32682c04c2a", "draft": true, "merged": false }
+  },
+  "units": { "time": "seconds_unless_suffix_ms", "distance": "meters", "speed": "meters_per_second", "angle": "degrees_unless_explicitly_radians", "frameTime": "milliseconds", "updateRate": "Hz" },
+  "baseline": {
+    "evidenceType": "source_code_values_not_runtime_measurements",
+    "player": {
+      "source": "src/entities/player.ts@mainCommit",
+      "runSpeedMps": 7.4,
+      "inputBufferSec": 0.45,
+      "dodgeSpeedMps": 15,
+      "dodgeDurationSec": 0.42,
+      "parryWindowSec": 0.16,
+      "musouMax": 100
+    },
+    "moves": {
+      "source": "src/combat/moves.ts@mainCommit",
+      "preserveMoveIds": ["N1", "N2", "N3", "N4", "N5", "N6", "C1", "C2", "C3", "C4", "C5", "C6", "JA", "JC", "DASH", "COUNTER", "MUSOU"],
+      "N1": { "durationSec": 0.42, "comboCancelSec": 0.2, "hitStartSec": 0.1, "hitEndSec": 0.16, "shape": "line", "rangeM": 3.4, "widthM": 1.3, "damage": 14, "lungeDistanceM": 0.35 },
+      "N5": { "comboCancelSec": 0.36, "hitstopSec": 0.06 }
+    },
+    "crowd": {
+      "source": "src/entities/enemies.ts@mainCommit",
+      "engageRangeM": 26,
+      "releaseRangeM": 34,
+      "maxEngaged": 42,
+      "minEngaged": 20,
+      "maxAttackers": 4
+    },
+    "camera": {
+      "source": "src/view/camera-rig.ts@mainCommit",
+      "verticalFovDeg": 55,
+      "horizontalDistanceParameterM": 9.2,
+      "zoomMinM": 5.5,
+      "zoomMaxM": 13
+    },
+    "difficultyPr3": {
+      "source": "src/core/difficulty.ts@sourceSnapshot.pr3.head",
+      "scope": "unmerged_pr_candidate_not_main",
+      "beginner": { "enemyDamage": 0.65, "captainHp": 0.75, "windup": 1.25, "maxAttackers": 2, "engageRange": 22 },
+      "normal": { "enemyDamage": 1, "captainHp": 1, "windup": 1, "maxAttackers": 4, "engageRange": 26 },
+      "hard": { "enemyDamage": 1.25, "captainHp": 1.35, "windup": 0.9, "maxAttackers": 5, "engageRange": 30 },
+      "chaos": { "enemyDamage": 1.55, "captainHp": 1.7, "windup": 0.8, "maxAttackers": 6, "engageRange": 34 }
+    },
+    "characterPr7": {
+      "evidenceType": "pr_author_report_not_remeasured",
+      "reportedTriangles": 29202,
+      "assetPathInPr": "public/models/zhaoyun.glb",
+      "sourceBlendPath": null,
+      "sourceBlendSha256": null,
+      "preserveWeaponContract": ["tip", "tipBase"],
+      "retainVisibleFallbackUntilSkinReady": true
+    }
+  },
+  "proposed": {
+    "authority": "project_engineering_hypotheses_not_vendor_standards",
+    "platform": {
+      "prototypePlatform": "Windows",
+      "unityVersion": null,
+      "renderPipeline": null,
+      "referenceHardware": null,
+      "webDeliveryDecision": "preserve_existing_delivery_until_explicit_migration_decision",
+      "resolution": { "width": 1920, "height": 1080, "renderScale": 1 }
+    },
+    "combat": {
+      "initialTuningPolicy": "preserve_source_baseline_before_rebalance",
+      "inputBufferSec": 0.45,
+      "hitDeduplicationKey": ["attackInstanceId", "hitWindowId", "enemyId"],
+      "hitstopAggregation": "max_per_simulation_tick_not_sum_per_enemy",
+      "movementAuthority": "gameplay_controller_and_move_curves_as_initial_baseline",
+      "replayRatesHz": [30, 60, 120]
+    },
+    "animation": {
+      "transitionTrialSec": { "min": 0.08, "initial": 0.1, "max": 0.12 },
+      "transitionScope": "locomotion_and_normal_combo_only_not_global",
+      "gripErrorP95MaxM": 0.03,
+      "plantSlipMaxM": 0.05,
+      "unintendedRootJumpMaxM": 0.05,
+      "measurementScope": "annotated_grip_and_plant_windows_with_designed_motion_removed",
+      "visualHitSyncToleranceFramesAt60Fps": 1
+    },
+    "crowd": {
+      "qualityStressPopulationStages": [20, 50, 100, 200, 300],
+      "distinctCounters": ["alive", "visible", "engaged", "attackers"],
+      "decisionTickHz": { "near": 20, "mid": 10, "far": 2 },
+      "tickScope": "decision_layer_only_not_active_hit_timeline_or_near_collision",
+      "tierDistanceThresholdsM": null,
+      "promotionPolicy": "immediate_combat_state_refresh_when_entering_interaction_range"
+    },
+    "assets": {
+      "heroLod0TrianglesMax": 60000,
+      "soldierLod0TrianglesMax": 8000,
+      "heroMaterialSlotsMax": 4,
+      "soldierMaterialSlotsMax": 2,
+      "heroTextureSingleMapDimensionMax": 2048,
+      "soldierTextureSingleMapDimensionMax": 1024,
+      "policy": "preserve_existing_hero_do_not_inflate_geometry_to_budget",
+      "requiredProvenance": ["source", "version", "sourceHash", "exportHash", "licenseRecord", "authoringSettings"]
+    },
+    "performance": {
+      "targetFps": 60,
+      "cpuActiveP95MaxMs": 16.67,
+      "gpuP95MaxMs": 16.67,
+      "wallFrameP99MaxMs": 25,
+      "hitchThresholdMs": 50,
+      "hitchFrameFractionMax": 0.001,
+      "warmupSec": 30,
+      "sampleDurationSecPerSeed": 180,
+      "seeds": [7, 11, 23],
+      "soakDurationSec": 1800,
+      "requiredContext": ["commitSha", "profileHash", "assetHashes", "seed", "scenario", "difficulty", "cpu", "gpu", "ram", "os", "driver", "engineVersion", "viewport", "renderScale", "vsync", "refreshRate", "frameCap", "inputMethod", "tracePath", "videoPath"],
+      "note": "CPU_and_GPU_work_overlap_do_not_sum; missing_hardware_or_context_blocks_performance_acceptance"
+    },
+    "generation": {
+      "externalGenerationEnabled": false,
+      "spendLimitUsd": 0,
+      "requiredRecordsWhenAuthorized": ["tier", "promptOrReferenceHash", "seed", "meshMode", "exportFormat", "geometryBudget", "textureSettings", "taskId", "actualCost", "acceptRejectReason"]
+    }
+  },
+  "variableGroups": ["V01", "V02", "V03", "V04", "V05", "V06", "V07", "V08", "V09", "V10", "V11", "V12"],
+  "acceptanceScenarios": [
+    { "id": "S01", "scope": "inputs_and_complete_moveset", "status": "not_run", "evidence": null },
+    { "id": "S02", "scope": "hit_windows_multitarget_and_negative_cases", "status": "not_run", "evidence": null },
+    { "id": "S03", "scope": "animation_grip_plant_and_root_continuity", "status": "not_run", "evidence": null },
+    { "id": "S04", "scope": "reactions_getup_and_state_cleanup", "status": "not_run", "evidence": null },
+    { "id": "S05", "scope": "crowd_performance_and_soak", "status": "not_run", "evidence": null },
+    { "id": "S06", "scope": "camera_occlusion_and_readability", "status": "not_run", "evidence": null },
+    { "id": "S07", "scope": "asset_failures_and_visible_fallback", "status": "not_run", "evidence": null },
+    { "id": "S08", "scope": "difficulty_restart_pause_and_natural_play", "status": "not_run", "evidence": null }
+  ],
+  "observations": null,
+  "guardrails": [
+    "No_runtime_behavior_change_from_this_documentation_PR",
+    "No_engine_migration_without_separate_reviewed_decision",
+    "Preserve_existing_moves_character_and_weapon_contracts",
+    "Keep_baseline_proposals_and_measurements_distinct",
+    "Do_not_treat_build_CI_or_screenshots_as_complete_playtest",
+    "Do_not_require_desktop_clicking_when_engine_tools_provide_equivalent_evidence",
+    "Do_not_merge_other_PRs_deploy_or_spend_on_generation",
+    "Complete_each_implementation_P_with_tests_play_evidence_review_and_merge_before_next_P"
+  ]
+}
