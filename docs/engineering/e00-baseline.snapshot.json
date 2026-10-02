@@ -1,0 +1,1208 @@
+{
+  "schemaVersion": 1,
+  "stepId": "E00",
+  "status": "BLOCKED",
+  "nextStepAllowed": false,
+  "capturedAt": "2026-10-02T12:17:45.6771107+08:00",
+  "timezone": "Asia/Taipei",
+  "repository": "monkey1sai/changshan-longdan",
+  "specification": {
+    "pr": 8,
+    "headSha": "389a9a657edbdc94da18c7bdb75d62081787b54d",
+    "sourceMainSha": "a42c9294c32ac8ff566bc019dc5465b9dc7ad1d9",
+    "profileSha256": "8490a542024c444299464af748573c8820cbc8d16a2d6adee5308743b5403577",
+    "formalApproval": "NOT_RUN",
+    "profileRuntimeConnected": false,
+    "observations": null
+  },
+  "selectedSourceSha": "c48ecd9a39abbc42ecf34ed3761248e11af7c29d",
+  "mainReadbackSha": "c48ecd9a39abbc42ecf34ed3761248e11af7c29d",
+  "branch": "codex/e00-recoverable-baseline",
+  "candidateSha": null,
+  "candidateBinding": "Candidate commit, diff and exact byte binding are recorded outside this commit in release/e00/20261002/candidate-record.json.",
+  "variableGroups": [
+    "V12"
+  ],
+  "moveIds": [
+    "N1",
+    "N2",
+    "N3",
+    "N4",
+    "N5",
+    "N6",
+    "C1",
+    "C2",
+    "C3",
+    "C4",
+    "C5",
+    "C6",
+    "JA",
+    "JC",
+    "DASH",
+    "COUNTER",
+    "MUSOU"
+  ],
+  "weaponContract": {
+    "tip": "world-space local z=2.7m",
+    "tipBase": "world-space local z=1.25m",
+    "visibleFallback": "Retained until validated skin is ready; failures are not acceptance PASS."
+  },
+  "runtimeChanged": false,
+  "webDeliveryPreserved": true,
+  "paidActionsPerformed": false,
+  "pullRequests": [
+    {
+      "number": 3,
+      "url": "https://github.com/monkey1sai/changshan-longdan/pull/3",
+      "state": "OPEN",
+      "draft": true,
+      "baseShaReportedByPr": "a42c9294c32ac8ff566bc019dc5465b9dc7ad1d9",
+      "headSha": "1583ff1c286a7940223e7ee48ec1209c1e699bbc",
+      "mergeSha": null,
+      "mergedAt": null,
+      "reviewDecision": "",
+      "reviews": [],
+      "checks": [
+        {
+          "name": "check (ubuntu-latest)",
+          "headSha": "1583ff1c286a7940223e7ee48ec1209c1e699bbc",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/monkey1sai/changshan-longdan/actions/runs/36809761809/job/110201980023"
+        },
+        {
+          "name": "check (windows-latest)",
+          "headSha": "1583ff1c286a7940223e7ee48ec1209c1e699bbc",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/monkey1sai/changshan-longdan/actions/runs/36809761809/job/110201979708"
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "url": "https://github.com/monkey1sai/changshan-longdan/pull/5",
+      "state": "OPEN",
+      "draft": true,
+      "baseShaReportedByPr": "a42c9294c32ac8ff566bc019dc5465b9dc7ad1d9",
+      "headSha": "05294f17ad54b47fad122963380c0274768626b6",
+      "mergeSha": null,
+      "mergedAt": null,
+      "reviewDecision": "",
+      "reviews": [],
+      "checks": [
+        {
+          "name": "check (windows-latest)",
+          "headSha": "05294f17ad54b47fad122963380c0274768626b6",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/monkey1sai/changshan-longdan/actions/runs/36830166290/job/110264714005"
+        },
+        {
+          "name": "check (ubuntu-latest)",
+          "headSha": "05294f17ad54b47fad122963380c0274768626b6",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/monkey1sai/changshan-longdan/actions/runs/36830166290/job/110264713860"
+        }
+      ]
+    },
+    {
+      "number": 6,
+      "url": "https://github.com/monkey1sai/changshan-longdan/pull/6",
+      "state": "OPEN",
+      "draft": true,
+      "baseShaReportedByPr": "a42c9294c32ac8ff566bc019dc5465b9dc7ad1d9",
+      "headSha": "38a5f42ef8e215242041b8bbfbb602457f4dfae5",
+      "mergeSha": null,
+      "mergedAt": null,
+      "reviewDecision": "",
+      "reviews": [],
+      "checks": [
+        {
+          "name": "check (ubuntu-latest)",
+          "headSha": "38a5f42ef8e215242041b8bbfbb602457f4dfae5",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/monkey1sai/changshan-longdan/actions/runs/36828366589/job/110259070024"
+        },
+        {
+          "name": "check (windows-latest)",
+          "headSha": "38a5f42ef8e215242041b8bbfbb602457f4dfae5",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/monkey1sai/changshan-longdan/actions/runs/36828366589/job/110259069819"
+        }
+      ]
+    },
+    {
+      "number": 7,
+      "url": "https://github.com/monkey1sai/changshan-longdan/pull/7",
+      "state": "OPEN",
+      "draft": true,
+      "baseShaReportedByPr": "a42c9294c32ac8ff566bc019dc5465b9dc7ad1d9",
+      "headSha": "2f14f7038d0f0a99ca94e1295842f32682c04c2a",
+      "mergeSha": null,
+      "mergedAt": null,
+      "reviewDecision": "",
+      "reviews": [],
+      "checks": [
+        {
+          "name": "check (windows-latest)",
+          "headSha": "2f14f7038d0f0a99ca94e1295842f32682c04c2a",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/monkey1sai/changshan-longdan/actions/runs/36858999488/job/110358285236"
+        },
+        {
+          "name": "check (ubuntu-latest)",
+          "headSha": "2f14f7038d0f0a99ca94e1295842f32682c04c2a",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/monkey1sai/changshan-longdan/actions/runs/36858999488/job/110358284983"
+        }
+      ]
+    },
+    {
+      "number": 8,
+      "url": "https://github.com/monkey1sai/changshan-longdan/pull/8",
+      "state": "OPEN",
+      "draft": true,
+      "baseShaReportedByPr": "a42c9294c32ac8ff566bc019dc5465b9dc7ad1d9",
+      "headSha": "389a9a657edbdc94da18c7bdb75d62081787b54d",
+      "mergeSha": null,
+      "mergedAt": null,
+      "reviewDecision": "",
+      "reviews": [
+        {
+          "author": "monkey1sai",
+          "state": "COMMENTED",
+          "commitSha": "389a9a657edbdc94da18c7bdb75d62081787b54d",
+          "id": "PRR_kwDOUpCc4M8AAAABQSdR0w"
+        }
+      ],
+      "checks": [
+        {
+          "name": "check (ubuntu-latest)",
+          "headSha": "389a9a657edbdc94da18c7bdb75d62081787b54d",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/monkey1sai/changshan-longdan/actions/runs/36960529751/job/110693016324"
+        },
+        {
+          "name": "check (windows-latest)",
+          "headSha": "389a9a657edbdc94da18c7bdb75d62081787b54d",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/monkey1sai/changshan-longdan/actions/runs/36960529751/job/110693016130"
+        }
+      ]
+    },
+    {
+      "number": 9,
+      "url": "https://github.com/monkey1sai/changshan-longdan/pull/9",
+      "state": "MERGED",
+      "draft": false,
+      "baseShaReportedByPr": "a42c9294c32ac8ff566bc019dc5465b9dc7ad1d9",
+      "headSha": "7f9a0692bccdde938be7e117984a2fab628d7d8f",
+      "mergeSha": "c48ecd9a39abbc42ecf34ed3761248e11af7c29d",
+      "mergedAt": "2026-10-02T03:05:50Z",
+      "reviewDecision": "",
+      "reviews": [],
+      "checks": [
+        {
+          "name": "check (windows-latest)",
+          "headSha": "7f9a0692bccdde938be7e117984a2fab628d7d8f",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/monkey1sai/changshan-longdan/actions/runs/36957524217/job/110683710331"
+        },
+        {
+          "name": "check (ubuntu-latest)",
+          "headSha": "7f9a0692bccdde938be7e117984a2fab628d7d8f",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/monkey1sai/changshan-longdan/actions/runs/36957524217/job/110683710190"
+        }
+      ]
+    }
+  ],
+  "localWorktrees": [
+    {
+      "root": "C:/Repos/changshan-longdan",
+      "head": "a42c9294c32ac8ff566bc019dc5465b9dc7ad1d9",
+      "status": [
+        "?? %SystemDrive%/ProgramData/Microsoft/Windows/Caches/cversions.2.db",
+        "?? %SystemDrive%/ProgramData/Microsoft/Windows/Caches/{6AF0698E-D558-4F6E-9B3C-3716689AF493}.2.ver0x0000000000000001.db",
+        "?? %SystemDrive%/ProgramData/Microsoft/Windows/Caches/{BF7DC417-FB42-4876-B12A-584E36E8A85A}.2.ver0x0000000000000001.db",
+        "?? %SystemDrive%/ProgramData/Microsoft/Windows/Caches/{C304E421-88EB-40AF-842C-0DCF3BD78B6E}.2.ver0x0000000000000001.db",
+        "?? %SystemDrive%/ProgramData/Microsoft/Windows/Caches/{DDF571F2-BE98-426D-8288-1A9A39C3FDA2}.2.ver0x0000000000000001.db",
+        "?? .worktrees/e00-recoverable-baseline/"
+      ]
+    },
+    {
+      "root": "C:/Repos/changshan-longdan/.worktrees/e00-recoverable-baseline",
+      "head": "c48ecd9a39abbc42ecf34ed3761248e11af7c29d",
+      "status": []
+    },
+    {
+      "root": "C:/Users/IOT/.codex/worktrees/p0-fix-integration/changshan-longdan",
+      "head": "c69474c74f29bb15122c23cc265592799d0aa1cd",
+      "status": []
+    },
+    {
+      "root": "C:/Users/IOT/.codex/worktrees/p0-live-character/changshan-longdan",
+      "head": "2f14f7038d0f0a99ca94e1295842f32682c04c2a",
+      "status": []
+    },
+    {
+      "root": "C:/Users/IOT/.codex/worktrees/p0-title-shortcuts/changshan-longdan",
+      "head": "38a5f42ef8e215242041b8bbfbb602457f4dfae5",
+      "status": []
+    },
+    {
+      "root": "C:/Users/IOT/.codex/worktrees/p0-wall-camera/changshan-longdan",
+      "head": "05294f17ad54b47fad122963380c0274768626b6",
+      "status": []
+    },
+    {
+      "root": "C:/Users/IOT/.codex/worktrees/pr3-local-acceptance/changshan-longdan",
+      "head": "1583ff1c286a7940223e7ee48ec1209c1e699bbc",
+      "status": []
+    },
+    {
+      "root": "C:/Users/IOT/.codex/worktrees/user-zhaoyun-animation/changshan-longdan",
+      "head": "b29ee87591263b0828d90295ea48da0f21c831e8",
+      "status": []
+    }
+  ],
+  "sourceFiles": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "bytes": 1086,
+      "sha256": "ba96e2b223feb0d0d6a8e14753793cb9809077c5f754b0a1097b0343e454779f"
+    },
+    {
+      "path": ".nvmrc",
+      "bytes": 3,
+      "sha256": "f14b4987904bcb5814e4459a057ed4d20f58a633152288a761214dcd28780b56"
+    },
+    {
+      "path": "AGENTS.md",
+      "bytes": 3318,
+      "sha256": "f37587629b393d02023594ac395f503a81c86b7cd9077b7b93bf9ddd06101d41"
+    },
+    {
+      "path": "docs/art/README.md",
+      "bytes": 2729,
+      "sha256": "88bcf9f1f88eff7a10c5c1f53ba166517dacb9ca01248ebe3ff9a996e3b5cc6a"
+    },
+    {
+      "path": "docs/art/art-bible/CAMERA.md",
+      "bytes": 353,
+      "sha256": "cbad2b2dc8a804380fefb887491a7c483dc00f3b420ba0f90ac9be238b3ae3fc"
+    },
+    {
+      "path": "docs/art/art-bible/CHARACTER.md",
+      "bytes": 533,
+      "sha256": "47ac092a084ad9cea172133add5dc147b01d925f776016bb4585770b10fcd972"
+    },
+    {
+      "path": "docs/art/art-bible/ENVIRONMENT.md",
+      "bytes": 482,
+      "sha256": "9d6fa3b5a17d8d8fdb1d173a56c83c9dea4a1c7d160681c3bd7feeb7ac9b4ea3"
+    },
+    {
+      "path": "docs/art/art-bible/LIGHTING.md",
+      "bytes": 328,
+      "sha256": "9dfc78cbaf004ee1ece344d65c95a42384648ae003791e5b6985de6a74593198"
+    },
+    {
+      "path": "docs/art/art-bible/MATERIAL.md",
+      "bytes": 353,
+      "sha256": "a3af9b5ba5fecbe27e2f0fa40cf93db20d8cca0b9b934dabb0239aaab33541e2"
+    },
+    {
+      "path": "docs/art/asset-manifest.example.json",
+      "bytes": 470,
+      "sha256": "02200885fa338551165f6520dc2a5fba21411de5300edd4d072d705ef5d7da9f"
+    },
+    {
+      "path": "docs/art/reference/README.md",
+      "bytes": 391,
+      "sha256": "d49eda13aba7038cde96f9919ebcccb099c6f56f8ed885080baaae63bb7d0814"
+    },
+    {
+      "path": "docs/art/visual-qa-template.md",
+      "bytes": 566,
+      "sha256": "13c8cc15789dedda229eaf501825bf008640c9f29d695aad3bdd5ffd5ca58e5f"
+    },
+    {
+      "path": "docs/art/zhaoyun-acceptance.md",
+      "bytes": 3696,
+      "sha256": "02aaf784e6390a38425820e93e09b26dfa91795316e540574efd2d0873bf6956"
+    },
+    {
+      "path": "docs/art/zhaoyun-integration.md",
+      "bytes": 5077,
+      "sha256": "61ea9a642587b0ee06fc94f0bab548ddc113b929396b227bdeaac8927084c363"
+    },
+    {
+      "path": "docs/experience-update.md",
+      "bytes": 4767,
+      "sha256": "949c5667b08874eece42340db8e9b31f0a8073e19d6fbf2b46a7c93715c4eb99"
+    },
+    {
+      "path": "docs/itch-page.md",
+      "bytes": 10296,
+      "sha256": "4b4965f3287e71247085399be530414ad9b31bb64a4f81bc455d722e40850548"
+    },
+    {
+      "path": "docs/voxel-musou-review.md",
+      "bytes": 3170,
+      "sha256": "87a879164270f8182bd01dd39f861cc36500a657665d4d26533df83b38bdce5a"
+    },
+    {
+      "path": "index.html",
+      "bytes": 7088,
+      "sha256": "58ddd9b631f4184d5e1571083ab823ed0b73d75708545dd84bd599e529959f09"
+    },
+    {
+      "path": "package-lock.json",
+      "bytes": 39756,
+      "sha256": "a89d1a31fff471207cefd77c09fe1b4463d668ce40d13a568413e204898108d8"
+    },
+    {
+      "path": "package.json",
+      "bytes": 626,
+      "sha256": "a84126049d9a8c24738013b8dfbaa5eb818af9bebf84009d14de30cc59f8cf8b"
+    },
+    {
+      "path": "public/THIRD_PARTY_LICENSES.txt",
+      "bytes": 1251,
+      "sha256": "11cbfb64e328bb8eb9646ebb1f3286df29d0d570c5aab44829a249b7947f08f3"
+    },
+    {
+      "path": "public/models/zhaoyun.glb",
+      "bytes": 3706788,
+      "sha256": "7dccbfae4b61280889a7be98370692143898c3eeef8dcd55dfa36ad4b4248a33"
+    },
+    {
+      "path": "public/models/zhaoyun.manifest.json",
+      "bytes": 1533,
+      "sha256": "b0662f373bc2349095d49cdc6a28edba9b6a9658dcd23c5a0dc60b96d93a1f2d"
+    },
+    {
+      "path": "scripts/package-itch.mjs",
+      "bytes": 2368,
+      "sha256": "d485c1bc8d956362929cd302dcf7c5fb592efcf2a33365d260f1b42c96bd030e"
+    },
+    {
+      "path": "scripts/prepare-zhaoyun.py",
+      "bytes": 10652,
+      "sha256": "74acce85ba5ec38c7649188319b7397f2b32f3a5f3074ac4b1984f073649bcde"
+    },
+    {
+      "path": "scripts/verify-experience.mjs",
+      "bytes": 7559,
+      "sha256": "48445ef8c4b0e351b614afcebda95f7f585d08143231e1f7a2ea5c27e0f034c6"
+    },
+    {
+      "path": "scripts/verify-player-animation.mjs",
+      "bytes": 12695,
+      "sha256": "914dbce26ae76f5ff7591badba5f265352336edbd7ed1f71d49f6215bded4dc4"
+    },
+    {
+      "path": "scripts/zip.d.mts",
+      "bytes": 158,
+      "sha256": "2f30ce62c5c08d40b716a6b72bf25396cdfd02db0b64386d9ce599e0275e93a5"
+    },
+    {
+      "path": "scripts/zip.mjs",
+      "bytes": 3047,
+      "sha256": "daa7292b9ad135af9e9c9bbd72c2f7cc03f4d6e31f2d78a99f555de1b577d570"
+    },
+    {
+      "path": "src/audio/audio-engine.ts",
+      "bytes": 14183,
+      "sha256": "f6b2accc7b4f8aa0a0b4893eabdaaf830fb4814a8b1242c9a2b03a6bc19d10f1"
+    },
+    {
+      "path": "src/audio/music.ts",
+      "bytes": 7257,
+      "sha256": "b7c31e78dc56b748385da008659e17d7efb89697bda3c05f8079e17d62c51968"
+    },
+    {
+      "path": "src/combat/combo.ts",
+      "bytes": 1325,
+      "sha256": "9c97700c0e339722b1f4e6485c3bc50fbfbad93b9839340ccf2cf5403da2f488"
+    },
+    {
+      "path": "src/combat/hitshape.ts",
+      "bytes": 1718,
+      "sha256": "c91ec5e9ac1fe886c25ce7cbabc72bef415133c12c99f98c5934263eaa29cc88"
+    },
+    {
+      "path": "src/combat/moves.ts",
+      "bytes": 10035,
+      "sha256": "abcb823a6c90e94663d3a4a7a1bb7967638e3ee14a887b29ceda42129c4fa084"
+    },
+    {
+      "path": "src/combat/stamp.ts",
+      "bytes": 246,
+      "sha256": "5b3c6289d19922d37503c7535e3d8923beaa0fc7af6d03b1338fee7e83a93deb"
+    },
+    {
+      "path": "src/core/ik.ts",
+      "bytes": 1109,
+      "sha256": "0ca9f89f948692cdc69bac4bbd69a906929fe07fb93acb29ffc13a01cd844e6d"
+    },
+    {
+      "path": "src/core/input.ts",
+      "bytes": 5413,
+      "sha256": "5b1d19a04632c3da87035f37537c5b539da6c369a15307a4be9012b71c084cfa"
+    },
+    {
+      "path": "src/core/math.ts",
+      "bytes": 2080,
+      "sha256": "f7eef9c26325e847a4bdf696912cf2eef4fe5454e938c9e86c8d3d7bb30bb7e5"
+    },
+    {
+      "path": "src/core/spatial-hash.ts",
+      "bytes": 1533,
+      "sha256": "99d56971c5b08121434047a9235bc01e11deb134fd0a36fcec7984628fb09a4f"
+    },
+    {
+      "path": "src/entities/arena.ts",
+      "bytes": 1462,
+      "sha256": "4afe970cab55b92a20c53daff96f1422957ede4b116ce0982fd6080d87a242a4"
+    },
+    {
+      "path": "src/entities/enemies.ts",
+      "bytes": 18717,
+      "sha256": "4949120c09bb35f46f2f61ab2d12e467072d0468090a7180623c8b7ab63cd55f"
+    },
+    {
+      "path": "src/entities/player.ts",
+      "bytes": 17377,
+      "sha256": "c9151bc53f318b6e5f5525bb75830de682177ac92dfcde328209a091d1472ae9"
+    },
+    {
+      "path": "src/fx/dragon.ts",
+      "bytes": 9431,
+      "sha256": "897b77ae53986b285f5e96cad396fbeb690e6d63caf1212571b605091b5ea9be"
+    },
+    {
+      "path": "src/fx/dust.ts",
+      "bytes": 4572,
+      "sha256": "8de3efd8682364e91bd3585668aa39fdebf8980f31b4fe7c5d838ada5c213d28"
+    },
+    {
+      "path": "src/fx/fragments.ts",
+      "bytes": 6162,
+      "sha256": "48a7527c08363640c29fe924b04d4c8bed9c43f778378a68d696d9b8a2f941cb"
+    },
+    {
+      "path": "src/fx/shockwave.ts",
+      "bytes": 4033,
+      "sha256": "83d2036ce073e7d99b037ea16d61dd3bf31ac1c967a975e240ed7c9ba1ab6f4c"
+    },
+    {
+      "path": "src/fx/sparks.ts",
+      "bytes": 5578,
+      "sha256": "57524f50959684798575c183321ea30ae7da80935729f4985c6b798334239c87"
+    },
+    {
+      "path": "src/fx/threat-markers.ts",
+      "bytes": 1536,
+      "sha256": "6bee1b229d488ef17ac4128fc14c594c2548afcc464fdfb4106ce95f5558dd37"
+    },
+    {
+      "path": "src/fx/trail.ts",
+      "bytes": 4805,
+      "sha256": "606a770995e511f6f0cbe8e079f5bbca705941760f14a5a12f04d101a7163eaa"
+    },
+    {
+      "path": "src/game.ts",
+      "bytes": 28382,
+      "sha256": "488b590042a16fe6054f520efc6cc49de176c86aae684300f82dbde02594e0c2"
+    },
+    {
+      "path": "src/main.ts",
+      "bytes": 282,
+      "sha256": "16a13d311bbdefcec7d0dfae34c3a43e1b327ac2432cd78de20aac9480a35969"
+    },
+    {
+      "path": "src/render/materials.ts",
+      "bytes": 975,
+      "sha256": "4c703a9b212b24dfd59acb5e86ab772a4fe9064661a39581172017edd968933e"
+    },
+    {
+      "path": "src/render/pipeline.ts",
+      "bytes": 7746,
+      "sha256": "362e4aceefab1bd0ac3051c67a5db38f405ce61090fde4986d0c64459fc66d60"
+    },
+    {
+      "path": "src/render/post-shaders.ts",
+      "bytes": 5752,
+      "sha256": "1fad6b4ec0c98841057f0fa70331db5e5a231e01fd27993f9ef2758e62003971"
+    },
+    {
+      "path": "src/ui/combat-guide.ts",
+      "bytes": 1069,
+      "sha256": "b53e70606e2dc5924268e98bace4949197b71906d95bddbb275c3478dab6e05b"
+    },
+    {
+      "path": "src/ui/hud.ts",
+      "bytes": 6756,
+      "sha256": "5a6ab5b95979d68a990eb62d0f6579673d981c4200b2793deae60d8e3a4b82c6"
+    },
+    {
+      "path": "src/ui/i18n.ts",
+      "bytes": 5794,
+      "sha256": "ec75b7930f70b5655ba98ea3e5807427dc822185ea45e34c7f7b017696de03c5"
+    },
+    {
+      "path": "src/ui/interface.ts",
+      "bytes": 1238,
+      "sha256": "017401cc6ba1c471b4790f1d2bd1b9bb2574a6a499f2a269600231eb44dbbbbb"
+    },
+    {
+      "path": "src/ui/screens.ts",
+      "bytes": 2707,
+      "sha256": "b6b684c8603959eadfaa9b5af8ac3303e23080b86ca1780a5c231823009e8f75"
+    },
+    {
+      "path": "src/ui/style.css",
+      "bytes": 14052,
+      "sha256": "4a857fa3483958affe670d434760dba6e8e02e45c4c2439f17b9369d8f740bdd"
+    },
+    {
+      "path": "src/view/camera-clearance.ts",
+      "bytes": 1039,
+      "sha256": "0e7e11a5774582384eb3c4aa7997d4383d6f830751024571472bed173acefcf1"
+    },
+    {
+      "path": "src/view/camera-rig.ts",
+      "bytes": 4624,
+      "sha256": "ed54a7aad1300d9380928a9f2f4dfcc852c8c4df1f5fd5377557fe9aec543451"
+    },
+    {
+      "path": "src/view/player-model.ts",
+      "bytes": 23802,
+      "sha256": "8011b95ac2754b559bed7a37c6d0d9d6f2d6876850c8152e484b0c9ff51b771b"
+    },
+    {
+      "path": "src/view/player-poses.ts",
+      "bytes": 11722,
+      "sha256": "e7153e9ca19f9c71cefc476017d6068059a89ff841347a924f8567d682865698"
+    },
+    {
+      "path": "src/view/soldier-view.ts",
+      "bytes": 12143,
+      "sha256": "96a7c1d862dd4c678ab2e2d8e3cf5489f689e870a7cb7b5a00b48aa833c0fdcb"
+    },
+    {
+      "path": "src/view/weapon-grip.ts",
+      "bytes": 1202,
+      "sha256": "21bd9873f66e73597ed685d21b7be5e660312a2f6d27a33275459fa5511a973c"
+    },
+    {
+      "path": "src/view/zhaoyun-adapter.ts",
+      "bytes": 9085,
+      "sha256": "9305d8825edab72ae903db428cfbbf2ffdc1dff3477d43d65dc94fb9348ae271"
+    },
+    {
+      "path": "src/world/castle.ts",
+      "bytes": 18089,
+      "sha256": "30924ebab3a40e6285500f8423001ab29bd7c387658935f9cc235d6f39d0eb53"
+    },
+    {
+      "path": "src/world/fire.ts",
+      "bytes": 6607,
+      "sha256": "4fefaac070c70744bef48bd6c596b4d038a27c2e680d45230375b5a71caf60b0"
+    },
+    {
+      "path": "src/world/flags.ts",
+      "bytes": 2412,
+      "sha256": "f33f9b69137bc658828e6192e968ce67c1c478a97eef1f46a54e6d5db05c0140"
+    },
+    {
+      "path": "src/world/layout.ts",
+      "bytes": 2188,
+      "sha256": "3c2071f69312201b966d520f0c6a5cd3a20c0fb31fdf86afadf30d998c8a48b6"
+    },
+    {
+      "path": "src/world/lights.ts",
+      "bytes": 2365,
+      "sha256": "8152de098b73f3f05ea1e0fc323e26b24ba9f1017b43052e0bc296838b038afb"
+    },
+    {
+      "path": "src/world/sky.ts",
+      "bytes": 2720,
+      "sha256": "c30448ee72b0bf302d1f1d5d79863cfa1a6fe98a67930198bd57b5d1c9238bf0"
+    },
+    {
+      "path": "src/world/textures.ts",
+      "bytes": 4380,
+      "sha256": "49cfd3b47535f96dee58154d8cd2d29429e1e850101939bab2a5e30351348fb2"
+    },
+    {
+      "path": "src/world/voxel-builder.ts",
+      "bytes": 3118,
+      "sha256": "cb1f702b070eb917d12db4ca3e7639745b77fdf5dfcf0a1380a5353c65a34215"
+    },
+    {
+      "path": "tests/camera-clearance.test.ts",
+      "bytes": 560,
+      "sha256": "54271bfffc552881f0c9f1a21e48db90424ed60925167d9e80bf523d7d8da41f"
+    },
+    {
+      "path": "tests/camera-rig.test.ts",
+      "bytes": 890,
+      "sha256": "6c61ab4daed3a36b82e03af2a6e0e7748ee724875503153b44252bec6871adb5"
+    },
+    {
+      "path": "tests/combat-guide.test.ts",
+      "bytes": 1343,
+      "sha256": "fa3a1f31d0261cdd2c423c65746de9a711fac9e2bb3af9e8679aa0f87baf725f"
+    },
+    {
+      "path": "tests/combo.test.ts",
+      "bytes": 2028,
+      "sha256": "b0150ffd33208d54084d144cd5faccacb93ce5514c3106e67612306254322380"
+    },
+    {
+      "path": "tests/enemies.test.ts",
+      "bytes": 3855,
+      "sha256": "239481cb9306d72c6e7057d2747c737b5440770c25a52ffff323a6926043099d"
+    },
+    {
+      "path": "tests/hitshape.test.ts",
+      "bytes": 1796,
+      "sha256": "66fa6e0654cbc1ab038c7b1a0659198f1a9bc82df5ffba4e24338b28770e8afb"
+    },
+    {
+      "path": "tests/i18n.test.ts",
+      "bytes": 1403,
+      "sha256": "0caa85961bdf85f5d4773f030138fff924a360e28c0596a894e2ba29aed6497b"
+    },
+    {
+      "path": "tests/ik.test.ts",
+      "bytes": 1277,
+      "sha256": "74096076de44b12b0c87d5a86ccd3263f50bb419548ec564f3704060c155c1da"
+    },
+    {
+      "path": "tests/input.test.ts",
+      "bytes": 2789,
+      "sha256": "e00fa21294494a62ead894fc2a79a6dfc42ce8deedee17c5f104b5d5fceb6eb5"
+    },
+    {
+      "path": "tests/layout.test.ts",
+      "bytes": 1341,
+      "sha256": "206592a4a1a0ae5a252fb3ce68c81b7f0e6394a4a133040279209286b9691b74"
+    },
+    {
+      "path": "tests/moves.test.ts",
+      "bytes": 1698,
+      "sha256": "a11526144b536f61ec7f697c18b44022c805e40dfb406b8e88b30ab1caeecedc"
+    },
+    {
+      "path": "tests/player.test.ts",
+      "bytes": 8156,
+      "sha256": "0b3363841c87c17735e46f9f8d37c068c61ae71e810d3cb104184dc00ca54c8f"
+    },
+    {
+      "path": "tests/spatial-hash.test.ts",
+      "bytes": 708,
+      "sha256": "d93b265d947d13849a341f4c67d53083d115051e0a70c7065ac46e27d50dd4cb"
+    },
+    {
+      "path": "tests/zhaoyun.test.ts",
+      "bytes": 12580,
+      "sha256": "43a7f7b776505c7af5c0d6c314ab3f90354070be3cea4c36fda53014686a31cf"
+    },
+    {
+      "path": "tests/zip.test.ts",
+      "bytes": 1895,
+      "sha256": "26c68e2ca6cf969435b7ae9adc4c1582a8f2e8e323cc3dc221f2c593aa7626a7"
+    },
+    {
+      "path": "tsconfig.json",
+      "bytes": 589,
+      "sha256": "5f8e0e4f5627d4e04528a7fe938a8955ebb7dd3c59b3e31d0da9838c9d21d1c3"
+    },
+    {
+      "path": "vite.config.ts",
+      "bytes": 362,
+      "sha256": "fa15de26540c542ea81fd54ae4719d9990fc258d6a8ac11f1ef62ede9c2208cd"
+    }
+  ],
+  "recovery": {
+    "bundle": {
+      "path": "release/e00/20261002/source.bundle",
+      "bytes": 10049450,
+      "sha256": "0d2a5a4cc241bc28316f6d3b1e3b6d66ce2d75ab53a0fadc83dafa9d961e8bfd",
+      "availability": "local_only"
+    },
+    "completeHistory": true,
+    "bundleVerifyExitCode": 0,
+    "cloneExitCode": 0,
+    "checkoutExitCode": 0,
+    "restoredCommitCount": 10,
+    "comparedFileCount": 92,
+    "byteMismatches": 0,
+    "invalidBundleRejected": true,
+    "invalidBundleExitCode": 1,
+    "failedAttempt": "First restore object check used mistyped PR6 SHA 38a5f42ef8e215242041b8bbfbb602457f4ae5 and returned exit 128 (TEST_FAILURE). Second check read the correct 40-digit SHA from PR JSON and passed all ten commits. Bundle was unchanged."
+  },
+  "live": {
+    "pageUrl": "https://monkey1sai.itch.io/changshan-longdan",
+    "observedIframeUrl": "https://html-classic.itch.zone/html/19513683/index.html?v=1790910799",
+    "visibleChromeActions": [
+      "Run game",
+      "To Battle",
+      "Escape",
+      "Observed Paused"
+    ],
+    "sourceCommitEvidence": "INFERRED from served assets matching the selected rebuild; no embedded commit identifier.",
+    "servedAssetComparison": [
+      {
+        "file": "index-CJ77onD9.js",
+        "sha256": "76b7f0516d0a4855030b61d483bfaf3428b0aaf4b244f0eb77fa53c37b5cb875",
+        "matchesSelectedBuild": true
+      },
+      {
+        "file": "index-DevWvxf2.css",
+        "sha256": "6fa289deb202bfab10461f693340d1ff9225289fd4ff855d73ff47e6a52f3528",
+        "matchesSelectedBuild": true
+      },
+      {
+        "file": "zhaoyun.glb",
+        "sha256": "7dccbfae4b61280889a7be98370692143898c3eeef8dcd55dfa36ad4b4248a33",
+        "matchesSelectedBuild": true
+      },
+      {
+        "file": "zhaoyun.manifest.json",
+        "sha256": "b0662f373bc2349095d49cdc6a28edba9b6a9658dcd23c5a0dc60b96d93a1f2d",
+        "matchesSelectedBuild": true
+      },
+      {
+        "file": "THIRD_PARTY_LICENSES.txt",
+        "sha256": "11cbfb64e328bb8eb9646ebb1f3286df29d0d570c5aab44829a249b7947f08f3",
+        "matchesSelectedBuild": true
+      }
+    ],
+    "htmlDifference": "itch.io served HTML contains host injection; raw served HTML retained without claiming equality to dist/index.html.",
+    "previouslyDownloadedZip": {
+      "path": "release/e00/20261002/preserved/published-live-zhaoyun.zip",
+      "bytes": 3012736,
+      "sha256": "93b6d72a6a31760c3c46767635a698a7df0ab9bfaaad022d5cc95a9ca80bdc0a",
+      "availability": "local_only"
+    },
+    "previouslyDownloadedZipMatchesRebuild": true,
+    "currentZipDownloadedThisRun": false,
+    "consoleErrorsObserved": 0,
+    "consoleWarningsObserved": 0,
+    "gameplayAcceptance": "NOT_RUN: visible startup only, no full S01-S08, natural victory, performance or human sensory acceptance."
+  },
+  "checks": [
+    {
+      "command": "npm ci --offline --no-audit --no-fund --logs-dir release/e00/20261002/npm-logs",
+      "sourceSha": "c48ecd9a39abbc42ecf34ed3761248e11af7c29d",
+      "exitCode": 0,
+      "result": "PASS",
+      "node": "v22.22.0",
+      "npm": "11.6.2"
+    },
+    {
+      "command": "npm run check",
+      "sourceSha": "c48ecd9a39abbc42ecf34ed3761248e11af7c29d",
+      "exitCode": 0,
+      "result": "PASS",
+      "testFiles": 15,
+      "tests": 103,
+      "includes": [
+        "Vitest",
+        "typecheck",
+        "build"
+      ]
+    },
+    {
+      "command": "npm run package:itch",
+      "sourceSha": "c48ecd9a39abbc42ecf34ed3761248e11af7c29d",
+      "exitCode": 0,
+      "result": "PASS",
+      "zipEntries": 6,
+      "zipSha256": "93b6d72a6a31760c3c46767635a698a7df0ab9bfaaad022d5cc95a9ca80bdc0a"
+    }
+  ],
+  "acceptanceScenarios": [
+    {
+      "id": "S01",
+      "status": "not_run",
+      "evidence": null
+    },
+    {
+      "id": "S02",
+      "status": "not_run",
+      "evidence": null
+    },
+    {
+      "id": "S03",
+      "status": "not_run",
+      "evidence": null
+    },
+    {
+      "id": "S04",
+      "status": "not_run",
+      "evidence": null
+    },
+    {
+      "id": "S05",
+      "status": "not_run",
+      "evidence": null
+    },
+    {
+      "id": "S06",
+      "status": "not_run",
+      "evidence": null
+    },
+    {
+      "id": "S07",
+      "status": "not_run",
+      "evidence": null
+    },
+    {
+      "id": "S08",
+      "status": "not_run",
+      "evidence": null
+    }
+  ],
+  "blockers": [
+    "PR8 is Draft and has only author COMMENTED self-review; reviewed specification prerequisite is not formally approved.",
+    "PR3/5/6/7 remain Draft without independent APPROVED; their P0 evidence is incomplete. PR9 merge and its historical waiver do not authorize waiving E00/E01 gates.",
+    "E00 has no implementation PR, candidate CI, formal independent APPROVED, resolved-thread evidence, merge authority or post-merge validation.",
+    "Original evidence and preservation archives are local_only; formal reviewer needs accessible artifacts."
+  ],
+  "artifacts": [
+    {
+      "path": "release/e00/20261002/source.bundle",
+      "bytes": 10049450,
+      "sha256": "0d2a5a4cc241bc28316f6d3b1e3b6d66ce2d75ab53a0fadc83dafa9d961e8bfd",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/changshan-longdan-web.zip",
+      "bytes": 3012736,
+      "sha256": "93b6d72a6a31760c3c46767635a698a7df0ab9bfaaad022d5cc95a9ca80bdc0a",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/npm-ci.log",
+      "bytes": 27,
+      "sha256": "eb4c19da4a789ce38d86f7448616293c0fe7ea92d83dd3aa573166ee5341d980",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/check.log",
+      "bytes": 735,
+      "sha256": "3555745bfd06e8e7e31f3d2417d6a0af9fef00a455aa1e84d9bf7dc8bc84ea94",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/package.log",
+      "bytes": 586,
+      "sha256": "4120b43e6f2954272c0ea6de8fd1908be072e56a398aa817130a1dd4085579fe",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/bundle-verify.log",
+      "bytes": 678,
+      "sha256": "d519b8d460074fee1454b2b5f49fbb48291da73de069475707a92df45cd0fe1d",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/restore.log",
+      "bytes": 54,
+      "sha256": "f98e26320bd8d3158279282c7afc67dc260c7c116291e02acf26627ea09cf2a5",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/restore-checkout.log",
+      "bytes": 91,
+      "sha256": "dca7c03c2d8e073904f0563126dd51e55fcdf65f3c7882fc16bd104918105ee9",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/restore-attempt-1.txt",
+      "bytes": 651,
+      "sha256": "47a0eabdfd802144e4d4eed027d76aaf1964aee5541c12bc6eacd18369d06fd0",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/restore-objects-2.json",
+      "bytes": 1095,
+      "sha256": "a1505718ca8f98086d55965d8d88c63fcdd522f9613f5eb7c187db66681feb06",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/restore-bytes.json",
+      "bytes": 115,
+      "sha256": "14a5858b36b19d32a0f840166f083b3062347f4ecc24cca3a42fa1d7da71e432",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/negative-bundle.log",
+      "bytes": 88,
+      "sha256": "6a1e77cc374a726d9acda3dc96cd199560609cbc7e976457762ea2d2fe3d4874",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/worktrees.txt",
+      "bytes": 1278,
+      "sha256": "1d0ffdbacd0ed74e111299049992b64e2c133480e2df89f21430093cf4ccabac",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/worktree-status.json",
+      "bytes": 1968,
+      "sha256": "0341cb6e97e24707688082fbacca6b652985e408124726af960debb82d362da2",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/live-title.png",
+      "bytes": 100754,
+      "sha256": "89a67ecb1a758b7cd24baad52a29a714a759133f226b5caf9bd45583017f055d",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/live-battle.png",
+      "bytes": 123480,
+      "sha256": "16884aa8ffc24b9a5c4de76cf00d2e4aedf1953d3b95bf51b3b033fd30ff5509",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/source-files.json",
+      "bytes": 13918,
+      "sha256": "68898d64582a8c3d88ddb5767cc6e9bde5fc648715216295f9dd1d5bfbbdb4a7",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/preserved-assets.json",
+      "bytes": 3088,
+      "sha256": "dedbdfec9134b48b7d36ec715462588e2cf3c97e424341e6a9345330308f1c34",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/capture-snapshot.ps1",
+      "bytes": 9185,
+      "sha256": "5791b279a56dcbe97261e5eb71c3a9707144040a7c0e818568f10ea0ca89e40b",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/main.json",
+      "bytes": 98754,
+      "sha256": "8fef7fea1048bdcc62ee2161588679387a9114f77a4e9b2e2bd9dc18fdb65cbf",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/preserved/acceptance-report.md",
+      "bytes": 10777,
+      "sha256": "36331c08e7a5796c50b41733977793fcd12a0f155b20a442ad9c7bea14553e6a",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/preserved/merged-release-candidate.json",
+      "bytes": 186,
+      "sha256": "2105735548d3da143df433ecba36e717bc1470b03aa7b7a0ee39e96135345674",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/preserved/prepared-audit.json",
+      "bytes": 789,
+      "sha256": "0b7df72899e39e532ebef6415085f232ded030f70f602085642e423f9b2d0010",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/preserved/published-live-zhaoyun.zip",
+      "bytes": 3012736,
+      "sha256": "93b6d72a6a31760c3c46767635a698a7df0ab9bfaaad022d5cc95a9ca80bdc0a",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/preserved/rollback-live-before-zhaoyun.zip",
+      "bytes": 4389170,
+      "sha256": "df5d6af7dbbee3e120faffe6ad53acb4f199eada0876e3b68306cda6709238b7",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/preserved/source-audit.json",
+      "bytes": 5899,
+      "sha256": "a17bed06f0cd71e518a92e1070bb98d84f41ddf959675ae123a88d3cffc72127",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/preserved/zhaoyun-original-copy.blend",
+      "bytes": 14046009,
+      "sha256": "c8dff5bf7d43c04040a5f661b64a8702b5bedaf5fb2f69debd10a626dcc901a9",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/preserved/zhaoyun-rigged-copy.blend",
+      "bytes": 14017996,
+      "sha256": "736ef253dde7e82621acaee2076e4f99e79a852284debc3debc4b03db23df5cf",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/preserved/reexport/prepared-audit.json",
+      "bytes": 789,
+      "sha256": "0b7df72899e39e532ebef6415085f232ded030f70f602085642e423f9b2d0010",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/preserved/reexport/zhaoyun-rigged-copy.blend",
+      "bytes": 14017167,
+      "sha256": "91205115583e9f1c495b7def81318079422454d232be0ae11f900a86f47a490c",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/pr8-reference/AGENTS.md",
+      "bytes": 5632,
+      "sha256": "f9a4c587bb4f8aca5f4a9b251c063cc9f4bafbcf0b634df90536f1179f109198",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/pr8-reference/MUSOU_EXECUTION_PLAN.md",
+      "bytes": 27618,
+      "sha256": "9fb2dfbe94c3b16a789d7892bd3b33e3797a24ada09f9e36e3c780b8100eea18",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/pr8-reference/MUSOU_STEP_RECORD.template.md",
+      "bytes": 4806,
+      "sha256": "91fd07865aa96250b47681c809ade58f30af3b6460801da9d1970d381a91d6b2",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/pr8-reference/MUSOU_VARIABLES.md",
+      "bytes": 19509,
+      "sha256": "8516c0b0cc2056e3896e84df4e6c8da87aca67bf5f6769386dff7d594339a198",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/pr8-reference/musou-profile.proposed.json",
+      "bytes": 7686,
+      "sha256": "8490a542024c444299464af748573c8820cbc8d16a2d6adee5308743b5403577",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/live-readback/index-CJ77onD9.js",
+      "bytes": 768885,
+      "sha256": "76b7f0516d0a4855030b61d483bfaf3428b0aaf4b244f0eb77fa53c37b5cb875",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/live-readback/index-DevWvxf2.css",
+      "bytes": 10783,
+      "sha256": "6fa289deb202bfab10461f693340d1ff9225289fd4ff855d73ff47e6a52f3528",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/live-readback/index.html",
+      "bytes": 7276,
+      "sha256": "cf9c6f3cd55b030a1230aba663640806f6ed502a2d0a7e96f80a8297431b46e8",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/live-readback/THIRD_PARTY_LICENSES.txt",
+      "bytes": 1251,
+      "sha256": "11cbfb64e328bb8eb9646ebb1f3286df29d0d570c5aab44829a249b7947f08f3",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/live-readback/zhaoyun.glb",
+      "bytes": 3706788,
+      "sha256": "7dccbfae4b61280889a7be98370692143898c3eeef8dcd55dfa36ad4b4248a33",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/live-readback/zhaoyun.manifest.json",
+      "bytes": 1533,
+      "sha256": "b0662f373bc2349095d49cdc6a28edba9b6a9658dcd23c5a0dc60b96d93a1f2d",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/pr-3.json",
+      "bytes": 3228,
+      "sha256": "a71024c50f0749b10b63c3d9bc3fe620703632134fd3cf05ea1916e53669bf02",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/pr-3-check-runs.json",
+      "bytes": 7251,
+      "sha256": "7f6439f9fa53b8c28c738ffcb3ffd74ac5165a08fd8cf87a2c58db0911c076e8",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/pr-5.json",
+      "bytes": 5193,
+      "sha256": "fcaf07162a674d9928586d133124b24bda16ebc1812d0f687b11b39083967a5b",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/pr-5-check-runs.json",
+      "bytes": 7235,
+      "sha256": "91ba426b6b25d6400f6e4594368bbe9a5146012bc45d73dcbabe5ab0ddc5f1a1",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/pr-6.json",
+      "bytes": 4804,
+      "sha256": "ff3f4ff5335ef9bf24314875106f2303d7a15f2bdf52b4a0c6f6d11580cef673",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/pr-6-check-runs.json",
+      "bytes": 7243,
+      "sha256": "7cd595159255281826874ceed0c68e1deb84bad50f9ae25ecfc11922ea3416db",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/pr-7.json",
+      "bytes": 8204,
+      "sha256": "5db8b20125a74ce42390585e0a284e56e72cabcc33be94e8e1f0b1752a9f1b11",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/pr-7-check-runs.json",
+      "bytes": 7251,
+      "sha256": "56ecc7ac79a92ca7e81e6f035cbddacc7064fd9ccb4a88fb13e8eaafd307e8c6",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/pr-8.json",
+      "bytes": 11565,
+      "sha256": "bb8f6f8c553cff37fdddd7d581de7018c7514b09c142daf05a91fe74cc2fba30",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/pr-8-check-runs.json",
+      "bytes": 7277,
+      "sha256": "20ec5af29a757ea6671e99dd5914d7222ebba65ee6095a0fee36a0ad3f8c2a2e",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/pr-9.json",
+      "bytes": 5890,
+      "sha256": "714cbe4083215dfcb742fa13f5cf67005aacc8db57b3b92ea949cea69f24d8b4",
+      "availability": "local_only"
+    },
+    {
+      "path": "release/e00/20261002/pr-9-check-runs.json",
+      "bytes": 6243,
+      "sha256": "6e3a7452743c90bad0b898812ae996925009ada22094263aafbd5db87ac8547b",
+      "availability": "local_only"
+    }
+  ]
+}
