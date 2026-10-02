@@ -39,3 +39,17 @@ Add or update Vitest tests for every change to combat, AI, player or layout logi
 ## Commits
 
 Use concise imperative subjects, optionally scoped (for example `combat: add jump charge`). Do not commit `node_modules/`, `dist/` or other generated output.
+
+## Musou Engineering Variables
+
+Before changing combat, animation, crowd AI, camera, assets, performance or engine architecture, read `docs/engineering/MUSOU_VARIABLES.md` and `docs/engineering/musou-profile.proposed.json` alongside the existing `docs/art/` workflow.
+
+Keep source baselines, proposed tuning and measured results separate. The proposed profile is NOT connected to runtime; do not claim that creating or editing it changes gameplay. Preserve existing moves, character assets, visible load-failure fallback and weapon tip/tipBase contracts. Unity migration requires a separately reviewed decision; do not silently remove the web delivery or existing TypeScript implementation.
+
+For each implementation PR, identify changed variable groups and affected S01-S08 acceptance scenarios. Record exact commit/profile/asset versions and distinguish unit tests, rendered checks, natural play and human sensory review. Engine MCP or test runners are valid when they provide equivalent evidence; desktop clicking is not intrinsically required. Never substitute headless results, a screenshot or CI success for complete visual/feel acceptance. Preserve missing evidence and failures. Complete each implementation phase with tests, actual evidence, review and merge before proceeding to the next. No paid asset generation without explicit authorization.
+
+### Executable Step Plan
+
+Follow `docs/engineering/MUSOU_EXECUTION_PLAN.md` (E00-E13) and copy `docs/engineering/MUSOU_STEP_RECORD.template.md` into each implementation PR. These are planned steps, not completed gameplay work; PR #8 remains the specification/plan PR. Implement only the first eligible step, with pre-implementation scope review, positive/negative/boundary tests, applicable rendered/play evidence, scoped commits and independent final review of the exact candidate SHA.
+
+Do not self-approve or carry CI/review/video evidence from an older candidate. Record actual reviewer identity, accessible artifacts, base/head/profile/asset hashes, failures and rollback. Missing tools or evidence must block completion; NOT_APPLICABLE needs a reviewed reason and cannot waive promised acceptance. Mark VERIFIED only after same-version validation and formal independent APPROVED; mark DONE only after an authorized merge and post-merge compatibility checks. Stop after two unsuccessful correction rounds, record the blocker, and never proceed to the next step, merge, publish or spend without the required gates and authorization.
