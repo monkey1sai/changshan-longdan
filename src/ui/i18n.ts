@@ -4,8 +4,13 @@ export type Locale = 'zh-Hant' | 'en'
 export type TranslationParams = Record<string, string | number>
 
 const zhHant = {
+  'battle.opening': '魏軍列陣',
+  'battle.pressure': '敵軍壓上！',
+  'battle.surge': '攻勢加劇！',
+  'battle.finale': '最後包圍！',
   'hud.style': '龍膽槍法',
   'hud.guard': '架槍守勢',
+  'hud.officer': '魏軍隊長',
   'result.victory': '完全勝利',
   'result.defeat': '趙雲 敗走',
   'result.ko': '擊破數',
@@ -37,7 +42,11 @@ const zhHant = {
 export type TranslationKey = keyof typeof zhHant
 
 const en: Record<TranslationKey, string> = {
-  'hud.style': 'Dragon Spear Style', 'hud.guard': 'Guard Stance',
+  'battle.opening': 'Wei troops assemble',
+  'battle.pressure': 'The enemy advances!',
+  'battle.surge': 'The assault intensifies!',
+  'battle.finale': 'The final encirclement!',
+  'hud.style': 'Dragon Spear Style', 'hud.guard': 'Guard Stance', 'hud.officer': 'Wei Captain',
   'result.victory': 'Complete Victory', 'result.defeat': 'Zhao Yun Has Fallen',
   'result.ko': 'KOs', 'result.maxCombo': 'Max Combo', 'result.time': 'Battle Time', 'result.damage': 'Damage Taken', 'result.rank': 'Rank',
   'guide.dead': 'Zhao Yun has fallen · Press Enter after results to fight again',
