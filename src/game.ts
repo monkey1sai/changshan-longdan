@@ -114,7 +114,7 @@ export class Game {
   constructor(canvas: HTMLCanvasElement) {
     this.pipeline = new Pipeline(canvas)
     this.rig = new CameraRig(window.innerWidth / window.innerHeight)
-    this.input = new Input(window, canvas)
+    this.input = new Input(window, canvas, () => this.mode === 'title')
 
     const castle = buildCastle(createGroundTexture())
     this.barracksRoofs = castle.barracksRoofs
