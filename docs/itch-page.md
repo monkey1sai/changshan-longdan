@@ -5,6 +5,22 @@ itch.io 專案頁的填寫內容與上傳步驟。更新既有遊戲需作者明
 - 遊戲壓縮檔：執行 `npm run package:itch`，產生 `release/changshan-longdan-web.zip`
 - 封面與截圖：`release/itch/`（開發版以 `__game` 擺出場面後截圖並裁切；`release/` 不進版控）
 
+## 目前上架狀態（2026-10-02）
+
+| 項目 | 內容 |
+| --- | --- |
+| 專案頁 | https://monkey1sai.itch.io/changshan-longdan |
+| 原始碼 | PR #9 已合併；source commit `c48ecd9a39abbc42ecf34ed3761248e11af7c29d`，與已驗收 head `7f9a0692bccdde938be7e117984a2fab628d7d8f` 的遊戲檔案內容一致 |
+| 上傳檔 | `changshan-longdan-web.zip`，3,012,736 bytes；SHA-256 `93b6d72a6a31760c3c46767635a698a7df0ab9bfaaad022d5cc95a9ca80bdc0a`；上傳後重新下載確認相同 |
+| 人物素材 | 使用者趙雲蒙皮 GLB；3,706,788 bytes；SHA-256 `7dccbfae4b61280889a7be98370692143898c3eeef8dcd55dfa36ad4b4248a33` |
+| 公開設定 | 保留 Public、$0 or donate／US$2、960×540、Fullscreen button；未修改收款、稅務、帳號權限 |
+| 公開站驗證 | MCP 操作可見 Chrome，頁面 viewport 1650×885、遊戲 iframe 960×540；新人物可見，實際出陣、鍵盤輸入、暫停／恢復、龍膽與自然死亡／重試；結算 37 KOs、Max Combo 173、0:35、Damage Taken 1000；重試回到 0 KOs／300 敵兵。擷取 console warn/error 為 0 |
+| 頁面文案 | 中英模型來源改為作者提供的 Blender 蒙皮模型；重新載入確認無舊 Quaternius 來源文案 |
+| 回滾 | 已備份更新前實際線上 ZIP：4,389,170 bytes；SHA-256 `df5d6af7dbbee3e120faffe6ad53acb4f199eada0876e3b68306cda6709238b7`；來源 commit 未核實 |
+| 證據 | repo 外 `user-zhaoyun-20261001/` 的 `published-live-zhaoyun.zip`、`itch-live-battle-start.jpg`、`itch-live-27ko.jpg`、`itch-live-retry-pause.jpg`、`publication-report.md` |
+
+本次確認已合併角色版本上架與公開站基本遊玩。依使用者指示跳過剩餘 P0 缺口；近牆鏡頭遮擋、音效聽感、實體手把、低階硬體與長時間穩定性不能列為通過。MCP 截圖期間曾觸發失焦暫停；技能輸入後 DOM 的 Azure Dragon Assault、隨後 37 KOs 結算與畫面分開記錄，不把暫停截圖視為完整技能影片。下方更新版本段落保留上傳前的授權與備份紀錄。
+
 ## 歷史上架狀態（2026-09-29）
 
 | 項目 | 內容 |
