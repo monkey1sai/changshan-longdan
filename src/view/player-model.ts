@@ -1,10 +1,12 @@
 import { Color, Group, Matrix4, Mesh, MeshStandardMaterial, Object3D, Quaternion, Vector3 } from 'three'
 import type { MoveId } from '../combat/moves.ts'
 import { solveTwoBone } from '../core/ik.ts'
-import { clamp, smoothstep, TAU } from '../core/math.ts'
+import { clamp, smoothstep, TAU, wrapAngle } from '../core/math.ts'
 import type { Player } from '../entities/player.ts'
 import { VoxelBuilder } from '../world/voxel-builder.ts'
 import { AIR, blankPose, copyPose, crossfade, DOWN, GUARD, HURT, mixPose, movePose, ROLL, RUN, STANCE } from './player-poses.ts'
+import { ZhaoYunAdapter, ZHAOYUN_ASSET, ZHAOYUN_DIMENSIONS as D } from './zhaoyun-adapter.ts'
+import { fitWeaponGrip } from './weapon-grip.ts'
 
 const hex = (h: string) => new Color(h)
 const Z = {
@@ -24,8 +26,8 @@ const Z = {
 }
 
 const DOWN_AXIS = new Vector3(0, -1, 0)
-const UPPER = 0.32
-const LOWER = 0.32
+const UPPER = D.upperArm
+const LOWER = D.lowerArm
 const CAPE_SEGMENTS = 5
 const CAPE_LENGTH = 0.3
 
@@ -68,7 +70,7 @@ const q = new Quaternion()
 const rootQ = new Quaternion()
 const basis = new Matrix4()
 
-/** 趙雲的體素模型：姿勢驅動、雙臂 IK 握槍、披風以 Verlet 模擬。 */
+/** 趙雲角色：程序姿勢／IK 驅動使用者蒙皮，保留載入失敗的可辨識回退。 */
 export class PlayerModel {
   readonly group = new Group()
   /** 槍尖與槍身中段的世界座標，給刀光使用。 */
@@ -83,6 +85,15 @@ export class PlayerModel {
   private readonly kneeL = new Group()
   private readonly kneeR = new Group()
   private readonly spear = new Group()
+  private readonly handAnchorL = new Group()
+  private readonly handAnchorR = new Group()
+  private readonly footAnchorL = new Group()
+  private readonly footAnchorR = new Group()
+  private readonly footLocalL = new Vector3(.15, D.soleAnchorY, .12)
+  private readonly footLocalR = new Vector3(-.15, D.soleAnchorY, -.12)
+  private readonly footFromL = this.footLocalL.clone()
+  private readonly footFromR = this.footLocalR.clone()
+  private readonly character: ZhaoYunAdapter
   private readonly shoulderAnchorL = new Object3D()
   private readonly shoulderAnchorR = new Object3D()
   private readonly capeAnchor = new Object3D()
@@ -103,6 +114,14 @@ export class PlayerModel {
   private lastKey = ''
   private lastMove: MoveId | null = null
   private lastMoveTime = 0
+  private visualFacing = 0
+  private previousFacing = 0
+  private facingFrom = 0
+  private facingFade = 1
+  private facingFadeTime = .12
+  private facingReady = false
+  private runBlend = 0
+  private runFrom = 0
 
   constructor() {
     const metal = new MeshStandardMaterial({ vertexColors: true, roughness: 0.32, metalness: 0.65 })
@@ -167,17 +186,59 @@ export class PlayerModel {
       this.capePts.push(new Vector3())
       this.capePrev.push(new Vector3())
     }
+    this.group.add(this.handAnchorL, this.handAnchorR, this.footAnchorL, this.footAnchorR)
+    this.character = new ZhaoYunAdapter(this.group, {
+      hips: this.hips, torso: this.torso, head: this.head,
+      upperL: this.upperL, upperR: this.upperR, foreL: this.foreL, foreR: this.foreR,
+      thighL: this.thighL, thighR: this.thighR, kneeL: this.kneeL, kneeR: this.kneeR,
+      handL: this.handAnchorL, handR: this.handAnchorR, spear: this.spear,
+      footL: this.footAnchorL, footR: this.footAnchorR,
+      capeTop: this.cape[0], capeLower: this.cape[2],
+    })
+    void this.character.load()
+  }
+
+  get assetStatus() {
+    return { id: ZHAOYUN_ASSET.id, state: this.character.state, error: this.character.error,
+      triangles: this.character.skin?.triangles ?? 0 }
+  }
+  get animationStatus() {
+    this.spear.getWorldPosition(v1)
+    const rightGripError = v1.distanceTo(this.handAnchorR.position)
+    this.spear.getWorldQuaternion(q)
+    axis.set(0, 0, 1).applyQuaternion(q)
+    v2.subVectors(this.handAnchorL.position, v1)
+    const leftGripError = v2.addScaledVector(axis, -v2.dot(axis)).length()
+    return { rightGripError, leftGripError, support: this.pose.lh, transition: this.fade, visualFacing: this.visualFacing, hipsHeight: this.hips.position.y,
+      feet: [this.footAnchorL.position.toArray(), this.footAnchorR.position.toArray()] }
   }
 
   /** 瞬間移動（重新開局）後呼叫，避免披風被拉長。 */
   resetCape(): void {
     this.capeReady = false
+    copyPose(this.pose, STANCE)
+    copyPose(this.from, STANCE)
+    copyPose(this.target, STANCE)
+    this.fade = 1
+    this.lastKey = ''
+    this.lastMove = null
+    this.lastMoveTime = 0
+    this.facingReady = false
+    this.runBlend = this.runFrom = 0
+    this.footLocalL.set(.15, D.soleAnchorY, .12)
+    this.footLocalR.set(-.15, D.soleAnchorY, -.12)
+    this.footFromL.copy(this.footLocalL)
+    this.footFromR.copy(this.footLocalR)
   }
 
   update(player: Player, dt: number, time: number): void {
     const key = this.poseKey(player)
-    if (key !== this.lastKey) {
+    const changed = key !== this.lastKey
+    if (changed) {
       copyPose(this.from, this.pose)
+      this.footFromL.copy(this.footLocalL)
+      this.footFromR.copy(this.footLocalR)
+      this.runFrom = this.runBlend
       this.fade = 0
       this.fadeTime = key === 'move' || key === 'jump' ? 0.14 : 0.07
       this.lastKey = key
@@ -186,16 +247,42 @@ export class PlayerModel {
     this.targetPose(player)
     if (this.fade < 1) crossfade(this.pose, this.from, this.target, smoothstep(0, 1, this.fade))
     else copyPose(this.pose, this.target)
+    const run = player.state === 'move' ? smoothstep(0.3, 6.5, player.speed) : 0
+    this.runBlend = this.fade < 1 ? this.runFrom + (run - this.runFrom) * smoothstep(0, 1, this.fade) : run
 
+    this.updateFacing(player, dt, changed)
     this.apply(player)
     this.solveArms(player)
-    if (dt > 0) this.updateCape(dt, time) // 命中停頓時披風也要凍結
+    if (dt > 0 || !this.capeReady) this.updateCape(dt, time)
+    this.character.update(this.pose.lh)
 
     const musou = player.state === 'musou'
     this.blade.emissive.set(musou ? '#ffc766' : '#7cc8ff')
     this.blade.emissiveIntensity = musou ? 4 + Math.sin(time * 30) * 1.2 : 1.8
-    this.spear.localToWorld(this.tip.set(0, 0, 2.7))
-    this.spear.localToWorld(this.tipBase.set(0, 0, 1.25))
+    this.spear.localToWorld(this.tip.set(0, 0, D.spearTipZ))
+    this.spear.localToWorld(this.tipBase.set(0, 0, D.spearTrailBaseZ))
+  }
+
+  /** 受擊／自動鎖敵會瞬間改變規則朝向；僅讓可見角色沿最短角度銜接。
+   * 攻擊在第一個命中窗口前完成，hitstop 的 dt=0 也凍結這段銜接。 */
+  private updateFacing(player: Player, dt: number, changed: boolean): void {
+    if (!this.facingReady) {
+      this.visualFacing = this.previousFacing = player.facing
+      this.facingFade = 1
+      this.facingReady = true
+      return
+    }
+    const reaction = player.state === 'hurt' || player.state === 'down'
+    if ((changed || reaction) && Math.abs(wrapAngle(player.facing - this.previousFacing)) > .1) {
+      this.facingFrom = this.visualFacing
+      this.facingFade = 0
+      this.facingFadeTime = player.move !== null ? Math.min(.07, player.move.hits[0].t0) : .12
+    }
+    this.facingFade = Math.min(1, this.facingFade + dt / this.facingFadeTime)
+    this.visualFacing = this.facingFade < 1
+      ? this.facingFrom + wrapAngle(player.facing - this.facingFrom) * smoothstep(0, 1, this.facingFade)
+      : player.facing
+    this.previousFacing = player.facing
   }
 
   private poseKey(player: Player): string {
@@ -256,8 +343,9 @@ export class PlayerModel {
   private apply(player: Player): void {
     const p = this.pose
     this.root.position.copy(player.pos)
-    this.root.rotation.set(0, player.facing + p.spin, 0)
-    const hipsY = 0.95 + p.crouch
+    this.root.rotation.set(0, this.visualFacing + p.spin, 0)
+    const runWeight = this.runBlend
+    const hipsY = 0.95 + p.crouch - .12 * runWeight
     this.hips.position.set(0, hipsY, 0)
     this.hips.rotation.set(p.flip, 0, 0)
     this.torso.rotation.set(p.lean, p.twist, 0)
@@ -296,6 +384,39 @@ export class PlayerModel {
     this.kneeL.rotation.set(kneeL, 0, 0)
     this.kneeR.rotation.set(kneeR, 0, 0)
     this.root.updateMatrixWorld(true)
+    if (!airborne && !lying && Math.abs(p.flip) < .05) {
+      this.stepFoot(this.footLocalL, this.footFromL, 1, player.runPhase * D.runPhaseScale, runWeight)
+      this.stepFoot(this.footLocalR, this.footFromR, -1, player.runPhase * D.runPhaseScale + Math.PI, runWeight)
+      this.solveLeg(this.thighL, this.kneeL, this.footLocalL, this.footAnchorL, 1)
+      this.solveLeg(this.thighR, this.kneeR, this.footLocalR, this.footAnchorR, -1)
+    } else {
+      this.kneeL.localToWorld(this.footAnchorL.position.set(0, -D.lowerLeg, 0))
+      this.kneeR.localToWorld(this.footAnchorR.position.set(0, -D.lowerLeg, 0))
+    }
+    this.root.updateMatrixWorld(true)
+  }
+
+  private stepFoot(out: Vector3, from: Vector3, side: number, phase: number, run: number): void {
+    const u = ((phase / TAU) % 1 + 1) % 1
+    const stride = Math.PI / (1.25 * D.runPhaseScale)
+    const swing = Math.max(0, (u - .5) * 2)
+    const z = u < .5 ? stride * (.5 - 2 * u) : stride * (-.5 + smoothstep(0, 1, swing))
+    const y = u < .5 ? 0 : Math.sin(swing * Math.PI) * .20
+    out.set(side * (.15 + this.pose.stance * .035), D.soleAnchorY + y * run,
+      side * this.pose.stance * .30 * (1 - run) + z * run)
+    if (this.fade < 1) out.lerpVectors(from, out, smoothstep(0, 1, this.fade))
+  }
+
+  private solveLeg(thigh: Group, knee: Group, target: Vector3, marker: Group, side: number): void {
+    this.root.localToWorld(v1.copy(target))
+    this.hips.worldToLocal(v1)
+    pole.set(side * .15, -.5, 1.5)
+    solveTwoBone(thigh.position, v1, pole, D.upperLeg, D.lowerLeg, elbow, hand)
+    q.setFromUnitVectors(DOWN_AXIS, v2.subVectors(elbow, thigh.position).normalize())
+    thigh.quaternion.copy(q)
+    rootQ.setFromUnitVectors(DOWN_AXIS, v3.subVectors(hand, elbow).normalize())
+    knee.quaternion.copy(q).invert().multiply(rootQ)
+    this.hips.localToWorld(marker.position.copy(hand))
   }
 
   private solveArms(player: Player): void {
@@ -306,21 +427,25 @@ export class PlayerModel {
     this.spear.localToWorld(gripR.set(0, 0, 0))
     this.spear.getWorldQuaternion(q)
     axis.set(0, 0, 1).applyQuaternion(q)
+    fitWeaponGrip(gripR, gripL, axis, shoulderR, shoulderL, UPPER + LOWER - .002, p.lh > .98)
+    this.spear.parent!.worldToLocal(v1.copy(gripR))
+    this.spear.position.copy(v1)
+    this.spear.updateMatrixWorld(true)
 
     // 左手握在槍身上離左肩最近的點；不握槍時自然擺在腰側
-    const t = clamp(v1.subVectors(shoulderL, gripR).dot(axis), 0.25, 1.1)
-    gripL.copy(gripR).addScaledVector(axis, t)
     const swing = player.state === 'move' ? Math.sin(player.runPhase) * 0.3 * smoothstep(0.3, 6.5, player.speed) : 0
     this.torso.localToWorld(v2.set(0.36, 0.12, 0.12 - swing))
     handL.lerpVectors(v2, gripL, clamp(p.lh, 0, 1))
 
     pole.set(-0.7, -0.6, -0.5).applyQuaternion(rootQ).add(shoulderR)
     solveTwoBone(shoulderR, gripR, pole, UPPER, LOWER, elbow, hand)
+    this.handAnchorR.position.copy(hand)
     this.placeBone(this.upperR, shoulderR, elbow)
     this.placeBone(this.foreR, elbow, hand)
 
     pole.set(0.7, -0.6, -0.5).applyQuaternion(rootQ).add(shoulderL)
     solveTwoBone(shoulderL, handL, pole, UPPER, LOWER, elbow, hand)
+    this.handAnchorL.position.copy(hand)
     this.placeBone(this.upperL, shoulderL, elbow)
     this.placeBone(this.foreL, elbow, hand)
   }

@@ -1,6 +1,6 @@
 # 常山龍膽
 
-在瀏覽器裡玩的 PS2 風格一騎當千動作遊戲（musou-like）：趙雲單騎對上三百名魏兵。以 Vite + TypeScript + Three.js 製作；人物、城池與龍全部由程式產生體素模型，音效與配樂全部以 WebAudio 即時合成，沒有任何外部模型、貼圖或音檔。
+在瀏覽器裡玩的 PS2 風格一騎當千動作遊戲（musou-like）：趙雲單騎對上三百名魏兵。以 Vite + TypeScript + Three.js 製作；趙雲採用使用者提供的 Blender 蒙皮模型，敵兵、城池與龍維持程序式體素外觀，音效與配樂以 WebAudio 即時合成。
 
 **線上試玩**：[monkey1sai.itch.io/changshan-longdan](https://monkey1sai.itch.io/changshan-longdan)（itch.io，免費，歡迎自由贊助）
 
@@ -80,3 +80,15 @@ npm run package:itch  # 建置並打包成 itch.io 用的 release/changshan-long
 防禦整合測試可用 `__game.strike(damage, heavy, fromX, fromZ)`，經由正式受傷／格擋／敗北流程送入一擊。這是 DEV 專用測試鉤子，不是正式玩法。失焦自動暫停時，須先恢復戰鬥才能推進戰鬥邏輯。
 
 已有 Playwright 與 Chrome 的環境可執行 `node scripts/verify-experience.mjs <Playwright模組目錄> <證據輸出目錄> [本機開發網址]`。腳本以可見 Chrome 操作鍵盤、截圖並量測實際動畫幀間隔；精準格擋、反擊與致死格擋另以 DEV 鉤子建立確定情境，報告會分開標示。腳本不會安裝套件，預設網址為 `http://127.0.0.1:5174/`。
+
+## 趙雲模型與動作驗收
+
+素材、骨架對應與匯出方法見 [docs/art/zhaoyun-integration.md](docs/art/zhaoyun-integration.md)，資源紀錄為 `public/models/zhaoyun.manifest.json`。GLB 內含網格、骨架與三張貼圖；動作由既有招式時間和程序式姿勢驅動，不另加 root motion。
+
+已有 Playwright 與 Chrome 時，可在啟動開發服務後執行下列可見錄影。`--playwright-module` 指向既有 Playwright 的 `package.json`；若已安裝於可解析的環境可省略，腳本不會自行安裝。證據目錄必須放在 repo 外。
+
+```sh
+node scripts/verify-player-animation.mjs --evidence <repo外目錄> --url http://127.0.0.1:5173/ --playwright-module <playwright/package.json>
+```
+
+腳本以真實鍵盤／滑鼠操作、自然充能和自然死亡／重試，輸出 WebM、截圖、console 與唯讀診斷。`--case details` 可只補錄清楚的連招、C1／C2、合法取消與普通格擋；`--case transition` 補錄中央側移的跑步／跳躍／落地，以及直接跑步接 N1–N6，並檢查流程確實發生。影片錄製為 25 FPS、無音軌；仍需以正常與慢速回看姿勢交界，診斷數字不能代替視覺驗收。模型狀態必須是 `ready` 且識別為本次資源；回退體素模型不算通過。

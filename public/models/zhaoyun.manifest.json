@@ -1,0 +1,42 @@
+{
+  "id": "user-zhaoyun-c8dff5",
+  "source": {
+    "kind": "user-created-blender-file",
+    "file": "趙雲.blend",
+    "sha256": "c8dff5bf7d43c04040a5f661b64a8702b5bedaf5fb2f69debd10a626dcc901a9",
+    "ownership": "使用者聲明自行製作並授權本次整合；未增加第三方素材",
+    "preserved": true
+  },
+  "export": {
+    "file": "models/zhaoyun.glb",
+    "sha256": "7dccbfae4b61280889a7be98370692143898c3eeef8dcd55dfa36ad4b4248a33",
+    "bytes": 3706788,
+    "blenderVersion": "4.5.5 LTS",
+    "script": "scripts/prepare-zhaoyun.py",
+    "autoexecDisabled": true,
+    "triangles": 29569,
+    "bodyTriangles": 27710,
+    "weaponTriangles": 1859,
+    "bones": 21,
+    "maxInfluences": 4,
+    "unweightedVertices": 0,
+    "textures": {"embedded": 3, "size": [2048, 2048], "roles": ["baseColor", "metallicRoughness", "normal"]},
+    "externalUris": 0,
+    "authoredAnimationClips": 0,
+    "lods": 1,
+    "up": "+Y",
+    "forward": "+Z",
+    "unit": "meter"
+  },
+  "runtime": {
+    "adapter": "src/view/zhaoyun-adapter.ts",
+    "driver": "src/view/player-model.ts",
+    "animation": "既有程序式姿勢、雙臂與腳底 IK、21 骨蒙皮，與 Player 同一模擬時間",
+    "states": ["move", "jump", "attack", "guard", "dodge", "hurt", "down", "dead", "musou"],
+    "moves": ["N1", "N2", "N3", "N4", "N5", "N6", "C1", "C2", "C3", "C4", "C5", "C6", "JA", "JC", "DASH", "COUNTER", "MUSOU"],
+    "rootMotion": false,
+    "weaponTipZ": 2.7,
+    "weaponExtentsZ": [-1.05, 2.7],
+    "fallbackCountsAsPass": false
+  }
+}

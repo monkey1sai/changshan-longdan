@@ -534,7 +534,7 @@ export class Game {
     this.fire.update(this.clock, this.rig.focus, sizeScale)
     this.lighting.update(this.rig.focus, this.clock)
 
-    this.model.update(this.player, simDt, this.clock)
+    this.model.update(this.player, simDt, this.simClock)
     this.soldiers.update(this.enemies, this.clock)
     this.threats.update(this.enemies, this.simClock)
     this.fragments.update(simDt)
@@ -644,6 +644,13 @@ export class Game {
             dragon: game.dragon.active,
             position: [game.player.pos.x, game.player.pos.y, game.player.pos.z],
             audio: game.audio?.ctx.state ?? 'none',
+            character: game.model.assetStatus,
+            animation: game.model.animationStatus,
+            moveTime: game.player.moveTime,
+            stateTime: game.player.stateTime,
+            hitstop: game.hitstop,
+            playerEvents: game.player.events.map(event => event.type),
+            spearTip: game.model.tip.toArray(),
           }
         },
         start: () => game.startBattle(),
