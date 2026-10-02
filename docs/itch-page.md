@@ -5,7 +5,7 @@ itch.io 專案頁的填寫內容與上傳步驟。更新既有遊戲需作者明
 - 遊戲壓縮檔：執行 `npm run package:itch`，產生 `release/changshan-longdan-web.zip`
 - 封面與截圖：`release/itch/`（開發版以 `__game` 擺出場面後截圖並裁切；`release/` 不進版控）
 
-## 上架狀態
+## 歷史上架狀態（2026-09-29）
 
 | 項目 | 內容 |
 | --- | --- |
@@ -14,7 +14,7 @@ itch.io 專案頁的填寫內容與上傳步驟。更新既有遊戲需作者明
 | 公開 | Public，2026-09-29 起 |
 | 定價 | $0 or donate，建議贊助 US$2 |
 | 收款 | Collected by itch.io, paid later；稅務問卷已於 2026-09-29 完成 |
-| 目前上傳檔 | `changshan-longdan-web.zip`，188,446 bytes，SHA-256 `e8c731d28b5954a4306bc595ed955a2218a48eb7606edd536f413d2cd1d0a796`，由 source commit `ca0205e5e5acca0a199186edc25788b776b7859f` 建置，2026-09-29 上傳 |
+| 當時上傳檔 | `changshan-longdan-web.zip`，188,446 bytes，SHA-256 `e8c731d28b5954a4306bc595ed955a2218a48eb7606edd536f413d2cd1d0a796`，由 source commit `ca0205e5e5acca0a199186edc25788b776b7859f` 建置，2026-09-29 上傳 |
 | 實際驗證 | 2026-09-29 使用可見 Chrome 在公開頁按 Run game，切換英文 → To Battle，以鍵盤普攻／蓄力／暫停；中英切換保持 HP，重新載入 iframe 保留英文偏好。實際 iframe 960×540，無水平溢位，console error 0；下載伺服器 ZIP 的 bytes／SHA-256 與本機成品一致 |
 | 本版變更 | `118f241` 戰鬥操作與場景辨識改善；`ca0205e` 即時中英文介面。商店中英操作說明已更新並重新載入核對 |
 | 前版回滾 | source `cfa1696`，180,847 bytes，SHA-256 `ef88ab6981fc347f421fd4c2b5b5f1fc36845e68d63c1aed8b617a012a84c8aa`；原檔已下載核對並保存在本機 `release/rollback/changshan-longdan-cfa1696.zip`（不進版控） |
@@ -53,7 +53,7 @@ itch.io 專案頁的填寫內容與上傳步驟。更新既有遊戲需作者明
 - 三百名魏兵同時在場：列陣、包圍、輪流出手，被擊破時炸成體素碎片
 - 集滿龍膽氣發動「龍膽亂舞・蒼龍破陣」：青龍繞身盤旋後俯衝撞地，全螢幕轉為金墨色調
 - 黃昏城池、飄揚的軍旗、火焰與濃煙、景深與光暈
-- 所有模型由程式生成，所有音效與配樂以 WebAudio 即時合成
+- 趙雲採用使用者製作的 Blender 蒙皮模型，魏兵、城池與龍由程式生成；所有音效與配樂以 WebAudio 即時合成
 - 右上角即時切換繁體中文／English；記住偏好，戰鬥不中斷
 - 按住普攻自動連段、閃避突進與精準格擋反擊，搭配即時招式指南
 
@@ -77,7 +77,7 @@ Changshan Longdan is a PS2-style, musou-like action game that runs right in your
 - 300 soldiers on the field at once: they hold formation, surround you and take turns attacking, then shatter into voxels when defeated
 - Fill the Longdan gauge to unleash Longdan Frenzy: Azure Dragon, as a dragon circles you and crashes down while the screen turns to gold and ink
 - A castle at dusk with waving banners, fire and smoke, depth of field and bloom
-- Every model is procedural, and all sound effects and music are synthesized in real time with WebAudio
+- Zhao Yun uses a user-created skinned Blender model; soldiers, castle and dragon are procedural, and all sound effects and music are synthesized in real time with WebAudio
 - Switch between English and Traditional Chinese at the top right, with a saved preference and no battle restart
 - Hold Attack for combos, dash out of a dodge, or counter after a perfect guard; an in-battle move guide shows follow-ups
 
@@ -103,5 +103,9 @@ Built with Three.js (MIT License).
 6. 確認無誤後，把 Visibility 改成 **Public**。
 
 ## 更新版本
+
+2026-10-02 使用者明確授權本輪趙雲整合提交、push、merge與既有itch更新，並指示跳過剩餘P0缺口驗收。已知近牆鏡頭遮擋、音效聽感、實體手把、低階硬體／長時穩定性缺口仍保留，不能宣稱P0全部通過。角色實測範圍見 [趙雲驗收摘要](art/zhaoyun-acceptance.md)。此段授權紀錄不表示本輪已上傳。
+
+本輪從已登入編輯頁下載現有browser build作回滾：4,389,170 bytes、SHA-256 `df5d6af7dbbee3e120faffe6ad53acb4f199eada0876e3b68306cda6709238b7`，包含 `assets/index-CZjsXZUQ.js` 及舊人物GLB。其來源commit尚未重新核實；上方2026-09-29表為歷史發布紀錄，不能套用到這份實際備份。備份保存在repo外驗收目錄 `rollback-live-before-zhaoyun.zip`。
 
 先提交遊戲原始碼，再執行 `npm run package:itch`。到既有專案的 Edit 頁更新 browser build，保留公開狀態、定價、收款與嵌入設定；新檔需勾選 **This file will be played in the browser**。上傳並實際在公開頁驗證後，才更新上方「上架狀態」表的檔案大小、SHA-256 與 source commit。保留前一版 release metadata 以供回滾。
