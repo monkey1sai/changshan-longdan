@@ -41,7 +41,7 @@ const manifest = {
   reviewedPlan: '389a9a657edbdc94da18c7bdb75d62081787b54d',
   environment: { node: process.version, platform: platform(), os: release(), cpu: cpus()[0]?.model ?? null },
   runnerHashes: Object.fromEntries(['scripts/trace-baseline.mjs', 'scripts/lib/baseline-harness.ts', 'scripts/lib/baseline-profile.ts',
-    'scripts/lib/baseline-visibility.ts', 'scripts/baseline-view.ts', 'scripts/baseline-view.html']
+    'scripts/lib/baseline-visibility.ts', 'scripts/lib/baseline-evidence.ts', 'scripts/baseline-view.ts', 'scripts/baseline-view.html']
     .map(path => [path, sha256(readFileSync(join(root, path)))])),
   assetHashes: Object.fromEntries(['public/models/zhaoyun.glb', 'public/models/zhaoyun.manifest.json']
     .map(path => [path, sha256(readFileSync(join(root, path)))])),

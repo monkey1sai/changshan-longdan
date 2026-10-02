@@ -62,26 +62,42 @@ npm run dev -- --host 127.0.0.1 --port 5176 --strictPort
 http://127.0.0.1:5176/scripts/baseline-view.html?evidence=/release/e01/review-a/manifest.json
 ```
 
-診斷頁沿用正式 HTML、介面、Game constructor 與 rAF；與正式遊戲入口分開，未加入正式 build。它先核對同版本 profile、指定來源／runner 與角色資產 hashes。角色須 ready，頁面須 visible，自測須 PASS，且已出陣，才允許讀取快照。
+診斷頁沿用正式 HTML、介面、Game constructor 與 rAF；與正式遊戲入口分開，未加入正式 build。它先核對同版本 profile、指定來源／runner（含 `baseline-evidence.ts`）與角色資產 hashes。角色須 ready，頁面須 visible，原七項自測須 PASS，逐案例收證須 COMPLETE，且已出陣，才允許讀取快照；handler 也檢查門檻。舊 manifest 缺新 helper hash 時拒絕採用，不能只沿用舊候選的 sourceHead。
 
 候選口徑 `sceneDepthEnemyIdPixels`：指定 framebuffer 與正式 CameraRig 相機，在同一固定場景下，存活敵人的正式 SoldierView 身體／裝備至少 1 個像素通過不透明／alpha-test 世界、玩家及其他敵人的深度遮擋。先以原材質完成深度，再保留 depth 畫 enemy ID；旗幟的 alpha-test／頂點變形、趙雲蒙皮與屋頂 visibility 由原材質保留。ID pass 關閉 blending、MSAA、tone mapping 與色彩轉換；雙腿／雙臂每敵人 2 instances，其餘每敵人 1 instance。
 
 此口徑排除 depthWrite=false 的透明效果、後製、HUD／選單和人的辨識能力；single-sample 邊緣與正式 4× MSAA 不同。保存各 ID pixelCount、完整 alive IDs、camera matrices、framebuffer、原始 ID PNG／bytes hash、CPU 提交／readback 等待／解碼經過時間，GPU active 保持 null。診斷前後須 gameplay／instance matrices 相同，render target、viewport/scissor、clear、材質及 shader error handler 須恢復；中途 throw 也走 finally。
 
-**目前沒有成功的正式場景 visible 樣本。**
+**歷史候選 `56938376ae065572316382bb3ee0f08adfa8b106` 已取得一次正式場景 visible 樣本；新補收證候選的瀏覽器／GPU 驗證仍為 `NOT_RUN`。** 不把歷史像素 PASS 移作新候選的實測結果。
 
 | 瀏覽器輪次 | 實際結果 | 處理與未驗證事項 |
 |---|---|---|
 | 1 | `FAIL`：GLSL3 的 `gl_FragColor` 未宣告 | 原始候選與 error 保留；改用明確 fragment output，compile failure 直接使量測失敗，不能當作 0 visible |
 | 2 | `FAIL`：前兵完全遮後兵預期 `[0]`，實際 `[0,1]` | 自測 setMatrixAt 後未標 instanceMatrix.needsUpdate；ID clone 取新 CPU 矩陣，原 depth mesh 用舊 GPU buffer。已補 self-test upload marker；正式 SoldierView 原本有此 marker，沒有改正式渲染 |
+| 3（使用者額外授權） | `PASS`：`5693837` 原七項自測與正式場景 capture；收證 `PARTIAL` | 同版來源／素材匹配，152 alive／31 depth-visible／46 engaged／1 token，40 frustumProxy；原始 ID PNG 獨立解碼一致。前六例沒有各自像素影像；第七例沒有保存 actual caught stack。整輪 console observer 曾回傳 truncated，不能宣稱完整錯誤覆盖 |
 
 第二輪在第四項才拋錯，因此前三項未拋錯；當時沒有逐項保存的結果，不補造逐項 PASS 紀錄。兩份原始失敗 JSON、當時 runner hashes、console 與截圖保存在 `release/e01/`。後續修正已加入逐項紀錄與自測未 PASS 時禁用快照。
 
-PR #8 第 1 節要求「連續兩輪仍無法通過時停下並記錄阻擋原因」。兩輪已用完，未自動重設額度，**尚未執行修正後第三輪**；增加一輪須由使用者決定。這是 `TEST_FAILURE`（診斷 fixture），目前沒有證據指向正式玩法失敗。仍待同版本敵人互遮、死亡／視錐外、alpha 缺口、例外恢復、正式角色場景四數與診斷後正常畫面；亦不能回填 21 份無 WebGL trace 的 visible。
+PR #8 第 1 節要求「連續兩輪仍無法通過時停下並記錄阻擋原因」。原兩輪與已明確授權的第三輪均已使用；不因修正、換 SHA、換收證方法或 reviewer 自動重設額度。第一輪是 `PRODUCT_FAILURE`（診斷 shader），第二輪是 `TEST_FAILURE`（診斷 fixture）；第三輪 CDP 操作與收證缺口是 `TOOL_FAILURE`，目前沒有證據指向正式玩法失敗。第三輪解除該歷史候選尚未重驗既存修正與尚無正式 visible 樣本兩項阻礙，不能回填 21 份無 WebGL trace 的 visible。
+
+第三輪凍結紀錄在 `release/e01/browser-round3-5693837/`；獨立審查允許以 `PARTIAL` 範圍交付。補充 ZIP `release/e01/handoff/e01-browser-round3-5693837.zip` 含 62 entries，1,983,037 bytes，SHA-256 `6a32411097f251c9b74744f9fb2ae62c3f467c74285caa8e18ef01ccef678619`。既有 5693837 review ZIP 與 source bundle 保留，不覆寫歷史紀錄。
+
+### 4.1 僅準備補收證候選
+
+使用者選擇「1：準備補收證候選」，授權只新增诊斷逐案例留圖與錯誤紀錄，保持玩法、素材及原有斷言。此選擇不授權啟動預覽、執行下一輪瀏覽器自測、推送、合併、發布或開始 E02。開始前唯讀設計審查為 `ALLOW_PREPARE_RECORDING_ONLY`；E01 任務預覽已停止，避免修改時 HMR 自動載入新來源。下一輪仍須使用者另行明確授權。
+
+- `baseline-evidence.ts` 只处理資料；不依賴 Game／Three.js／DOM，不呼叫 renderer。前六例保留原 capture 的 pixels 副本、預期／實際 IDs、measurement、camera、原始 RGBA base64、ID／識別色 PNG 及各自 SHA-256。原 capture 與原 ID 斷言之間的保存錯誤獨立處理，仍執行原斷言。
+- 第七例保持原預期拋錯與恢復斷言，保存實際 caught message／stack 與 renderer before／after。圖面及 JSON 永久標 `imageKind: exceptionReport`、`gpuReadback: false`，預期／實際 IDs 為 null；第六例只作「throw 前最近成功 ID 圖，非第七例同幀證據」。不能宣稱七張 GPU fixture 截圖。
+- 六例成功 capture 加一次原預期拋錯 capture，仍為七次呼叫。fixture、相機、材質、預期 ID、原恢復／gameplay 斷言不變。所有原功能檢查保持同步；製圖與非同步 SHA 計算只處理保留資料，在原 gameplay fingerprint 斷言結束後才執行。
+- `functionalResult` 與 `recordingResult` 分開。PNG、摘要或複製失敗保留已取得的 bytes／部分影像／錯誤；不得把收證 FAIL 列作功能 FAIL，亦不得標 COMPLETE。功能失敗保存該案例與 suite 錯誤，後續未執行案例維持 NOT_RUN。只有七個功能 PASS、收證 COMPLETE、原狀態恢復檢查通過才准許正式快照。
+- 自測首次點擊立即鎖定；頁面內不能因非同步完成再次開啟自測。此鎖不是跨 reload 的授權預算強制執行。JSON 匯出及影像下載只讀已保存資料，不補跑 capture，不向外傳輸。
+- `window.error`／`unhandledrejection` 保存啟用時點、實際值、run／case 關聯；expected caught、診斷捕獲與收證錯誤各自保存。不攔截／吞掉事件，不改寫 console。`consoleCoverage: NOT_CAPTURED` 明列；下一輪須另保存瀏覽器 console／工具錯誤，空 listener 陣列不等於完整零錯誤證據。
+
+本候選新增 24 項純資料測試，驗證共享 buffer 重用、副本／ID／metadata、row reversal／alpha／24-bit ID、功能失敗保留、PNG／hash 失敗、預期例外報告、部分匯出及門檻負例。完整檢查與精確候選交付審查保存在新的 `release/e01/recording-preparation/`，不是新 GPU 實測。同步保存與製圖會增加診斷的 CPU／記憶體成本；不能用這段時間判斷正式遊戲 FPS 或改善。
 
 ## 5. 審查、退出與回滾
 
-完整 diff、負例、trace、profiling 口徑、失敗歷史與精確候選須交獨立 reviewer；其來源審查與允許修正不等於像素實測 PASS。即使本機 21 traces、unit tests、build／package 與封包相同核對通過，E01 仍 `BLOCKED`；額外瀏覽器驗證、可讀交付、CI、正式同版本人工結論、明確合併授權及合併後回歸未齊。
+完整 diff、負例、trace、profiling 口徑、失敗歷史與精確候選須交獨立 reviewer；其來源審查與允許修正不等於像素實測 PASS。即使本機 21 traces、unit tests、build／package 與封包相同核對通過，E01 仍 `BLOCKED`；新候選逐例像素與錯誤收證的瀏覽器驗證、可讀交付驗收、Windows／Ubuntu CI、正式同版本人工結論、明確合併授權及合併後回歸未齊。下一步先交付精確補收證候選，再由使用者決定是否增加一輪本機實測；不直接把 E01 或 E02 標完成。
 
 不得把 E00 的 scoped 人工接受、其他 PR 的核准、綠色 CLI 或 GitHub bot 意見移作 E01 的 APPROVED。沒有開始 E02、下載／安裝 Unity、付費製造、發布或改線上服務。
 
