@@ -46,6 +46,10 @@ export function validateImmutableSource(before, after) {
   if (!sameObject(actual, expected)) throw new Error('SOURCE_CHANGED_DURING_RUN')
 }
 
+export function validateFrozenSource(before, after) {
+  if (!sameObject(after, before)) throw new Error('EFFECTIVE_SOURCE_CHANGED_AFTER_COMPILE')
+}
+
 export function validateExecutionScope(contract, manifest) {
   const exact = {
     schemaVersion: 1, decisionStatus: 'ACCEPTED', acceptedDecisionRecord: 'docs/engineering/E02_DECISION.md',
@@ -146,7 +150,8 @@ export function validateSettings(report, runId, project, stage, policy) {
     if (!expected || item.version !== expected.version || item.source.toLowerCase() !== expected.source)
       throw new Error(`EFFECTIVE_PACKAGES_MISMATCH: ${item.name}`)
   }
-  if (stage === 'build' && (report.buildResult !== 'Succeeded' || report.buildErrors !== 0 || report.buildBytes <= 0))
+  if (stage === 'build' && (report.buildResult !== 'Succeeded' || report.buildErrors !== 0 ||
+      !Number.isSafeInteger(report.buildBytes) || report.buildBytes <= 0))
     throw new Error('BUILD_NOT_SUCCEEDED')
 }
 
@@ -154,7 +159,7 @@ export function validateRuntime(report, runId, imagePath) {
   if (report.runId !== runId || report.unityVersion !== '6000.6.4f1' || report.graphicsApi !== 'Direct3D11' ||
       report.pipeline !== 'UniversalRenderPipelineAsset' || report.colorSpace !== 'Linear' || report.width !== 1920 ||
       report.height !== 1080 || report.targetFrameRate !== 60 || report.vSyncCount !== 1 || report.renderScale !== 1 ||
-      report.frameCount < 120 || report.errorCount !== 0 || report.batchMode !== false ||
+      !Number.isSafeInteger(report.frameCount) || report.frameCount < 120 || report.errorCount !== 0 || report.batchMode !== false ||
       path.resolve(report.screenshot) !== imagePath) throw new Error('RUNTIME_SETTINGS_MISMATCH')
   const image = fs.readFileSync(imagePath)
   if (image.length < 33 || image.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' ||

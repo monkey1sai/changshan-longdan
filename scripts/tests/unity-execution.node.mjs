@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
-import { requireSafeEngineWrites, validateExecutionScope, validatePackagePolicy, validateImmutableSource, validatePackageLock, validateTestSummary, validateSettings, fixedDependencies } from '../lib/unity-execution.mjs'
+import { requireSafeEngineWrites, validateExecutionScope, validatePackagePolicy, validateImmutableSource, validateFrozenSource, validatePackageLock, validateTestSummary, validateSettings, validateRuntime, fixedDependencies } from '../lib/unity-execution.mjs'
 
 const root = path.resolve(fileURLToPath(new URL('../../', import.meta.url)))
 const contract = JSON.parse(fs.readFileSync(new URL('../../docs/engineering/e02-unity.proposed.json', import.meta.url)))
@@ -51,6 +51,20 @@ test('engine-generated settings do not permit immutable source changes', () => {
   validateImmutableSource(before, { ...before, 'unity/ChangshanLongdan/Assets/Foundation/Settings/X.asset': 'generated' })
   assert.throws(() => validateImmutableSource(before, { ...before, 'src/game.ts': 'changed' }))
   assert.throws(() => validateImmutableSource(before, { ...before, 'unity/ChangshanLongdan/Assets/Other.cs': 'new' }))
+})
+test('after Configure, scene, pipeline, meta, project settings and manifest are frozen', () => {
+  for (const name of ['Assets/Scene.unity', 'Assets/Pipeline.asset', 'Assets/Scene.meta', 'ProjectSettings/QualitySettings.asset', 'Packages/manifest.json']) {
+    const before = { [name]: 'compiled' }
+    validateFrozenSource(before, copy(before))
+    assert.throws(() => validateFrozenSource(before, { [name]: 'changed' }), /EFFECTIVE_SOURCE_CHANGED/)
+  }
+})
+test('missing or nonfinite Player frame count cannot pass', () => {
+  const report = { runId: 'current', unityVersion: '6000.6.4f1', graphicsApi: 'Direct3D11', pipeline: 'UniversalRenderPipelineAsset',
+    colorSpace: 'Linear', width: 1920, height: 1080, targetFrameRate: 60, vSyncCount: 1, renderScale: 1,
+    errorCount: 0, batchMode: false, screenshot: 'missing.png' }
+  assert.throws(() => validateRuntime(report, 'current', path.resolve('missing.png')), /RUNTIME_SETTINGS_MISMATCH/)
+  assert.throws(() => validateRuntime({ ...report, frameCount: NaN }, 'current', path.resolve('missing.png')), /RUNTIME_SETTINGS_MISMATCH/)
 })
 for (const [key, value] of Object.entries({ editorVersion: '6000.6.3f1', editorRevision: '000000000000',
   animatorRootMotion: true, movementAuthority: 'animator', graphicsApi: 'Vulkan', webRetained: false,
@@ -100,4 +114,6 @@ test('settings requires current nonce, effective values and real successful buil
   assert.throws(() => validateSettings({ ...report, graphicsApi: 'Vulkan' }, 'current', root, 'build', policy))
   assert.throws(() => validateSettings({ ...report, buildResult: 'Failed' }, 'current', root, 'build', policy))
   assert.throws(() => validateSettings({ ...report, buildBytes: 0 }, 'current', root, 'build', policy))
+  assert.throws(() => validateSettings({ ...report, buildBytes: undefined }, 'current', root, 'build', policy))
+  assert.throws(() => validateSettings({ ...report, buildBytes: NaN }, 'current', root, 'build', policy))
 })

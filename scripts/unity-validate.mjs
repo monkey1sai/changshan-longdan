@@ -5,7 +5,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { inspectUnityPreflight } from './lib/unity-preflight.mjs'
 import { readEditorVersion } from './lib/unity-editor-version.mjs'
-import { requireSafePath, requireSafeEngineWrites, validateExecutionScope, validatePackagePolicy, validateImmutableSource, validatePackageLock, validateTestSummary,
+import { requireSafePath, requireSafeEngineWrites, validateExecutionScope, validatePackagePolicy, validateImmutableSource, validateFrozenSource, validatePackageLock, validateTestSummary,
   validateSettings, validateRuntime, sha256, snapshotSource } from './lib/unity-execution.mjs'
 
 const root = fs.realpathSync(fileURLToPath(new URL('../', import.meta.url)))
@@ -159,10 +159,12 @@ try {
     const env = { ...process.env, UPM_CACHE_ROOT: cache }
     requireSafePath(root, env.UPM_CACHE_ROOT)
     const common = ['-batchmode', '-projectPath', project, '-buildTarget', 'StandaloneWindows64', '-force-d3d11', '-e02RunId', runId]
+    let frozenSource
     for (const stage of ['compile', 'editmode', 'playmode', 'build']) {
       const stagePath = path.join(output, stage)
       requireSafePath(root, stagePath)
       requireSafeEngineWrites(root, project, cache)
+      if (frozenSource) validateFrozenSource(frozenSource, snapshotSource(root))
       if (fs.existsSync(path.join(project, 'Temp/UnityLockfile'))) throw new Error('PROJECT_POSSIBLY_IN_USE')
       const argv = [...common, '-logFile', path.join(stagePath, 'Editor.log'), '-e02Output', stagePath]
       if (stage === 'compile' || stage === 'build') argv.push('-quit', '-executeMethod',
@@ -181,9 +183,11 @@ try {
       const log = fs.readFileSync(path.join(stagePath, 'Editor.log'), 'utf8')
       if (/error CS\d{4}|Scripts have compiler errors|Aborting batchmode due to failure|Exception:|Assertion failed/i.test(log))
         throw new Error(`EDITOR_LOG_ERROR: ${stage}`)
-      run.stages.at(-1).verified = true
       run.stages.at(-1).sourceAfter = snapshotSource(root)
       validateImmutableSource(run.sourceBefore, run.stages.at(-1).sourceAfter)
+      if (stage === 'compile') frozenSource = run.stages.at(-1).sourceAfter
+      else validateFrozenSource(frozenSource, run.stages.at(-1).sourceAfter)
+      run.stages.at(-1).verified = true
     }
     const player = requireSafePath(root, path.join(output, 'build/player/ChangshanLongdan.exe'))
     if (!fs.existsSync(player) || fs.statSync(player).size === 0) throw new Error('PLAYER_MISSING')
@@ -193,10 +197,11 @@ try {
       '-force-d3d11', '-logFile', path.join(runtimePath, 'Player.log'), '-e02RunId', runId, '-e02Output', runtimePath],
     path.dirname(player), env, true)
     validateRuntime(readJson(path.join(runtimePath, 'runtime.json')), runId, path.join(runtimePath, 'scene.png'))
-    run.stages.at(-1).verified = true
     run.screenshotSha256 = sha256(path.join(runtimePath, 'scene.png'))
     run.sourceAfter = snapshotSource(root)
     validateImmutableSource(run.sourceBefore, run.sourceAfter)
+    validateFrozenSource(frozenSource, run.sourceAfter)
+    run.stages.at(-1).verified = true
     run.result = 'PASS_LOCAL_ENGINE_FOUNDATION'
     run.end = new Date().toISOString()
     writeJson(path.join(output, 'result.json'), run)
