@@ -3,12 +3,36 @@ import fs from 'node:fs'
 import path from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
-import { validateExecutionScope, validatePackagePolicy, validateImmutableSource, validatePackageLock, validateTestSummary, validateSettings, fixedDependencies } from '../lib/unity-execution.mjs'
+import { requireSafeEngineWrites, validateExecutionScope, validatePackagePolicy, validateImmutableSource, validatePackageLock, validateTestSummary, validateSettings, fixedDependencies } from '../lib/unity-execution.mjs'
 
 const root = path.resolve(fileURLToPath(new URL('../../', import.meta.url)))
 const contract = JSON.parse(fs.readFileSync(new URL('../../docs/engineering/e02-unity.proposed.json', import.meta.url)))
 const policy = JSON.parse(fs.readFileSync(new URL('../../unity/ChangshanLongdan/e02-package-policy.json', import.meta.url)))
 const copy = value => structuredClone(value)
+
+test('Library and nested UPM cache junctions block before any engine launch', () => {
+  const boundary = path.join(root, 'release/e02')
+  fs.mkdirSync(boundary, { recursive: true })
+  const temporary = fs.mkdtempSync(path.join(boundary, 'engine-write-test-'))
+  try {
+    const project = path.join(temporary, 'project')
+    const cache = path.join(temporary, 'cache')
+    const other = path.join(temporary, 'other')
+    for (const name of [project, cache, other]) fs.mkdirSync(name)
+    requireSafeEngineWrites(temporary, project, cache)
+    fs.symlinkSync(other, path.join(project, 'Library'), 'junction')
+    assert.throws(() => requireSafeEngineWrites(temporary, project, cache), /UNSAFE_PATH|UNSAFE_ENGINE_WRITE/)
+    fs.unlinkSync(path.join(project, 'Library'))
+    fs.symlinkSync(other, path.join(cache, 'nested'), 'junction')
+    assert.throws(() => requireSafeEngineWrites(temporary, project, cache), /UNSAFE_PATH|UNSAFE_ENGINE_WRITE/)
+    fs.unlinkSync(path.join(cache, 'nested'))
+  } finally {
+    const absolute = fs.realpathSync(temporary)
+    const relative = path.relative(fs.realpathSync(boundary), absolute)
+    assert.ok(relative && !relative.startsWith('..') && !path.isAbsolute(relative))
+    fs.rmSync(absolute, { recursive: true, force: true })
+  }
+})
 
 test('fixed accepted scope and exact manifest pass pure validation only', () => {
   validateExecutionScope(contract, { dependencies: fixedDependencies })

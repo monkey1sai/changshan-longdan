@@ -94,6 +94,19 @@ export function requireSafePath(root, target) {
   return target
 }
 
+export function requireSafeEngineWrites(root, project, cache) {
+  const visit = target => {
+    requireSafePath(root, target)
+    let stat
+    try { stat = fs.lstatSync(target) } catch (error) { if (error.code === 'ENOENT') return; throw error }
+    if (stat.isSymbolicLink()) throw new Error('UNSAFE_ENGINE_WRITE: link')
+    if (stat.isDirectory()) for (const name of fs.readdirSync(target)) visit(path.join(target, name))
+  }
+  // Include source trees as well: the Editor creates meta/settings files during import.
+  visit(project)
+  visit(cache)
+}
+
 export function validatePackageLock(lock, policy) {
   const entries = lock?.dependencies
   if (!entries || Object.keys(entries).length !== Object.keys(policy.packages).length) throw new Error('PACKAGE_LOCK_MISMATCH: package set')

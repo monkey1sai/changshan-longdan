@@ -8,7 +8,7 @@
 
 ## Authorization Envelope
 
-- **Destination**：本機隔離工作樹；已安裝固定 Editor；Unity 官方 `packages.unity.com`／`download.packages.unity.com`，必要時 Editor 正常授權服務。
+- **Destination**：本機隔離工作樹；已安裝固定 Editor；Unity 官方 `packages.unity.com`／`download.packages.unity.com` 及其實讀的 checksum-addressed `cdn.packages.unity.com` 回覆，必要時 Editor 正常授權服務。
 - **Purpose**：建立最小工程、固定必要官方相依，執行本機 compile／Edit Mode／Play Mode／Windows build／Player 啟閉及空場景渲染收證。
 - **Allowed operations**：先查已安裝 packages，再由官方來源取得固定缺包；寫本工作樹 source／ignored cache、logs、build；啟動並正常關閉本次建立的 Editor／Player。可保存本機 commit。
 - **Data being transmitted**：公開套件名稱、固定版本、正常 Editor 啟動所需的服務請求。沒有私有 source tree、素材、證據、credentials 的自行上傳。

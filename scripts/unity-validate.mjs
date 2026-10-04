@@ -5,7 +5,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { inspectUnityPreflight } from './lib/unity-preflight.mjs'
 import { readEditorVersion } from './lib/unity-editor-version.mjs'
-import { requireSafePath, validateExecutionScope, validatePackagePolicy, validateImmutableSource, validatePackageLock, validateTestSummary,
+import { requireSafePath, requireSafeEngineWrites, validateExecutionScope, validatePackagePolicy, validateImmutableSource, validatePackageLock, validateTestSummary,
   validateSettings, validateRuntime, sha256, snapshotSource } from './lib/unity-execution.mjs'
 
 const root = fs.realpathSync(fileURLToPath(new URL('../', import.meta.url)))
@@ -25,11 +25,12 @@ async function fixedOfficialArchives(policy) {
     if (expected.source !== 'registry') continue
     const url = `https://download.packages.unity.com/${name}/-/${name}-${expected.version}.tgz`
     const filename = requireSafePath(root, path.join(directory, name + '-' + expected.version + '.tgz'))
-    // Use the host's verified HTTPS stack; never change TLS/proxy/security configuration.
+    const expectedCdn = `https://cdn.packages.unity.com/tarballs/${name}/${expected.version}/${expected.sha1}.tgz`
+    // Only follow the exact checksum-addressed Unity CDN destination supplied by the official host.
     const download = spawnSync('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command',
-      '$ErrorActionPreference="Stop"; Invoke-WebRequest -UseBasicParsing -Uri $env:CHANGSHAN_E02_PACKAGE_URL -OutFile $env:CHANGSHAN_E02_PACKAGE_OUT -MaximumRedirection 0 -TimeoutSec 30'], {
+      '$ErrorActionPreference="Stop"; $request=[System.Net.HttpWebRequest]::Create($env:CHANGSHAN_E02_PACKAGE_URL); $request.AllowAutoRedirect=$false; $request.Timeout=15000; $response=$request.GetResponse(); try { $status=[int]$response.StatusCode; $location=$response.Headers["Location"] } finally { $response.Close() }; if ($status -ne 302 -or $location -cne $env:CHANGSHAN_E02_PACKAGE_CDN) { throw "Unexpected official package redirect" }; Invoke-WebRequest -UseBasicParsing -Uri $env:CHANGSHAN_E02_PACKAGE_CDN -OutFile $env:CHANGSHAN_E02_PACKAGE_OUT -MaximumRedirection 0 -TimeoutSec 30'], {
       shell: false, windowsHide: true, encoding: 'utf8', timeout: 45000,
-      env: { ...process.env, CHANGSHAN_E02_PACKAGE_URL: url, CHANGSHAN_E02_PACKAGE_OUT: filename },
+      env: { ...process.env, CHANGSHAN_E02_PACKAGE_URL: url, CHANGSHAN_E02_PACKAGE_OUT: filename, CHANGSHAN_E02_PACKAGE_CDN: expectedCdn },
     })
     if (download.error || download.status !== 0) throw new Error(`OFFICIAL_PACKAGE_DOWNLOAD_FAILED: ${name}; ${download.error?.message ?? download.stderr.trim()}`)
     if (fs.statSync(filename).size > 64000000) throw new Error(`OFFICIAL_PACKAGE_TOO_LARGE: ${name}`)
@@ -40,7 +41,7 @@ async function fixedOfficialArchives(policy) {
     if (manifest.error || manifest.status !== 0) throw new Error(`OFFICIAL_PACKAGE_MANIFEST_FAILED: ${name}`)
     const packageJson = JSON.parse(manifest.stdout)
     if (packageJson.name !== name || packageJson.version !== expected.version) throw new Error(`OFFICIAL_PACKAGE_VERSION_MISMATCH: ${name}`)
-    evidence[name] = { url, version: expected.version, bytes: bytes.length, sha1: actual, sha256: sha256(filename),
+    evidence[name] = { url, verifiedCdn: expectedCdn, version: expected.version, bytes: bytes.length, sha1: actual, sha256: sha256(filename),
       manifestSha256: createHash('sha256').update(manifest.stdout).digest('hex'), filename }
   }
   writeJson(path.join(directory, 'provenance.json'), evidence)
@@ -126,6 +127,8 @@ try {
   } else {
     const policy = readJson(path.join(project, 'e02-package-policy.json'))
     validatePackagePolicy(policy)
+    const cache = requireSafePath(root, path.join(root, 'release/e02/upm-cache'))
+    requireSafeEngineWrites(root, project, cache)
     const builtIn = path.join(path.dirname(editor), 'Data/Resources/PackageManager/BuiltInPackages')
     const packageEvidence = []
     for (const [name, expected] of Object.entries(policy.packages)) {
@@ -153,12 +156,13 @@ try {
       authorizationRecord: contract.acceptedDecisionRecord, humanPlay: 'NOT_RUN', performanceAcceptance: 'NOT_RUN' }
     writeJson(path.join(output, 'start.json'), run)
     run.officialArchives = await fixedOfficialArchives(policy)
-    const env = { ...process.env, UPM_CACHE_ROOT: path.join(root, 'release/e02/upm-cache') }
+    const env = { ...process.env, UPM_CACHE_ROOT: cache }
     requireSafePath(root, env.UPM_CACHE_ROOT)
     const common = ['-batchmode', '-projectPath', project, '-buildTarget', 'StandaloneWindows64', '-force-d3d11', '-e02RunId', runId]
     for (const stage of ['compile', 'editmode', 'playmode', 'build']) {
       const stagePath = path.join(output, stage)
       requireSafePath(root, stagePath)
+      requireSafeEngineWrites(root, project, cache)
       if (fs.existsSync(path.join(project, 'Temp/UnityLockfile'))) throw new Error('PROJECT_POSSIBLY_IN_USE')
       const argv = [...common, '-logFile', path.join(stagePath, 'Editor.log'), '-e02Output', stagePath]
       if (stage === 'compile' || stage === 'build') argv.push('-quit', '-executeMethod',
