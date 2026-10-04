@@ -24,13 +24,18 @@ async function fixedOfficialArchives(policy) {
   for (const [name, expected] of Object.entries(policy.packages)) {
     if (expected.source !== 'registry') continue
     const url = `https://download.packages.unity.com/${name}/-/${name}-${expected.version}.tgz`
-    const response = await fetch(url, { redirect: 'error', signal: AbortSignal.timeout(30000) })
-    if (!response.ok) throw new Error(`OFFICIAL_PACKAGE_DOWNLOAD_FAILED: ${name}; HTTP ${response.status}`)
-    const bytes = Buffer.from(await response.arrayBuffer())
+    const filename = requireSafePath(root, path.join(directory, name + '-' + expected.version + '.tgz'))
+    // Use the host's verified HTTPS stack; never change TLS/proxy/security configuration.
+    const download = spawnSync('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command',
+      '$ErrorActionPreference="Stop"; Invoke-WebRequest -UseBasicParsing -Uri $env:CHANGSHAN_E02_PACKAGE_URL -OutFile $env:CHANGSHAN_E02_PACKAGE_OUT -MaximumRedirection 0 -TimeoutSec 30'], {
+      shell: false, windowsHide: true, encoding: 'utf8', timeout: 45000,
+      env: { ...process.env, CHANGSHAN_E02_PACKAGE_URL: url, CHANGSHAN_E02_PACKAGE_OUT: filename },
+    })
+    if (download.error || download.status !== 0) throw new Error(`OFFICIAL_PACKAGE_DOWNLOAD_FAILED: ${name}; ${download.error?.message ?? download.stderr.trim()}`)
+    if (fs.statSync(filename).size > 64000000) throw new Error(`OFFICIAL_PACKAGE_TOO_LARGE: ${name}`)
+    const bytes = fs.readFileSync(filename)
     const actual = createHash('sha1').update(bytes).digest('hex')
     if (bytes.length > 64000000 || actual !== expected.sha1) throw new Error(`OFFICIAL_PACKAGE_CHECKSUM_MISMATCH: ${name}`)
-    const filename = requireSafePath(root, path.join(directory, name + '-' + expected.version + '.tgz'))
-    fs.writeFileSync(filename, bytes, { flag: 'wx' })
     const manifest = spawnSync('tar.exe', ['-xOf', filename, 'package/package.json'], { shell: false, windowsHide: true, encoding: 'utf8', timeout: 15000 })
     if (manifest.error || manifest.status !== 0) throw new Error(`OFFICIAL_PACKAGE_MANIFEST_FAILED: ${name}`)
     const packageJson = JSON.parse(manifest.stdout)
