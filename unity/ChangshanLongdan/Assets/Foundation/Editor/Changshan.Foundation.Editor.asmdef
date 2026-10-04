@@ -1,0 +1,5 @@
+{
+  "name": "Changshan.Foundation.Editor",
+  "references": ["Changshan.Foundation", "Unity.RenderPipelines.Universal.Runtime", "Unity.RenderPipelines.Core.Runtime"],
+  "includePlatforms": ["Editor"]
+}

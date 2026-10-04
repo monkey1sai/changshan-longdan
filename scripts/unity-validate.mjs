@@ -1,0 +1,212 @@
+import { spawn, spawnSync } from 'node:child_process'
+import { randomUUID, createHash } from 'node:crypto'
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { inspectUnityPreflight } from './lib/unity-preflight.mjs'
+import { readEditorVersion } from './lib/unity-editor-version.mjs'
+import { requireSafePath, validateExecutionScope, validatePackagePolicy, validateImmutableSource, validatePackageLock, validateTestSummary,
+  validateSettings, validateRuntime, sha256, snapshotSource } from './lib/unity-execution.mjs'
+
+const root = fs.realpathSync(fileURLToPath(new URL('../', import.meta.url)))
+const defaultEditor = 'C:\\Program Files\\Unity\\Hub\\Editor\\6000.6.4f1\\Editor\\Unity.exe'
+const args = process.argv.slice(2)
+const options = {}
+const names = { '--editor': 'editor', '--out': 'out' }
+let run, lease, lockPath, output
+const readJson = filename => JSON.parse(fs.readFileSync(requireSafePath(root, filename), 'utf8'))
+const writeJson = (filename, data) => fs.writeFileSync(requireSafePath(root, filename), JSON.stringify(data, null, 2) + '\n', { flag: 'wx' })
+
+async function fixedOfficialArchives(policy) {
+  const directory = requireSafePath(root, path.join(output, 'official-packages'))
+  fs.mkdirSync(directory)
+  const evidence = {}
+  for (const [name, expected] of Object.entries(policy.packages)) {
+    if (expected.source !== 'registry') continue
+    const url = `https://download.packages.unity.com/${name}/-/${name}-${expected.version}.tgz`
+    const response = await fetch(url, { redirect: 'error', signal: AbortSignal.timeout(30000) })
+    if (!response.ok) throw new Error(`OFFICIAL_PACKAGE_DOWNLOAD_FAILED: ${name}; HTTP ${response.status}`)
+    const bytes = Buffer.from(await response.arrayBuffer())
+    const actual = createHash('sha1').update(bytes).digest('hex')
+    if (bytes.length > 64000000 || actual !== expected.sha1) throw new Error(`OFFICIAL_PACKAGE_CHECKSUM_MISMATCH: ${name}`)
+    const filename = requireSafePath(root, path.join(directory, name + '-' + expected.version + '.tgz'))
+    fs.writeFileSync(filename, bytes, { flag: 'wx' })
+    const manifest = spawnSync('tar.exe', ['-xOf', filename, 'package/package.json'], { shell: false, windowsHide: true, encoding: 'utf8', timeout: 15000 })
+    if (manifest.error || manifest.status !== 0) throw new Error(`OFFICIAL_PACKAGE_MANIFEST_FAILED: ${name}`)
+    const packageJson = JSON.parse(manifest.stdout)
+    if (packageJson.name !== name || packageJson.version !== expected.version) throw new Error(`OFFICIAL_PACKAGE_VERSION_MISMATCH: ${name}`)
+    evidence[name] = { url, version: expected.version, bytes: bytes.length, sha1: actual, sha256: sha256(filename),
+      manifestSha256: createHash('sha256').update(manifest.stdout).digest('hex'), filename }
+  }
+  writeJson(path.join(directory, 'provenance.json'), evidence)
+  return evidence
+}
+
+function validateResolvedPackages(report, policy, builtIn, archives) {
+  for (const item of report.packages) {
+    const expected = policy.packages[item.name]
+    const boundary = expected.source === 'builtin' ? builtIn : path.join(run.project, 'Library/PackageCache')
+    const resolved = requireSafePath(boundary, item.resolvedPath)
+    if (expected.source === 'builtin' && resolved !== path.join(builtIn, item.name)) throw new Error(`PACKAGE_RESOLVED_PATH_MISMATCH: ${item.name}`)
+    const filename = requireSafePath(boundary, path.join(resolved, 'package.json'))
+    const actual = JSON.parse(fs.readFileSync(filename, 'utf8'))
+    if (actual.name !== item.name || actual.version !== expected.version) throw new Error(`PACKAGE_RESOLVED_VERSION_MISMATCH: ${item.name}`)
+    if (expected.source === 'registry' && sha256(filename) !== archives[item.name].manifestSha256)
+      throw new Error(`PACKAGE_RESOLVED_MANIFEST_MISMATCH: ${item.name}`)
+  }
+}
+
+async function processStage(name, executable, argv, cwd, env, visible = false) {
+  const stagePath = requireSafePath(root, path.join(output, name))
+  fs.mkdirSync(stagePath)
+  const start = new Date().toISOString()
+  const record = { name, executable, argv, cwd, start, timeoutMs: visible ? 120000 : 900000, runId: run.runId }
+  writeJson(path.join(stagePath, 'command.json'), record)
+  const stdout = fs.openSync(path.join(stagePath, 'stdout.log'), 'wx')
+  const stderr = fs.openSync(path.join(stagePath, 'stderr.log'), 'wx')
+  let child
+  let timedOut = false
+  try {
+    child = spawn(executable, argv, { shell: false, windowsHide: !visible, cwd, env, stdio: ['ignore', stdout, stderr] })
+    const timer = setTimeout(() => {
+      // This handle belongs exclusively to this launch. Never kill all Unity processes.
+      timedOut = true
+      child.kill()
+    }, record.timeoutMs)
+    const exit = await new Promise((resolve, reject) => {
+      child.once('error', reject)
+      child.once('close', (code, signal) => resolve({ code, signal }))
+    }).finally(() => clearTimeout(timer))
+    Object.assign(record, { pid: child.pid, end: new Date().toISOString(), timedOut, ...exit })
+    writeJson(path.join(stagePath, 'exit.json'), record)
+    run.stages.push(record)
+    if (timedOut || exit.code !== 0) throw new Error(`STAGE_FAILED: ${name}; exit=${exit.code}; timedOut=${timedOut}`)
+  } finally { fs.closeSync(stdout); fs.closeSync(stderr) }
+  return stagePath
+}
+
+function testSummary(filename) {
+  requireSafePath(root, filename)
+  if (!fs.existsSync(filename) || fs.statSync(filename).size === 0) throw new Error('TEST_XML_MISSING')
+  // Real XML parser with DTD and entity resolution disabled. File path is separate environment data.
+  const command = `$ErrorActionPreference='Stop'; $settings=[System.Xml.XmlReaderSettings]::new(); $settings.DtdProcessing=[System.Xml.DtdProcessing]::Prohibit; $settings.XmlResolver=$null; $reader=[System.Xml.XmlReader]::Create($env:CHANGSHAN_E02_XML,$settings); try { $doc=[System.Xml.XmlDocument]::new(); $doc.XmlResolver=$null; $doc.Load($reader); $node=$doc.DocumentElement; if ($node.Name -ne 'test-run') { throw 'Expected NUnit test-run' }; $cases=@($doc.SelectNodes('//test-case')); $bad=@($cases | Where-Object { $_.GetAttribute('result') -ne 'Passed' }); [pscustomobject]@{result=$node.GetAttribute('result');total=[int]$node.GetAttribute('total');passed=[int]$node.GetAttribute('passed');failed=[int]$node.GetAttribute('failed');skipped=[int]$node.GetAttribute('skipped');inconclusive=[int]$node.GetAttribute('inconclusive');caseCount=$cases.Count;badCaseCount=$bad.Count} | ConvertTo-Json -Compress } finally { $reader.Dispose() }`
+  const result = spawnSync('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', command], {
+    shell: false, windowsHide: true, encoding: 'utf8', timeout: 15000, env: { ...process.env, CHANGSHAN_E02_XML: filename },
+  })
+  if (result.error || result.status !== 0) throw new Error(`TEST_XML_PARSE_FAILED: ${result.error?.message ?? result.stderr}`)
+  return validateTestSummary(JSON.parse(result.stdout))
+}
+
+try {
+  if (args.length % 2) throw new Error('Arguments require name/value pairs')
+  for (let i = 0; i < args.length; i += 2) {
+    const key = names[args[i]]
+    if (!key || options[key] || !args[i + 1]) throw new Error(`Invalid or duplicate argument: ${args[i]}`)
+    options[key] = args[i + 1]
+  }
+  if (!options.out) throw new Error('Explicit fresh --out release/e02/<run> required')
+  if (process.platform !== 'win32') throw new Error('Windows-only E02 target')
+  const contract = readJson(path.join(root, 'docs/engineering/e02-unity.proposed.json'))
+  const project = requireSafePath(root, path.join(root, contract.projectRelativePath))
+  const manifest = readJson(path.join(project, 'Packages/manifest.json'))
+  validateExecutionScope(contract, manifest)
+  const marker = readJson(path.join(project, '.e02-project.json'))
+  if (marker.task !== 'E02' || marker.projectRelativePath !== contract.projectRelativePath || marker.decisionRecord !== contract.acceptedDecisionRecord)
+    throw new Error('PROJECT_MARKER_INVALID')
+  const editor = path.resolve(options.editor ?? defaultEditor)
+  const preflight = inspectUnityPreflight({ root, contract, editorPath: editor, output: options.out }, { readEditorVersion })
+  if (!preflight.ready) {
+    process.stdout.write(JSON.stringify(preflight, null, 2) + '\n')
+    process.exitCode = 2
+  } else {
+    const policy = readJson(path.join(project, 'e02-package-policy.json'))
+    validatePackagePolicy(policy)
+    const builtIn = path.join(path.dirname(editor), 'Data/Resources/PackageManager/BuiltInPackages')
+    const packageEvidence = []
+    for (const [name, expected] of Object.entries(policy.packages)) {
+      if (expected.source !== 'builtin') continue
+      const filename = path.join(builtIn, name, 'package.json')
+      const actual = JSON.parse(fs.readFileSync(filename, 'utf8'))
+      if (actual.name !== name || actual.version !== expected.version) throw new Error(`BUILTIN_PACKAGE_MISMATCH: ${name}`)
+      packageEvidence.push({ name, version: actual.version, filename, manifestSha256: sha256(filename), dependencies: actual.dependencies ?? {} })
+    }
+    const packageLock = path.join(project, 'Packages/packages-lock.json')
+    if (fs.existsSync(packageLock)) validatePackageLock(readJson(packageLock), policy)
+    lockPath = requireSafePath(root, path.join(project, '.e02-runner.lock'))
+    lease = fs.openSync(lockPath, 'wx')
+    fs.writeFileSync(lease, JSON.stringify({ pid: process.pid, runId: 'starting', project }))
+    // Repeat checks after the exclusive lease, immediately before engine execution.
+    if (fs.existsSync(path.join(project, 'Temp/UnityLockfile'))) throw new Error('PROJECT_POSSIBLY_IN_USE')
+    requireSafePath(root, project)
+    output = requireSafePath(root, path.resolve(root, options.out))
+    fs.mkdirSync(path.dirname(output), { recursive: true })
+    fs.mkdirSync(output)
+    const runId = randomUUID()
+    run = { schemaVersion: 1, runId, sourceHead: spawnSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8', shell: false }).stdout.trim(),
+      sourceBefore: snapshotSource(root), editor, editorSha256: sha256(editor), project, output, preflight,
+      packageEvidence, result: 'RUNNING', stages: [], start: new Date().toISOString(),
+      authorizationRecord: contract.acceptedDecisionRecord, humanPlay: 'NOT_RUN', performanceAcceptance: 'NOT_RUN' }
+    writeJson(path.join(output, 'start.json'), run)
+    run.officialArchives = await fixedOfficialArchives(policy)
+    const env = { ...process.env, UPM_CACHE_ROOT: path.join(root, 'release/e02/upm-cache') }
+    requireSafePath(root, env.UPM_CACHE_ROOT)
+    const common = ['-batchmode', '-projectPath', project, '-buildTarget', 'StandaloneWindows64', '-force-d3d11', '-e02RunId', runId]
+    for (const stage of ['compile', 'editmode', 'playmode', 'build']) {
+      const stagePath = path.join(output, stage)
+      requireSafePath(root, stagePath)
+      if (fs.existsSync(path.join(project, 'Temp/UnityLockfile'))) throw new Error('PROJECT_POSSIBLY_IN_USE')
+      const argv = [...common, '-logFile', path.join(stagePath, 'Editor.log'), '-e02Output', stagePath]
+      if (stage === 'compile' || stage === 'build') argv.push('-quit', '-executeMethod',
+        stage === 'compile' ? 'Changshan.Foundation.Editor.FoundationBuild.Configure' : 'Changshan.Foundation.Editor.FoundationBuild.BuildWindows')
+      else argv.push('-runTests', '-testPlatform', stage === 'editmode' ? 'EditMode' : 'PlayMode',
+        '-assemblyNames', stage === 'editmode' ? 'Changshan.Foundation.EditTests' : 'Changshan.Foundation.PlayTests',
+        '-testResults', path.join(stagePath, 'tests.xml'))
+      await processStage(stage, editor, argv, project, env)
+      validatePackageLock(readJson(packageLock), policy)
+      if (stage === 'compile' || stage === 'build') {
+        const report = readJson(path.join(stagePath, stage + '.json'))
+        validateSettings(report, runId, project, stage, policy)
+        validateResolvedPackages(report, policy, builtIn, run.officialArchives)
+      }
+      else writeJson(path.join(stagePath, 'test-summary.json'), testSummary(path.join(stagePath, 'tests.xml')))
+      const log = fs.readFileSync(path.join(stagePath, 'Editor.log'), 'utf8')
+      if (/error CS\d{4}|Scripts have compiler errors|Aborting batchmode due to failure|Exception:|Assertion failed/i.test(log))
+        throw new Error(`EDITOR_LOG_ERROR: ${stage}`)
+      run.stages.at(-1).verified = true
+      run.stages.at(-1).sourceAfter = snapshotSource(root)
+      validateImmutableSource(run.sourceBefore, run.stages.at(-1).sourceAfter)
+    }
+    const player = requireSafePath(root, path.join(output, 'build/player/ChangshanLongdan.exe'))
+    if (!fs.existsSync(player) || fs.statSync(player).size === 0) throw new Error('PLAYER_MISSING')
+    run.playerSha256 = sha256(player)
+    const runtimePath = path.join(output, 'player')
+    await processStage('player', player, ['-screen-fullscreen', '0', '-screen-width', '1920', '-screen-height', '1080',
+      '-force-d3d11', '-logFile', path.join(runtimePath, 'Player.log'), '-e02RunId', runId, '-e02Output', runtimePath],
+    path.dirname(player), env, true)
+    validateRuntime(readJson(path.join(runtimePath, 'runtime.json')), runId, path.join(runtimePath, 'scene.png'))
+    run.stages.at(-1).verified = true
+    run.screenshotSha256 = sha256(path.join(runtimePath, 'scene.png'))
+    run.sourceAfter = snapshotSource(root)
+    validateImmutableSource(run.sourceBefore, run.sourceAfter)
+    run.result = 'PASS_LOCAL_ENGINE_FOUNDATION'
+    run.end = new Date().toISOString()
+    writeJson(path.join(output, 'result.json'), run)
+    process.stdout.write(JSON.stringify({ result: run.result, runId, output, stages: run.stages.map(item => ({ name: item.name, code: item.code, verified: item.verified })) }, null, 2) + '\n')
+  }
+} catch (error) {
+  const message = String(error.message ?? error)
+  if (run && output) {
+    run.result = 'BLOCKED'
+    run.error = message
+    run.end = new Date().toISOString()
+    writeJson(path.join(output, 'result.json'), run)
+  }
+  process.stderr.write(JSON.stringify({ result: 'BLOCKED', error: message, output: output ?? null, unityProcessStarted: (run?.stages.length ?? 0) > 0 }) + '\n')
+  process.exitCode = 2
+} finally {
+  if (lease !== undefined) {
+    fs.closeSync(lease)
+    requireSafePath(root, lockPath)
+    fs.unlinkSync(lockPath) // Only the lease file created by this process, never UnityLockfile.
+  }
+}

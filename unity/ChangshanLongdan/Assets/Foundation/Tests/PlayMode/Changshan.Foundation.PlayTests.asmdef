@@ -1,0 +1,5 @@
+{
+  "name": "Changshan.Foundation.PlayTests",
+  "references": ["Changshan.Foundation", "Unity.RenderPipelines.Universal.Runtime", "Unity.RenderPipelines.Core.Runtime"],
+  "optionalUnityReferences": ["TestAssemblies"]
+}

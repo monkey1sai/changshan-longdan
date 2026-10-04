@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "decisionStatus": "PROPOSED",
-  "acceptedDecisionRecord": null,
+  "decisionStatus": "ACCEPTED",
+  "acceptedDecisionRecord": "docs/engineering/E02_DECISION.md",
   "baseSha": "8932ee47b1e902c1d858b9f1b4a1733657c04a8a",
   "editorVersion": "6000.6.4f1",
   "editorRevision": "12bfff696524",

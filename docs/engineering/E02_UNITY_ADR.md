@@ -1,12 +1,12 @@
-# E02 Unity 決策提案
+# E02 Unity 決策
 
-日期：2026-10-03（Asia/Taipei）。`decisionStatus: PROPOSED`。本頁是待使用者核准的 ADR，尚未建立或啟動 Unity 工程；只完成既有環境盤點與唯讀預檢工具準備。
+提案日期：2026-10-03；決策接受日期：2026-10-04（Asia/Taipei）。`decisionStatus: ACCEPTED`。使用者已核准方向 1 與固定官方套件下載，原文、固定提案 hashes 與授權界線見 [E02_DECISION.md](./E02_DECISION.md)。下列盤點與三個方向保留原提案背景；實際工程驗證以 [E02_UNITY_VALIDATION.md](./E02_UNITY_VALIDATION.md) 及新收證紀錄為準。
 
 ## 來源與問題
 
 [PR #8](https://github.com/monkey1sai/changshan-longdan/pull/8) 的 E02 要先鎖定引擎、平台、管線、工程界線及可重現驗證，避免後續功能移植依賴未記錄的環境。起始主線是 `8932ee47b1e902c1d858b9f1b4a1733657c04a8a`；[E01／PR #13](https://github.com/monkey1sai/changshan-longdan/pull/13)已限定結案，未測的完整遊玩／裝置／效能仍保留。
 
-使用者已授權開始 E02 本機工作。平台／管線決策、Unity 下載／付費、E02 推送／合併／發布與正式人類 review 沒有因這句授權自動完成。原三個固定 PR 的限定人類接受不延伸至 E02。
+使用者先授權開始 E02 本機工作，再明確核准本 ADR 方向 1 與必要固定官方套件下載。付費、新 Editor／平台、E02 推送／合併／發布與正式最終人類 review 不在本次授權內。原三個固定 PR 的限定人類接受不延伸至 E02。
 
 ## 已觀察環境
 
