@@ -1,5 +1,7 @@
 # E02 本機準備紀錄
 
+此頁保留 2026-10-03 的準備時點。2026-10-04 使用者已接受 ADR 方向 1；最新最小工程、真實授權服務阻擋與下一步見 [E02_ENGINE_FOUNDATION.md](./E02_ENGINE_FOUNDATION.md)。歷史 NOT_RUN／PROPOSED 不代表最新狀態。
+
 日期：2026-10-03（Asia/Taipei）。`stepVerdict: BLOCKED_PENDING_ADR_DECISION`；已開始準備，未完成 E02，`nextStepAllowed:false`、`mergeSha:null`、`releaseOrPaidActionPerformed:false`。
 
 ## A. 來源與授權

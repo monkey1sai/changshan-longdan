@@ -46,9 +46,9 @@
 
 ## 驗證、退出與回滾
 
-本次可執行入口見 [E02_UNITY_VALIDATION.md](./E02_UNITY_VALIDATION.md)。目前只有唯讀 inventory／preflight 和其純資料／filesystem 負例；沒有完整 Unity execution runner，compile、Edit Mode、Play Mode、Windows build、Player 啟動／關閉與真實畫面都是 `NOT_RUN`。
+可執行入口見 [E02_UNITY_VALIDATION.md](./E02_UNITY_VALIDATION.md)。2026-10-03 僅有唯讀預檢；2026-10-04 已建立完整 execution runner 與最小工程，真實 compile attempt 受共享授權服務阻擋。編譯沒有 PASS，其後 Edit Mode、Play Mode、Windows build、Player 啟動／關閉與真實畫面都是 `NOT_RUN`。
 
-決策接受後才建立實際工程、Unity Editor C# build／settings check 入口、Edit Mode／Play Mode 最小測試與按階段收證 runner。每階段保留 exit、Editor log、測試 XML 或 build hashes；零測試、缺／陳舊 XML、compile error、非零 exit、timeout 都停止。`-runTests` 不加會提早終止測試的 `-quit`；build 需明確 `-buildTarget StandaloneWindows64`。命令參數依官方 [Editor command line](https://docs.unity3d.com/6000.6/Documentation/Manual/EditorCommandLineArguments.html)核對；Test Framework 1.8 的公開文件本輪未成功讀取，實作前須以已解析套件文件／實際 runner 行為補證，不能沿用其他版本命令作已驗證入口。
+依接受的決策已建立實際工程、Unity Editor C# build／settings check 入口、Edit Mode／Play Mode 最小測試與按階段收證 runner。每階段保留 exit、Editor log、測試 XML 或 build hashes；零測試、缺／陳舊 XML、compile error、非零 exit、timeout 都停止。`-runTests` 不加會提早終止測試的 `-quit`；build 明確用 `-buildTarget StandaloneWindows64`。命令依官方 [Editor command line](https://docs.unity3d.com/6000.6/Documentation/Manual/EditorCommandLineArguments.html)及已安裝 Test Framework `1.8.0` 的 `CommandLineTest/SettingsBuilder.cs` 核對；這是來源證據，實際測試執行仍未通過。
 
 E02 DONE 仍需：決策記錄、可由新 checkout 重現的精確工程、真實 compile／Edit Mode／Play Mode／build／啟動關閉、錯版本／缺 executable 等負例、Web 回歸、適用真實畫面、最終 SHA 的獨立正式 review、另行授權合併及合併後確認。可啟動空場景只證明工程可啟動，不是戰鬥／角色驗收。
 

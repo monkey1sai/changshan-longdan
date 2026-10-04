@@ -4,11 +4,37 @@ import path from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
 import { requireSafeEngineWrites, validateExecutionScope, validatePackagePolicy, validateImmutableSource, validateFrozenSource, validatePackageLock, validateTestSummary, validateSettings, validateRuntime, fixedDependencies } from '../lib/unity-execution.mjs'
+import { readUnityTestResults } from '../lib/unity-test-results.mjs'
 
 const root = path.resolve(fileURLToPath(new URL('../../', import.meta.url)))
 const contract = JSON.parse(fs.readFileSync(new URL('../../docs/engineering/e02-unity.proposed.json', import.meta.url)))
 const policy = JSON.parse(fs.readFileSync(new URL('../../unity/ChangshanLongdan/e02-package-policy.json', import.meta.url)))
 const copy = value => structuredClone(value)
+
+test('real XML parser accepts a synthetic NUnit case and rejects malformed, missing, DTD, zero and skipped results', () => {
+  const boundary = path.join(root, 'release/e02')
+  fs.mkdirSync(boundary, { recursive: true })
+  const temporary = fs.mkdtempSync(path.join(boundary, 'xml-test-'))
+  const filename = path.join(temporary, 'synthetic.xml')
+  try {
+    const valid = '<test-run result="Passed" total="1" passed="1" failed="0" skipped="0" inconclusive="0"><test-case fullname="Synthetic.Only" result="Passed" /></test-run>'
+    fs.writeFileSync(filename, valid)
+    assert.equal(readUnityTestResults(filename).total, 1)
+    for (const invalid of ['<broken>', valid.replace(' failed="0"', ''),
+      '<!DOCTYPE test-run [<!ENTITY x SYSTEM "file:///not-read">]>' + valid,
+      '<test-run result="Passed" total="0" passed="0" failed="0" skipped="0" inconclusive="0" />',
+      valid.replace('result="Passed" /></test-run>', 'result="Skipped" /></test-run>')]) {
+      fs.writeFileSync(filename, invalid)
+      assert.throws(() => readUnityTestResults(filename))
+    }
+    assert.throws(() => readUnityTestResults(path.join(temporary, 'missing.xml')), /TEST_XML_MISSING/)
+  } finally {
+    const absolute = fs.realpathSync(temporary)
+    const relative = path.relative(fs.realpathSync(boundary), absolute)
+    assert.ok(relative && !relative.startsWith('..') && !path.isAbsolute(relative))
+    fs.rmSync(absolute, { recursive: true, force: true })
+  }
+})
 
 test('Library and nested UPM cache junctions block before any engine launch', () => {
   const boundary = path.join(root, 'release/e02')

@@ -5,8 +5,9 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { inspectUnityPreflight } from './lib/unity-preflight.mjs'
 import { readEditorVersion } from './lib/unity-editor-version.mjs'
-import { requireSafePath, requireSafeEngineWrites, validateExecutionScope, validatePackagePolicy, validateImmutableSource, validateFrozenSource, validatePackageLock, validateTestSummary,
+import { requireSafePath, requireSafeEngineWrites, validateExecutionScope, validatePackagePolicy, validateImmutableSource, validateFrozenSource, validatePackageLock,
   validateSettings, validateRuntime, sha256, snapshotSource } from './lib/unity-execution.mjs'
+import { readUnityTestResults } from './lib/unity-test-results.mjs'
 
 const root = fs.realpathSync(fileURLToPath(new URL('../', import.meta.url)))
 const defaultEditor = 'C:\\Program Files\\Unity\\Hub\\Editor\\6000.6.4f1\\Editor\\Unity.exe'
@@ -25,14 +26,17 @@ async function fixedOfficialArchives(policy) {
     if (expected.source !== 'registry') continue
     const url = `https://download.packages.unity.com/${name}/-/${name}-${expected.version}.tgz`
     const filename = requireSafePath(root, path.join(directory, name + '-' + expected.version + '.tgz'))
+    const cached = requireSafePath(root, path.join(root, 'release/e02/official-package-cache', name + '-' + expected.version + '.tgz'))
+    const cacheHit = fs.existsSync(cached)
     const expectedCdn = `https://cdn.packages.unity.com/tarballs/${name}/${expected.version}/${expected.sha1}.tgz`
     // Only follow the exact checksum-addressed Unity CDN destination supplied by the official host.
-    const download = spawnSync('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command',
+    const download = cacheHit ? null : spawnSync('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command',
       '$ErrorActionPreference="Stop"; $request=[System.Net.HttpWebRequest]::Create($env:CHANGSHAN_E02_PACKAGE_URL); $request.AllowAutoRedirect=$false; $request.Timeout=15000; $response=$request.GetResponse(); try { $status=[int]$response.StatusCode; $location=$response.Headers["Location"] } finally { $response.Close() }; if ($status -ne 302 -or $location -cne $env:CHANGSHAN_E02_PACKAGE_CDN) { throw "Unexpected official package redirect" }; Invoke-WebRequest -UseBasicParsing -Uri $env:CHANGSHAN_E02_PACKAGE_CDN -OutFile $env:CHANGSHAN_E02_PACKAGE_OUT -MaximumRedirection 0 -TimeoutSec 30'], {
       shell: false, windowsHide: true, encoding: 'utf8', timeout: 45000,
       env: { ...process.env, CHANGSHAN_E02_PACKAGE_URL: url, CHANGSHAN_E02_PACKAGE_OUT: filename, CHANGSHAN_E02_PACKAGE_CDN: expectedCdn },
     })
-    if (download.error || download.status !== 0) throw new Error(`OFFICIAL_PACKAGE_DOWNLOAD_FAILED: ${name}; ${download.error?.message ?? download.stderr.trim()}`)
+    if (cacheHit) fs.copyFileSync(cached, filename, fs.constants.COPYFILE_EXCL)
+    else if (download.error || download.status !== 0) throw new Error(`OFFICIAL_PACKAGE_DOWNLOAD_FAILED: ${name}; ${download.error?.message ?? download.stderr.trim()}`)
     if (fs.statSync(filename).size > 64000000) throw new Error(`OFFICIAL_PACKAGE_TOO_LARGE: ${name}`)
     const bytes = fs.readFileSync(filename)
     const actual = createHash('sha1').update(bytes).digest('hex')
@@ -41,7 +45,12 @@ async function fixedOfficialArchives(policy) {
     if (manifest.error || manifest.status !== 0) throw new Error(`OFFICIAL_PACKAGE_MANIFEST_FAILED: ${name}`)
     const packageJson = JSON.parse(manifest.stdout)
     if (packageJson.name !== name || packageJson.version !== expected.version) throw new Error(`OFFICIAL_PACKAGE_VERSION_MISMATCH: ${name}`)
-    evidence[name] = { url, verifiedCdn: expectedCdn, version: expected.version, bytes: bytes.length, sha1: actual, sha256: sha256(filename),
+    if (!cacheHit) {
+      requireSafePath(root, cached)
+      fs.mkdirSync(path.dirname(cached), { recursive: true })
+      fs.copyFileSync(filename, cached, fs.constants.COPYFILE_EXCL)
+    }
+    evidence[name] = { url, verifiedCdn: expectedCdn, cacheHit, version: expected.version, bytes: bytes.length, sha1: actual, sha256: sha256(filename),
       manifestSha256: createHash('sha256').update(manifest.stdout).digest('hex'), filename }
   }
   writeJson(path.join(directory, 'provenance.json'), evidence)
@@ -66,7 +75,7 @@ async function processStage(name, executable, argv, cwd, env, visible = false) {
   const stagePath = requireSafePath(root, path.join(output, name))
   fs.mkdirSync(stagePath)
   const start = new Date().toISOString()
-  const record = { name, executable, argv, cwd, start, timeoutMs: visible ? 120000 : 900000, runId: run.runId }
+  const record = { name, executable, argv, cwd, start, timeoutMs: visible ? 120000 : 900000, runId: run.runId, verified: false }
   writeJson(path.join(stagePath, 'command.json'), record)
   const stdout = fs.openSync(path.join(stagePath, 'stdout.log'), 'wx')
   const stderr = fs.openSync(path.join(stagePath, 'stderr.log'), 'wx')
@@ -74,33 +83,40 @@ async function processStage(name, executable, argv, cwd, env, visible = false) {
   let timedOut = false
   try {
     child = spawn(executable, argv, { shell: false, windowsHide: !visible, cwd, env, stdio: ['ignore', stdout, stderr] })
+    record.pid = child.pid ?? null
+    writeJson(path.join(stagePath, 'started.json'), { pid: record.pid, runnerPid: process.pid, runId: run.runId, executable, argv, cwd })
     const timer = setTimeout(() => {
       // This handle belongs exclusively to this launch. Never kill all Unity processes.
       timedOut = true
       child.kill()
     }, record.timeoutMs)
+    const monitor = setInterval(() => {
+      const logfile = path.join(stagePath, visible ? 'Player.log' : 'Editor.log')
+      try {
+        if (!fs.existsSync(logfile)) return
+        const log = fs.readFileSync(logfile, 'utf8')
+        if (/Failed to acquire global mutex Unity-LicenseClient-/.test(log)) {
+          record.terminationReason = 'ENVIRONMENT_FAILURE: shared Unity Licensing Client mutex/IPC unavailable'
+          child.kill() // Only this launch handle; never stop the shared client or another Editor.
+        }
+      } catch (error) {
+        if (error.code !== 'ENOENT') {
+          record.terminationReason = `TOOL_FAILURE: stage log monitor ${error.code ?? 'read error'}`
+          child.kill()
+        }
+      }
+    }, 2000)
     const exit = await new Promise((resolve, reject) => {
       child.once('error', reject)
       child.once('close', (code, signal) => resolve({ code, signal }))
-    }).finally(() => clearTimeout(timer))
+    }).finally(() => { clearTimeout(timer); clearInterval(monitor) })
     Object.assign(record, { pid: child.pid, end: new Date().toISOString(), timedOut, ...exit })
     writeJson(path.join(stagePath, 'exit.json'), record)
     run.stages.push(record)
+    if (record.terminationReason) throw new Error(record.terminationReason)
     if (timedOut || exit.code !== 0) throw new Error(`STAGE_FAILED: ${name}; exit=${exit.code}; timedOut=${timedOut}`)
   } finally { fs.closeSync(stdout); fs.closeSync(stderr) }
   return stagePath
-}
-
-function testSummary(filename) {
-  requireSafePath(root, filename)
-  if (!fs.existsSync(filename) || fs.statSync(filename).size === 0) throw new Error('TEST_XML_MISSING')
-  // Real XML parser with DTD and entity resolution disabled. File path is separate environment data.
-  const command = `$ErrorActionPreference='Stop'; $settings=[System.Xml.XmlReaderSettings]::new(); $settings.DtdProcessing=[System.Xml.DtdProcessing]::Prohibit; $settings.XmlResolver=$null; $reader=[System.Xml.XmlReader]::Create($env:CHANGSHAN_E02_XML,$settings); try { $doc=[System.Xml.XmlDocument]::new(); $doc.XmlResolver=$null; $doc.Load($reader); $node=$doc.DocumentElement; if ($node.Name -ne 'test-run') { throw 'Expected NUnit test-run' }; $cases=@($doc.SelectNodes('//test-case')); $bad=@($cases | Where-Object { $_.GetAttribute('result') -ne 'Passed' }); [pscustomobject]@{result=$node.GetAttribute('result');total=[int]$node.GetAttribute('total');passed=[int]$node.GetAttribute('passed');failed=[int]$node.GetAttribute('failed');skipped=[int]$node.GetAttribute('skipped');inconclusive=[int]$node.GetAttribute('inconclusive');caseCount=$cases.Count;badCaseCount=$bad.Count} | ConvertTo-Json -Compress } finally { $reader.Dispose() }`
-  const result = spawnSync('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', command], {
-    shell: false, windowsHide: true, encoding: 'utf8', timeout: 15000, env: { ...process.env, CHANGSHAN_E02_XML: filename },
-  })
-  if (result.error || result.status !== 0) throw new Error(`TEST_XML_PARSE_FAILED: ${result.error?.message ?? result.stderr}`)
-  return validateTestSummary(JSON.parse(result.stdout))
 }
 
 try {
@@ -179,7 +195,15 @@ try {
         validateSettings(report, runId, project, stage, policy)
         validateResolvedPackages(report, policy, builtIn, run.officialArchives)
       }
-      else writeJson(path.join(stagePath, 'test-summary.json'), testSummary(path.join(stagePath, 'tests.xml')))
+      else {
+        const summary = readUnityTestResults(requireSafePath(root, path.join(stagePath, 'tests.xml')))
+        const expectedCount = stage === 'editmode' ? 9 : 1
+        const className = stage === 'editmode' ? 'FoundationEditTests' : 'FoundationPlayTests'
+        if (summary.total !== expectedCount || !Array.isArray(summary.caseNames) || new Set(summary.caseNames).size !== expectedCount ||
+            summary.caseNames.some(name => !name.startsWith('Changshan.Foundation.Tests.' + className + '.')))
+          throw new Error(`TEST_SET_INCOMPLETE: ${stage}`)
+        writeJson(path.join(stagePath, 'test-summary.json'), summary)
+      }
       const log = fs.readFileSync(path.join(stagePath, 'Editor.log'), 'utf8')
       if (/error CS\d{4}|Scripts have compiler errors|Aborting batchmode due to failure|Exception:|Assertion failed/i.test(log))
         throw new Error(`EDITOR_LOG_ERROR: ${stage}`)
