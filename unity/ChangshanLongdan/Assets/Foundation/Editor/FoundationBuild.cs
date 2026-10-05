@@ -97,7 +97,7 @@ namespace Changshan.Foundation.Editor
     private static void WriteReport(string stage, BuildReport build)
     {
       var pipeline = GraphicsSettings.defaultRenderPipeline as UniversalRenderPipelineAsset;
-      var infos = PackageInfo.GetAllRegisteredPackages();
+      var infos = UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages();
       var packages = new PackageRecord[infos.Length];
       for (int i = 0; i < infos.Length; i++) packages[i] = new PackageRecord {
         name = infos[i].name, version = infos[i].version, source = infos[i].source.ToString(), resolvedPath = infos[i].resolvedPath
