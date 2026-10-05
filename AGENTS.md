@@ -5,14 +5,15 @@
 A PS2-style musou action game for the browser (Zhao Yun vs. 300 Wei soldiers), built with Vite, TypeScript and Three.js. Zhao Yun uses a user-created skinned GLB driven by procedural poses; soldiers, castle and dragon are procedural voxels. All audio is synthesized with WebAudio.
 
 - `index.html` — page shell, HUD markup and title/pause/result screens.
-- `src/main.ts` — entry point; `src/game.ts` — main loop, mode switching and system wiring.
+- `src/main.ts` — entry point; `src/game.ts` — main loop, mode switching and presentation of battle events.
 - `src/combat/` — move data (hit windows, damage, reactions), combo rules, hit shapes. Pure logic.
-- `src/entities/` — player state machine, enemy AI/physics in SoA typed arrays, arena collision. Pure logic.
+- `src/entities/` — battle rules (`battle.ts`: one fight's step, events, outcome, difficulty and battle-phase pressure), player state machine, enemy AI/physics in SoA typed arrays, the musou dragon strike, arena collision. Pure logic.
 - `src/core/` — math, input, spatial hash, two-bone IK.
 - `src/world/` — castle layout (shared by rendering and collision), geometry, sky, flags, fire, lights, textures.
 - `src/view/`, `src/fx/`, `src/render/`, `src/audio/`, `src/ui/` — rendering, effects, post-processing, audio, DOM UI.
 - `tests/` — Vitest tests for the pure-logic modules.
 - `public/models/` — Zhao Yun GLB and provenance manifest; `src/view/zhaoyun-adapter.ts` centralizes inspected asset and bone mappings.
+- `CONTEXT.md` — domain glossary; use its terms in code, tests and docs.
 
 ## Commands
 
@@ -30,11 +31,11 @@ Builds must keep relative asset paths (`base: './'`) because itch.io serves game
 
 ## Coding Style
 
-TypeScript strict mode with `erasableSyntaxOnly` (no enums or parameter properties; use `as const` objects), ES modules, 2-space indentation, LF line endings, UTF-8. Import local modules with the `.ts` extension. Keep game rules in `combat/` and `entities/` free of DOM and WebGL so they stay unit-testable. Avoid per-frame allocations in hot paths; reuse scratch vectors and typed arrays. Place shared world coordinates in `src/world/layout.ts` so rendering and collision cannot drift apart.
+TypeScript strict mode with `erasableSyntaxOnly` (no enums or parameter properties; use `as const` objects), ES modules, 2-space indentation, LF line endings, UTF-8. Import local modules with the `.ts` extension. Keep game rules in `combat/` and `entities/` free of DOM and WebGL so they stay unit-testable; `game.ts` reacts to `BattleEvent`s and must not decide combat outcomes itself. Avoid per-frame allocations in hot paths; reuse scratch vectors and typed arrays. Place shared world coordinates in `src/world/layout.ts` so rendering and collision cannot drift apart.
 
 ## Testing
 
-Add or update Vitest tests for every change to combat, AI, player or layout logic. Visual and feel changes must be checked in a real browser with `npm run dev`; a passing test run is not visual verification. In dev builds `window.__game` exposes `state`, `advance(frames, input)` and other hooks for scripted checks. Chrome pauses `requestAnimationFrame` for hidden or occluded windows, so scripted runs in a background tab are supporting evidence only; confirm frame rate and input feel in a visible window.
+Add or update Vitest tests for every change to combat, AI, player, battle or layout logic; test battle rules through `Battle` with a small `BattleSetup`. Visual and feel changes must be checked in a real browser with `npm run dev`; a passing test run is not visual verification. In dev builds `window.__game` exposes `state`, `advance(frames, input)` and other hooks for scripted checks. Chrome pauses `requestAnimationFrame` for hidden or occluded windows, so scripted runs in a background tab are supporting evidence only; confirm frame rate and input feel in a visible window.
 
 ## Model Asset Collaboration
 
