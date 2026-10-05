@@ -1,4 +1,4 @@
 {
   "name": "Changshan.Character",
-  "references": ["Changshan.Foundation", "glTFast"]
+  "references": ["Changshan.Foundation", "glTFast", "Changshan.Combat"]
 }

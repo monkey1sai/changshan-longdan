@@ -19,8 +19,8 @@ let run, lease, lockPath, output
 const archiveManifests = {}
 const testPrefix = 'Changshan.Foundation.Tests.'
 const testInventory = {
-  editmode: { FoundationEditTests: 11, CharacterSourceEditTests: 5 },
-  playmode: { FoundationPlayTests: 1, CharacterImportPlayTests: 16 },
+  editmode: { FoundationEditTests: 11, CharacterSourceEditTests: 5, CombatParityEditTests: 10, CombatRuleEditTests: 8, LogicDisplayMappingEditTests: 3 },
+  playmode: { FoundationPlayTests: 1, CharacterImportPlayTests: 16, ZhaoYunControllerPlayTests: 5 },
 }
 const characterSource = 'public/models/zhaoyun.glb'
 const characterStreamingCopy = 'ChangshanLongdan_Data/StreamingAssets/Characters/zhaoyun.glb'

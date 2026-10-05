@@ -32,6 +32,9 @@ export const PLAYER_SCENARIOS: PlayerScenario[] = [
   { id: 'charge_after_n2', duration: 2.0, holds: [], presses: [...taps('attack', 0, 0.25), [0.5, 'charge']], ops: [] },
   { id: 'charge_after_n4', duration: 2.8, holds: [], presses: [...taps('attack', 0, 0.25, 0.5, 0.75), [1.1, 'charge']], ops: [] },
   { id: 'charge_after_n5', duration: 3.6, holds: [], presses: [...taps('attack', 0, 0.3, 0.55, 0.85, 1.2), [1.6, 'charge']], ops: [] },
+  // C1 can chain at 0.52 s: a press 0.42 s earlier is still inside the 0.45 s buffer, one 0.48 s earlier has expired.
+  { id: 'buffer_kept_within_450ms', duration: 1.4, holds: [], presses: [[0, 'charge'], [0.1, 'attack']], ops: [] },
+  { id: 'buffer_expires_after_450ms', duration: 1.4, holds: [], presses: [[0, 'charge'], [0.04, 'attack']], ops: [] },
   { id: 'charge_wins_same_frame', duration: 1.0, holds: [], presses: [[0, 'attack'], [0, 'charge']], ops: [] },
   { id: 'jump_attacks', duration: 2.4, holds: [], presses: [[0, 'jump'], [0.25, 'attack'], [1.25, 'jump'], [1.5, 'charge']], ops: [[1.2, ['reset']]] },
   { id: 'dodge_dash_and_cancel', duration: 1.8, holds: [{ from: 0, to: 0.1, move: [0, -1] }], presses: [[0, 'dodge'], [0.15, 'attack'], [1.0, 'attack'], [1.2, 'dodge']], ops: [] },
@@ -66,6 +69,7 @@ export const INPUT_SCENARIOS: InputScenario[] = [
 // Yaws used to check camera-relative composition (game.simulate); PI is the start view.
 export const COMPOSE_YAWS = [Math.PI, 0.7] as const
 
+const WINDOW_KEYS = new Map((Object.keys(MOVES) as MoveId[]).flatMap((id) => MOVES[id].hits.map((w, i) => [w, `${id}:${i}`] as const)))
 const frameOf = (t: number, hz: number) => Math.max(0, Math.ceil(t * hz - 1e-9))
 const IDLE: PlayerControls = { moveX: 0, moveZ: 0, attack: false, charge: false, jump: false, dodge: false, musou: false, guard: false }
 const noAim: AimFn = () => null
@@ -128,7 +132,8 @@ export function runPlayerScenario(s: PlayerScenario, hz: number) {
       ...(ops.length ? { op: ops, oe: opEvents } : {}),
       s: snapshot(player),
       e: player.events.map(eventText),
-      h: player.activeHits.map((a) => player.move?.hits.indexOf(a.window) ?? -1),
+      // A chain can start the next move in the same frame, so name the window by the move that owns it.
+      h: player.activeHits.map((a) => WINDOW_KEYS.get(a.window) ?? '?'),
     })
   }
   return { id: s.id, hz, frames }
