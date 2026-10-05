@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace Changshan.Combat
 {
@@ -9,8 +10,10 @@ namespace Changshan.Combat
     public const double MusouFinale = 3.02;
 
     static readonly MoveDefinition[] all = Build();
+    static readonly ReadOnlyCollection<MoveDefinition> readOnlyAll = new ReadOnlyCollection<MoveDefinition>(all);
 
-    public static IReadOnlyList<MoveDefinition> All => all;
+    // A wrapper, not the array, so callers cannot cast it back and replace a move.
+    public static IReadOnlyList<MoveDefinition> All => readOnlyAll;
 
     public static MoveDefinition Get(MoveId id) => all[(int)id];
 

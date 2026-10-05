@@ -42,7 +42,7 @@ namespace Changshan.Foundation.Tests
 
     [Test] public void AllSeventeenMovesMatchWebData()
     {
-      Assert.That(Moves.All, Has.Count.EqualTo(17));
+      Assert.That(Moves.All.Count, Is.EqualTo(17));
       AssertClean(CombatParity.CompareMoves(Fixture));
     }
 

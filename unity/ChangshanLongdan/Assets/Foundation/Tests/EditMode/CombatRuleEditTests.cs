@@ -129,6 +129,9 @@ namespace Changshan.Foundation.Tests
       Assert.That(move.HeightKey(1).Value, Is.EqualTo(1));
       Assert.That(move.Hits, Is.InstanceOf<System.Collections.ObjectModel.ReadOnlyCollection<HitWindow>>());
       Assert.Throws<NotSupportedException>(() => ((IList<HitWindow>)move.Hits).Add(hits[0]));
+      Assert.That(Moves.All, Is.Not.InstanceOf<MoveDefinition[]>(), "the move table can be cast back to a writable array");
+      Assert.Throws<NotSupportedException>(() => ((IList<MoveDefinition>)Moves.All)[0] = move);
+      Assert.That(Moves.Get(MoveId.N1).Name, Is.EqualTo("刺"));
       Assert.That(Moves.Get(MoveId.MUSOU).Hits, Has.Count.EqualTo(20));
       Assert.That(Moves.Get(MoveId.C5).Hits, Has.Count.EqualTo(9));
     }
