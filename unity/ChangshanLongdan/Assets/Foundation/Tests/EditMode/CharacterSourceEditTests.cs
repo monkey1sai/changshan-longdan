@@ -44,7 +44,8 @@ namespace Changshan.Foundation.Tests
       var gltf = GlbJson.Parse(File.ReadAllBytes(StreamingCopy));
       Assert.That(gltf.skins, Has.Length.EqualTo(1));
       Assert.That(gltf.skins[0].joints.Select(index => gltf.nodes[index].name), Is.EqualTo(ZhaoYunContract.Joints));
-      Assert.That(gltf.materials.Select(material => material.name), Is.EqualTo(ZhaoYunContract.WeaponMaterials));
+      Assert.That(gltf.materials.Select(material => material.name),
+        Is.EquivalentTo(ZhaoYunContract.BodyMaterials.Union(ZhaoYunContract.WeaponMaterials)));
       Assert.That(gltf.nodes.Count(node => node.name == ZhaoYunContract.BodyNode), Is.EqualTo(1));
       Assert.That(gltf.nodes.Count(node => node.name == ZhaoYunContract.WeaponNode), Is.EqualTo(1));
       Assert.That(gltf.images, Has.Length.EqualTo(3));

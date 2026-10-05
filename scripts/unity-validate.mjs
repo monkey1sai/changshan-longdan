@@ -20,7 +20,7 @@ const archiveManifests = {}
 const testPrefix = 'Changshan.Foundation.Tests.'
 const testInventory = {
   editmode: { FoundationEditTests: 11, CharacterSourceEditTests: 5 },
-  playmode: { FoundationPlayTests: 1, CharacterImportPlayTests: 10 },
+  playmode: { FoundationPlayTests: 1, CharacterImportPlayTests: 14 },
 }
 const characterSource = 'public/models/zhaoyun.glb'
 const characterStreamingCopy = 'ChangshanLongdan_Data/StreamingAssets/Characters/zhaoyun.glb'

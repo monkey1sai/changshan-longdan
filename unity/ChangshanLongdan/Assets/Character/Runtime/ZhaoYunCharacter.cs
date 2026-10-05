@@ -97,6 +97,8 @@ namespace Changshan.Character
         }
         if (Abandoned(attempt)) return Discard(import, null);
         if (!decoded) return Fail(attempt, report, logger, started, "DECODE_FAILED", "glTFast rejected the data", import, null);
+        // glTFast reports success for partial loads (for example an unreadable texture), so any logged error fails the import.
+        if (Errors(logger) > 0) return Fail(attempt, report, logger, started, "IMPORT_ERRORS", "glTFast logged errors while loading", import, null);
 
         // Instantiate hidden; the import becomes visible only after it passes the contract.
         container = new GameObject(ModelName);
@@ -105,10 +107,14 @@ namespace Changshan.Character
         bool instantiated = await import.InstantiateMainSceneAsync(container.transform, lifetime.Token);
         if (Abandoned(attempt)) return Discard(import, container);
         if (!instantiated) return Fail(attempt, report, logger, started, "INSTANTIATE_FAILED", "glTFast could not instantiate the main scene", import, container);
+        if (Errors(logger) > 0) return Fail(attempt, report, logger, started, "IMPORT_ERRORS", "glTFast logged errors while instantiating", import, container);
         if (!CharacterImportValidator.Validate(container, report, out var code, out var detail))
           return Fail(attempt, report, logger, started, code, detail, import, container);
 
         Swap(container, import);
+        // The model is live from here on; a later exception must not discard it.
+        container = null;
+        import = null;
         report.status = "READY";
         report.readyFrame = Time.frameCount;
         Status = CharacterLoadStatus.Ready;
@@ -170,7 +176,7 @@ namespace Changshan.Character
     {
       report.loadSeconds = Time.realtimeSinceStartup - started;
       var items = logger.Items?.ToArray() ?? Array.Empty<LogItem>();
-      report.gltfErrors = items.Count(item => item.Type == LogType.Error || item.Type == LogType.Exception || item.Type == LogType.Assert);
+      report.gltfErrors = Errors(logger);
       report.gltfWarnings = items.Count(item => item.Type == LogType.Warning);
       report.gltfMessages = items.Select(item => item.ToString()).ToArray();
       report.fallbackVisible = fallback && fallback.activeInHierarchy;
@@ -189,13 +195,20 @@ namespace Changshan.Character
       runReportWritten = true;
       report.runId = runId;
       string path = Path.Combine(output, "character.json");
-      if (File.Exists(path))
+      try
       {
-        Debug.LogError("E03 character report already exists; refusing overwrite");
-        return;
+        if (File.Exists(path)) throw new IOException("character.json already exists; refusing overwrite");
+        File.WriteAllText(path, JsonUtility.ToJson(report, true));
       }
-      File.WriteAllText(path, JsonUtility.ToJson(report, true));
+      catch (Exception exception)
+      {
+        // The missing report fails the runner; the character itself stays as loaded.
+        Debug.LogError("E03 character report not written: " + exception.Message);
+      }
     }
+
+    static int Errors(CollectingLogger logger) =>
+      logger.Items?.Count(item => item.Type == LogType.Error || item.Type == LogType.Exception || item.Type == LogType.Assert) ?? 0;
 
     void ReleaseCapture()
     {

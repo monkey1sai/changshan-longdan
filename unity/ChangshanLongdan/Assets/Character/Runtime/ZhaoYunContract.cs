@@ -13,6 +13,9 @@ namespace Changshan.Character
     public const int BodyTriangles = 27710;
     public const int WeaponTriangles = 1859;
     public const int Triangles = BodyTriangles + WeaponTriangles;
+    // Embedded base color, metallic-roughness and normal maps, all 2048 x 2048.
+    public const int Textures = 3;
+    public const int TextureSize = 2048;
 
     // The body mesh stands on y = 0; its height is the glTF POSITION accessor maximum.
     public const float BodyHeight = 1.8495447f;

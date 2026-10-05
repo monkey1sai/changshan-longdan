@@ -36,7 +36,7 @@ runner 為 `scripts/unity-validate.mjs`；工程 `unity/ChangshanLongdan`。先�
 | Edit Mode | 同 Editor／project／target，`-runTests -testPlatform EditMode -assemblyNames Changshan.Foundation.EditTests -testResults <fresh>/tests.xml`；**不加 `-quit`**；實際 11 個固定 cases 全部 Passed |
 | Play Mode | 同上，`-testPlatform PlayMode -assemblyNames Changshan.Foundation.PlayTests`；1 個固定空場景 boot case，至少跨 frame，無 skip／inconclusive／錯誤 |
 | Windows build | `-quit -executeMethod Changshan.Foundation.Editor.FoundationBuild.BuildWindows`；成功 build report、零 errors、正 bytes、實際 exe／SHA-256 與設定讀回 |
-| Player | 本次 build exe，windowed 1920×1080、D3D11、runId 與 fresh output；實際 120 frames、runtime settings、零報告 errors、完成的 1920×1080 PNG 與正常 exit |
+| Player | 本次 build exe，windowed 1920×1080、D3D11、runId 與 fresh output；實際 120 frames 後等待 `CaptureGate` 釋放（上限 20 秒，`pendingCaptureGates` 須為 0）、runtime settings、零報告 errors、完成的 1920×1080 PNG 與正常 exit；E03 起另驗 Player 內 GLB 副本雜湊與 `character.json` |
 
 完整 argv／exe／project／PID／runId／起訖／timeout／exit 在各 stage 的 `command.json`、`started.json`、`exit.json`，共用 `start.json`／`result.json`。保存 `Editor.log`、NUnit XML、build report、`Player.log`／`runtime.json`／`scene.png`。缺欄位、零測試、XML parse failure、非零 exit、compile errors、設定／package／source drift、缺／不完整 PNG 全部停止。`verified` 只在全部 postconditions 通過後標記。
 

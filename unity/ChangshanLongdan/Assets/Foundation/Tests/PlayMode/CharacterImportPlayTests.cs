@@ -33,6 +33,8 @@ namespace Changshan.Foundation.Tests
       {
         Assert.That(character.Fallback.activeInHierarchy, Is.True, "fallback hidden while loading");
         Assert.That(character.Model, Is.Null, "model exposed before validation");
+        Assert.That(root.GetComponentsInChildren<Renderer>(false).All(renderer => renderer.transform.IsChildOf(character.Fallback.transform)),
+          Is.True, "an unvalidated import is rendering");
         yield return null;
       }
       AssertReady(character, load);
@@ -162,6 +164,70 @@ namespace Changshan.Foundation.Tests
       AssertNoImportLeft(character);
     }
 
+    [UnityTest] public IEnumerator UnreadableEmbeddedImageKeepsFallbackVisible()
+    {
+      var character = CreateCharacter();
+      var bytes = File.ReadAllBytes(SourcePath);
+      // Zero the image header in place: the container stays valid, glTFast logs the unknown format and loads on.
+      Array.Clear(bytes, EmbeddedImageOffset(bytes, 0), 16);
+      LogAssert.Expect(LogType.Error, new Regex("^CHARACTER_LOAD_FAILED IMPORT_ERRORS"));
+      var load = character.LoadFromBytes(bytes, "image 0 unreadable");
+      yield return new WaitUntil(() => load.IsCompleted);
+      AssertFallbackKept(character, load, "IMPORT_ERRORS");
+      Assert.That(character.Report.gltfErrors, Is.GreaterThan(0));
+      yield return null;
+      AssertNoImportLeft(character);
+    }
+
+    [UnityTest] public IEnumerator ValidatorRejectsAMissingFullSizeTexture()
+    {
+      var character = CreateCharacter();
+      var load = character.LoadFromStreamingAssets(ZhaoYunContract.StreamingAssetPath);
+      yield return new WaitUntil(() => load.IsCompleted);
+      AssertReady(character, load);
+      // A JPEG with an intact header but corrupt data loads without any glTFast error; only the size check catches it.
+      var material = character.Model.GetComponentsInChildren<Renderer>(true).SelectMany(renderer => renderer.sharedMaterials)
+        .First(candidate => candidate.name == ZhaoYunContract.BodyMaterials[0]);
+      int property = material.GetTexturePropertyNameIDs().First(id => material.GetTexture(id) != null && material.GetTexture(id).width == ZhaoYunContract.TextureSize);
+      material.SetTexture(property, Texture2D.whiteTexture);
+      Assert.That(CharacterImportValidator.Validate(character.Model, new CharacterImportReport(), out var code, out var detail), Is.False);
+      Assert.That(code, Is.EqualTo("TEXTURE_MISSING"), detail);
+    }
+
+    [UnityTest] public IEnumerator NewerLoadSupersedesAnUnfinishedOne()
+    {
+      var character = CreateCharacter();
+      var first = character.LoadFromStreamingAssets(ZhaoYunContract.StreamingAssetPath);
+      var second = character.LoadFromStreamingAssets(ZhaoYunContract.StreamingAssetPath);
+      yield return new WaitUntil(() => first.IsCompleted && second.IsCompleted);
+      Assert.That(first.Result, Is.False, "superseded load reported success");
+      AssertReady(character, second);
+      yield return null;
+      Assert.That(root.GetComponentsInChildren<SkinnedMeshRenderer>(true), Has.Length.EqualTo(1));
+      Assert.That(root.transform.Cast<Transform>().Count(child => child.name == "ZhaoYun Model"), Is.EqualTo(1));
+      Assert.That(character.Report.loadCount, Is.EqualTo(2));
+    }
+
+    [UnityTest] public IEnumerator FailedReloadKeepsTheValidModel()
+    {
+      var character = CreateCharacter();
+      var first = character.LoadFromStreamingAssets(ZhaoYunContract.StreamingAssetPath);
+      yield return new WaitUntil(() => first.IsCompleted);
+      AssertReady(character, first);
+      var valid = character.Model;
+      LogAssert.Expect(LogType.Error, new Regex("^CHARACTER_LOAD_FAILED REQUIRED_BONE_MISSING"));
+      var reload = character.LoadFromBytes(ReplaceInJson(File.ReadAllBytes(SourcePath), "\"hand_l\"", "\"hand_x\""), "hand_l renamed");
+      yield return new WaitUntil(() => reload.IsCompleted);
+      Assert.That(reload.Result, Is.False);
+      Assert.That(character.Status, Is.EqualTo(CharacterLoadStatus.Failed));
+      Assert.That(character.Model, Is.SameAs(valid));
+      Assert.That(valid.activeInHierarchy, Is.True);
+      Assert.That(character.Fallback.activeInHierarchy, Is.False);
+      Assert.That(character.Report.modelVisible, Is.True);
+      yield return null;
+      Assert.That(root.GetComponentsInChildren<SkinnedMeshRenderer>(true), Has.Length.EqualTo(1));
+    }
+
     [UnityTest] public IEnumerator ReloadReplacesTheModelExactlyOnce()
     {
       var character = CreateCharacter();
@@ -243,6 +309,18 @@ namespace Changshan.Foundation.Tests
       Assert.That(found, Has.Length.EqualTo(1), name);
       return found[0];
     }
+
+    // Byte offset of an embedded image inside the GLB: BIN chunk data starts after the JSON chunk and its 8-byte header.
+    static int EmbeddedImageOffset(byte[] glb, int image)
+    {
+      var layout = JsonUtility.FromJson<BinaryLayout>(GlbJson.Read(glb));
+      int binary = 20 + (int)BitConverter.ToUInt32(glb, 12) + 8;
+      return binary + layout.bufferViews[layout.images[image].bufferView].byteOffset;
+    }
+
+    [Serializable] class BinaryLayout { public LayoutImage[] images; public LayoutView[] bufferViews; }
+    [Serializable] class LayoutImage { public int bufferView; }
+    [Serializable] class LayoutView { public int byteOffset; }
 
     // Same-length edit inside the JSON chunk, so the container header and every binary offset stay valid.
     static byte[] ReplaceInJson(byte[] glb, string from, string to)

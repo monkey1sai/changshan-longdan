@@ -20,6 +20,8 @@ namespace Changshan.Character
       var missing = ZhaoYunContract.Joints.Where(joint => !report.joints.Contains(joint) || FindUnique(root.transform, joint) == null).ToArray();
       if (missing.Length > 0 || report.joints.Length != ZhaoYunContract.Joints.Length)
         return Reject("REQUIRED_BONE_MISSING", $"missing [{string.Join(",", missing)}], skin has {report.joints.Length} joints", out code, out detail);
+      if (!report.joints.SequenceEqual(ZhaoYunContract.Joints))
+        return Reject("SKELETON_MISMATCH", "skin joint order differs: " + string.Join(",", report.joints), out code, out detail);
 
       report.bodyMaterials = Names(body.sharedMaterials);
       report.weaponMaterials = Names(weaponRenderer.sharedMaterials);
@@ -28,6 +30,15 @@ namespace Changshan.Character
       if (!report.bodyMaterials.SequenceEqual(ZhaoYunContract.BodyMaterials) || !report.weaponMaterials.SequenceEqual(ZhaoYunContract.WeaponMaterials) ||
           materials.Any(material => material == null || material.shader == null || !material.shader.isSupported))
         return Reject("MATERIAL_MISSING", $"body [{string.Join(",", report.bodyMaterials)}], spear [{string.Join(",", report.weaponMaterials)}]", out code, out detail);
+
+      // glTFast does not check Texture2D.LoadImage, so a corrupt embedded image can still yield a material with a
+      // tiny placeholder texture and no logged error; require every full-size map to be present.
+      var textures = materials.SelectMany(material => material.GetTexturePropertyNameIDs().Select(material.GetTexture))
+        .Where(texture => texture != null).Distinct().ToArray();
+      int fullSize = textures.Count(texture => texture.width == ZhaoYunContract.TextureSize && texture.height == ZhaoYunContract.TextureSize);
+      if (fullSize != ZhaoYunContract.Textures)
+        return Reject("TEXTURE_MISSING", $"{fullSize} of {ZhaoYunContract.Textures} textures at {ZhaoYunContract.TextureSize}px; " +
+          string.Join(",", textures.Select(texture => $"{texture.name} {texture.width}x{texture.height}")), out code, out detail);
 
       report.bodyTriangles = Triangles(body.sharedMesh);
       report.weaponTriangles = Triangles(weaponFilter.sharedMesh);
