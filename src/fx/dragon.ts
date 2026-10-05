@@ -1,9 +1,9 @@
-import { BoxGeometry, Color, DynamicDrawUsage, Group, InstancedMesh, Matrix4, Mesh, MeshBasicMaterial, Quaternion, Vector3 } from 'three'
-import { easeOutCubic, smoothstep } from '../core/math.ts'
+import { BoxGeometry, Color, DynamicDrawUsage, Group, InstancedMesh, Matrix4, Mesh, MeshBasicMaterial, Quaternion, Vector3, type Vector3Like } from 'three'
+import { smoothstep } from '../core/math.ts'
+import { DRAGON_DURATION } from '../entities/dragon-strike.ts'
 
 const SEGMENTS = 44
 const SPACING = 0.62
-export const DRAGON_DURATION = 3.6
 const MAX_PATH = 1200
 
 const FORWARD = new Vector3(0, 0, 1)
@@ -16,8 +16,6 @@ const nextPos = new Vector3()
 const dir = new Vector3()
 const up = new Vector3()
 const tmp = new Vector3()
-const apex = new Vector3()
-const impact = new Vector3()
 
 // 線性 HDR 顏色：交給 bloom 發光
 const BODY_HEAD = new Color(0.08, 0.65, 1.3)
@@ -29,7 +27,14 @@ function basic(color: Color): MeshBasicMaterial {
   return new MeshBasicMaterial({ color })
 }
 
-/** 無雙召喚的蒼龍：繞趙雲盤旋、升空後俯衝撞地。身體各節沿龍頭走過的路徑依弧長跟隨。 */
+/** 蒼龍在規則上的狀態（entities/dragon-strike.ts 的 DragonStrike）。 */
+export interface DragonState {
+  readonly active: boolean
+  readonly elapsed: number
+  readonly headPos: Vector3Like
+}
+
+/** 無雙召喚的蒼龍畫面：龍頭依 DragonStrike 移動，身體各節沿龍頭走過的路徑依弧長跟隨。 */
 export class Dragon {
   readonly group = new Group()
   readonly headPos = new Vector3()
@@ -43,8 +48,6 @@ export class Dragon {
   private pathCount = 0
   private t = 0
   private running = false
-  private startFacing = 0
-  private readonly center = new Vector3()
 
   constructor() {
     const box = new BoxGeometry(1, 1, 1)
@@ -107,20 +110,9 @@ export class Dragon {
     return this.running
   }
 
-  get elapsed(): number {
-    return this.t
-  }
-
-  /** 盤旋階段龍頭會撞開附近的敵兵。 */
-  get striking(): boolean {
-    return this.running && this.t > 0.35 && this.t < 2.55
-  }
-
-  start(center: Vector3, facing: number): void {
+  private start(): void {
     this.running = true
     this.t = 0
-    this.startFacing = facing
-    this.center.copy(center)
     this.pathCount = 0
     this.group.visible = true
   }
@@ -130,15 +122,15 @@ export class Dragon {
     this.group.visible = false
   }
 
-  update(dt: number, center: Vector3, facing: number): void {
-    if (!this.running) return
-    this.t += dt
-    if (this.t >= DRAGON_DURATION) {
-      this.stop()
+  /** 只在遊戲時間前進時呼叫：每次呼叫記錄一個路徑點。 */
+  update(state: DragonState): void {
+    if (!state.active) {
+      if (this.running) this.stop()
       return
     }
-    this.center.copy(center)
-    this.headAt(this.t, facing, this.headPos)
+    if (!this.running || state.elapsed < this.t) this.start()
+    this.t = state.elapsed
+    this.headPos.copy(state.headPos)
     this.record(this.headPos)
 
     const total = this.path[(this.pathCount - 1) * 4 + 3]
@@ -191,28 +183,6 @@ export class Dragon {
     return this.sample(Math.max(0, total - rng() * SEGMENTS * SPACING), out)
   }
 
-  private headAt(t: number, facing: number, out: Vector3): Vector3 {
-    const c = this.center
-    const spiral = (tt: number, o: Vector3) => {
-      const ang = this.startFacing + Math.PI + tt * 4.6
-      const grow = easeOutCubic(Math.min(1, tt / 0.5))
-      const r = 1.2 + 4.6 * grow + Math.sin(tt * 3) * 0.6 * grow
-      const y = 0.5 + 3.2 * grow + Math.sin(tt * 5.2) * 1.1 * grow
-      return o.set(c.x + Math.sin(ang) * r, y, c.z + Math.cos(ang) * r)
-    }
-    if (t < 2.55) return spiral(t, out)
-    const fx = Math.sin(facing)
-    const fz = Math.cos(facing)
-    apex.set(c.x + fx * 3, 15, c.z + fz * 3)
-    impact.set(c.x + fx * 6, 0, c.z + fz * 6)
-    if (t < 2.95) return spiral(2.55, out).lerp(apex, smoothstep(0, 1, (t - 2.55) / 0.4))
-    if (t < 3.1) {
-      const u = (t - 2.95) / 0.15
-      return out.copy(apex).lerp(impact, u * u)
-    }
-    const u = (t - 3.1) / 0.5
-    return out.set(impact.x + fx * 3 * u, -5 * u, impact.z + fz * 3 * u)
-  }
 
   private record(p: Vector3): void {
     if (this.pathCount === MAX_PATH) {

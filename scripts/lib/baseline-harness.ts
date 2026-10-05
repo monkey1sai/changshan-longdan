@@ -116,7 +116,7 @@ function fixture(scenario: Scenario): { game: Kernel; target: EventTarget } {
     post: { focus: 9, musou: 0, flash: 0, aberration: 0, radial: 0, danger: 0, bars: 0, exposure: 1, dof: 0.8 },
     hud: { showBanner: noop }, screens: { showPause: noop, showResult: noop },
     sparks: { burst: noop, glitter: noop }, dust: { puff: noop },
-    waves: { ring: noop }, fragments: { spawnSoldier: noop }, dragon: { active: false },
+    waves: { ring: noop }, fragments: { spawnSoldier: noop }, dragon: { active: false }, dragonStrike: { active: false },
     aim: (x: number, z: number, distance: number) => {
       const i = enemies.nearest(x, z, distance)
       return i < 0 ? null : { x: enemies.x[i], z: enemies.z[i] }

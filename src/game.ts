@@ -7,6 +7,7 @@ import { Input, type InputFrame } from './core/input.ts'
 import { clamp, createRng, damp } from './core/math.ts'
 import { DIFFICULTIES, type DifficultyId } from './core/difficulty.ts'
 import { Arena } from './entities/arena.ts'
+import { DRAGON_HIT, DragonStrike } from './entities/dragon-strike.ts'
 import { EnemyStore, squadSpawns, type HitInfo } from './entities/enemies.ts'
 import { BattleDirector } from './entities/battle-director.ts'
 import { MUSOU_MAX, Player, type AimFn, type PlayerControls } from './entities/player.ts'
@@ -41,12 +42,6 @@ const SHOCK = new Color(3.2, 2.2, 1.2)
 const GOLD = new Color(5, 3.4, 1.1)
 const WHITE = new Color(6, 6, 5)
 
-/** 龍頭撞擊：盤旋中每 0.12 秒一次，把附近敵兵撞上天。 */
-const DRAGON_HIT: HitWindow = {
-  t0: 0, t1: 0, shape: { kind: 'circle', range: 2.8 }, damage: 16, reaction: 'launch',
-  push: 7, lift: 7, hitstop: 0, shake: 0.05, radial: true, yMin: -8, yMax: 2, sfx: 'light',
-}
-
 /** 遊戲主體：擁有場景、所有系統與主迴圈。 */
 export class Game {
   private readonly pipeline: Pipeline
@@ -69,6 +64,7 @@ export class Game {
   private readonly threats = new ThreatMarkers(CAPACITY)
   private readonly waves = new Shockwaves()
   private readonly dragon = new Dragon()
+  private readonly dragonStrike = new DragonStrike()
   private readonly sky = new Sky()
   private readonly flags: Flags
   private readonly fire: FireField
@@ -101,8 +97,6 @@ export class Game {
   private damageTaken = 0
   private endTimer = 0
   private resultShown = false
-  private dragonStamp = 0
-  private dragonHitTimer = 0
   private roarsPlayed = 0
   private wasMusou = false
   private musouWasReady = false
@@ -226,6 +220,7 @@ export class Game {
     this.trail.clear()
     this.waves.clear()
     this.dragon.stop()
+    this.dragonStrike.stop()
     this.model.resetCape()
     this.combo = 0
     this.comboTimer = 0
@@ -404,9 +399,8 @@ export class Game {
   }
 
   private beginMusou(): void {
-    this.dragon.start(this.player.pos, this.player.facing)
+    this.dragonStrike.start(this.player.pos, this.player.facing)
     this.roarsPlayed = 0
-    this.dragonHitTimer = 0
     this.hud.playCutin()
     this.audio?.musouStart()
     this.audio?.setMusicLevel(0.14, 0.2)
@@ -415,22 +409,18 @@ export class Game {
   }
 
   private updateDragon(dt: number): void {
-    if (!this.dragon.active) return
-    this.dragon.update(dt, this.player.pos, this.player.facing)
-    const t = this.dragon.elapsed
+    if (!this.dragonStrike.active) return
+    this.dragonStrike.update(dt, this.player.pos, this.player.facing)
+    this.dragon.update(this.dragonStrike)
+    const t = this.dragonStrike.elapsed
     if ((this.roarsPlayed === 0 && t > 0.35) || (this.roarsPlayed === 1 && t > 2.75)) {
       this.audio?.dragonRoar()
       this.roarsPlayed++
     }
-    if (this.dragon.striking) {
-      this.dragonHitTimer -= dt
-      if (this.dragonHitTimer <= 0) {
-        this.dragonHitTimer = 0.12
-        this.dragonStamp = nextStamp()
-      }
-      const head = this.dragon.headPos
+    if (this.dragonStrike.striking) {
+      const head = this.dragonStrike.headPos
       this.hits.length = 0
-      this.enemies.applyHit(this.dragonStamp, DRAGON_HIT, head.x, head.y, head.z, 0, this.hits)
+      this.enemies.applyHit(this.dragonStrike.stamp, DRAGON_HIT, head.x, head.y, head.z, 0, this.hits)
       if (this.hits.length > 0) {
         this.addCombo(this.hits.length)
         for (const h of this.hits) this.sparks.burst(h.x, h.y + 1.1, h.z, h.dirX, h.dirZ, 6, false, this.rng)
@@ -661,7 +651,7 @@ export class Game {
             drawCalls: game.pipeline.sceneDrawCalls,
             triangles: game.pipeline.sceneTriangles,
             fragments: game.fragments.active,
-            dragon: game.dragon.active,
+            dragon: game.dragonStrike.active,
             position: [game.player.pos.x, game.player.pos.y, game.player.pos.z],
             audio: game.audio?.ctx.state ?? 'none',
             character: game.model.assetStatus,
