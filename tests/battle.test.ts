@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { Arena } from '../src/entities/arena.ts'
 import { Battle, COMBO_WINDOW, rank, type BattleEvent } from '../src/entities/battle.ts'
+import { DIFFICULTIES } from '../src/core/difficulty.ts'
 import { Kind, type Spawn } from '../src/entities/enemies.ts'
 import { MUSOU_MAX, type PlayerControls } from '../src/entities/player.ts'
 
@@ -143,6 +144,7 @@ describe('Battle 敵兵出手', () => {
     b.step(STEP, { ...idle, guard: true })
     b.debug.injectStrike({ damage: 80, heavy: true, x: 0, z: 2 })
     expect(b.events.map((e) => e.type)).toEqual(['enemyStrike', 'parry'])
+    expect(b.events[1]).toMatchObject({ facing: b.player.facing })
     expect(b.player.hp).toBe(b.player.maxHp)
     expect(b.player.counterReady).toBeGreaterThan(0)
     expect(b.step(STEP, { ...idle, guard: true })).toBe(0)
@@ -153,6 +155,7 @@ describe('Battle 敵兵出手', () => {
     stepFor(b, 0.3, { guard: true })
     b.debug.injectStrike({ damage: 40, heavy: false, x: 0, z: 2 })
     expect(b.events.map((e) => e.type)).toEqual(['enemyStrike', 'guardBlock'])
+    expect(b.events[1]).toMatchObject({ facing: b.player.facing, heavy: false, damage: 10 })
     expect(b.damageTaken).toBeCloseTo(10)
   })
 
@@ -217,5 +220,39 @@ describe('Battle 無雙', () => {
     expect(b.dragon.active).toBe(true)
     const hit = stepUntil(b, 'dragonHit', () => ({}), 200)
     expect(hit.count).toBeGreaterThan(0)
+  })
+})
+
+describe('Battle 難度與戰況', () => {
+  it('reset 套用難度：修羅的隊長比普通更耐打', () => {
+    const b = battle([farCaptain(0), farCaptain(1), spear(0, 8)])
+    const lethal = 230 * DIFFICULTIES.normal.captainHp + 1
+    b.debug.damageAll(lethal)
+    b.step(STEP, idle)
+    expect(b.ko).toBe(3)
+    b.reset('chaos')
+    expect(b.difficulty).toBe('chaos')
+    b.debug.damageAll(lethal)
+    b.step(STEP, idle)
+    expect(b.ko).toBe(1)
+  })
+
+  it('不指定難度時沿用上一場的難度', () => {
+    const b = battle([farCaptain()])
+    b.reset('hard')
+    b.reset()
+    expect(b.difficulty).toBe('hard')
+  })
+
+  it('擊破數跨過戰況門檻時送出一次 phase', () => {
+    const spawns = Array.from({ length: 60 }, (_, i) => spear((i % 10) * 3 - 15, 20 + Math.floor(i / 10) * 3))
+    const b = battle([...spawns, farCaptain()])
+    expect(stepFor(b, 0.2)).not.toContain('phase')
+    b.debug.damageAll(60)
+    b.step(STEP, idle)
+    expect(b.ko).toBe(60)
+    const types = stepFor(b, 0.5)
+    expect(types.filter((t) => t === 'phase')).toHaveLength(1)
+    expect(b.phase).toBe('pressure')
   })
 })

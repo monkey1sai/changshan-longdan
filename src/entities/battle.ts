@@ -1,7 +1,9 @@
 import type { Vector3Like } from 'three'
 import type { HitWindow, MoveDef } from '../combat/moves.ts'
 import { nextStamp } from '../combat/stamp.ts'
+import { DIFFICULTIES, type DifficultyId, type DifficultyProfile } from '../core/difficulty.ts'
 import type { Arena } from './arena.ts'
+import { BattleDirector, type BattlePhase } from './battle-director.ts'
 import { DRAGON_HIT, DragonStrike } from './dragon-strike.ts'
 import { EnemyStore, type HitInfo, type KillInfo, type Spawn, type Strike } from './enemies.ts'
 import { Player, type AimFn, type PlayerControls, type PlayerEvent, type PlayerState } from './player.ts'
@@ -23,6 +25,8 @@ export interface BattleSetup {
   spawns: () => Spawn[]
   playerStart: { x: number; z: number; facing: number }
   capacity: number
+  /** 魏兵 AI 亂數種子；省略時與正式戰場相同。 */
+  enemySeed?: number
 }
 
 export type Outcome = 'ongoing' | 'victory' | 'defeat'
@@ -41,13 +45,15 @@ export type BattleEvent =
   | { type: 'dragonHit'; start: number; count: number; x: number; z: number }
   | { type: 'kill'; start: number; count: number }
   | { type: 'enemyStrike'; x: number; z: number; heavy: boolean }
-  | { type: 'parry'; x: number; z: number }
-  | { type: 'guardBlock'; x: number; z: number; heavy: boolean; damage: number }
+  /** facing：結算當下趙雲的朝向（同一 step 之後的受傷可能再轉向）。 */
+  | { type: 'parry'; x: number; z: number; facing: number }
+  | { type: 'guardBlock'; x: number; z: number; facing: number; heavy: boolean; damage: number }
   | { type: 'hurt'; x: number; z: number; heavy: boolean }
   | { type: 'comboBreak' }
   | { type: 'musouReady' }
   | { type: 'milestone'; ko: number }
   | { type: 'halfDefeated' }
+  | { type: 'phase'; id: BattlePhase['id'] }
   | { type: 'victory' }
   | { type: 'defeat' }
 
@@ -136,17 +142,20 @@ export class Battle {
   readonly debug: BattleDebug
 
   private readonly setup: BattleSetup
-  private readonly p = new Player()
-  private readonly e: EnemyStore
-  private readonly d = new DragonStrike()
+  private readonly zhaoYun = new Player()
+  private readonly soldiers: EnemyStore
+  private readonly dragonStrike = new DragonStrike()
+  private readonly director = new BattleDirector()
+  private profile: DifficultyProfile = DIFFICULTIES.normal
+  private currentPhase: BattlePhase['id'] = 'opening'
   private readonly aim: AimFn = (x, z, maxDist) => {
-    const i = this.e.nearest(x, z, maxDist)
-    return i < 0 ? null : { x: this.e.x[i], z: this.e.z[i] }
+    const i = this.soldiers.nearest(x, z, maxDist)
+    return i < 0 ? null : { x: this.soldiers.x[i], z: this.soldiers.z[i] }
   }
   private readonly scratch: HitInfo[] = []
   private status: Outcome = 'ongoing'
   private spawnCount = 0
-  private hitstop = 0
+  private hitstopLeft = 0
   private slowmo = 0
   private time = 0
   private comboCount = 0
@@ -158,13 +167,13 @@ export class Battle {
 
   constructor(setup: BattleSetup) {
     this.setup = setup
-    this.e = new EnemyStore(setup.capacity)
+    this.soldiers = new EnemyStore(setup.capacity, setup.enemySeed)
     this.debug = {
       setMusou: (value) => {
-        this.p.musou = value
+        this.zhaoYun.musou = value
       },
       setHp: (hp) => {
-        this.p.hp = hp
+        this.zhaoYun.hp = hp
       },
       injectStrike: (strike) => {
         this.events.length = 0
@@ -174,7 +183,7 @@ export class Battle {
       damageAll: (damage) => {
         const win: HitWindow = { ...DRAGON_HIT, shape: { kind: 'circle', range: 400 }, damage, yMin: -50, yMax: 50 }
         this.scratch.length = 0
-        this.e.applyHit(nextStamp(), win, this.p.pos.x, 0, this.p.pos.z, 0, this.scratch)
+        this.soldiers.applyHit(nextStamp(), win, this.zhaoYun.pos.x, 0, this.zhaoYun.pos.z, 0, this.scratch)
         return this.scratch.length
       },
     }
@@ -182,15 +191,29 @@ export class Battle {
   }
 
   get player(): PlayerView {
-    return this.p
+    return this.zhaoYun
   }
 
   get enemies(): EnemyView {
-    return this.e
+    return this.soldiers
   }
 
   get dragon(): DragonView {
-    return this.d
+    return this.dragonStrike
+  }
+
+  get difficulty(): DifficultyId {
+    return this.profile.id
+  }
+
+  /** 目前的戰況階段；隨擊破數提高魏兵的壓力。 */
+  get phase(): BattlePhase['id'] {
+    return this.currentPhase
+  }
+
+  /** 剩餘的命中停頓秒數。 */
+  get hitstop(): number {
+    return this.hitstopLeft
   }
 
   get outcome(): Outcome {
@@ -223,15 +246,20 @@ export class Battle {
     return this.time
   }
 
-  reset(): void {
+  /** 重新開戰；不指定難度時沿用上一場。 */
+  reset(difficulty: DifficultyId = this.profile.id): void {
     const s = this.setup.playerStart
     const spawns = this.setup.spawns()
-    this.p.reset(s.x, s.z, s.facing)
-    this.e.reset(spawns)
-    this.d.stop()
+    this.profile = DIFFICULTIES[difficulty]
+    this.zhaoYun.reset(s.x, s.z, s.facing)
+    this.director.reset()
+    this.currentPhase = 'opening'
+    this.soldiers.setPressure(this.profile)
+    this.soldiers.reset(spawns)
+    this.dragonStrike.stop()
     this.spawnCount = spawns.length
     this.status = 'ongoing'
-    this.hitstop = 0
+    this.hitstopLeft = 0
     this.slowmo = 0
     this.time = 0
     this.comboCount = 0
@@ -247,7 +275,7 @@ export class Battle {
 
   /** 暫停或失焦：捨棄尚未執行的單次輸入，避免恢復後誤出招。 */
   interrupt(): void {
-    this.p.clearQueuedActions()
+    this.zhaoYun.clearQueuedActions()
   }
 
   /** 推進一幀；回傳實際推進的遊戲時間（命中停頓時為 0）。勝負分出後忽略輸入。 */
@@ -257,27 +285,28 @@ export class Battle {
     this.kills.length = 0
     const active = this.status === 'ongoing'
     const c = active ? controls : IDLE
-    if (this.hitstop > 0) {
-      this.hitstop -= realDt
-      this.p.queue(c)
+    if (this.hitstopLeft > 0) {
+      this.hitstopLeft -= realDt
+      this.zhaoYun.queue(c)
       return 0
     }
     if (this.slowmo > 0) this.slowmo -= realDt
     const dt = realDt * (this.slowmo > 0 ? SLOWMO_SCALE : 1) * this.timeScale
     if (active) this.time += dt
 
-    const pos = this.p.pos
-    this.p.update(dt, c, this.aim, this.setup.arena)
-    this.e.update(dt, pos.x, pos.y, pos.z, this.setup.arena)
+    const pos = this.zhaoYun.pos
+    this.zhaoYun.update(dt, c, this.aim, this.setup.arena)
+    this.updatePressure()
+    this.soldiers.update(dt, pos.x, pos.y, pos.z, this.setup.arena)
     this.forwardPlayerEvents()
     this.resolvePlayerHits()
     this.updateDragon(dt)
     this.resolveKills()
-    for (const s of this.e.strikes) this.resolveStrike(s)
+    for (const s of this.soldiers.strikes) this.resolveStrike(s)
     this.comboTimer -= dt
     if (this.comboTimer <= 0) this.comboCount = 0
     this.checkOutcome()
-    const ready = this.p.musouReady
+    const ready = this.zhaoYun.musouReady
     if (ready && !this.musouWasReady && this.status === 'ongoing') this.events.push({ type: 'musouReady' })
     this.musouWasReady = ready
     return dt
@@ -288,8 +317,17 @@ export class Battle {
     return { ...r, rank: rank(r) }
   }
 
+  /** 依擊破數與難度決定魏兵的交戰距離與同時攻擊人數。 */
+  private updatePressure(): void {
+    const pressure = this.director.update(this.koCount, this.profile)
+    this.soldiers.setPressure(this.profile, pressure.engageRange, pressure.maxAttackers)
+    if (pressure.phase.id === this.currentPhase) return
+    this.currentPhase = pressure.phase.id
+    this.events.push({ type: 'phase', id: this.currentPhase })
+  }
+
   private forwardPlayerEvents(): void {
-    for (const ev of this.p.events) {
+    for (const ev of this.zhaoYun.events) {
       switch (ev.type) {
         case 'guardBlock':
         case 'parry':
@@ -297,7 +335,7 @@ export class Battle {
         case 'death':
           break
         case 'musouStart':
-          this.d.start(this.p.pos, this.p.facing)
+          this.dragonStrike.start(this.zhaoYun.pos, this.zhaoYun.facing)
           this.events.push(ev)
           break
         default:
@@ -307,25 +345,25 @@ export class Battle {
   }
 
   private resolvePlayerHits(): void {
-    for (const h of this.p.activeHits) {
+    for (const h of this.zhaoYun.activeHits) {
       const start = this.hits.length
-      this.e.applyHit(h.stamp, h.window, h.x, h.y, h.z, h.facing, this.hits)
+      this.soldiers.applyHit(h.stamp, h.window, h.x, h.y, h.z, h.facing, this.hits)
       const count = this.hits.length - start
       if (count === 0) continue
-      this.hitstop = Math.max(this.hitstop, h.window.hitstop)
+      this.hitstopLeft = Math.max(this.hitstopLeft, h.window.hitstop)
       this.addCombo(count)
-      this.p.gainMusou(Math.min(9, count * 1.4))
+      this.zhaoYun.gainMusou(Math.min(9, count * 1.4))
       this.events.push({ type: 'hit', window: h.window, start, count })
     }
   }
 
   private updateDragon(dt: number): void {
-    if (!this.d.active) return
-    this.d.update(dt, this.p.pos, this.p.facing)
-    if (!this.d.striking) return
-    const head = this.d.headPos
+    if (!this.dragonStrike.active) return
+    this.dragonStrike.update(dt, this.zhaoYun.pos, this.zhaoYun.facing)
+    if (!this.dragonStrike.striking) return
+    const head = this.dragonStrike.headPos
     const start = this.hits.length
-    this.e.applyHit(this.d.stamp, DRAGON_HIT, head.x, head.y, head.z, 0, this.hits)
+    this.soldiers.applyHit(this.dragonStrike.stamp, DRAGON_HIT, head.x, head.y, head.z, 0, this.hits)
     const count = this.hits.length - start
     if (count === 0) return
     this.addCombo(count)
@@ -333,7 +371,7 @@ export class Battle {
   }
 
   private resolveKills(): void {
-    const kills = this.e.kills
+    const kills = this.soldiers.kills
     if (kills.length === 0) return
     const before = this.koCount
     const start = this.kills.length
@@ -341,7 +379,7 @@ export class Battle {
     this.events.push({ type: 'kill', start, count: kills.length })
     this.koCount += kills.length
     kills.length = 0
-    if (this.e.aliveCount === 0) return
+    if (this.soldiers.aliveCount === 0) return
     const half = Math.ceil(this.spawnCount / 2)
     if (Math.floor(before / KO_MILESTONE) < Math.floor(this.koCount / KO_MILESTONE)) {
       this.events.push({ type: 'milestone', ko: Math.floor(this.koCount / KO_MILESTONE) * KO_MILESTONE })
@@ -351,7 +389,7 @@ export class Battle {
   }
 
   private resolveStrike(s: Strike): void {
-    const p = this.p
+    const p = this.zhaoYun
     this.events.push({ type: 'enemyStrike', x: s.x, z: s.z, heavy: s.heavy })
     const hpBefore = p.hp
     const eventStart = p.events.length
@@ -359,12 +397,12 @@ export class Battle {
     const outcome = p.events[eventStart]
     this.damageSum += hpBefore - p.hp
     if (p.hp > 0 && outcome?.type === 'parry') {
-      this.hitstop = Math.max(this.hitstop, PARRY_HITSTOP)
-      this.events.push({ type: 'parry', x: s.x, z: s.z })
+      this.hitstopLeft = Math.max(this.hitstopLeft, PARRY_HITSTOP)
+      this.events.push({ type: 'parry', x: s.x, z: s.z, facing: p.facing })
       return
     }
     if (p.hp > 0 && outcome?.type === 'guardBlock') {
-      this.events.push({ type: 'guardBlock', x: s.x, z: s.z, heavy: s.heavy, damage: outcome.damage })
+      this.events.push({ type: 'guardBlock', x: s.x, z: s.z, facing: p.facing, heavy: s.heavy, damage: outcome.damage })
       return
     }
     if (!hurt) return
@@ -376,11 +414,11 @@ export class Battle {
 
   private checkOutcome(): void {
     if (this.status !== 'ongoing') return
-    if (this.e.aliveCount === 0) {
+    if (this.soldiers.aliveCount === 0) {
       this.status = 'victory'
       this.slowmo = VICTORY_SLOWMO
       this.events.push({ type: 'victory' })
-    } else if (this.p.state === 'dead') {
+    } else if (this.zhaoYun.state === 'dead') {
       this.status = 'defeat'
       this.slowmo = DEFEAT_SLOWMO
       this.events.push({ type: 'defeat' })
