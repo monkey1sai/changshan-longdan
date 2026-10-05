@@ -28,7 +28,7 @@ npm run unity:validate -- --editor 'C:\Program Files\Unity\Hub\Editor\6000.6.4f1
 
 runner 為 `scripts/unity-validate.mjs`；工程 `unity/ChangshanLongdan`。先驗完整固定範圍／manifest／policy、所有既有工程寫入樹與 cache 的 links，再取得原子 `.e02-runner.lock`。既有 lock、非固定欄位、extra dependencies／registry、已存在輸出全部拒絕。每個 stage 開始前重新驗 links、UnityLockfile 與 compile 後凍結 source。Editor timeout 最多 15 分鐘，Player 2 分鐘；共享 Licensing Client mutex 錯誤會中止本次 child，沒有自動重試。這些資料檢查不是經認證 approval。
 
-固定依賴先核對內附包／已保存官方 archive cache；缺 archive 才向官方 download 取得並確認**完全相同的 checksum-addressed Unity CDN**，拒絕其他重新導向。SHA-1 對照固定官方 metadata，另記 SHA-256／package manifest。實際 lock 與 PackageInfo 必須對照 policy，registry 包 manifest 須與已驗 archive 相同；尚未逐檔核對載入套件的全部程式 bytes，保留此来源限制。不加入其他模板功能。
+固定依賴先核對內附包／已保存官方 archive cache；缺 archive 才向官方 download 取得並確認**完全相同的 checksum-addressed Unity CDN**，拒絕其他重新導向。SHA-1 對照固定官方 metadata，另記 SHA-256／package manifest。實際 lock 與 PackageInfo 必須對照 policy。Unity 6000.6 實測會把內附與 registry 套件都安裝到工程的 `Library/PackageCache`，並在 `package.json` 寫入 `_fingerprint`（內建 module 不寫）；因此安裝後 manifest 除 `_fingerprint` 外須與 Editor 內附或已驗 archive 的 manifest 逐欄相同，目錄後綴須為該指紋前 12 碼，registry 包的指紋須等於固定 SHA-1；尚未逐檔核對載入套件的全部程式 bytes，保留此来源限制。不加入其他模板功能。
 
 | 階段 | 真實執行與必要結果 |
 |---|---|
@@ -40,7 +40,7 @@ runner 為 `scripts/unity-validate.mjs`；工程 `unity/ChangshanLongdan`。先�
 
 完整 argv／exe／project／PID／runId／起訖／timeout／exit 在各 stage 的 `command.json`、`started.json`、`exit.json`，共用 `start.json`／`result.json`。保存 `Editor.log`、NUnit XML、build report、`Player.log`／`runtime.json`／`scene.png`。缺欄位、零測試、XML parse failure、非零 exit、compile errors、設定／package／source drift、缺／不完整 PNG 全部停止。`verified` 只在全部 postconditions 通過後標記。
 
-新 checkout 重現程序：保存本機 candidate SHA，以 `git clone --no-hardlinks --no-checkout '<本機 E02 checkout>' '<新的空目錄>'` 建立 task-owned clone，再 `git -C '<新的空目錄>' checkout --detach '<candidate SHA>'`。從新 clone 執行上面的 Node tests／preflight／validate；Unity runner 不依賴 Web node_modules。Web 回歸另用固定 npm lock。本輪尚未成功執行這個新 checkout 的 Unity stages，不宣稱重現已驗證。
+新 checkout 重現程序：保存本機 candidate SHA，以 `git clone --no-hardlinks --no-checkout '<本機 E02 checkout>' '<新的空目錄>'` 建立 task-owned clone，再 `git -C '<新的空目錄>' checkout --detach '<candidate SHA>'`。從新 clone 執行上面的 Node tests／preflight／validate；Unity runner 不依賴 Web node_modules。Web 回歸另用固定 npm lock。2026-10-05 實測的兩項啟動環境限制：新 clone 的路徑要短（`release/e02/` 內層的 clone 讓 URP core 檔案超過 Windows 260 字元上限而匯入失敗），且 `tar.exe` 必須解析到 `C:\Windows\System32\tar.exe`（Git Bash 的 GNU tar 不接受 `C:\` 路徑），從 Git Bash 啟動時改用機器＋使用者的原生 `PATH`。本輪尚未成功執行這個新 checkout 的 Unity stages，不宣稱重現已驗證。
 
 實際 compile attempt 在 `release/e02/import-20261004-cdn-verified/`：Licensing channel refused、mutex 已被既有 client 持有；主控核對本輪 UUID／project／exe／父 Node 後，只停止 Editor PID 37816，exit `4294967295`，runner exit 2。沒有 `compile.json`／XML／build／圖片，失敗和 partial settings 均保存。完整結果見 [E02_ENGINE_FOUNDATION.md](./E02_ENGINE_FOUNDATION.md)。
 

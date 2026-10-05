@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url'
 import { inspectUnityPreflight } from './lib/unity-preflight.mjs'
 import { readEditorVersion } from './lib/unity-editor-version.mjs'
 import { requireSafePath, requireSafeEngineWrites, validateExecutionScope, validatePackagePolicy, validateImmutableSource, validateFrozenSource, validatePackageLock,
-  validateSettings, validateRuntime, sha256, snapshotSource } from './lib/unity-execution.mjs'
+  validateResolvedPackage, validateSettings, validateRuntime, sha256, snapshotSource } from './lib/unity-execution.mjs'
 import { readUnityTestResults } from './lib/unity-test-results.mjs'
 
 const root = fs.realpathSync(fileURLToPath(new URL('../', import.meta.url)))
@@ -15,6 +15,7 @@ const args = process.argv.slice(2)
 const options = {}
 const names = { '--editor': 'editor', '--out': 'out' }
 let run, lease, lockPath, output
+const archiveManifests = {}
 const readJson = filename => JSON.parse(fs.readFileSync(requireSafePath(root, filename), 'utf8'))
 const writeJson = (filename, data) => fs.writeFileSync(requireSafePath(root, filename), JSON.stringify(data, null, 2) + '\n', { flag: 'wx' })
 
@@ -45,6 +46,7 @@ async function fixedOfficialArchives(policy) {
     if (manifest.error || manifest.status !== 0) throw new Error(`OFFICIAL_PACKAGE_MANIFEST_FAILED: ${name}`)
     const packageJson = JSON.parse(manifest.stdout)
     if (packageJson.name !== name || packageJson.version !== expected.version) throw new Error(`OFFICIAL_PACKAGE_VERSION_MISMATCH: ${name}`)
+    archiveManifests[name] = packageJson
     if (!cacheHit) {
       requireSafePath(root, cached)
       fs.mkdirSync(path.dirname(cached), { recursive: true })
@@ -57,17 +59,16 @@ async function fixedOfficialArchives(policy) {
   return evidence
 }
 
-function validateResolvedPackages(report, policy, builtIn, archives) {
+function validateResolvedPackages(report, policy, builtIn) {
+  const cache = path.join(run.project, 'Library/PackageCache')
   for (const item of report.packages) {
     const expected = policy.packages[item.name]
-    const boundary = expected.source === 'builtin' ? builtIn : path.join(run.project, 'Library/PackageCache')
-    const resolved = requireSafePath(boundary, item.resolvedPath)
-    if (expected.source === 'builtin' && resolved !== path.join(builtIn, item.name)) throw new Error(`PACKAGE_RESOLVED_PATH_MISMATCH: ${item.name}`)
-    const filename = requireSafePath(boundary, path.join(resolved, 'package.json'))
-    const actual = JSON.parse(fs.readFileSync(filename, 'utf8'))
-    if (actual.name !== item.name || actual.version !== expected.version) throw new Error(`PACKAGE_RESOLVED_VERSION_MISMATCH: ${item.name}`)
-    if (expected.source === 'registry' && sha256(filename) !== archives[item.name].manifestSha256)
-      throw new Error(`PACKAGE_RESOLVED_MANIFEST_MISMATCH: ${item.name}`)
+    const resolved = requireSafePath(cache, item.resolvedPath)
+    if (path.dirname(resolved) !== path.resolve(cache)) throw new Error(`PACKAGE_RESOLVED_PATH_MISMATCH: ${item.name}`)
+    const installed = JSON.parse(fs.readFileSync(requireSafePath(cache, path.join(resolved, 'package.json')), 'utf8'))
+    const reference = expected.source === 'builtin'
+      ? JSON.parse(fs.readFileSync(path.join(builtIn, item.name, 'package.json'), 'utf8')) : archiveManifests[item.name]
+    validateResolvedPackage(item.name, expected, path.basename(resolved), installed, reference)
   }
 }
 
@@ -193,7 +194,7 @@ try {
       if (stage === 'compile' || stage === 'build') {
         const report = readJson(path.join(stagePath, stage + '.json'))
         validateSettings(report, runId, project, stage, policy)
-        validateResolvedPackages(report, policy, builtIn, run.officialArchives)
+        validateResolvedPackages(report, policy, builtIn)
       }
       else {
         const summary = readUnityTestResults(requireSafePath(root, path.join(stagePath, 'tests.xml')))

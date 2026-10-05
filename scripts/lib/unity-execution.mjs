@@ -124,6 +124,24 @@ export function validatePackageLock(lock, policy) {
   }
 }
 
+const canonicalJson = value => JSON.stringify(value, (_, item) => item && typeof item === 'object' && !Array.isArray(item)
+  ? Object.fromEntries(Object.keys(item).sort().map(key => [key, item[key]])) : item)
+
+// Unity 6000.6 installs every package into Library/PackageCache and stamps `_fingerprint` into its package.json;
+// built-in modules stay unstamped. Everything else must still equal the verified Editor or archive manifest.
+export function validateResolvedPackage(name, expected, directoryName, installed, reference) {
+  if (!installed || !reference || installed.name !== name || installed.version !== expected.version)
+    throw new Error(`PACKAGE_RESOLVED_VERSION_MISMATCH: ${name}`)
+  const { _fingerprint: fingerprint, ...manifest } = installed
+  if ('_fingerprint' in reference || canonicalJson(manifest) !== canonicalJson(reference))
+    throw new Error(`PACKAGE_RESOLVED_MANIFEST_MISMATCH: ${name}`)
+  if (fingerprint === undefined ? directoryName !== name
+    : typeof fingerprint !== 'string' || !/^[0-9a-f]{40}$/.test(fingerprint) || directoryName !== `${name}@${fingerprint.slice(0, 12)}`)
+    throw new Error(`PACKAGE_RESOLVED_PATH_MISMATCH: ${name}`)
+  if (expected.source === 'registry' && fingerprint !== expected.sha1)
+    throw new Error(`PACKAGE_RESOLVED_FINGERPRINT_MISMATCH: ${name}`)
+}
+
 export function validateTestSummary(summary) {
   for (const key of ['total', 'passed', 'failed', 'skipped', 'inconclusive', 'caseCount', 'badCaseCount']) {
     if (!Number.isInteger(summary[key]) || summary[key] < 0) throw new Error(`INVALID_TEST_XML: ${key}`)

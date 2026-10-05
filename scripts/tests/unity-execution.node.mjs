@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
-import { requireSafeEngineWrites, validateExecutionScope, validatePackagePolicy, validateImmutableSource, validateFrozenSource, validatePackageLock, validateTestSummary, validateSettings, validateRuntime, fixedDependencies } from '../lib/unity-execution.mjs'
+import { requireSafeEngineWrites, validateExecutionScope, validatePackagePolicy, validateImmutableSource, validateFrozenSource, validatePackageLock, validateResolvedPackage, validateTestSummary, validateSettings, validateRuntime, fixedDependencies } from '../lib/unity-execution.mjs'
 import { readUnityTestResults } from '../lib/unity-test-results.mjs'
 
 const root = path.resolve(fileURLToPath(new URL('../../', import.meta.url)))
@@ -122,6 +122,33 @@ test('lock enforces exact actual set, versions and official registry', () => {
   assert.throws(() => validatePackageLock(changed, policy))
   delete changed.dependencies['com.unity.searcher']
   assert.throws(() => validatePackageLock(changed, policy))
+})
+test('installed packages must equal their verified manifest apart from the Unity fingerprint stamp', () => {
+  const sha1 = policy.packages['com.unity.searcher'].sha1
+  const registry = { ...policy.packages['com.unity.searcher'] }
+  const builtin = { ...policy.packages['com.unity.burst'] }
+  const reference = (name, version) => ({ name, version, dependencies: { 'com.unity.modules.imgui': '1.0.0' }, keywords: ['a', 'b'] })
+  const searcher = reference('com.unity.searcher', '4.9.5')
+  const burst = reference('com.unity.burst', '2.0.0')
+  const stamp = '626e66ab421bf31cfa602bb20675290e2a514b01'
+  // Key order and the stamp may differ; a built-in module carries no stamp and keeps its bare directory name.
+  validateResolvedPackage('com.unity.searcher', registry, 'com.unity.searcher@' + sha1.slice(0, 12),
+    { _fingerprint: sha1, keywords: ['a', 'b'], dependencies: { 'com.unity.modules.imgui': '1.0.0' }, version: '4.9.5', name: 'com.unity.searcher' }, searcher)
+  validateResolvedPackage('com.unity.burst', builtin, 'com.unity.burst@' + stamp.slice(0, 12), { ...burst, _fingerprint: stamp }, burst)
+  validateResolvedPackage('com.unity.burst', builtin, 'com.unity.burst', burst, burst)
+  const installed = { ...searcher, _fingerprint: sha1 }
+  const directory = 'com.unity.searcher@' + sha1.slice(0, 12)
+  assert.throws(() => validateResolvedPackage('com.unity.searcher', registry, directory, { ...installed, version: '4.9.6' }, searcher), /VERSION_MISMATCH/)
+  assert.throws(() => validateResolvedPackage('com.unity.searcher', registry, directory, { ...installed, keywords: ['b', 'a'] }, searcher), /MANIFEST_MISMATCH/)
+  assert.throws(() => validateResolvedPackage('com.unity.searcher', registry, directory, { ...installed, scripts: {} }, searcher), /MANIFEST_MISMATCH/)
+  assert.throws(() => validateResolvedPackage('com.unity.searcher', registry, directory, installed, { ...searcher, _fingerprint: sha1 }), /MANIFEST_MISMATCH/)
+  assert.throws(() => validateResolvedPackage('com.unity.searcher', registry, 'com.unity.searcher@000000000000', installed, searcher), /PATH_MISMATCH/)
+  assert.throws(() => validateResolvedPackage('com.unity.searcher', registry, 'com.unity.searcher', installed, searcher), /PATH_MISMATCH/)
+  assert.throws(() => validateResolvedPackage('com.unity.searcher', registry, 'com.unity.searcher@' + stamp.slice(0, 12), { ...searcher, _fingerprint: stamp }, searcher), /FINGERPRINT_MISMATCH/)
+  assert.throws(() => validateResolvedPackage('com.unity.searcher', registry, 'com.unity.searcher', searcher, searcher), /FINGERPRINT_MISMATCH/)
+  assert.throws(() => validateResolvedPackage('com.unity.burst', builtin, 'com.unity.burst@' + stamp.slice(0, 12), burst, burst), /PATH_MISMATCH/)
+  assert.throws(() => validateResolvedPackage('com.unity.burst', builtin, 'com.unity.burst@626e66ab421b', { ...burst, _fingerprint: '626e66ab421b' }, burst), /PATH_MISMATCH/)
+  assert.throws(() => validateResolvedPackage('com.unity.burst', builtin, 'com.unity.burst', undefined, burst), /VERSION_MISMATCH/)
 })
 const passed = { result: 'Passed', total: 3, passed: 3, failed: 0, skipped: 0, inconclusive: 0, caseCount: 3, badCaseCount: 0 }
 test('XML summary requires actual passed cases, never exit zero alone', () => validateTestSummary(passed))
