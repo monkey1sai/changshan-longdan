@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Changshan.Combat;
 using GLTFast;
 using GLTFast.Logging;
 using UnityEditor;
@@ -19,6 +21,10 @@ namespace Changshan.Character.Editor
     public const string GroundMaterialPath = "Assets/Character/Materials/ValidationGround.mat";
     public const string ShaderVariantFolder = "Assets/Character/Resources/" + ZhaoYunContract.ShaderVariantResources;
     public const string SceneObjectName = "ZhaoYun";
+    public const string DummiesName = "Training Dummies";
+    public const string DummyMaterialPath = "Assets/Character/Materials/TrainingDummy.mat";
+    static readonly Vector3 SceneAnchor = new Vector3(0, -1, 4.2f);
+    const float SceneYaw = 160;
     const string KeyLightName = "Key Light";
     const string GroundName = "Ground";
 
@@ -120,7 +126,7 @@ namespace Changshan.Character.Editor
       {
         // Faces the validation camera (origin, looking +Z) in a three-quarter view.
         var instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab, scene);
-        instance.transform.SetPositionAndRotation(new Vector3(0, -1, 4.2f), Quaternion.Euler(0, 160, 0));
+        instance.transform.SetPositionAndRotation(SceneAnchor, Quaternion.Euler(0, SceneYaw, 0));
         changed = true;
       }
       if (!roots.Any(root => root.name == KeyLightName))
@@ -146,7 +152,38 @@ namespace Changshan.Character.Editor
         ground.GetComponent<MeshRenderer>().sharedMaterial = groundMaterial;
         changed = true;
       }
+      if (!roots.Any(root => root.name == DummiesName))
+      {
+        AddTrainingDummies(scene, EnsureLitMaterial(DummyMaterialPath, new Color(0.36f, 0.43f, 0.55f)));
+        changed = true;
+      }
       if (changed && !EditorSceneManager.SaveScene(scene)) throw new IOException("E03 could not save the validation scene");
+    }
+
+    // E05: 20 static dummies around the character's start, 12 at 2.8 m and 8 at 4.2 m, leaving the 120° in front of the
+    // character (towards the validation camera) open so the view stays clear.
+    static void AddTrainingDummies(Scene scene, Material material)
+    {
+      var mapping = new LogicDisplayMapping(SceneAnchor, SceneYaw, ArenaLayout.StartX, ArenaLayout.StartZ, ArenaLayout.StartFacing);
+      var root = new GameObject(DummiesName);
+      SceneManager.MoveGameObjectToScene(root, scene);
+      var items = new List<Transform>();
+      int index = 0;
+      foreach (var (count, radius) in new[] { (12, 2.8), (8, 4.2) })
+        for (int i = 0; i < count; i++)
+        {
+          double angle = ArenaLayout.StartFacing + (60 + 240.0 * (i + 0.5) / count) * (Math.PI / 180);
+          var position = mapping.ToDisplayPosition(ArenaLayout.StartX + Math.Sin(angle) * radius, 0, ArenaLayout.StartZ + Math.Cos(angle) * radius);
+          var dummy = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+          dummy.name = $"Dummy {++index:00}";
+          KeepRenderingComponents(dummy);
+          dummy.transform.SetParent(root.transform, false);
+          dummy.transform.SetPositionAndRotation(position + Vector3.up * 0.9f, Quaternion.identity);
+          dummy.transform.localScale = new Vector3(0.84f, 0.9f, 0.84f); // 0.42 m body radius, 1.8 m tall
+          dummy.GetComponent<MeshRenderer>().sharedMaterial = material;
+          items.Add(dummy.transform);
+        }
+      root.AddComponent<TrainingDummies>().SetDummies(items);
     }
 
     static void AddPart(Transform parent, PrimitiveType type, string name, Vector3 position, Quaternion rotation, Vector3 scale, Material material)

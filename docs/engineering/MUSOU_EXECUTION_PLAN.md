@@ -190,7 +190,7 @@ E02 的交付必須包含一個可重跑的本機 runner 及其 README：解析�
 
 ## 4. 執行台帳
 
-更新：2026-10-05（Asia/Taipei）。前五步 `DONE` 只涵蓋已記錄的人類限定接受；完整體驗／裝置／效能仍待後續驗收。E04 已依使用者授權合併並完成合併後確認，GitHub 上沒有 counted approval。E05 進行開始前範圍審查。
+更新：2026-10-05（Asia/Taipei）。前五步 `DONE` 只涵蓋已記錄的人類限定接受；完整體驗／裝置／效能仍待後續驗收。E04 已依使用者授權合併並完成合併後確認，GitHub 上沒有 counted approval。E05 依核准設計在本機實作中，尚未推送或審查。
 
 | 步驟 | 依賴 | 狀態 | 實作 PR / candidate SHA | 驗證證據 | 正式 review | merge SHA / 合併後確認 |
 |---|---|---|---|---|---|---|
@@ -199,7 +199,7 @@ E02 的交付必須包含一個可重跑的本機 runner 及其 README：解析�
 | E02 | E01 | DONE（限定接受） | [#15](https://github.com/monkey1sai/changshan-longdan/pull/15) / `8cfa1f965e429807d2d1aaf40d352e3b99a771d3` | [E02 工程／驗證紀錄](./E02_ENGINE_FOUNDATION.md) F–H 節：compile、11 Edit、1 Play、Windows build、Player／1920×1080 PNG；59 項工具正負例、227 Web tests、包 hash 相符 | 使用者授權合併；GitHub counted approval NONE；獨立 advisory 審查 1 輪已處置，延後項目 #16–#18；安全邊界審查未進行（#19） | `24ce10c33316544669b0e825a9edc3ff9d2e4d2a`；tree 與候選相同；22 檔／227 tests、兩平台 CI、本機 Unity 五階段於合併 SHA 重跑通過 |
 | E03 | E02 | DONE（限定接受） | [#20](https://github.com/monkey1sai/changshan-longdan/pull/20) / `9405518aa927f0469cabcaad0ecbf5db3dde1e8f` | [E03 紀錄](./E03_ZHAOYUN_IMPORT.md)：compile、16 Edit、17 Play（六類負例、座標已知點、長槍 tip、材質變體）、Windows build、Player 載入與截圖；Web 228 tests | 使用者授權合併；GitHub counted approval NONE；獨立 advisory 審查 2 輪已處置，延後 #21–#23；技術美術審查未進行（#23） | `a568896456e8a36ce7d1a6fece7c9fedd5944342`；tree 與候選相同；Web 228 tests、兩平台 CI、本機 Unity 五階段於合併 SHA 重跑通過 |
 | E04 | E03 | DONE（限定接受） | [#24](https://github.com/monkey1sai/changshan-longdan/pull/24) / `ff20810e631be7b879cb4c49b11613c4dca55071` | [E04 紀錄](./E04_INPUT_MOVES.md)：compile、39 Edit（Mono 對 Web 逐幀一致，最大偏差 7.1e-15；命中形狀 17,424 筆）、22 Play、Windows build、Player；Web 232 tests；使用者在 Unity 可見視窗限定試玩 | 使用者授權合併；GitHub counted approval NONE；獨立 advisory 審查 2 輪已處置，延後 #25 | `0db9668f97c454835c33c3e000503fcf8f85e6a6`；tree 與候選相同；Web 232 tests、兩平台 CI、本機 Unity 五階段於合併 SHA 重跑通過 |
-| E05 | E04 | IN_PROGRESS（開始前範圍審查） | 本機 `claude/e05-hit-clock`；未推送／建立 PR | — | 碰撞／測試審查者待指定 | — |
+| E05 | E04 | IN_PROGRESS（本機實作） | 本機 `claude/e05-hit-clock`；未推送／建立 PR | [E05 紀錄](./E05_HIT_CLOCK.md)；Unity 結果待綁定候選 SHA | 碰撞／測試審查者待指定 | — |
 | E06 | E05 | NOT_STARTED | — | — | — | — |
 | E07 | E06 | NOT_STARTED | — | — | — | — |
 | E08 | E07 | NOT_STARTED | — | — | — | — |

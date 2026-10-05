@@ -1,17 +1,26 @@
-// Writes or checks the Web-to-Unity combat parity fixture. Local only; no browser, network or publishing actions.
+// Writes or checks the Web-to-Unity combat parity fixtures. Local only; no browser, network or publishing actions.
 import { readFileSync, writeFileSync } from 'node:fs'
 import { buildParityFixture } from './lib/combat-parity.ts'
+import { buildHitFixture } from './lib/hit-parity.ts'
 
 const root = new URL('../', import.meta.url)
-const fixture = new URL('unity/ChangshanLongdan/TestData/combat/web-parity.json', root)
+const fixtures = [
+  ['web-parity.json', buildParityFixture],
+  ['web-hits.json', buildHitFixture],
+]
 const mode = process.argv[2]
 if (mode !== '--write' && mode !== '--check') throw new Error('Usage: combat-parity.mjs --write | --check')
 
-const text = `${JSON.stringify(buildParityFixture(root))}\n`
-if (mode === '--write') {
-  writeFileSync(fixture, text)
-  console.log(`wrote ${fixture.pathname} (${text.length} bytes)`)
-} else if (readFileSync(fixture, 'utf8') !== text) {
-  console.error('web-parity.json is stale; run npm run parity:write')
-  process.exit(1)
-} else console.log('web-parity.json matches the Web source')
+let stale = 0
+for (const [name, build] of fixtures) {
+  const file = new URL(`unity/ChangshanLongdan/TestData/combat/${name}`, root)
+  const text = `${JSON.stringify(build(root))}\n`
+  if (mode === '--write') {
+    writeFileSync(file, text)
+    console.log(`wrote ${name} (${text.length} bytes)`)
+  } else if (readFileSync(file, 'utf8') !== text) {
+    console.error(`${name} is stale; run npm run parity:write`)
+    stale++
+  } else console.log(`${name} matches the Web source`)
+}
+if (stale) process.exit(1)

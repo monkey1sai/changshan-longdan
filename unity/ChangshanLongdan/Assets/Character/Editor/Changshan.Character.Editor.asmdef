@@ -1,5 +1,5 @@
 {
   "name": "Changshan.Character.Editor",
-  "references": ["Changshan.Character", "glTFast", "Unity.RenderPipelines.Universal.Runtime"],
+  "references": ["Changshan.Character", "Changshan.Combat", "glTFast", "Unity.RenderPipelines.Universal.Runtime"],
   "includePlatforms": ["Editor"]
 }
