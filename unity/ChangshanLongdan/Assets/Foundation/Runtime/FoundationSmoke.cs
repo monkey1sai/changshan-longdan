@@ -13,7 +13,7 @@ namespace Changshan.Foundation
     public sealed class RuntimeReport
     {
       public string runId, unityVersion, graphicsApi, pipeline, colorSpace, screenshot;
-      public int width, height, targetFrameRate, vSyncCount, frameCount, errorCount;
+      public int width, height, targetFrameRate, vSyncCount, frameCount, errorCount, pendingCaptureGates;
       public float renderScale;
       public bool batchMode, focused;
     }
@@ -36,6 +36,8 @@ namespace Changshan.Foundation
 
     private IEnumerator Start()
     {
+      // Capture is Player-only. Editor Play Mode tests also receive -e02Output and must not write or quit.
+      if (Application.isEditor) yield break;
       string output = Argument("-e02Output");
       if (string.IsNullOrEmpty(output)) yield break;
       runId = Argument("-e02RunId");
@@ -54,6 +56,8 @@ namespace Changshan.Foundation
         yield break;
       }
       for (int i = 0; i < 120; i++) yield return null;
+      float gateDeadline = Time.realtimeSinceStartup + 20;
+      while (CaptureGate.Pending > 0 && Time.realtimeSinceStartup < gateDeadline) yield return null;
       yield return new WaitForEndOfFrame();
       ScreenCapture.CaptureScreenshot(image);
       float deadline = Time.realtimeSinceStartup + 15;
@@ -68,13 +72,13 @@ namespace Changshan.Foundation
         colorSpace = QualitySettings.activeColorSpace.ToString(), width = Screen.width, height = Screen.height,
         targetFrameRate = Application.targetFrameRate, vSyncCount = QualitySettings.vSyncCount,
         renderScale = pipeline == null ? 0 : pipeline.renderScale,
-        frameCount = Time.frameCount, errorCount = errors,
+        frameCount = Time.frameCount, errorCount = errors, pendingCaptureGates = CaptureGate.Pending,
         batchMode = Application.isBatchMode, focused = Application.isFocused, screenshot = image
       };
       File.WriteAllText(reportPath, JsonUtility.ToJson(report, true));
       bool passed = pipeline != null && report.width == FoundationContract.Width && report.height == FoundationContract.Height &&
         report.graphicsApi == "Direct3D11" && report.colorSpace == "Linear" && report.renderScale == 1 &&
-        report.errorCount == 0 && File.Exists(image) && new FileInfo(image).Length > 0;
+        report.errorCount == 0 && report.pendingCaptureGates == 0 && File.Exists(image) && new FileInfo(image).Length > 0;
       Application.Quit(passed ? 0 : 2);
     }
 
@@ -91,7 +95,7 @@ namespace Changshan.Foundation
       GUI.Box(new Rect(50, 50, 1000, 240), "");
       GUI.Label(new Rect(75, 70, 950, 220),
         "Changshan Longdan / E02 engine foundation\n" +
-        "Empty validation scene - gameplay and character import pending\n" +
+        "Validation scene - Zhao Yun runtime import (E03); gameplay pending\n" +
         Application.unityVersion + " / " + SystemInfo.graphicsDeviceType + " / " + Screen.width + " x " + Screen.height +
         "\nRun: " + runId, style);
     }

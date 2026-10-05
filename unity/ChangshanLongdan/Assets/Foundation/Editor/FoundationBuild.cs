@@ -67,6 +67,7 @@ namespace Changshan.Foundation.Editor
         new GameObject("Foundation Smoke").AddComponent<FoundationSmoke>();
         EditorSceneManager.SaveScene(scene, ScenePath);
       }
+      Changshan.Character.Editor.CharacterSetup.Ensure(ScenePath);
       EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
       AssetDatabase.SaveAssets();
       WriteReport("compile", null);

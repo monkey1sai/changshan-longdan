@@ -6,7 +6,8 @@ import { fileURLToPath } from 'node:url'
 import { inspectUnityPreflight } from './lib/unity-preflight.mjs'
 import { readEditorVersion } from './lib/unity-editor-version.mjs'
 import { requireSafePath, requireSafeEngineWrites, validateExecutionScope, validatePackagePolicy, validateUnchangedSource, validateCandidateCheckout, validatePackageLock,
-  validateResolvedPackage, validateSettings, validateRuntime, sha256, snapshotSource } from './lib/unity-execution.mjs'
+  validateResolvedPackage, validateSettings, validateRuntime, validateTestInventory, validateCharacterReport, glbJointNames,
+  sha256, snapshotSource } from './lib/unity-execution.mjs'
 import { readUnityTestResults } from './lib/unity-test-results.mjs'
 
 const root = fs.realpathSync(fileURLToPath(new URL('../', import.meta.url)))
@@ -16,6 +17,13 @@ const options = {}
 const names = { '--editor': 'editor', '--out': 'out' }
 let run, lease, lockPath, output
 const archiveManifests = {}
+const testPrefix = 'Changshan.Foundation.Tests.'
+const testInventory = {
+  editmode: { FoundationEditTests: 11, CharacterSourceEditTests: 5 },
+  playmode: { FoundationPlayTests: 1, CharacterImportPlayTests: 16 },
+}
+const characterSource = 'public/models/zhaoyun.glb'
+const characterStreamingCopy = 'ChangshanLongdan_Data/StreamingAssets/Characters/zhaoyun.glb'
 const readJson = filename => JSON.parse(fs.readFileSync(requireSafePath(root, filename), 'utf8'))
 const writeJson = (filename, data) => fs.writeFileSync(requireSafePath(root, filename), JSON.stringify(data, null, 2) + '\n', { flag: 'wx' })
 const git = argv => {
@@ -167,6 +175,7 @@ try {
     const packageLock = path.join(project, 'Packages/packages-lock.json')
     if (fs.existsSync(packageLock)) validatePackageLock(readJson(packageLock), policy)
     const sourceHead = candidateCheckout()
+    const characterManifest = readJson(path.join(root, 'public/models/zhaoyun.manifest.json'))
     lockPath = requireSafePath(root, path.join(project, '.e02-runner.lock'))
     lease = fs.openSync(lockPath, 'wx')
     fs.writeFileSync(lease, JSON.stringify({ pid: process.pid, runId: 'starting', project }))
@@ -208,11 +217,7 @@ try {
       }
       else {
         const summary = readUnityTestResults(requireSafePath(root, path.join(stagePath, 'tests.xml')))
-        const expectedCount = stage === 'editmode' ? 11 : 1
-        const className = stage === 'editmode' ? 'FoundationEditTests' : 'FoundationPlayTests'
-        if (summary.total !== expectedCount || !Array.isArray(summary.caseNames) || new Set(summary.caseNames).size !== expectedCount ||
-            summary.caseNames.some(name => !name.startsWith('Changshan.Foundation.Tests.' + className + '.')))
-          throw new Error(`TEST_SET_INCOMPLETE: ${stage}`)
+        validateTestInventory(summary, testPrefix, testInventory[stage])
         writeJson(path.join(stagePath, 'test-summary.json'), summary)
       }
       const log = fs.readFileSync(path.join(stagePath, 'Editor.log'), 'utf8')
@@ -223,6 +228,10 @@ try {
       if (stage === 'build') {
         if (!fs.existsSync(player) || fs.statSync(player).size === 0) throw new Error('PLAYER_MISSING')
         run.playerSha256 = sha256(player)
+        // The Player must ship the retained GLB itself, byte for byte.
+        const shipped = requireSafePath(root, path.join(path.dirname(player), characterStreamingCopy))
+        if (!fs.existsSync(shipped) || sha256(shipped) !== characterManifest.export.sha256) throw new Error('CHARACTER_STREAMING_COPY_MISMATCH')
+        run.characterStreamingCopySha256 = sha256(shipped)
       }
       run.stages.at(-1).verified = true
     }
@@ -232,6 +241,9 @@ try {
     path.dirname(player), env, true)
     validateRuntime(readJson(path.join(runtimePath, 'runtime.json')), runId, path.join(runtimePath, 'scene.png'))
     run.screenshotSha256 = sha256(path.join(runtimePath, 'scene.png'))
+    const character = readJson(path.join(runtimePath, 'character.json'))
+    validateCharacterReport(character, runId, characterManifest, glbJointNames(fs.readFileSync(requireSafePath(root, path.join(root, characterSource)))))
+    run.character = { status: character.status, readyFrame: character.readyFrame, loadSeconds: character.loadSeconds, sourceSha256: character.sourceSha256 }
     run.sourceAfter = snapshotSource(root)
     validateUnchangedSource(run.sourceBefore, run.sourceAfter)
     if (candidateCheckout() !== sourceHead) throw new Error('CANDIDATE_HEAD_CHANGED')

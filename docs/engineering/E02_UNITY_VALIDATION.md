@@ -28,7 +28,7 @@ npm run unity:validate -- --editor 'C:\Program Files\Unity\Hub\Editor\6000.6.4f1
 
 runner 為 `scripts/unity-validate.mjs`；工程 `unity/ChangshanLongdan`。先驗完整固定範圍／manifest／policy、所有既有工程寫入樹與 cache 的 links，再取得原子 `.e02-runner.lock`。既有 lock、非固定欄位、extra dependencies／registry、已存在輸出全部拒絕。啟動引擎前與全部階段結束後，`git rev-parse HEAD` 必須成功且 `git status --porcelain --untracked-files=all` 必須為空，否則 `CHECKOUT_NOT_CLEAN`／`CANDIDATE_HEAD_CHANGED`；`sourceHead` 因此對應實際被測內容。每個 stage 開始前重新驗 links、UnityLockfile，並在每個 stage 前後比對來源快照：compile 在內的任何階段改寫、新增或刪除快照範圍內的檔案都是 `SOURCE_CHANGED_DURING_RUN`，提交的設定若會被 `Configure` 改寫即拒絕，不代為修正。Editor timeout 最多 15 分鐘，Player 2 分鐘；共享 Licensing Client mutex 錯誤會中止本次 child，沒有自動重試。這些資料檢查不是經認證 approval。
 
-固定依賴先核對內附包／已保存官方 archive cache；缺 archive 才向官方 download 取得並確認**完全相同的 checksum-addressed Unity CDN**，拒絕其他重新導向。SHA-1 對照固定官方 metadata，另記 SHA-256／package manifest。實際 lock 與 PackageInfo 必須對照 policy。Unity 6000.6 實測會把內附與 registry 套件都安裝到工程的 `Library/PackageCache`，並在 `package.json` 寫入 `_fingerprint`（內建 module 不寫）；因此安裝後 manifest 除 `_fingerprint` 外須與 Editor 內附或已驗 archive 的 manifest 逐欄相同，目錄後綴須為該指紋前 12 碼，registry 包的指紋須等於固定 SHA-1；尚未逐檔核對載入套件的全部程式 bytes，保留此来源限制。不加入其他模板功能。
+固定依賴先核對內附包／已保存官方 archive cache；缺 archive 才向官方 download 取得並確認**完全相同的 checksum-addressed Unity CDN**，拒絕其他重新導向。SHA-1 對照固定官方 metadata，另記 SHA-256／package manifest。實際 lock 與 PackageInfo 必須對照 policy。Unity 6000.6 實測會把內附與 registry 套件都安裝到工程的 `Library/PackageCache`，並在 `package.json` 寫入 `_fingerprint`（內建 module 不寫）；因此安裝後 manifest 除 `_fingerprint` 外須與 Editor 內附或已驗 archive 的 manifest 逐欄相同，目錄後綴須為該指紋前 12 碼，registry 包的指紋須等於固定 SHA-1；尚未逐檔核對載入套件的全部程式 bytes，保留此来源限制。不加入其他模板功能。2026-10-05 起 E03 依使用者核准加入 glTFast 6.20.0 與內建 mathematics 1.4.0、`modules.unitywebrequest` 1.0.0，政策為 20 項，理由與範圍見 [E03_IMPORT_DECISION.md](./E03_IMPORT_DECISION.md)。
 
 | 階段 | 真實執行與必要結果 |
 |---|---|
@@ -36,7 +36,7 @@ runner 為 `scripts/unity-validate.mjs`；工程 `unity/ChangshanLongdan`。先�
 | Edit Mode | 同 Editor／project／target，`-runTests -testPlatform EditMode -assemblyNames Changshan.Foundation.EditTests -testResults <fresh>/tests.xml`；**不加 `-quit`**；實際 11 個固定 cases 全部 Passed |
 | Play Mode | 同上，`-testPlatform PlayMode -assemblyNames Changshan.Foundation.PlayTests`；1 個固定空場景 boot case，至少跨 frame，無 skip／inconclusive／錯誤 |
 | Windows build | `-quit -executeMethod Changshan.Foundation.Editor.FoundationBuild.BuildWindows`；成功 build report、零 errors、正 bytes、實際 exe／SHA-256 與設定讀回 |
-| Player | 本次 build exe，windowed 1920×1080、D3D11、runId 與 fresh output；實際 120 frames、runtime settings、零報告 errors、完成的 1920×1080 PNG 與正常 exit |
+| Player | 本次 build exe，windowed 1920×1080、D3D11、runId 與 fresh output；實際 120 frames 後等待 `CaptureGate` 釋放（上限 20 秒，`pendingCaptureGates` 須為 0）、runtime settings、零報告 errors、完成的 1920×1080 PNG 與正常 exit；E03 起另驗 Player 內 GLB 副本雜湊與 `character.json` |
 
 完整 argv／exe／project／PID／runId／起訖／timeout／exit 在各 stage 的 `command.json`、`started.json`、`exit.json`，共用 `start.json`／`result.json`。保存 `Editor.log`、NUnit XML、build report、`Player.log`／`runtime.json`／`scene.png`。缺欄位、零測試、XML parse failure、非零 exit、compile errors、設定／package／source drift、缺／不完整 PNG 全部停止。`verified` 只在全部 postconditions 通過後標記。
 

@@ -3,7 +3,8 @@ import fs from 'node:fs'
 import path from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
-import { requireSafeEngineWrites, validateExecutionScope, validatePackagePolicy, validateUnchangedSource, validateCandidateCheckout, validatePackageLock, validateResolvedPackage, validateTestSummary, validateSettings, validateRuntime, fixedDependencies } from '../lib/unity-execution.mjs'
+import { createHash } from 'node:crypto'
+import { requireSafeEngineWrites, validateExecutionScope, validatePackagePolicy, validateUnchangedSource, validateCandidateCheckout, validatePackageLock, validateResolvedPackage, validateTestSummary, validateSettings, validateRuntime, validateTestInventory, validateCharacterReport, glbJointNames, fixedDependencies } from '../lib/unity-execution.mjs'
 import { readUnityTestResults } from '../lib/unity-test-results.mjs'
 
 const root = path.resolve(fileURLToPath(new URL('../../', import.meta.url)))
@@ -133,6 +134,21 @@ test('lock enforces exact actual set, versions and official registry', () => {
   delete changed.dependencies['com.unity.searcher']
   assert.throws(() => validatePackageLock(changed, policy))
 })
+test('committed manifest and lock match the policy, with depth as the shortest path from the manifest', () => {
+  const project = new URL('../../unity/ChangshanLongdan/Packages/', import.meta.url)
+  const manifest = JSON.parse(fs.readFileSync(new URL('manifest.json', project)))
+  const lock = JSON.parse(fs.readFileSync(new URL('packages-lock.json', project)))
+  validateExecutionScope(contract, manifest)
+  validatePackageLock(lock, policy)
+  // Unity rewrites the lock when a depth differs, which the runner then reports as a source change.
+  const depth = Object.fromEntries(Object.keys(manifest.dependencies).map(name => [name, 0]))
+  for (let queue = Object.keys(depth); queue.length;) {
+    const name = queue.shift()
+    for (const dependency of Object.keys(lock.dependencies[name].dependencies))
+      if (!(dependency in depth)) { depth[dependency] = depth[name] + 1; queue.push(dependency) }
+  }
+  assert.deepEqual(Object.fromEntries(Object.entries(lock.dependencies).map(([name, item]) => [name, item.depth])), depth)
+})
 test('installed packages must equal their verified manifest apart from the Unity fingerprint stamp', () => {
   const sha1 = policy.packages['com.unity.searcher'].sha1
   const registry = { ...policy.packages['com.unity.searcher'] }
@@ -179,4 +195,75 @@ test('settings requires current nonce, effective values and real successful buil
   assert.throws(() => validateSettings({ ...report, buildBytes: 0 }, 'current', root, 'build', policy))
   assert.throws(() => validateSettings({ ...report, buildBytes: undefined }, 'current', root, 'build', policy))
   assert.throws(() => validateSettings({ ...report, buildBytes: NaN }, 'current', root, 'build', policy))
+})
+test('test inventory requires every listed class at its exact count and nothing else', () => {
+  const prefix = 'Changshan.Foundation.Tests.'
+  const inventory = { FoundationEditTests: 2, CharacterSourceEditTests: 1 }
+  const names = [`${prefix}FoundationEditTests.A`, `${prefix}FoundationEditTests.B`, `${prefix}CharacterSourceEditTests.C`]
+  validateTestInventory({ total: 3, caseNames: names }, prefix, inventory)
+  assert.throws(() => validateTestInventory({ total: 2, caseNames: names.slice(0, 2) }, prefix, inventory), /TEST_SET_INCOMPLETE: total/)
+  assert.throws(() => validateTestInventory({ total: 3, caseNames: [names[0], names[1], `${prefix}Other.C`] }, prefix, inventory), /TEST_SET_INCOMPLETE: CharacterSourceEditTests/)
+  assert.throws(() => validateTestInventory({ total: 3, caseNames: [names[0], names[0], names[2]] }, prefix, inventory), /TEST_SET_INCOMPLETE: total/)
+  assert.throws(() => validateTestInventory({ total: 3, caseNames: [names[0], `${prefix}FoundationEditTestsX.B`, names[2]] }, prefix, inventory), /TEST_SET_INCOMPLETE: FoundationEditTests/)
+  assert.throws(() => validateTestInventory({ total: 3 }, prefix, inventory), /TEST_SET_INCOMPLETE: total/)
+})
+
+const glb = fs.readFileSync(new URL('../../public/models/zhaoyun.glb', import.meta.url))
+const characterManifest = JSON.parse(fs.readFileSync(new URL('../../public/models/zhaoyun.manifest.json', import.meta.url)))
+test('Unity streaming copy is byte-identical to the retained GLB and its manifest', () => {
+  const streamingCopy = fs.readFileSync(new URL('../../unity/ChangshanLongdan/Assets/StreamingAssets/Characters/zhaoyun.glb', import.meta.url))
+  assert.ok(streamingCopy.equals(glb))
+  assert.equal(createHash('sha256').update(streamingCopy).digest('hex'), characterManifest.export.sha256)
+  assert.equal(streamingCopy.length, characterManifest.export.bytes)
+})
+test('GLB joint names come from the skin in stored order', () => {
+  const joints = glbJointNames(glb)
+  assert.equal(joints.length, characterManifest.export.bones)
+  assert.deepEqual(joints.slice(0, 5), ['pelvis', 'spine_01', 'spine_03', 'neck', 'head'])
+  assert.throws(() => glbJointNames(Buffer.from('not a glb at all, really')), /GLB_INVALID/)
+})
+test('character report must be the ready import of the retained GLB with the fallback hidden', () => {
+  const joints = glbJointNames(glb)
+  const vector = (x, y, z) => ({ x, y, z })
+  const report = { runId: 'current', status: 'READY', failureCode: '', sourceSha256: characterManifest.export.sha256,
+    sourceBytes: characterManifest.export.bytes, joints, triangles: characterManifest.export.triangles,
+    bodyTriangles: characterManifest.export.bodyTriangles, weaponTriangles: characterManifest.export.weaponTriangles,
+    weaponBoundsMin: vector(-0.1, -0.08, -1.05), weaponBoundsMax: vector(0.1, 0.12, 2.7), tipLocal: vector(0, 0, 2.7),
+    bodyBoundsMin: vector(-0.8, 0, -0.32), bodyBoundsMax: vector(0.8, 1.85, 0.32), tipWorld: vector(1, 0, 2), tipBaseWorld: vector(0.5, 0, 1),
+    fallbackVisible: false, modelVisible: true, gltfErrors: 0, readyFrame: 40 }
+  validateCharacterReport(report, 'current', characterManifest, joints)
+  for (const mutation of [{ runId: 'old' }, { status: 'FAILED' }, { failureCode: 'DECODE_FAILED' }, { sourceSha256: '0'.repeat(64) },
+    { sourceBytes: 1 }, { joints: [...joints].reverse() }, { joints: joints.slice(1) }, { triangles: 1 }, { bodyTriangles: 1 },
+    { weaponBoundsMax: vector(0, 0, 2.6) }, { tipLocal: vector(0, 0, 1.25) }, { tipWorld: vector(NaN, 0, 0) }, { bodyBoundsMin: undefined },
+    { fallbackVisible: true }, { modelVisible: false }, { gltfErrors: 1 }, { readyFrame: -1 }, { readyFrame: 1.5 }]) {
+    assert.throws(() => validateCharacterReport({ ...report, ...mutation }, 'current', characterManifest, joints), /CHARACTER_REPORT_MISMATCH/,
+      JSON.stringify(mutation))
+  }
+  assert.throws(() => validateCharacterReport(undefined, 'current', characterManifest, joints), /CHARACTER_REPORT_MISMATCH/)
+})
+test('runtime report requires released capture gates and a complete 1920x1080 PNG', () => {
+  const boundary = path.join(root, 'release/e02')
+  fs.mkdirSync(boundary, { recursive: true })
+  const temporary = fs.mkdtempSync(path.join(boundary, 'runtime-test-'))
+  try {
+    const image = path.join(temporary, 'scene.png')
+    const header = Buffer.alloc(33)
+    Buffer.from('89504e470d0a1a0a0000000d49484452', 'hex').copy(header)
+    header.writeUInt32BE(1920, 16)
+    header.writeUInt32BE(1080, 20)
+    fs.writeFileSync(image, Buffer.concat([header, Buffer.from('0000000049454e44ae426082', 'hex')]))
+    const report = { runId: 'current', unityVersion: '6000.6.4f1', graphicsApi: 'Direct3D11', pipeline: 'UniversalRenderPipelineAsset',
+      colorSpace: 'Linear', width: 1920, height: 1080, targetFrameRate: 60, vSyncCount: 1, renderScale: 1, frameCount: 123,
+      errorCount: 0, batchMode: false, pendingCaptureGates: 0, screenshot: image }
+    validateRuntime(report, 'current', image)
+    for (const mutation of [{ pendingCaptureGates: 1 }, { pendingCaptureGates: undefined }, { errorCount: 1 }, { frameCount: 119 }, { batchMode: true }])
+      assert.throws(() => validateRuntime({ ...report, ...mutation }, 'current', image), /RUNTIME_SETTINGS_MISMATCH/, JSON.stringify(mutation))
+    fs.writeFileSync(image, header)
+    assert.throws(() => validateRuntime(report, 'current', image), /SCREENSHOT_INVALID_OR_INCOMPLETE/)
+  } finally {
+    const absolute = fs.realpathSync(temporary)
+    const relative = path.relative(fs.realpathSync(boundary), absolute)
+    assert.ok(relative && !relative.startsWith('..') && !path.isAbsolute(relative))
+    fs.rmSync(absolute, { recursive: true, force: true })
+  }
 })

@@ -1,6 +1,6 @@
 # E02 隔離工程與驗證紀錄
 
-更新：2026-10-05（Asia/Taipei）。`stepVerdict: LOCAL_ENGINE_EVIDENCE_PENDING_FORMAL_REVIEW`；`nextStepAllowed:false`；`implementationPr`：本分支對應的 E02 PR；`mergeSha:null`；`releaseOrPaidActionPerformed:false`。A–E 節是 2026-10-04 受阻時的原始紀錄，除把錯誤訊息中的本機帳號名改為 `<user>` 外保留不改寫；2026-10-05 的接續結果在 F、G 節，衝突時以後者為準。
+更新：2026-10-05（Asia/Taipei）。`stepVerdict: DONE（限定接受；無 formal independent APPROVED）`；`nextStepAllowed:true`；`implementationPr`：[#15](https://github.com/monkey1sai/changshan-longdan/pull/15)；`mergeSha:24ce10c33316544669b0e825a9edc3ff9d2e4d2a`；`releaseOrPaidActionPerformed:false`。A–E 節是 2026-10-04 受阻時的原始紀錄，除把錯誤訊息中的本機帳號名改為 `<user>` 外保留不改寫；2026-10-05 的接續結果在 F、G 節，衝突時以後者為準。
 
 ## A. 範圍與授權
 
@@ -95,3 +95,13 @@ Another instance of Unity.Licensing.Client is already running.
 延後並以 issue 追蹤：runner 主流程缺自動化測試且 Node 正負例不在 CI；套件只驗到 `package.json` 層級、內附套件指紋未釘死；只雜湊啟動用 exe；結果只分 PASS／BLOCKED；`tar.exe`／`powershell.exe`／`git` 靠 `PATH` 解析；`npm test` 收集 `release/` 下 clone 的測試；安全邊界審查。F 節的 9/9 是修正前各輪的實際數字，不回改。
 
 仍未完成：最終 SHA 的 formal independent APPROVED、CI、另行授權的合併與合併後確認。空場景只證明工程可編譯、測試、建置、啟動與渲染，不證明角色匯入、玩法、手感或效能。這些條件齊備前 E02 不得標記 VERIFIED／DONE，也不開始 E03。
+
+## H. 合併與合併後確認（2026-10-05）
+
+使用者原文：「授權合併 PR #15，合併後確認並開始 E03」。合併前即時核對：head `8cfa1f965e429807d2d1aaf40d352e3b99a771d3`、base `8932ee47b1e902c1d858b9f1b4a1733657c04a8a` 無漂移，兩項 CI 綁定該 head 且成功，review threads 0，auto-merge 關閉。**GitHub 上沒有任何 review approval**；本步依 repo 擁有者授權合併，與 E00／E01 相同屬限定接受，不是 formal independent APPROVED。第 1 輪審查修正本身沒有再送獨立審查，安全邊界審查未進行（#19）。
+
+- merge commit `24ce10c33316544669b0e825a9edc3ff9d2e4d2a`（一般合併，父提交 `8932ee4`、`8cfa1f9`）；tree `a2d11e29136b3daed54d2559b15aa7cfa22ce87b` 與候選 head 相同。來源分支保留。
+- 合併 SHA 的全新 clone：`npm run check` 22 files／227 tests 與 build 通過；Node 工具正負例 59／59；Unity runner `PASS_LOCAL_ENGINE_FOUNDATION`（runId `cf240dc5-f527-4f33-8f8f-bf6cbf1f2aa9`）：compile、11／11 Edit Mode、1／1 Play Mode、Windows build `Succeeded`（169,014,951 bytes）、Player 123 frames／0 errors／1920×1080 PNG；各階段來源差異 0，執行前後 checkout 乾淨。
+- `main` 上該 merge commit 的 CI：`check (ubuntu-latest)`、`check (windows-latest)` 皆 success。
+
+原始產物仍是 local_only。空場景不證明角色匯入、玩法、手感或效能；那些由 E03 起各步驗收。

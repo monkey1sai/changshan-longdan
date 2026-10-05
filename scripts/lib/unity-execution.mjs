@@ -9,6 +9,8 @@ export const fixedDependencies = Object.freeze({
   'com.unity.searcher': '4.9.5',
   'com.unity.nuget.mono-cecil': '1.11.6',
   'com.unity.modules.screencapture': '1.0.0',
+  // E03: GLB importer, approved with its built-in mathematics and unitywebrequest dependencies.
+  'com.unity.cloud.gltfast': '6.20.0',
 })
 
 export function validatePackagePolicy(policy) {
@@ -19,11 +21,13 @@ export function validatePackagePolicy(policy) {
     'com.unity.test-framework': '1.8.0', 'com.unity.ext.nunit': '2.1.0', 'com.unity.test-framework.performance': '6.6.0',
     'com.unity.modules.imgui': '1.0.0', 'com.unity.modules.jsonserialize': '1.0.0',
     'com.unity.modules.screencapture': '1.0.0', 'com.unity.modules.imageconversion': '1.0.0',
+    'com.unity.mathematics': '1.4.0', 'com.unity.modules.unitywebrequest': '1.0.0',
   }
   const registryHashes = {
     'com.unity.profiling.core': '8a49f7027d0618e2cb86aa9e4ed5fb4392e8121a',
     'com.unity.searcher': 'a463122f2c00f83398f41790942a0793431e70ea',
     'com.unity.nuget.mono-cecil': 'ecb9724e46fff855c46a4f37f0a3377a3cfffc06',
+    'com.unity.cloud.gltfast': '11ddc2436f976fb498cfe518dd0ef7af58654d3a',
   }
   if (policy.schemaVersion !== 1 || policy.registry !== 'https://packages.unity.com' ||
       Object.keys(policy.packages ?? {}).length !== Object.keys(builtinVersions).length + Object.keys(registryHashes).length)
@@ -153,6 +157,44 @@ export function validateTestSummary(summary) {
   return summary
 }
 
+// Exact per-class case counts; their sum must equal the run total, so an unlisted class cannot pass unnoticed.
+export function validateTestInventory(summary, prefix, inventory) {
+  const total = Object.values(inventory).reduce((sum, count) => sum + count, 0)
+  if (!Array.isArray(summary.caseNames) || summary.total !== total || summary.caseNames.length !== total ||
+      new Set(summary.caseNames).size !== total)
+    throw new Error('TEST_SET_INCOMPLETE: total')
+  for (const [className, count] of Object.entries(inventory)) {
+    if (summary.caseNames.filter(name => name.startsWith(`${prefix}${className}.`)).length !== count)
+      throw new Error(`TEST_SET_INCOMPLETE: ${className}`)
+  }
+}
+
+// Skin joint names straight from the GLB JSON chunk, independent of the Unity-side contract.
+export function glbJointNames(glb) {
+  if (glb.length < 20 || glb.readUInt32LE(0) !== 0x46546c67 || glb.readUInt32LE(4) !== 2 || glb.readUInt32LE(16) !== 0x4e4f534a)
+    throw new Error('GLB_INVALID')
+  const json = JSON.parse(glb.subarray(20, 20 + glb.readUInt32LE(12)).toString('utf8'))
+  return json.skins[0].joints.map(index => json.nodes[index].name)
+}
+
+export function validateCharacterReport(report, runId, manifest, joints) {
+  const { export: exported, runtime } = manifest
+  const finite = value => Number.isFinite(value)
+  const vector = value => Boolean(value) && finite(value.x) && finite(value.y) && finite(value.z)
+  const near = (value, expected) => finite(value) && Math.abs(value - expected) <= 0.001
+  if (!report || report.runId !== runId || report.status !== 'READY' || report.failureCode ||
+      report.sourceSha256 !== exported.sha256 || report.sourceBytes !== exported.bytes ||
+      !Array.isArray(report.joints) || report.joints.length !== joints.length || report.joints.some((name, i) => name !== joints[i]) ||
+      report.triangles !== exported.triangles || report.bodyTriangles !== exported.bodyTriangles ||
+      report.weaponTriangles !== exported.weaponTriangles ||
+      !near(report.weaponBoundsMin?.z, runtime.weaponExtentsZ[0]) || !near(report.weaponBoundsMax?.z, runtime.weaponExtentsZ[1]) ||
+      !near(report.tipLocal?.z, runtime.weaponTipZ) ||
+      ![report.bodyBoundsMin, report.bodyBoundsMax, report.tipWorld, report.tipBaseWorld].every(vector) ||
+      report.fallbackVisible !== false || report.modelVisible !== true || report.gltfErrors !== 0 ||
+      !Number.isSafeInteger(report.readyFrame) || report.readyFrame < 0)
+    throw new Error('CHARACTER_REPORT_MISMATCH')
+}
+
 export function validateSettings(report, runId, project, stage, policy) {
   if (report.runId !== runId || report.stage !== stage || report.unityVersion !== '6000.6.4f1' ||
       report.revision !== '12bfff696524' || path.resolve(report.projectPath) !== project ||
@@ -178,6 +220,7 @@ export function validateRuntime(report, runId, imagePath) {
       report.pipeline !== 'UniversalRenderPipelineAsset' || report.colorSpace !== 'Linear' || report.width !== 1920 ||
       report.height !== 1080 || report.targetFrameRate !== 60 || report.vSyncCount !== 1 || report.renderScale !== 1 ||
       !Number.isSafeInteger(report.frameCount) || report.frameCount < 120 || report.errorCount !== 0 || report.batchMode !== false ||
+      report.pendingCaptureGates !== 0 ||
       path.resolve(report.screenshot) !== imagePath) throw new Error('RUNTIME_SETTINGS_MISMATCH')
   const image = fs.readFileSync(imagePath)
   if (image.length < 33 || image.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' ||
