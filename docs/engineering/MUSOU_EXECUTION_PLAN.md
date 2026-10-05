@@ -5,6 +5,8 @@
 
 ## 0. 範圍與目前狀態
 
+本節的「本次」與未開始敘述保留 2026-10-02 制定計畫時的歷史時點。後續執行狀態以第 4 節台帳及其固定版本證據為準；2026-10-03 已補登 E00／E01 限定結案與 E02 本機準備，沒有改變其他步驟的驗收門檻。
+
 本文件把 PR #8 的 V01–V12 與 S01–S08 拆成 E00–E13。E 是本計畫的步驟編號，不重新定義既有 P0–P3。來源為 PR #8 head `7724e26252b84ef0b20e0bbfa3315df4fe86935f`；main、其他 PR、CI、素材與本機狀態都必須在執行時重新查核。
 
 **本次只把計畫、證據模板與 AGENTS 入口 commit 到既有 PR #8。沒有執行 E00–E13，沒有建立 Unity runtime、改玩法、合併、發布或付費生成。** 原 profile 的 `runtimeConnected=false`、`observations=null` 與 S01–S08 `not_run` 保持不變。計畫文件審查通過不等於任何遊戲步驟通過。
@@ -186,13 +188,15 @@ E02 的交付必須包含一個可重跑的本機 runner 及其 README：解析�
 - **commit／退出**：`test(acceptance): pin integrated playable build and complete evidence matrix`；正式review、獲准合併及合併後建置/相容性確認才DONE。此狀態是工程驗收完成，不是已部署；上傳itch.io、購買或變更定價另行授權。
 - **停止／回滾**：任一核心門檻失敗即阻擋發布；記錄失敗版本並透過普通revert PR恢復已驗證來源，不自動替換線上包。
 
-## 4. 執行台帳（本次不填實作成果）
+## 4. 執行台帳
+
+更新：2026-10-05（Asia/Taipei）。前兩步 `DONE` 只涵蓋已記錄的人類限定接受；完整體驗／裝置／效能仍待後續驗收。E02 已核准 ADR、建立最小工程，並在本機取得完整引擎驗證證據；正式 review 與合併尚未完成。
 
 | 步驟 | 依賴 | 狀態 | 實作 PR / candidate SHA | 驗證證據 | 正式 review | merge SHA / 合併後確認 |
 |---|---|---|---|---|---|---|
-| E00 | 已審查的PR #8基準 | NOT_STARTED | — | — | — | — |
-| E01 | E00 | NOT_STARTED | — | — | — | — |
-| E02 | E01 | NOT_STARTED | — | — | — | — |
+| E00 | 已審查的PR #8基準 | DONE（限定接受） | [#11](https://github.com/monkey1sai/changshan-longdan/pull/11)、[#10](https://github.com/monkey1sai/changshan-longdan/pull/10) | #10 結案正文；歷史 [E00 快照](./E00_BASELINE.md)保留 | 使用者限定接受；未逐項體驗／裝置情境後續驗收 | `ac47b84d18a82f7f4e3f501f96ef3020520275fd`；19 檔／156 tests、兩平台 CI、可見操作回歸 |
+| E01 | E00 | DONE（限定接受） | [#13](https://github.com/monkey1sai/changshan-longdan/pull/13) / `6967386bf46f5c7d94472f2a2f6280ef5e052c75` | [固定 E01 結案文件](https://github.com/monkey1sai/changshan-longdan/blob/3ff380d3b89d31ad78c89bebd4a4323458b3ea43/docs/engineering/E01_COMPLETED.md) | 固定三個候選的人類限定接受；GitHub counted approval NONE，不延伸至 E02 | `8932ee47b1e902c1d858b9f1b4a1733657c04a8a`；22 檔／227 tests、兩平台 CI、63 raw traces 相符 |
+| E02 | E01 | AWAITING_REVIEW（ADR ACCEPTED；本機引擎驗證通過） | [#15](https://github.com/monkey1sai/changshan-longdan/pull/15)；候選 SHA 見該 PR | [E02 工程／驗證紀錄](./E02_ENGINE_FOUNDATION.md) F、G 節：compile、11 Edit、1 Play、Windows build、Player／1920×1080 PNG；59 項工具正負例、227 Web tests、包 hash 相符 | advisory 審查 1 輪已修正；最終 SHA 的 formal independent review 未取得 | —；未合併，不開始 E03 |
 | E03 | E02 | NOT_STARTED | — | — | — | — |
 | E04 | E03 | NOT_STARTED | — | — | — | — |
 | E05 | E04 | NOT_STARTED | — | — | — | — |

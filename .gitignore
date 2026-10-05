@@ -20,3 +20,14 @@ Thumbs.db
 
 # 上架用的打包輸出
 release
+
+# E02 隔離 Unity 工程的本機產物
+/unity/ChangshanLongdan/Library/
+/unity/ChangshanLongdan/Temp/
+/unity/ChangshanLongdan/Obj/
+/unity/ChangshanLongdan/Logs/
+/unity/ChangshanLongdan/UserSettings/
+/unity/ChangshanLongdan/.e02-runner.lock
+/unity/ChangshanLongdan/*.csproj
+/unity/ChangshanLongdan/*.sln
+/unity/ChangshanLongdan/*.slnx

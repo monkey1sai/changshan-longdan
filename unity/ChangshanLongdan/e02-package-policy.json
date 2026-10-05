@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "registry": "https://packages.unity.com",
+  "packages": {
+    "com.unity.render-pipelines.universal": { "version": "17.6.0", "source": "builtin" },
+    "com.unity.render-pipelines.core": { "version": "17.6.0", "source": "builtin" },
+    "com.unity.render-pipelines.universal-config": { "version": "17.6.0", "source": "builtin" },
+    "com.unity.shadergraph": { "version": "17.6.0", "source": "builtin" },
+    "com.unity.graph-authoring": { "version": "1.0.0", "source": "builtin" },
+    "com.unity.burst": { "version": "2.0.0", "source": "builtin" },
+    "com.unity.collections": { "version": "6.6.0", "source": "builtin" },
+    "com.unity.test-framework": { "version": "1.8.0", "source": "builtin" },
+    "com.unity.ext.nunit": { "version": "2.1.0", "source": "builtin" },
+    "com.unity.test-framework.performance": { "version": "6.6.0", "source": "builtin" },
+    "com.unity.modules.imgui": { "version": "1.0.0", "source": "builtin" },
+    "com.unity.modules.jsonserialize": { "version": "1.0.0", "source": "builtin" },
+    "com.unity.modules.screencapture": { "version": "1.0.0", "source": "builtin" },
+    "com.unity.modules.imageconversion": { "version": "1.0.0", "source": "builtin" },
+    "com.unity.profiling.core": { "version": "1.0.3", "source": "registry", "sha1": "8a49f7027d0618e2cb86aa9e4ed5fb4392e8121a" },
+    "com.unity.searcher": { "version": "4.9.5", "source": "registry", "sha1": "a463122f2c00f83398f41790942a0793431e70ea" },
+    "com.unity.nuget.mono-cecil": { "version": "1.11.6", "source": "registry", "sha1": "ecb9724e46fff855c46a4f37f0a3377a3cfffc06" }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "decisionStatus": "ACCEPTED",
+  "acceptedDecisionRecord": "docs/engineering/E02_DECISION.md",
+  "baseSha": "8932ee47b1e902c1d858b9f1b4a1733657c04a8a",
+  "editorVersion": "6000.6.4f1",
+  "editorRevision": "12bfff696524",
+  "projectRelativePath": "unity/ChangshanLongdan",
+  "renderPipeline": "URP",
+  "buildTarget": "StandaloneWindows64",
+  "scriptingBackend": "Mono",
+  "graphicsApi": "Direct3D11",
+  "requiredPlaybackEngine": "windowsstandalonesupport",
+  "packages": {
+    "com.unity.render-pipelines.universal": "17.6.0",
+    "com.unity.test-framework": "1.8.0"
+  },
+  "renderCandidate": {
+    "width": 1920,
+    "height": 1080,
+    "renderScale": 1,
+    "targetFrameRate": 60,
+    "vSyncCount": 1,
+    "colorSpace": "Linear"
+  },
+  "webRetained": true,
+  "movementAuthority": "gameplay-controller",
+  "animatorRootMotion": false,
+  "externalGenerationEnabled": false,
+  "spendLimitUsd": 0,
+  "preservedAssets": {
+    "public/models/zhaoyun.glb": "7dccbfae4b61280889a7be98370692143898c3eeef8dcd55dfa36ad4b4248a33",
+    "public/models/zhaoyun.manifest.json": "b0662f373bc2349095d49cdc6a28edba9b6a9658dcd23c5a0dc60b96d93a1f2d"
+  }
+}
