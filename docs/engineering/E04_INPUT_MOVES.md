@@ -1,6 +1,6 @@
 # E04 輸入、完整招式與設定對應
 
-更新：2026-10-05（Asia/Taipei）。`stepStatus: AWAITING_REVIEW`（草稿 PR #24；advisory 審查第 1 輪的發現已依授權修正；未取得正式獨立核准、未合併）。本檔記錄範圍、設計與驗證方法；各候選 SHA 的實際執行結果綁定該 SHA 另行記錄，不寫回本檔以免自我引用。
+更新：2026-10-05（Asia/Taipei）。`stepStatus: DONE（限定接受；無 formal independent APPROVED）`；PR #24 合併為 `0db9668f97c454835c33c3e000503fcf8f85e6a6`。本檔記錄範圍、設計與驗證方法；各候選 SHA 的實際執行結果記在 PR #24，不寫回本檔以免自我引用。
 
 ## 範圍與授權
 
@@ -55,10 +55,20 @@
 ## 已知限制
 
 - 沒有動畫：角色以靜止姿勢滑行與升降，招式只能從位置、朝向與事件觀察；動畫屬 E06。
-- 實際手感、輸入延遲與畫面需要人在可見視窗操作確認；自動測試只證明邏輯與 Web 一致。
+- 手感只有使用者在 Unity Editor 可見視窗的限定確認（輸入有反應、可接受）；無動畫與招式 HUD，未逐招辨識，輸入延遲未量測。
 - 命中形狀與判定窗口已移植並比對，但沒有敵兵可打；去重與 hit-stop 來源屬 E05。
 - 跨頻率的時序差異是 Web 本身的取樣行為，E04 照搬，不修正。
 
 ## 回滾
 
 普通 revert 本步提交即可：移除 `Assets/Combat/`、控制器、測試、fixture 與產生器，並還原 prefab 與 runner 清單；Web 版、`src/`、`public/models/` 與 `.blend` 未變更，E03 資產保留。
+
+## 合併與合併後確認
+
+使用者原文：「手感可接受，授權合併 PR #24，合併後確認並開始 E05」。合併前即時核對：head `ff20810e631be7b879cb4c49b11613c4dca55071`、base `a568896456e8a36ce7d1a6fece7c9fedd5944342` 無漂移，兩項 CI 綁定 head 且成功，review threads 0，auto-merge 關閉。**GitHub 上沒有任何 review approval**，依使用者授權合併，屬限定接受；獨立 advisory 審查 2 輪不是 formal APPROVED。
+
+- merge commit `0db9668f97c454835c33c3e000503fcf8f85e6a6`（一般合併，父提交 `a568896`、`ff20810`）；tree `f5711a58af4844cbcb6c292bf7d0843e52137440` 與候選相同；來源分支保留。
+- 合併 SHA 全新 clone：`npm run check` 24 files／232 tests 與 build 通過；Node 工具正負例 65／65；`parity:check` 通過；Unity runner `PASS_LOCAL_ENGINE_FOUNDATION`（runId `4024b0b8-131a-40d7-94ae-0963db020102`）：compile、39／39 Edit、22／22 Play、Windows build `Succeeded`、Player 角色 READY；各階段來源差異 0。
+- `main` 上該 merge commit 的 CI（Game CI）success。
+
+原始產物 local_only。延後項目見 #25。
