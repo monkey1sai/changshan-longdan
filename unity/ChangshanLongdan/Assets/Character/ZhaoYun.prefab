@@ -100,6 +100,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1777913534941698973}
   - component: {fileID: 939403940017791062}
+  - component: {fileID: 2148572340577386537}
   m_Layer: 0
   m_Name: ZhaoYun
   m_TagString: Untagged
@@ -137,6 +138,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Changshan.Character::Changshan.Character.ZhaoYunCharacter
   fallback: {fileID: 8817187596003462722}
   loadOnStart: 1
+--- !u!114 &2148572340577386537
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3108226323146841801}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0f99321f3f52af429ec9f0116e9e4e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Changshan.Character::Changshan.Character.ZhaoYunController
 --- !u!1 &7722555680168574298
 GameObject:
   m_ObjectHideFlags: 0
