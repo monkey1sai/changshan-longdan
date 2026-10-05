@@ -71,7 +71,7 @@ namespace Changshan.Character.Editor
     static GameObject EnsurePrefab(Material fallbackMaterial)
     {
       var existing = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
-      if (existing != null) return existing;
+      if (existing != null) return EnsureController(existing);
       var root = new GameObject(SceneObjectName);
       try
       {
@@ -86,11 +86,28 @@ namespace Changshan.Character.Editor
         var character = root.AddComponent<ZhaoYunCharacter>();
         character.Fallback = fallback;
         character.LoadOnStart = true;
+        root.AddComponent<ZhaoYunController>();
         return PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
       }
       finally
       {
         UnityEngine.Object.DestroyImmediate(root);
+      }
+    }
+
+    // E04: a prefab made by E03 gains the input/combat driver once; an existing controller is left untouched.
+    static GameObject EnsureController(GameObject prefab)
+    {
+      if (prefab.GetComponent<ZhaoYunController>() != null) return prefab;
+      var contents = PrefabUtility.LoadPrefabContents(PrefabPath);
+      try
+      {
+        contents.AddComponent<ZhaoYunController>();
+        return PrefabUtility.SaveAsPrefabAsset(contents, PrefabPath);
+      }
+      finally
+      {
+        PrefabUtility.UnloadPrefabContents(contents);
       }
     }
 

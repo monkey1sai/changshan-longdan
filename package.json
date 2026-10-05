@@ -16,6 +16,8 @@
     "unity:preflight": "node scripts/unity-preflight.mjs --mode preflight",
     "unity:validate": "node scripts/unity-validate.mjs",
     "trace:baseline": "node --experimental-strip-types scripts/trace-baseline.mjs",
+    "parity:write": "node --experimental-strip-types scripts/combat-parity.mjs --write",
+    "parity:check": "node --experimental-strip-types scripts/combat-parity.mjs --check",
     "typecheck": "tsc",
     "package:itch": "npm run build && node scripts/package-itch.mjs",
     "check": "npm test && npm run build"
