@@ -1,6 +1,6 @@
 # E04 輸入、完整招式與設定對應
 
-更新：2026-10-05（Asia/Taipei）。`stepStatus: IN_PROGRESS`（本機實作；未推送、未建立 PR、未審查）。本檔記錄範圍、設計與驗證方法；各候選 SHA 的實際執行結果綁定該 SHA 另行記錄，不寫回本檔以免自我引用。
+更新：2026-10-05（Asia/Taipei）。`stepStatus: AWAITING_REVIEW`（草稿 PR #24；advisory 審查第 1 輪的發現已依授權修正；未取得正式獨立核准、未合併）。本檔記錄範圍、設計與驗證方法；各候選 SHA 的實際執行結果綁定該 SHA 另行記錄，不寫回本檔以免自我引用。
 
 ## 範圍與授權
 
@@ -15,7 +15,7 @@
 ## 設計
 
 - **單一真實來源**：`scripts/lib/combat-parity.ts` 直接 import Web 的 `Player`、`Input`、`Arena`、`MOVES` 與 layout，用合成事件逐幀驅動，依 `Game.simulate` 的順序（hit-stop 期間只 `queue`，否則 `update`，最後 arena 約束）輸出 `unity/ChangshanLongdan/TestData/combat/web-parity.json`。fixture 內含 Web 來源 9 個檔案的 SHA-256；Vitest 每次重新產生並要求逐位元組相同，Unity Edit Mode 也重算雜湊，Web 一改 fixture 就會失效。產生：`npm run parity:write`；檢查：`npm run parity:check`。
-- **fixture 內容**：22 個玩家情境 × 30／60／120 Hz（每幀的控制、操作、21 個狀態欄位、事件、啟動中的命中窗口），6 個輸入情境 × 3 種頻率（鍵盤事件、`poll` 結果、兩種鏡頭 yaw 的合成移動），17 招完整資料、場地邊界與 26 個障礙物。原始 JSON 1,835,074 bytes，gzip 後約 193 KB；標記為 `linguist-generated -diff`。
+- **fixture 內容**：26 個玩家情境 × 30／60／120 Hz（每幀的控制、操作、21 個狀態欄位、事件、啟動中的命中窗口），其中 4 個在動作時同時給移動輸入（跑動中攻擊與 N2 早期轉向、攻擊後接跳與空中控制、防禦中轉向後閃避），1 個使用固定目標的自動瞄準；6 個輸入情境 × 3 種頻率（鍵盤事件、`poll` 結果、兩種鏡頭 yaw 的合成移動）；17 招完整資料、場地邊界與 26 個障礙物；24 種命中形狀（招式用到的 22 種加 2 種帶 offset）× 3 個面向，在精確格點上的 Web `inHitShape` 結果共 17,424 筆與 `shapeReach`。原始 JSON 2,148,429 bytes，gzip 後約 230 KB；標記為 `linguist-generated -diff`。
 - **`Changshan.Combat`**（`noEngineReferences: true`）：`CombatMath`（含與 V8 相同的 `Math.hypot` 演算法，正規化結果逐位元相同）、`HitShape`、`MoveDefinition`／`HitWindow`／`Lunge`（建構時複製陣列，對外唯讀）、`Moves`、`Combo`、`Arena`／`ArenaLayout`、`PlayerTuning`、`Player`、`PlayerDriver`、`InputMapper`、`ControlComposer`。敘述順序照 Web，方便逐幀比對。
 - **PlayerTuning**：預設值就是 Web 常數。必須宣告 `schemaVersion = 1` 與單位 `meters,seconds,radians`，否則以 `TUNING_SCHEMA_VERSION`／`TUNING_UNITS` 拒絕；非有限值為 `TUNING_NOT_FINITE`，非正值、防禦半角 ≥ π、DASH 取消時間不早於閃避結束為 `TUNING_OUT_OF_RANGE`。沒有 JSON adapter，`musou-profile.proposed.json` 仍未接入 runtime。
 - **狀態隔離**：每個 `Player` 擁有自己的血量、buffer、hit stamp 來源；沒有任何 static 可變狀態。Web 的 `nextStamp` 是全域計數器，這裡改為每個模擬一個 `HitStampSource`，需要共用時明確傳入；stamp 的生命週期與去重屬 E05。
@@ -31,6 +31,7 @@
 | 手把 | `navigator.getGamepads` | 延後，未實作 |
 | 焦點在表單元件、標題畫面快捷鍵 | DOM 專屬 | 不適用 |
 | 失焦後 | 進入暫停選單 | 焦點回來即恢復 |
+| 重試（`Restart`／`startBattle`） | 保留按住的鍵 | 清掉按住的鍵與待執行輸入，重新按下才生效 |
 | OS 按鍵重複 | `repeat` keydown 會重新標記按住 | Legacy Input 不產生重複事件；失焦後仍按著的鍵要重新按下 |
 | 自動瞄準 `aim` | 依敵兵位置 | 沒有敵兵，固定不瞄準 |
 | slowmo、debug 時間倍率 | 勝敗演出 | 不在範圍（E05 時鐘） |
@@ -41,21 +42,21 @@
 | 檢查 | 內容 |
 |---|---|
 | Vitest | 新增 `combat-parity.test.ts`：fixture 與重新產生的結果逐位元組相同、17 招都被情境打出、三種頻率都有 |
-| Node runner | 測試清單依類別計數（Edit 新增 21 項、Play 新增 5 項） |
-| Edit Mode `CombatParityEditTests`（10） | 來源雜湊、場地、17 招逐欄位、玩家軌跡 30／60／120 Hz、輸入軌跡、每個頻率都打出 17 招、跨頻率路線相同且時間差在宣告範圍內、buffer 改 0.40 s 必被抓到 |
+| Node runner | 測試清單依類別計數（Edit 新增 23 項、Play 新增 5 項） |
+| Edit Mode `CombatParityEditTests`（11） | 來源雜湊、場地、17 招逐欄位、命中形狀取樣、玩家軌跡 30／60／120 Hz（含自動瞄準）、輸入軌跡、每個頻率都打出 17 招、跨頻率路線相同且時間差在宣告範圍內、buffer 改 0.40 s 必被抓到 |
 | Edit Mode `CombatRuleEditTests`（8） | 預設值等於 Web 常數、版本／單位／非有限／超出範圍負例、兩個玩家不共用血量／buffer／stamp、招式資料建構後不可改、stamp 溢位跳過 0 |
-| Edit Mode `LogicDisplayMappingEditTests`（3） | 起點對到場景錨點、面向與左右在鏡射後不變、鏡頭相對輸入在畫面上的方向 |
+| Edit Mode `LogicDisplayMappingEditTests`（4） | 起點對到場景錨點、面向與左右在鏡射後不變、鏡頭相對輸入在畫面上的方向、Legacy 輸入恰好輪詢 `InputMapper.GameKeys` 的 22 鍵且鍵表唯讀 |
 | Play Mode `ZhaoYunControllerPlayTests`（5） | 場景角色保持 E03 姿勢並帶有控制器、W／D 依鏡頭方向移動、J 出 N1 後 K 接 C2 且 transform 每幀等於邏輯位置、失焦清空按住與待執行輸入並停止模擬、重試還原 |
 
 比對容許誤差在比對前宣告：離散值（狀態、招式、事件、命中窗口、計數）必須完全相同；連續值容許 1e-6（sin、cos、exp、atan2 在不同執行環境可能差最後一位）。跨頻率不要求幀序號相同：第 k 次出招的時間差上限為 2(k+1)/30 s，因為每一環最多因按鍵所在幀與等待的門檻（cancel、跳躍高度、計時器）各晚一個 30 Hz 幀。
 
-輔助證據（不算 Unity 驗收）：同一份 C# 原始碼與對照程式在 .NET 8 上重播，玩家 9,282 幀與輸入 1,302 幀全部一致，最大數值偏差 1.3e-15；buffer 改 0.40 s 時出現 227 處不一致。離線編譯以 Unity 內附編譯器與上次 Unity 實際使用的參考組件編譯 7 個組件，`Changshan.Combat` 在不提供任何 UnityEngine 參考的情況下通過。
+輔助證據（不算 Unity 驗收）：同一份 C# 原始碼與對照程式在 .NET 8 上重播，玩家 10,668 幀、輸入 1,302 幀、命中形狀 17,424 筆全部一致，最大數值偏差 1.3e-15；buffer 改 0.40 s 時出現 227 處不一致。在暫存副本植入 8 個移植錯誤（起跳水平係數、空中 damp、出招 0.1 s 內轉向、防禦轉向、提前回到跑動、自動瞄準、直線形狀判定的正負號）各自被抓到 9 到 7,954 處不一致。離線編譯以 Unity 內附編譯器與上次 Unity 實際使用的參考組件編譯 7 個組件，`Changshan.Combat` 在不提供任何 UnityEngine 參考的情況下通過。
 
 ## 已知限制
 
 - 沒有動畫：角色以靜止姿勢滑行與升降，招式只能從位置、朝向與事件觀察；動畫屬 E06。
 - 實際手感、輸入延遲與畫面需要人在可見視窗操作確認；自動測試只證明邏輯與 Web 一致。
-- 命中判定（`ActiveHits`）已移植並比對窗口，但沒有敵兵可打；去重與 hit-stop 來源屬 E05。
+- 命中形狀與判定窗口已移植並比對，但沒有敵兵可打；去重與 hit-stop 來源屬 E05。
 - 跨頻率的時序差異是 Web 本身的取樣行為，E04 照搬，不修正。
 
 ## 回滾

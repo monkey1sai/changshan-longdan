@@ -27,6 +27,10 @@ namespace Changshan.Combat
     public static HitShape Circle(double range, double offset = 0) => new HitShape(HitShapeKind.Circle, range, 0, 0, offset);
     public static HitShape Line(double range, double width, double offset = 0) => new HitShape(HitShapeKind.Line, range, 0, width, offset);
 
+    // Same shape from stored values (half angle already in radians), as the Web data holds it.
+    public static HitShape FromRadians(HitShapeKind kind, double range, double halfAngle, double width, double offset) =>
+      new HitShape(kind, range, kind == HitShapeKind.Arc ? halfAngle : 0, kind == HitShapeKind.Line ? width : 0, offset);
+
     // Whether a target of the given radius overlaps the shape on the ground plane.
     public bool Contains(double ax, double az, double facing, double tx, double tz, double radius)
     {

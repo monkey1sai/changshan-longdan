@@ -42,7 +42,7 @@ namespace Changshan.Combat
     public static readonly IReadOnlyList<string> GameKeys = new List<string>(keyActions.Keys)
     {
       "KeyF", "KeyW", "KeyA", "KeyS", "KeyD", "KeyQ", "KeyE", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight",
-    };
+    }.AsReadOnly();
 
     readonly HashSet<string> held = new HashSet<string>();
     readonly bool[] pressed = new bool[Enum.GetValues(typeof(Action)).Length];

@@ -189,6 +189,38 @@ namespace Changshan.Foundation.Tests
       return result;
     }
 
+    // Web inHitShape/shapeReach sampled on an exact grid; every sample must agree.
+    public static Result CompareHitShapes(Dictionary<string, object> fixture)
+    {
+      var result = new Result();
+      foreach (var item in L(fixture["hitShapes"]))
+      {
+        var h = O(item);
+        var kind = (HitShapeKind)Enum.Parse(typeof(HitShapeKind), (string)h["kind"], ignoreCase: true);
+        var shape = HitShape.FromRadians(kind, D(h["range"]), D(h["halfAngle"]), D(h["width"]), D(h["offset"]));
+        double facing = D(h["facing"]), step = D(h["step"]);
+        var origin = L(h["origin"]);
+        double ox = D(origin[0]), oz = D(origin[1]);
+        int grid = (int)D(h["grid"]);
+        var radii = L(h["radii"]);
+        string bits = (string)h["bits"];
+        string at = $"shape {h["kind"]} r{R(shape.Range)} off{R(shape.Offset)} f{R(facing)}";
+        result.Number(at + " reach", D(h["reach"]), shape.Reach, ContinuousTolerance);
+        int k = 0;
+        for (int i = -grid; i <= grid; i++)
+          for (int j = -grid; j <= grid; j++)
+            foreach (var radius in radii)
+            {
+              bool expected = bits[k++] == '1';
+              bool actual = shape.Contains(ox, oz, facing, ox + i * step, oz + j * step, D(radius));
+              if (expected != actual) result.Fail($"{at} i{i} j{j} radius {R(D(radius))}: expected {expected}, got {actual}");
+              result.Frames++;
+            }
+        if (k != bits.Length) result.Fail($"{at}: {bits.Length - k} unread samples");
+      }
+      return result;
+    }
+
     public static string EventText(PlayerEvent e)
     {
       switch (e.Type)
@@ -226,6 +258,18 @@ namespace Changshan.Foundation.Tests
       double dt = 1 / hz;
       var driver = new PlayerDriver(new Player(tuning), ArenaLayout.CreateArena());
       driver.Restart();
+      // Same fixed-target auto-aim as the generator: the target is returned only when within the requested distance.
+      AimFunction aim = null;
+      if (trace.TryGetValue("aim", out var aimTarget) && aimTarget != null)
+      {
+        double ax = D(L(aimTarget)[0]), az = D(L(aimTarget)[1]);
+        aim = (double x, double z, double maxDistance, out double tx, out double tz) =>
+        {
+          tx = ax;
+          tz = az;
+          return CombatMath.Hypot(ax - x, az - z) <= maxDistance;
+        };
+      }
       var frames = L(trace["frames"]);
       for (int f = 0; f < frames.Count; f++)
       {
@@ -253,7 +297,7 @@ namespace Changshan.Foundation.Tests
         {
           MoveX = D(c[0]), MoveZ = D(c[1]), Attack = B(c[2]), Charge = B(c[3]), Jump = B(c[4]), Dodge = B(c[5]), Musou = B(c[6]), Guard = B(c[7]),
         };
-        driver.Step(dt, controls);
+        driver.Step(dt, controls, aim);
         var p = driver.Player;
         var s = L(frame["s"]);
         result.Text(at + " state", (string)s[0], p.State.ToString().ToLowerInvariant());

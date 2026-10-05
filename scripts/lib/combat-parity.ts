@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
+import { inHitShape, shapeReach, type HitShape } from '../../src/combat/hitshape.ts'
 import { MOVES, type MoveDef, type MoveId } from '../../src/combat/moves.ts'
 import { Input, type InputFrame } from '../../src/core/input.ts'
 import { Arena } from '../../src/entities/arena.ts'
@@ -18,7 +19,8 @@ export const PARITY_SOURCES = [
 type Button = 'attack' | 'charge' | 'jump' | 'dodge' | 'musou'
 type Op = ['hitstop', number] | ['clear'] | ['hit', number, boolean, number, number] | ['gain', number] | ['reset']
 interface Hold { from: number; to: number; move?: [number, number]; guard?: boolean }
-interface PlayerScenario { id: string; duration: number; holds: Hold[]; presses: [number, Button][]; ops: [number, Op][] }
+// aim: a fixed target that Game's auto-aim would return when it lies within the requested distance.
+interface PlayerScenario { id: string; duration: number; holds: Hold[]; presses: [number, Button][]; ops: [number, Op][]; aim?: [number, number] }
 
 const S = PLAYER_START
 const front: [number, number] = [S.x, S.z - 2] // start facing is PI, so the front is -Z
@@ -48,6 +50,14 @@ export const PLAYER_SCENARIOS: PlayerScenario[] = [
   { id: 'clear_drops_buffer', duration: 1.0, holds: [], presses: [[0, 'attack'], [0.1, 'charge']], ops: [[0.15, ['clear']]] },
   { id: 'reset_restores', duration: 1.2, holds: [], presses: [[0, 'attack']], ops: [[0.1, ['gain', 50]], [0.3, ['hit', 25, false, ...front]], [0.8, ['reset']]] },
   { id: 'lethal_hit', duration: 0.6, holds: [], presses: [[0.3, 'attack']], ops: [[0.1, ['hit', 1200, true, ...front]]] },
+  // Stick held while acting: facing lock at move start, early turn, early return to running, jump carry and air control.
+  { id: 'attack_while_running', duration: 2.0, holds: [{ from: 0, to: 0.45, move: [1, 0] }, { from: 0.45, to: 1.8, move: [0.6, -0.8] }],
+    presses: [[0.2, 'attack'], [0.3, 'attack'], [1.2, 'charge']], ops: [] },
+  { id: 'attack_then_jump_cancel', duration: 1.6, holds: [{ from: 0, to: 0.4, move: [0, -1] }, { from: 0.4, to: 1.2, move: [1, 0] }],
+    presses: [[0, 'attack'], [0.1, 'jump'], [0.5, 'attack']], ops: [] },
+  { id: 'guard_turn_then_dodge', duration: 1.4, holds: [{ from: 0, to: 0.8, guard: true }, { from: 0.1, to: 0.8, move: [1, 0] }],
+    presses: [[0.4, 'dodge']], ops: [] },
+  { id: 'auto_aim_target', duration: 1.6, holds: [], presses: [[0, 'attack'], [0.9, 'charge']], ops: [], aim: [3, 40] },
   { id: 'arena_obstacle_and_edge', duration: 6.6, holds: [{ from: 0, to: 4.2, move: [-1, 0] }, { from: 4.2, to: 6.4, move: [0, 1] }], presses: [], ops: [] },
 ]
 
@@ -109,6 +119,8 @@ export function runPlayerScenario(s: PlayerScenario, hz: number) {
   const arena = new Arena(PLAY_LIMIT, obstacles())
   player.reset(S.x, S.z, S.facing)
   let hitstop = 0
+  const target = s.aim
+  const aim: AimFn = target ? (x, z, maxDist) => (Math.hypot(target[0] - x, target[1] - z) <= maxDist ? { x: target[0], z: target[1] } : null) : noAim
   const frames = []
   for (let frame = 0; frame < Math.round(s.duration * hz); frame++) {
     const ops = s.ops.filter(([at]) => frameOf(at, hz) === frame).map(([, op]) => op)
@@ -126,7 +138,7 @@ export function runPlayerScenario(s: PlayerScenario, hz: number) {
     if (hitstop > 0) {
       hitstop -= dt
       player.queue(c)
-    } else player.update(dt, c, noAim, arena)
+    } else player.update(dt, c, aim, arena)
     frames.push({
       c: [c.moveX, c.moveZ, c.attack, c.charge, c.jump, c.dodge, c.musou, c.guard === true].map((v) => (typeof v === 'boolean' ? (v ? 1 : 0) : v)),
       ...(ops.length ? { op: ops, oe: opEvents } : {}),
@@ -136,7 +148,7 @@ export function runPlayerScenario(s: PlayerScenario, hz: number) {
       h: player.activeHits.map((a) => WINDOW_KEYS.get(a.window) ?? '?'),
     })
   }
-  return { id: s.id, hz, frames }
+  return { id: s.id, hz, aim: s.aim ?? null, frames }
 }
 
 export function runInputScenario(s: InputScenario, hz: number) {
@@ -207,5 +219,29 @@ export function buildParityFixture(root: URL) {
     moves: Object.fromEntries((Object.keys(MOVES) as MoveId[]).map((id) => [id, moveRecord(MOVES[id])])),
     player: PLAYER_SCENARIOS.flatMap((s) => PARITY_RATES.map((hz) => runPlayerScenario(s, hz))),
     input: INPUT_SCENARIOS.flatMap((s) => PARITY_RATES.map((hz) => runInputScenario(s, hz))),
+    hitShapes: hitShapeSamples(),
   }
+}
+
+// Every distinct move shape plus two offset shapes (no move uses an offset), sampled on an exact grid around the
+// attacker so both sides get identical target coordinates. Bits: one per (i, j, radius) in that order.
+export const SHAPE_FACINGS = [0.3, 2.5, -1.9] as const
+export const SHAPE_RADII = [0, 0.45] as const
+const SHAPE_ORIGIN = [0.25, -0.5] as const
+const GRID = 5
+
+function hitShapeSamples() {
+  const shapes = new Map<string, HitShape>()
+  for (const id of Object.keys(MOVES) as MoveId[]) for (const w of MOVES[id].hits) shapes.set(JSON.stringify(w.shape), w.shape)
+  for (const extra of [{ kind: 'arc', range: 3, halfAngle: 0.7, offset: 1.5 }, { kind: 'line', range: 4, width: 1, offset: -1 }] as HitShape[])
+    shapes.set(JSON.stringify(extra), extra)
+  return [...shapes.values()].flatMap((shape) => SHAPE_FACINGS.map((facing) => {
+    const reach = shapeReach(shape)
+    const step = reach / 4.3
+    let bits = ''
+    for (let i = -GRID; i <= GRID; i++) for (let j = -GRID; j <= GRID; j++) for (const radius of SHAPE_RADII)
+      bits += inHitShape(shape, SHAPE_ORIGIN[0], SHAPE_ORIGIN[1], facing, SHAPE_ORIGIN[0] + i * step, SHAPE_ORIGIN[1] + j * step, radius) ? '1' : '0'
+    return { kind: shape.kind, range: shape.range, halfAngle: shape.kind === 'arc' ? shape.halfAngle : 0, width: shape.kind === 'line' ? shape.width : 0,
+      offset: shape.offset ?? 0, reach, facing, origin: SHAPE_ORIGIN, grid: GRID, step, radii: SHAPE_RADII, bits }
+  }))
 }

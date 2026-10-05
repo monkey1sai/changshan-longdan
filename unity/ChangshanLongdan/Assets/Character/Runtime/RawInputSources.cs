@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Changshan.Combat;
 using UnityEngine;
@@ -11,33 +12,33 @@ namespace Changshan.Character
   }
 
   // Keyboard and mouse through the legacy Input Manager (activeInputHandler 0); gamepad support is deferred.
+  // The polled keys are exactly InputMapper.GameKeys, so a key added there without a KeyCode fails at startup.
   public sealed class LegacyInputSource : IRawInputSource
   {
-    static readonly KeyValuePair<KeyCode, string>[] keys =
+    static readonly Dictionary<string, KeyCode> keyCodes = new Dictionary<string, KeyCode>
     {
-      new KeyValuePair<KeyCode, string>(KeyCode.J, "KeyJ"),
-      new KeyValuePair<KeyCode, string>(KeyCode.K, "KeyK"),
-      new KeyValuePair<KeyCode, string>(KeyCode.L, "KeyL"),
-      new KeyValuePair<KeyCode, string>(KeyCode.Space, "Space"),
-      new KeyValuePair<KeyCode, string>(KeyCode.LeftShift, "ShiftLeft"),
-      new KeyValuePair<KeyCode, string>(KeyCode.RightShift, "ShiftRight"),
-      new KeyValuePair<KeyCode, string>(KeyCode.Escape, "Escape"),
-      new KeyValuePair<KeyCode, string>(KeyCode.P, "KeyP"),
-      new KeyValuePair<KeyCode, string>(KeyCode.Return, "Enter"),
-      new KeyValuePair<KeyCode, string>(KeyCode.F3, "F3"),
-      new KeyValuePair<KeyCode, string>(KeyCode.R, "KeyR"),
-      new KeyValuePair<KeyCode, string>(KeyCode.F, "KeyF"),
-      new KeyValuePair<KeyCode, string>(KeyCode.W, "KeyW"),
-      new KeyValuePair<KeyCode, string>(KeyCode.A, "KeyA"),
-      new KeyValuePair<KeyCode, string>(KeyCode.S, "KeyS"),
-      new KeyValuePair<KeyCode, string>(KeyCode.D, "KeyD"),
-      new KeyValuePair<KeyCode, string>(KeyCode.Q, "KeyQ"),
-      new KeyValuePair<KeyCode, string>(KeyCode.E, "KeyE"),
-      new KeyValuePair<KeyCode, string>(KeyCode.UpArrow, "ArrowUp"),
-      new KeyValuePair<KeyCode, string>(KeyCode.DownArrow, "ArrowDown"),
-      new KeyValuePair<KeyCode, string>(KeyCode.LeftArrow, "ArrowLeft"),
-      new KeyValuePair<KeyCode, string>(KeyCode.RightArrow, "ArrowRight"),
+      ["KeyJ"] = KeyCode.J, ["KeyK"] = KeyCode.K, ["KeyL"] = KeyCode.L, ["Space"] = KeyCode.Space,
+      ["ShiftLeft"] = KeyCode.LeftShift, ["ShiftRight"] = KeyCode.RightShift, ["Escape"] = KeyCode.Escape, ["KeyP"] = KeyCode.P,
+      ["Enter"] = KeyCode.Return, ["F3"] = KeyCode.F3, ["KeyR"] = KeyCode.R, ["KeyF"] = KeyCode.F,
+      ["KeyW"] = KeyCode.W, ["KeyA"] = KeyCode.A, ["KeyS"] = KeyCode.S, ["KeyD"] = KeyCode.D, ["KeyQ"] = KeyCode.Q, ["KeyE"] = KeyCode.E,
+      ["ArrowUp"] = KeyCode.UpArrow, ["ArrowDown"] = KeyCode.DownArrow, ["ArrowLeft"] = KeyCode.LeftArrow, ["ArrowRight"] = KeyCode.RightArrow,
     };
+
+    static readonly KeyValuePair<KeyCode, string>[] keys = Build();
+
+    public static IReadOnlyList<KeyValuePair<KeyCode, string>> PolledKeys { get; } = Array.AsReadOnly(keys);
+
+    static KeyValuePair<KeyCode, string>[] Build()
+    {
+      var list = new List<KeyValuePair<KeyCode, string>>();
+      foreach (string code in InputMapper.GameKeys)
+      {
+        if (!keyCodes.TryGetValue(code, out var key)) throw new InvalidOperationException($"No KeyCode for game key {code}");
+        list.Add(new KeyValuePair<KeyCode, string>(key, code));
+      }
+      if (list.Count != keyCodes.Count) throw new InvalidOperationException("KeyCode table lists keys the game does not use");
+      return list.ToArray();
+    }
 
     public void Feed(InputMapper mapper)
     {

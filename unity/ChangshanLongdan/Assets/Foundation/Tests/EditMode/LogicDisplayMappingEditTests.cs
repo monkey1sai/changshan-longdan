@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Changshan.Character;
 using Changshan.Combat;
 using NUnit.Framework;
@@ -39,6 +40,23 @@ namespace Changshan.Foundation.Tests
         var displayLeft = m.ToDisplayRotation(facing) * Vector3.left;
         Assert.That(Vector3.Distance(left - start, displayLeft), Is.LessThan(1e-5f), $"left at facing {facing}");
       }
+    }
+
+    // The legacy source polls exactly the keys the Web input reacts to, each to a distinct Unity key.
+    [Test] public void LegacyInputCoversEveryGameKey()
+    {
+      var polled = LegacyInputSource.PolledKeys;
+      var codes = new List<string>();
+      var unityKeys = new HashSet<KeyCode>();
+      foreach (var (unityKey, code) in polled)
+      {
+        codes.Add(code);
+        unityKeys.Add(unityKey);
+      }
+      Assert.That(codes, Is.EquivalentTo(InputMapper.GameKeys));
+      Assert.That(unityKeys.Count, Is.EqualTo(polled.Count));
+      Assert.That(InputMapper.GameKeys.Count, Is.EqualTo(22));
+      Assert.Throws<NotSupportedException>(() => ((IList<string>)InputMapper.GameKeys).Add("KeyZ"));
     }
 
     // A camera direction converted to logic yaw and composed with "forward" input moves the player along that direction on screen.

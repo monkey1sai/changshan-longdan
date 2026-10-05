@@ -63,6 +63,14 @@ namespace Changshan.Foundation.Tests
       AssertClean(all, minimumFrames: 1000);
     }
 
+    [Test] public void HitShapesMatchWeb()
+    {
+      var shapes = (List<object>)Fixture["hitShapes"];
+      Assert.That(shapes, Has.Count.GreaterThanOrEqualTo(60));
+      var result = CombatParity.CompareHitShapes(Fixture);
+      AssertClean(result, minimumFrames: shapes.Count * 242);
+    }
+
     [Test] public void EveryMoveIsReachedAtEveryRate()
     {
       var expected = Enum.GetNames(typeof(MoveId)).OrderBy(n => n, StringComparer.Ordinal).ToArray();
