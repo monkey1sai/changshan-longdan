@@ -26,14 +26,14 @@ npm run unity:preflight -- --editor 'C:\Program Files\Unity\Hub\Editor\6000.6.4f
 npm run unity:validate -- --editor 'C:\Program Files\Unity\Hub\Editor\6000.6.4f1\Editor\Unity.exe' --out 'release/e02/engine-validation-fresh-name'
 ```
 
-runner 為 `scripts/unity-validate.mjs`；工程 `unity/ChangshanLongdan`。先驗完整固定範圍／manifest／policy、所有既有工程寫入樹與 cache 的 links，再取得原子 `.e02-runner.lock`。既有 lock、非固定欄位、extra dependencies／registry、已存在輸出全部拒絕。每個 stage 開始前重新驗 links、UnityLockfile 與 compile 後凍結 source。Editor timeout 最多 15 分鐘，Player 2 分鐘；共享 Licensing Client mutex 錯誤會中止本次 child，沒有自動重試。這些資料檢查不是經認證 approval。
+runner 為 `scripts/unity-validate.mjs`；工程 `unity/ChangshanLongdan`。先驗完整固定範圍／manifest／policy、所有既有工程寫入樹與 cache 的 links，再取得原子 `.e02-runner.lock`。既有 lock、非固定欄位、extra dependencies／registry、已存在輸出全部拒絕。啟動引擎前與全部階段結束後，`git rev-parse HEAD` 必須成功且 `git status --porcelain --untracked-files=all` 必須為空，否則 `CHECKOUT_NOT_CLEAN`／`CANDIDATE_HEAD_CHANGED`；`sourceHead` 因此對應實際被測內容。每個 stage 開始前重新驗 links、UnityLockfile，並在每個 stage 前後比對來源快照：compile 在內的任何階段改寫、新增或刪除快照範圍內的檔案都是 `SOURCE_CHANGED_DURING_RUN`，提交的設定若會被 `Configure` 改寫即拒絕，不代為修正。Editor timeout 最多 15 分鐘，Player 2 分鐘；共享 Licensing Client mutex 錯誤會中止本次 child，沒有自動重試。這些資料檢查不是經認證 approval。
 
 固定依賴先核對內附包／已保存官方 archive cache；缺 archive 才向官方 download 取得並確認**完全相同的 checksum-addressed Unity CDN**，拒絕其他重新導向。SHA-1 對照固定官方 metadata，另記 SHA-256／package manifest。實際 lock 與 PackageInfo 必須對照 policy。Unity 6000.6 實測會把內附與 registry 套件都安裝到工程的 `Library/PackageCache`，並在 `package.json` 寫入 `_fingerprint`（內建 module 不寫）；因此安裝後 manifest 除 `_fingerprint` 外須與 Editor 內附或已驗 archive 的 manifest 逐欄相同，目錄後綴須為該指紋前 12 碼，registry 包的指紋須等於固定 SHA-1；尚未逐檔核對載入套件的全部程式 bytes，保留此来源限制。不加入其他模板功能。
 
 | 階段 | 真實執行與必要結果 |
 |---|---|
 | compile | 固定 Editor `-batchmode -projectPath <absolute> -buildTarget StandaloneWindows64 -force-d3d11 -quit -executeMethod Changshan.Foundation.Editor.FoundationBuild.Configure`；新 `compile.json` 讀回 revision、packages、URP／Mono／D3D11／Linear／解析度，exit 0 與 source hashes 齊備才通過 |
-| Edit Mode | 同 Editor／project／target，`-runTests -testPlatform EditMode -assemblyNames Changshan.Foundation.EditTests -testResults <fresh>/tests.xml`；**不加 `-quit`**；實際 9 個固定 cases 全部 Passed |
+| Edit Mode | 同 Editor／project／target，`-runTests -testPlatform EditMode -assemblyNames Changshan.Foundation.EditTests -testResults <fresh>/tests.xml`；**不加 `-quit`**；實際 11 個固定 cases 全部 Passed |
 | Play Mode | 同上，`-testPlatform PlayMode -assemblyNames Changshan.Foundation.PlayTests`；1 個固定空場景 boot case，至少跨 frame，無 skip／inconclusive／錯誤 |
 | Windows build | `-quit -executeMethod Changshan.Foundation.Editor.FoundationBuild.BuildWindows`；成功 build report、零 errors、正 bytes、實際 exe／SHA-256 與設定讀回 |
 | Player | 本次 build exe，windowed 1920×1080、D3D11、runId 與 fresh output；實際 120 frames、runtime settings、零報告 errors、完成的 1920×1080 PNG 與正常 exit |
@@ -42,7 +42,7 @@ runner 為 `scripts/unity-validate.mjs`；工程 `unity/ChangshanLongdan`。先�
 
 新 checkout 重現程序：保存本機 candidate SHA，以 `git clone --no-hardlinks --no-checkout '<本機 E02 checkout>' '<新的空目錄>'` 建立 task-owned clone，再 `git -C '<新的空目錄>' checkout --detach '<candidate SHA>'`。從新 clone 執行上面的 Node tests／preflight／validate；Unity runner 不依賴 Web node_modules。Web 回歸另用固定 npm lock。2026-10-05 實測的兩項啟動環境限制：新 clone 的路徑要短（`release/e02/` 內層的 clone 讓 URP core 檔案超過 Windows 260 字元上限而匯入失敗），且 `tar.exe` 必須解析到 `C:\Windows\System32\tar.exe`（Git Bash 的 GNU tar 不接受 `C:\` 路徑），從 Git Bash 啟動時改用機器＋使用者的原生 `PATH`。2026-10-05 已依此程序在新 clone 完成全部 Unity stages；每個候選 SHA 仍須各自重跑，不沿用舊候選的結果。
 
-工程內的場景、URP 設定、`.meta` 與 `ProjectSettings` 已入版控（取自一次完整建置後的狀態），新 checkout 的 compile 到 build 各階段因此不再改寫來源；URP 會在建置時重寫 pipeline asset 的 prefiltering 欄位，未入版控時會觸發 `EFFECTIVE_SOURCE_CHANGED_AFTER_COMPILE`。`npm test` 會收集 `release/` 下證據 clone 內的測試副本；本機留有這類 clone 時以 `npx vitest run --exclude "release/**"` 取得候選自身的結果。
+工程內的場景、URP 設定、`.meta` 與 `ProjectSettings` 已入版控（取自一次完整建置後的狀態），新 checkout 的 compile 到 build 各階段因此不應再改寫來源，runner 會強制這一點；URP 會在建置時重寫 pipeline asset 的 prefiltering 欄位，這些檔案未入版控或與建置後狀態不同時會觸發 `SOURCE_CHANGED_DURING_RUN`（2026-10-05 修正前的名稱是 `EFFECTIVE_SOURCE_CHANGED_AFTER_COMPILE`）。建置使用 `BuildOptions.Development`，截圖右下角的 Development Build 字樣屬預期。`npm test` 會收集 `release/` 下證據 clone 內的測試副本；本機留有這類 clone 時以 `npx vitest run --exclude "release/**"` 取得候選自身的結果。
 
 2026-10-04 的首次實際 compile attempt 在 `release/e02/import-20261004-cdn-verified/`：Licensing channel refused、mutex 已被既有 client 持有；主控核對本輪 UUID／project／exe／父 Node 後，只停止 Editor PID 37816，exit `4294967295`，runner exit 2。沒有 `compile.json`／XML／build／圖片，失敗和 partial settings 均保存。完整結果見 [E02_ENGINE_FOUNDATION.md](./E02_ENGINE_FOUNDATION.md)。
 

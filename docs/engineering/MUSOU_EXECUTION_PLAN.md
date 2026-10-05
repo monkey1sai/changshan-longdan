@@ -196,7 +196,7 @@ E02 的交付必須包含一個可重跑的本機 runner 及其 README：解析�
 |---|---|---|---|---|---|---|
 | E00 | 已審查的PR #8基準 | DONE（限定接受） | [#11](https://github.com/monkey1sai/changshan-longdan/pull/11)、[#10](https://github.com/monkey1sai/changshan-longdan/pull/10) | #10 結案正文；歷史 [E00 快照](./E00_BASELINE.md)保留 | 使用者限定接受；未逐項體驗／裝置情境後續驗收 | `ac47b84d18a82f7f4e3f501f96ef3020520275fd`；19 檔／156 tests、兩平台 CI、可見操作回歸 |
 | E01 | E00 | DONE（限定接受） | [#13](https://github.com/monkey1sai/changshan-longdan/pull/13) / `6967386bf46f5c7d94472f2a2f6280ef5e052c75` | [固定 E01 結案文件](https://github.com/monkey1sai/changshan-longdan/blob/3ff380d3b89d31ad78c89bebd4a4323458b3ea43/docs/engineering/E01_COMPLETED.md) | 固定三個候選的人類限定接受；GitHub counted approval NONE，不延伸至 E02 | `8932ee47b1e902c1d858b9f1b4a1733657c04a8a`；22 檔／227 tests、兩平台 CI、63 raw traces 相符 |
-| E02 | E01 | IMPLEMENTED_PENDING_REVIEW（ADR ACCEPTED；本機引擎驗證通過） | `codex/e02-unity-foundation` 的 E02 PR；候選 SHA 見該 PR | [E02 工程／驗證紀錄](./E02_ENGINE_FOUNDATION.md) F 節：compile、9 Edit、1 Play、Windows build、Player／1920×1080 PNG；59 項工具正負例、227 Web tests、包 hash 相符 | 最終 SHA 的 formal independent review 未取得 | —；未合併，不開始 E03 |
+| E02 | E01 | AWAITING_REVIEW（ADR ACCEPTED；本機引擎驗證通過） | [#15](https://github.com/monkey1sai/changshan-longdan/pull/15)；候選 SHA 見該 PR | [E02 工程／驗證紀錄](./E02_ENGINE_FOUNDATION.md) F、G 節：compile、11 Edit、1 Play、Windows build、Player／1920×1080 PNG；59 項工具正負例、227 Web tests、包 hash 相符 | advisory 審查 1 輪已修正；最終 SHA 的 formal independent review 未取得 | —；未合併，不開始 E03 |
 | E03 | E02 | NOT_STARTED | — | — | — | — |
 | E04 | E03 | NOT_STARTED | — | — | — | — |
 | E05 | E04 | NOT_STARTED | — | — | — | — |

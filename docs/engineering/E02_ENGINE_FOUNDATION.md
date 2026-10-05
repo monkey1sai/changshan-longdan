@@ -1,6 +1,6 @@
 # E02 隔離工程與驗證紀錄
 
-更新：2026-10-05（Asia/Taipei）。`stepVerdict: LOCAL_ENGINE_EVIDENCE_PENDING_FORMAL_REVIEW`；`nextStepAllowed:false`；`implementationPr`：本分支對應的 E02 PR；`mergeSha:null`；`releaseOrPaidActionPerformed:false`。A–E 節是 2026-10-04 受阻時的原始紀錄，保留不改寫；2026-10-05 的接續結果在 F 節，兩者衝突時以 F 節為準。
+更新：2026-10-05（Asia/Taipei）。`stepVerdict: LOCAL_ENGINE_EVIDENCE_PENDING_FORMAL_REVIEW`；`nextStepAllowed:false`；`implementationPr`：本分支對應的 E02 PR；`mergeSha:null`；`releaseOrPaidActionPerformed:false`。A–E 節是 2026-10-04 受阻時的原始紀錄，除把錯誤訊息中的本機帳號名改為 `<user>` 外保留不改寫；2026-10-05 的接續結果在 F、G 節，衝突時以後者為準。
 
 ## A. 範圍與授權
 
@@ -38,9 +38,9 @@
 真正 Editor attempt 的原始錯誤：
 
 ```text
-Connection to channel LicenseClient-jacks refused
+Connection to channel LicenseClient-<user> refused
 Licensing initialization failed after 74.83s
-Failed to acquire global mutex Unity-LicenseClient-jacks.
+Failed to acquire global mutex Unity-LicenseClient-<user>.
 Another instance of Unity.Licensing.Client is already running.
 ```
 
@@ -64,7 +64,7 @@ Another instance of Unity.Licensing.Client is already running.
 
 使用者依序授權：第三輪本機驗證、CS0104 修正與最多兩輪同類修正、提交 Unity 產生的工程檔並再給兩輪額度、補文件後推送並開 PR（不合併）。全程沒有停止未知程序、重啟共享服務、讀印授權檔或修改 ACL／TLS／sandbox；E03 未開始。
 
-授權服務的實際觀察：2026-10-04 兩輪失敗期間，由 Unity Hub 3.22.1 啟動的同一個 Licensing Client 程序持續持有 `Unity-LicenseClient-jacks`，Editor 連線被拒、自行啟動的 client 又取不到 mutex。2026-10-05 重新開機且 Hub 更新為 3.22.2 後，同版 Editor 在 Hub 開啟的狀態下以批次模式正常連上 `LicenseClient-jacks`。10/04 被拒的根因沒有查明。
+授權服務的實際觀察：2026-10-04 兩輪失敗期間，由 Unity Hub 3.22.1 啟動的同一個 Licensing Client 程序持續持有 `Unity-LicenseClient-<user>`，Editor 連線被拒、自行啟動的 client 又取不到 mutex。2026-10-05 重新開機且 Hub 更新為 3.22.2 後，同版 Editor 在 Hub 開啟的狀態下以批次模式正常連上 `LicenseClient-<user>`。10/04 被拒的根因沒有查明。
 
 | 輪次 | 候選 | 結果 |
 |---|---|---|
@@ -79,5 +79,19 @@ Another instance of Unity.Licensing.Client is already running.
 第六輪（`e1adec1`，runId `f851545e-012a-4407-9d70-ccd9a5d9d8ef`）讀回值：Edit Mode 9/9、Play Mode 1/1；build 169,010,819 bytes、0 errors、Mono2x／Direct3D11／Linear／1920×1080／60／VSync 1／URP／renderScale 1；Player 123 frames、errorCount 0、非 batch、RTX 4060 Ti；`scene.png` 1920×1080，SHA-256 `8ae9006548ce1be37c0c97be211a0035763bdaa6266531466aa6d07325e9449c`，畫面上的 Run ID 與 runId 相同。同候選 Web 回歸：22 files／227 tests（排除 `release/` 下的證據 clone）、typecheck、build、itch package 通過；ZIP 3,014,494 bytes，SHA-256 與 E01 相同。
 
 本檔所列 runId 與雜湊屬候選 `e1adec1`。其後只有文件提交；最終候選 SHA 的同版重跑結果記在 E02 PR，不在此自我引用。原始產物仍是 local_only 的 ignored `release/e02/`，沒有上傳。
+
+## G. 2026-10-05 獨立 advisory 審查與第 1 輪修正
+
+候選 `552fab9` 由不同於實作者的唯讀審查代理看過完整差異（31 個手寫檔逐行、50 個產生檔搜尋與抽查；未執行程式）。結論：沒有 BLOCKER／HIGH，3 個 MEDIUM、9 個 LOW。這是參考意見，不是 formal APPROVED；另一項安全邊界審查沒有執行。
+
+本輪修正（使用者授權；每 PR 最多 3 輪中的第 1 輪）：
+
+- **compile 階段也不得改寫來源**。原本只保護 `.cs`／腳本等，Unity 設定與場景在 compile 之後才凍結，提交了不符 ADR 的設定會被 `Configure` 悄悄改正而仍 PASS。現在任何階段前後的快照都必須與執行前相同。
+- **`sourceHead` 綁定實際內容**。原本只記錄 `git rev-parse` 的輸出；現在要求指令成功、為 40 碼，且執行前後 checkout 沒有已修改或未追蹤的檔案。
+- **build 階段先驗 exe 再標記 verified**；各階段 `exit.json` 不再帶尚未成立的 `verified` 欄位。
+- **`InputRight` 補 ±π/2 案例**，Edit Mode 由 9 增為 11。原本只測 0 度，Z 分量正負號寫反也測不出來。
+- 文件：台帳狀態改用計畫定義的 `AWAITING_REVIEW`；ADR 的過期敘述；錯誤訊息中的本機帳號名；註明 Development build。
+
+延後並以 issue 追蹤：runner 主流程缺自動化測試且 Node 正負例不在 CI；套件只驗到 `package.json` 層級、內附套件指紋未釘死；只雜湊啟動用 exe；結果只分 PASS／BLOCKED；`tar.exe`／`powershell.exe`／`git` 靠 `PATH` 解析；`npm test` 收集 `release/` 下 clone 的測試；安全邊界審查。F 節的 9/9 是修正前各輪的實際數字，不回改。
 
 仍未完成：最終 SHA 的 formal independent APPROVED、CI、另行授權的合併與合併後確認。空場景只證明工程可編譯、測試、建置、啟動與渲染，不證明角色匯入、玩法、手感或效能。這些條件齊備前 E02 不得標記 VERIFIED／DONE，也不開始 E03。
