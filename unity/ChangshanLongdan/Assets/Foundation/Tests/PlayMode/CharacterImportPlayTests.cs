@@ -179,6 +179,40 @@ namespace Changshan.Foundation.Tests
       AssertNoImportLeft(character);
     }
 
+    [UnityTest] public IEnumerator UndecodableJpegKeepsFallbackVisible()
+    {
+      var character = CreateCharacter();
+      var bytes = File.ReadAllBytes(SourcePath);
+      // Keep FF D8 FF so format detection still says JPEG, then destroy the segments after it: glTFast logs nothing,
+      // Texture2D.LoadImage fails, and only the full-size texture rule can reject the import.
+      int image = EmbeddedImageOffset(bytes, 0);
+      Assert.That(bytes.Skip(image).Take(3), Is.EqualTo(new byte[] { 0xFF, 0xD8, 0xFF }));
+      Array.Clear(bytes, image + 3, 2048);
+      LogAssert.Expect(LogType.Error, new Regex("^CHARACTER_LOAD_FAILED TEXTURE_MISSING"));
+      var load = character.LoadFromBytes(bytes, "image 0 undecodable");
+      yield return new WaitUntil(() => load.IsCompleted);
+      AssertFallbackKept(character, load, "TEXTURE_MISSING");
+      Assert.That(character.Report.gltfErrors, Is.Zero, string.Join("\n", character.Report.gltfMessages));
+      yield return null;
+      AssertNoImportLeft(character);
+    }
+
+    [UnityTest] public IEnumerator SwappedJointOrderKeepsFallbackVisible()
+    {
+      var character = CreateCharacter();
+      // Swap the names of two joints: all 21 remain, uniquely named, but the skin order no longer matches the contract.
+      var bytes = File.ReadAllBytes(SourcePath);
+      bytes = ReplaceInJson(bytes, "\"hand_l\"", "\"hand_x\"");
+      bytes = ReplaceInJson(bytes, "\"hand_r\"", "\"hand_l\"");
+      bytes = ReplaceInJson(bytes, "\"hand_x\"", "\"hand_r\"");
+      LogAssert.Expect(LogType.Error, new Regex("^CHARACTER_LOAD_FAILED SKELETON_MISMATCH"));
+      var load = character.LoadFromBytes(bytes, "hand joints swapped");
+      yield return new WaitUntil(() => load.IsCompleted);
+      AssertFallbackKept(character, load, "SKELETON_MISMATCH");
+      yield return null;
+      AssertNoImportLeft(character);
+    }
+
     [UnityTest] public IEnumerator ValidatorRejectsAMissingFullSizeTexture()
     {
       var character = CreateCharacter();
