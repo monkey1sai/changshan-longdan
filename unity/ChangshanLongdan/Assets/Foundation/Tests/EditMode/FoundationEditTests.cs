@@ -40,6 +40,15 @@ namespace Changshan.Foundation.Tests
       Assert.That(FoundationContract.AnimatorRootMotion, Is.False);
       Assert.That(FoundationContract.MovementAuthority, Is.EqualTo("gameplay-controller"));
     }
+    // At zero the Z sign is invisible; the quarter turns pin (-cos, 0, sin) against a mirrored right vector.
+    [TestCase(Mathf.PI / 2, 0f, 1f)] [TestCase(-Mathf.PI / 2, 0f, -1f)]
+    public void InputRightRetainsSourceConventionAtQuarterTurns(float angle, float x, float z)
+    {
+      var actual = FoundationContract.InputRight(angle);
+      Assert.That(actual.x, Is.EqualTo(x).Within(0.000001));
+      Assert.That(actual.z, Is.EqualTo(z).Within(0.000001));
+      Assert.That(actual.y, Is.Zero);
+    }
     [TestCase(float.NaN)] [TestCase(float.PositiveInfinity)] [TestCase(float.NegativeInfinity)]
     public void NonfiniteAnglesAreRejected(float angle)
     {

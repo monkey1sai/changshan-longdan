@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
-import { requireSafeEngineWrites, validateExecutionScope, validatePackagePolicy, validateImmutableSource, validateFrozenSource, validatePackageLock, validateResolvedPackage, validateTestSummary, validateSettings, validateRuntime, fixedDependencies } from '../lib/unity-execution.mjs'
+import { requireSafeEngineWrites, validateExecutionScope, validatePackagePolicy, validateUnchangedSource, validateCandidateCheckout, validatePackageLock, validateResolvedPackage, validateTestSummary, validateSettings, validateRuntime, fixedDependencies } from '../lib/unity-execution.mjs'
 import { readUnityTestResults } from '../lib/unity-test-results.mjs'
 
 const root = path.resolve(fileURLToPath(new URL('../../', import.meta.url)))
@@ -72,18 +72,28 @@ test('package policy cannot authorize another version, registry, extra package o
     assert.throws(() => validatePackagePolicy(changed), /PACKAGE_POLICY_SCOPE_MISMATCH/)
   }
 })
-test('engine-generated settings do not permit immutable source changes', () => {
-  const before = { 'src/game.ts': 'a', 'unity/ChangshanLongdan/Assets/Foundation/Runtime/A.cs': 'b' }
-  validateImmutableSource(before, { ...before, 'unity/ChangshanLongdan/Assets/Foundation/Settings/X.asset': 'generated' })
-  assert.throws(() => validateImmutableSource(before, { ...before, 'src/game.ts': 'changed' }))
-  assert.throws(() => validateImmutableSource(before, { ...before, 'unity/ChangshanLongdan/Assets/Other.cs': 'new' }))
-})
-test('after Configure, scene, pipeline, meta, project settings and manifest are frozen', () => {
-  for (const name of ['Assets/Scene.unity', 'Assets/Pipeline.asset', 'Assets/Scene.meta', 'ProjectSettings/QualitySettings.asset', 'Packages/manifest.json']) {
-    const before = { [name]: 'compiled' }
-    validateFrozenSource(before, copy(before))
-    assert.throws(() => validateFrozenSource(before, { [name]: 'changed' }), /EFFECTIVE_SOURCE_CHANGED/)
+test('no stage, compile included, may change, add or remove a snapshotted file', () => {
+  const before = { 'src/game.ts': 'a', 'unity/ChangshanLongdan/Assets/Foundation/Runtime/A.cs': 'b',
+    'unity/ChangshanLongdan/Assets/Foundation/Settings/FoundationURP.asset': 'c', 'unity/ChangshanLongdan/Assets/Foundation/Scenes/Foundation.unity.meta': 'd',
+    'unity/ChangshanLongdan/ProjectSettings/ProjectSettings.asset': 'e', 'unity/ChangshanLongdan/Packages/manifest.json': 'f' }
+  validateUnchangedSource(before, copy(before))
+  for (const name of Object.keys(before)) {
+    // Configure rewriting a committed setting is a rejected candidate, not a silent repair.
+    assert.throws(() => validateUnchangedSource(before, { ...before, [name]: 'rewritten' }), /SOURCE_CHANGED_DURING_RUN/)
+    const removed = copy(before); delete removed[name]
+    assert.throws(() => validateUnchangedSource(before, removed), /SOURCE_CHANGED_DURING_RUN/)
   }
+  assert.throws(() => validateUnchangedSource(before, { ...before, 'unity/ChangshanLongdan/Assets/Generated.asset': 'new' }), /SOURCE_CHANGED_DURING_RUN/)
+  assert.throws(() => validateUnchangedSource(before, { ...before, 'unity/ChangshanLongdan/Assets/Other.cs.meta': 'new' }), /SOURCE_CHANGED_DURING_RUN/)
+  assert.throws(() => validateUnchangedSource(before, undefined), /SOURCE_CHANGED_DURING_RUN/)
+})
+test('the recorded head requires a readable commit and a checkout without modified or untracked files', () => {
+  const head = '552fab9b2d573c9ffcd54a238af94f0af5589789'
+  assert.equal(validateCandidateCheckout(head, ''), head)
+  for (const unreadable of ['', '552fab9', head.toUpperCase(), head + '\n', 'HEAD', undefined, null])
+    assert.throws(() => validateCandidateCheckout(unreadable, ''), /CANDIDATE_HEAD_UNREADABLE/)
+  for (const status of [' M unity/ChangshanLongdan/ProjectSettings/ProjectSettings.asset\n', '?? unity/ChangshanLongdan/Assets/Extra.cs\n', ' ', undefined])
+    assert.throws(() => validateCandidateCheckout(head, status), /CHECKOUT_NOT_CLEAN/)
 })
 test('missing or nonfinite Player frame count cannot pass', () => {
   const report = { runId: 'current', unityVersion: '6000.6.4f1', graphicsApi: 'Direct3D11', pipeline: 'UniversalRenderPipelineAsset',

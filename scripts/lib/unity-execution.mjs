@@ -37,17 +37,17 @@ export function validatePackagePolicy(policy) {
   }
 }
 
-export function validateImmutableSource(before, after) {
-  const immutable = name => /^(src\/|public\/|scripts\/)/.test(name) || /\.(cs|asmdef)$/.test(name) ||
-    ['index.html', 'package-lock.json', 'vite.config.ts', 'docs/engineering/e02-unity.proposed.json',
-      'docs/engineering/E02_DECISION.md', 'unity/ChangshanLongdan/e02-package-policy.json', 'unity/ChangshanLongdan/.e02-project.json'].includes(name)
-  const expected = Object.fromEntries(Object.entries(before).filter(([name]) => immutable(name)))
-  const actual = Object.fromEntries(Object.entries(after).filter(([name]) => immutable(name)))
-  if (!sameObject(actual, expected)) throw new Error('SOURCE_CHANGED_DURING_RUN')
+// Unity-generated scene, settings and meta files are tracked, so no stage — compile included — may change,
+// add or remove a snapshotted file. A commit whose settings Configure would rewrite is rejected instead of repaired.
+export function validateUnchangedSource(before, after) {
+  if (!sameObject(after, before)) throw new Error('SOURCE_CHANGED_DURING_RUN')
 }
 
-export function validateFrozenSource(before, after) {
-  if (!sameObject(after, before)) throw new Error('EFFECTIVE_SOURCE_CHANGED_AFTER_COMPILE')
+// The recorded head only identifies the tested content when the checkout holds exactly that commit.
+export function validateCandidateCheckout(head, status) {
+  if (typeof head !== 'string' || !/^[0-9a-f]{40}$/.test(head)) throw new Error('CANDIDATE_HEAD_UNREADABLE')
+  if (status !== '') throw new Error('CHECKOUT_NOT_CLEAN')
+  return head
 }
 
 export function validateExecutionScope(contract, manifest) {

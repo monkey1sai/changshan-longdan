@@ -5,7 +5,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { inspectUnityPreflight } from './lib/unity-preflight.mjs'
 import { readEditorVersion } from './lib/unity-editor-version.mjs'
-import { requireSafePath, requireSafeEngineWrites, validateExecutionScope, validatePackagePolicy, validateImmutableSource, validateFrozenSource, validatePackageLock,
+import { requireSafePath, requireSafeEngineWrites, validateExecutionScope, validatePackagePolicy, validateUnchangedSource, validateCandidateCheckout, validatePackageLock,
   validateResolvedPackage, validateSettings, validateRuntime, sha256, snapshotSource } from './lib/unity-execution.mjs'
 import { readUnityTestResults } from './lib/unity-test-results.mjs'
 
@@ -18,6 +18,13 @@ let run, lease, lockPath, output
 const archiveManifests = {}
 const readJson = filename => JSON.parse(fs.readFileSync(requireSafePath(root, filename), 'utf8'))
 const writeJson = (filename, data) => fs.writeFileSync(requireSafePath(root, filename), JSON.stringify(data, null, 2) + '\n', { flag: 'wx' })
+const git = argv => {
+  const result = spawnSync('git', argv, { cwd: root, encoding: 'utf8', shell: false, windowsHide: true, timeout: 30000 })
+  if (result.error || result.status !== 0) throw new Error(`GIT_FAILED: ${argv[0]}`)
+  return result.stdout
+}
+// Untracked files count too: an extra script under Assets would otherwise be compiled yet absent from the commit.
+const candidateCheckout = () => validateCandidateCheckout(git(['rev-parse', 'HEAD']).trim(), git(['status', '--porcelain', '--untracked-files=all']))
 
 async function fixedOfficialArchives(policy) {
   const directory = requireSafePath(root, path.join(output, 'official-packages'))
@@ -76,7 +83,7 @@ async function processStage(name, executable, argv, cwd, env, visible = false) {
   const stagePath = requireSafePath(root, path.join(output, name))
   fs.mkdirSync(stagePath)
   const start = new Date().toISOString()
-  const record = { name, executable, argv, cwd, start, timeoutMs: visible ? 120000 : 900000, runId: run.runId, verified: false }
+  const record = { name, executable, argv, cwd, start, timeoutMs: visible ? 120000 : 900000, runId: run.runId }
   writeJson(path.join(stagePath, 'command.json'), record)
   const stdout = fs.openSync(path.join(stagePath, 'stdout.log'), 'wx')
   const stderr = fs.openSync(path.join(stagePath, 'stderr.log'), 'wx')
@@ -113,6 +120,8 @@ async function processStage(name, executable, argv, cwd, env, visible = false) {
     }).finally(() => { clearTimeout(timer); clearInterval(monitor) })
     Object.assign(record, { pid: child.pid, end: new Date().toISOString(), timedOut, ...exit })
     writeJson(path.join(stagePath, 'exit.json'), record)
+    // exit.json records the process only; whether the stage passed its postconditions lives in result.json.
+    record.verified = false
     run.stages.push(record)
     if (record.terminationReason) throw new Error(record.terminationReason)
     if (timedOut || exit.code !== 0) throw new Error(`STAGE_FAILED: ${name}; exit=${exit.code}; timedOut=${timedOut}`)
@@ -157,6 +166,7 @@ try {
     }
     const packageLock = path.join(project, 'Packages/packages-lock.json')
     if (fs.existsSync(packageLock)) validatePackageLock(readJson(packageLock), policy)
+    const sourceHead = candidateCheckout()
     lockPath = requireSafePath(root, path.join(project, '.e02-runner.lock'))
     lease = fs.openSync(lockPath, 'wx')
     fs.writeFileSync(lease, JSON.stringify({ pid: process.pid, runId: 'starting', project }))
@@ -167,7 +177,7 @@ try {
     fs.mkdirSync(path.dirname(output), { recursive: true })
     fs.mkdirSync(output)
     const runId = randomUUID()
-    run = { schemaVersion: 1, runId, sourceHead: spawnSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8', shell: false }).stdout.trim(),
+    run = { schemaVersion: 1, runId, sourceHead,
       sourceBefore: snapshotSource(root), editor, editorSha256: sha256(editor), project, output, preflight,
       packageEvidence, result: 'RUNNING', stages: [], start: new Date().toISOString(),
       authorizationRecord: contract.acceptedDecisionRecord, humanPlay: 'NOT_RUN', performanceAcceptance: 'NOT_RUN' }
@@ -176,12 +186,12 @@ try {
     const env = { ...process.env, UPM_CACHE_ROOT: cache }
     requireSafePath(root, env.UPM_CACHE_ROOT)
     const common = ['-batchmode', '-projectPath', project, '-buildTarget', 'StandaloneWindows64', '-force-d3d11', '-e02RunId', runId]
-    let frozenSource
+    const player = requireSafePath(root, path.join(output, 'build/player/ChangshanLongdan.exe'))
     for (const stage of ['compile', 'editmode', 'playmode', 'build']) {
       const stagePath = path.join(output, stage)
       requireSafePath(root, stagePath)
       requireSafeEngineWrites(root, project, cache)
-      if (frozenSource) validateFrozenSource(frozenSource, snapshotSource(root))
+      validateUnchangedSource(run.sourceBefore, snapshotSource(root))
       if (fs.existsSync(path.join(project, 'Temp/UnityLockfile'))) throw new Error('PROJECT_POSSIBLY_IN_USE')
       const argv = [...common, '-logFile', path.join(stagePath, 'Editor.log'), '-e02Output', stagePath]
       if (stage === 'compile' || stage === 'build') argv.push('-quit', '-executeMethod',
@@ -198,7 +208,7 @@ try {
       }
       else {
         const summary = readUnityTestResults(requireSafePath(root, path.join(stagePath, 'tests.xml')))
-        const expectedCount = stage === 'editmode' ? 9 : 1
+        const expectedCount = stage === 'editmode' ? 11 : 1
         const className = stage === 'editmode' ? 'FoundationEditTests' : 'FoundationPlayTests'
         if (summary.total !== expectedCount || !Array.isArray(summary.caseNames) || new Set(summary.caseNames).size !== expectedCount ||
             summary.caseNames.some(name => !name.startsWith('Changshan.Foundation.Tests.' + className + '.')))
@@ -209,14 +219,13 @@ try {
       if (/error CS\d{4}|Scripts have compiler errors|Aborting batchmode due to failure|Exception:|Assertion failed/i.test(log))
         throw new Error(`EDITOR_LOG_ERROR: ${stage}`)
       run.stages.at(-1).sourceAfter = snapshotSource(root)
-      validateImmutableSource(run.sourceBefore, run.stages.at(-1).sourceAfter)
-      if (stage === 'compile') frozenSource = run.stages.at(-1).sourceAfter
-      else validateFrozenSource(frozenSource, run.stages.at(-1).sourceAfter)
+      validateUnchangedSource(run.sourceBefore, run.stages.at(-1).sourceAfter)
+      if (stage === 'build') {
+        if (!fs.existsSync(player) || fs.statSync(player).size === 0) throw new Error('PLAYER_MISSING')
+        run.playerSha256 = sha256(player)
+      }
       run.stages.at(-1).verified = true
     }
-    const player = requireSafePath(root, path.join(output, 'build/player/ChangshanLongdan.exe'))
-    if (!fs.existsSync(player) || fs.statSync(player).size === 0) throw new Error('PLAYER_MISSING')
-    run.playerSha256 = sha256(player)
     const runtimePath = path.join(output, 'player')
     await processStage('player', player, ['-screen-fullscreen', '0', '-screen-width', '1920', '-screen-height', '1080',
       '-force-d3d11', '-logFile', path.join(runtimePath, 'Player.log'), '-e02RunId', runId, '-e02Output', runtimePath],
@@ -224,8 +233,8 @@ try {
     validateRuntime(readJson(path.join(runtimePath, 'runtime.json')), runId, path.join(runtimePath, 'scene.png'))
     run.screenshotSha256 = sha256(path.join(runtimePath, 'scene.png'))
     run.sourceAfter = snapshotSource(root)
-    validateImmutableSource(run.sourceBefore, run.sourceAfter)
-    validateFrozenSource(frozenSource, run.sourceAfter)
+    validateUnchangedSource(run.sourceBefore, run.sourceAfter)
+    if (candidateCheckout() !== sourceHead) throw new Error('CANDIDATE_HEAD_CHANGED')
     run.stages.at(-1).verified = true
     run.result = 'PASS_LOCAL_ENGINE_FOUNDATION'
     run.end = new Date().toISOString()
