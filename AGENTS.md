@@ -43,6 +43,10 @@ Add or update Vitest tests for every change to combat, AI, player or layout logi
 - [既有美術 SOP](docs/art/README.md) 的製作與 QA 閘門繼續適用；本契約補充跨 repo 委託、交付與追溯責任。既有程序式 voxel 說明是目前實作描述，不是禁止依本契約委託新資產。
 - 收到模型不代表完成；此規則不授予付費生成、私有資料外傳、push、merge 或部署權限。
 
+## Open-Source Game References
+
+Before designing a new system (combat data, skills, crowd AI, spatial partitioning, voxel/animation, networking), check [the MMORPG source reference list](docs/references/mmorpg-github-sources.md) for existing open-source solutions instead of reinventing them. Use those repositories for design reference only: most are GPL-family copyleft, so copying or porting their code, data or assets requires a recorded license review, a `public/THIRD_PARTY_LICENSES.txt` update and human approval first. Cite repository, path and commit SHA for any design you borrow.
+
 ## Commits
 
 Use concise imperative subjects, optionally scoped (for example `combat: add jump charge`). Do not commit `node_modules/`, `dist/` or other generated output.
