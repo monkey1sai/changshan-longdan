@@ -1,6 +1,6 @@
-# E02 隔離工程與受阻驗證紀錄
+# E02 隔離工程與驗證紀錄
 
-日期：2026-10-04（Asia/Taipei）。`stepVerdict: BLOCKED_ENVIRONMENT`；`nextStepAllowed:false`；`implementationPr:null`；`mergeSha:null`；`releaseOrPaidActionPerformed:false`。
+更新：2026-10-05（Asia/Taipei）。`stepVerdict: LOCAL_ENGINE_EVIDENCE_PENDING_FORMAL_REVIEW`；`nextStepAllowed:false`；`implementationPr`：本分支對應的 E02 PR；`mergeSha:null`；`releaseOrPaidActionPerformed:false`。A–E 節是 2026-10-04 受阻時的原始紀錄，保留不改寫；2026-10-05 的接續結果在 F 節，兩者衝突時以 F 節為準。
 
 ## A. 範圍與授權
 
@@ -59,3 +59,25 @@ Another instance of Unity.Licensing.Client is already running.
 恢復後從全新 task-owned checkout 執行同版 runner，逐階段收實際 compile／9 Edit／1 Play／Windows build／Player／PNG 與 Web compatibility。還要最終 SHA 的 formal review、另行授權 E02 推送／PR／CI／合併以及合併後確認，才可能 VERIFIED／DONE；不開始 E03。
 
 回滾只普通 revert E02 source／設定／runner，保留本輪失敗 evidence／official archives；不 reset／clean 既有工作樹、不刪 Web／原 `.blend`／GLB、不自行發布回滾版。
+
+## F. 2026-10-05 接續驗證（Claude Code 接手）
+
+使用者依序授權：第三輪本機驗證、CS0104 修正與最多兩輪同類修正、提交 Unity 產生的工程檔並再給兩輪額度、補文件後推送並開 PR（不合併）。全程沒有停止未知程序、重啟共享服務、讀印授權檔或修改 ACL／TLS／sandbox；E03 未開始。
+
+授權服務的實際觀察：2026-10-04 兩輪失敗期間，由 Unity Hub 3.22.1 啟動的同一個 Licensing Client 程序持續持有 `Unity-LicenseClient-jacks`，Editor 連線被拒、自行啟動的 client 又取不到 mutex。2026-10-05 重新開機且 Hub 更新為 3.22.2 後，同版 Editor 在 Hub 開啟的狀態下以批次模式正常連上 `LicenseClient-jacks`。10/04 被拒的根因沒有查明。
+
+| 輪次 | 候選 | 結果 |
+|---|---|---|
+| 3（工具） | `0fc54c5` | 未啟動 Unity：從 Git Bash 啟動時 `tar.exe` 解析到 GNU tar，`OFFICIAL_PACKAGE_MANIFEST_FAILED`。改用原生 Windows `PATH`，來源未改 |
+| 3 | `0fc54c5` | 授權與 17 套件解析通過；compile 失敗：`FoundationBuild.cs(100,19): error CS0104`（`PackageInfo` 歧義） |
+| 4 | `c2db047` | compile exit 0；runner `UNSAFE_PATH`：內附套件實際安裝在工程 `Library/PackageCache` 並帶 `_fingerprint`。另因 clone 路徑過深，兩個 URP core 檔案超過 260 字元 |
+| 5 | `dbcf3d0` | compile／9 Edit／1 Play 通過，build `Succeeded`；`EFFECTIVE_SOURCE_CHANGED_AFTER_COMPILE`：建置改寫三個未入版控的 URP 產生資產 |
+| 6 | `e1adec1` | `PASS_LOCAL_ENGINE_FOUNDATION`：五階段 exit 0 且 verified；各階段來源差異 0；clone 保持乾淨 |
+
+修正各對應一個原因：`c2db047` 以完整命名空間解決 CS0104；`dbcf3d0` 讓 runner 依實際安裝位置驗證套件（manifest 除 `_fingerprint` 外須與 Editor 內附或已驗 archive 逐欄相同，目錄後綴須為指紋前 12 碼，registry 包指紋須等於固定 SHA-1），新增正負例，Node checks 由 58 增為 59；`e1adec1` 提交建置後的 50 個 Unity 產生檔（Assets 27、ProjectSettings 23），不放寬來源凍結檢查。
+
+第六輪（`e1adec1`，runId `f851545e-012a-4407-9d70-ccd9a5d9d8ef`）讀回值：Edit Mode 9/9、Play Mode 1/1；build 169,010,819 bytes、0 errors、Mono2x／Direct3D11／Linear／1920×1080／60／VSync 1／URP／renderScale 1；Player 123 frames、errorCount 0、非 batch、RTX 4060 Ti；`scene.png` 1920×1080，SHA-256 `8ae9006548ce1be37c0c97be211a0035763bdaa6266531466aa6d07325e9449c`，畫面上的 Run ID 與 runId 相同。同候選 Web 回歸：22 files／227 tests（排除 `release/` 下的證據 clone）、typecheck、build、itch package 通過；ZIP 3,014,494 bytes，SHA-256 與 E01 相同。
+
+本檔所列 runId 與雜湊屬候選 `e1adec1`。其後只有文件提交；最終候選 SHA 的同版重跑結果記在 E02 PR，不在此自我引用。原始產物仍是 local_only 的 ignored `release/e02/`，沒有上傳。
+
+仍未完成：最終 SHA 的 formal independent APPROVED、CI、另行授權的合併與合併後確認。空場景只證明工程可編譯、測試、建置、啟動與渲染，不證明角色匯入、玩法、手感或效能。這些條件齊備前 E02 不得標記 VERIFIED／DONE，也不開始 E03。

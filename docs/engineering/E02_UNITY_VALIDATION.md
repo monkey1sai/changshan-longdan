@@ -1,6 +1,6 @@
 # E02 驗證入口與目前界線
 
-2026-10-04 已核准 ADR 方向 1，建立隔離工程與完整 runner。**真正 Unity 驗證目前受共享 Licensing Client IPC／mutex 阻擋**；編譯、Unity tests、build 與 Player 都沒有 PASS。本頁命令是已存在的實作入口；是否通過須讀每次新 `release/e02/<run>/result.json` 與原始證據。
+2026-10-04 已核准 ADR 方向 1，建立隔離工程與完整 runner；當日兩次真實啟動受共享 Licensing Client IPC／mutex 阻擋。**2026-10-05 起真實 Unity 驗證已可在本機完整執行**：compile、9 Edit Mode、1 Play Mode、Windows build、Player 與 1920×1080 截圖在全新 checkout 一次通過，過程與修正見 [E02_ENGINE_FOUNDATION.md](./E02_ENGINE_FOUNDATION.md) F 節。這是本機引擎證據，不是正式 review 或 E02 DONE。本頁命令是已存在的實作入口；是否通過須讀每次新 `release/e02/<run>/result.json` 與原始證據，最終候選 SHA 的結果記在該步 PR。
 
 ```powershell
 npm run test:unity-runner
@@ -40,8 +40,10 @@ runner 為 `scripts/unity-validate.mjs`；工程 `unity/ChangshanLongdan`。先�
 
 完整 argv／exe／project／PID／runId／起訖／timeout／exit 在各 stage 的 `command.json`、`started.json`、`exit.json`，共用 `start.json`／`result.json`。保存 `Editor.log`、NUnit XML、build report、`Player.log`／`runtime.json`／`scene.png`。缺欄位、零測試、XML parse failure、非零 exit、compile errors、設定／package／source drift、缺／不完整 PNG 全部停止。`verified` 只在全部 postconditions 通過後標記。
 
-新 checkout 重現程序：保存本機 candidate SHA，以 `git clone --no-hardlinks --no-checkout '<本機 E02 checkout>' '<新的空目錄>'` 建立 task-owned clone，再 `git -C '<新的空目錄>' checkout --detach '<candidate SHA>'`。從新 clone 執行上面的 Node tests／preflight／validate；Unity runner 不依賴 Web node_modules。Web 回歸另用固定 npm lock。2026-10-05 實測的兩項啟動環境限制：新 clone 的路徑要短（`release/e02/` 內層的 clone 讓 URP core 檔案超過 Windows 260 字元上限而匯入失敗），且 `tar.exe` 必須解析到 `C:\Windows\System32\tar.exe`（Git Bash 的 GNU tar 不接受 `C:\` 路徑），從 Git Bash 啟動時改用機器＋使用者的原生 `PATH`。本輪尚未成功執行這個新 checkout 的 Unity stages，不宣稱重現已驗證。
+新 checkout 重現程序：保存本機 candidate SHA，以 `git clone --no-hardlinks --no-checkout '<本機 E02 checkout>' '<新的空目錄>'` 建立 task-owned clone，再 `git -C '<新的空目錄>' checkout --detach '<candidate SHA>'`。從新 clone 執行上面的 Node tests／preflight／validate；Unity runner 不依賴 Web node_modules。Web 回歸另用固定 npm lock。2026-10-05 實測的兩項啟動環境限制：新 clone 的路徑要短（`release/e02/` 內層的 clone 讓 URP core 檔案超過 Windows 260 字元上限而匯入失敗），且 `tar.exe` 必須解析到 `C:\Windows\System32\tar.exe`（Git Bash 的 GNU tar 不接受 `C:\` 路徑），從 Git Bash 啟動時改用機器＋使用者的原生 `PATH`。2026-10-05 已依此程序在新 clone 完成全部 Unity stages；每個候選 SHA 仍須各自重跑，不沿用舊候選的結果。
 
-實際 compile attempt 在 `release/e02/import-20261004-cdn-verified/`：Licensing channel refused、mutex 已被既有 client 持有；主控核對本輪 UUID／project／exe／父 Node 後，只停止 Editor PID 37816，exit `4294967295`，runner exit 2。沒有 `compile.json`／XML／build／圖片，失敗和 partial settings 均保存。完整結果見 [E02_ENGINE_FOUNDATION.md](./E02_ENGINE_FOUNDATION.md)。
+工程內的場景、URP 設定、`.meta` 與 `ProjectSettings` 已入版控（取自一次完整建置後的狀態），新 checkout 的 compile 到 build 各階段因此不再改寫來源；URP 會在建置時重寫 pipeline asset 的 prefiltering 欄位，未入版控時會觸發 `EFFECTIVE_SOURCE_CHANGED_AFTER_COMPILE`。`npm test` 會收集 `release/` 下證據 clone 內的測試副本；本機留有這類 clone 時以 `npx vitest run --exclude "release/**"` 取得候選自身的結果。
+
+2026-10-04 的首次實際 compile attempt 在 `release/e02/import-20261004-cdn-verified/`：Licensing channel refused、mutex 已被既有 client 持有；主控核對本輪 UUID／project／exe／父 Node 後，只停止 Editor PID 37816，exit `4294967295`，runner exit 2。沒有 `compile.json`／XML／build／圖片，失敗和 partial settings 均保存。完整結果見 [E02_ENGINE_FOUNDATION.md](./E02_ENGINE_FOUNDATION.md)。
 
 空場景圖片將只證明引擎渲染；不證明自然遊玩、角色匯入、手感、效能達標或發布。正式同版本人類審查、合併授權及合併後確認仍未完成，E03 不開始。
