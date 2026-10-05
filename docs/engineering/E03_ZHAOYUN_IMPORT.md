@@ -1,6 +1,6 @@
 # E03 趙雲來源保留與執行期匯入
 
-更新：2026-10-05（Asia/Taipei）。`stepStatus: AWAITING_REVIEW`（草稿 PR #20；未取得正式審查）。本檔記錄範圍、來源核對、設計與驗證方法；各候選 SHA 的實際執行結果綁定該 SHA 另行記錄，不寫回本檔以免自我引用。匯入器與套件決策見 [E03_IMPORT_DECISION.md](./E03_IMPORT_DECISION.md)。
+更新：2026-10-05（Asia/Taipei）。`stepStatus: DONE（限定接受；無 formal independent APPROVED）`；PR #20 合併為 `a568896456e8a36ce7d1a6fece7c9fedd5944342`。本檔記錄範圍、來源核對、設計與驗證方法；各候選 SHA 的實際執行結果綁定該 SHA 另行記錄，不寫回本檔以免自我引用。匯入器與套件決策見 [E03_IMPORT_DECISION.md](./E03_IMPORT_DECISION.md)。
 
 ## 範圍與授權
 
@@ -57,3 +57,13 @@ GLB 實讀結果：29,569 三角形（身體 27,710、長槍 1,859）；21 根�
 ## 回滾
 
 普通 revert 本步提交即可；Web 版、`public/models/` 與 `.blend` 未變更。glTFast 套件政策的回滾另見 [E03_IMPORT_DECISION.md](./E03_IMPORT_DECISION.md)。
+
+## 合併與合併後確認
+
+使用者原文：「授權合併 PR #20，合併後確認並開始 E04」。合併前即時核對：head `9405518aa927f0469cabcaad0ecbf5db3dde1e8f`、base `24ce10c33316544669b0e825a9edc3ff9d2e4d2a` 無漂移，兩項 CI 綁定 head 且成功，review threads 0，auto-merge 關閉。**GitHub 上沒有任何 review approval**，依使用者授權合併，屬限定接受；獨立 advisory 審查 2 輪不是 formal APPROVED，技術美術對 #23 的確認尚未進行。
+
+- merge commit `a568896456e8a36ce7d1a6fece7c9fedd5944342`（一般合併，父提交 `24ce10c`、`9405518`）；tree `05d0e589a225e623403b2c9f874682a30a4c3f6f` 與候選相同；來源分支保留。
+- 合併 SHA 全新 clone：`npm run check` 23 files／228 tests 與 build 通過；Node 工具正負例 65／65；Unity runner `PASS_LOCAL_ENGINE_FOUNDATION`（runId `a4db93ee-752a-4c61-8f18-3dbcb4aef977`）：compile、16／16 Edit、17／17 Play、Windows build `Succeeded`、Player 角色 READY（glTFast 錯誤 0）；各階段來源差異 0。
+- `main` 上該 merge commit 的 CI：ubuntu、windows 皆 success。
+
+原始產物 local_only。
