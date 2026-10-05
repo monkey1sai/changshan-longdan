@@ -11,3 +11,6 @@
 *.ogg binary
 *.wav binary
 *.woff2 binary
+
+# 由 scripts/combat-parity.mjs 產生的 Web 對照資料
+unity/ChangshanLongdan/TestData/combat/web-parity.json linguist-generated -diff
