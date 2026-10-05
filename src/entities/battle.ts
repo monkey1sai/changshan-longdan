@@ -93,6 +93,8 @@ export interface EnemyView {
   readonly y: ArrayLike<number>
   readonly z: ArrayLike<number>
   readonly yaw: ArrayLike<number>
+  readonly hp: ArrayLike<number>
+  readonly maxHp: ArrayLike<number>
   readonly stateTime: ArrayLike<number>
   readonly flash: ArrayLike<number>
   readonly phase: ArrayLike<number>

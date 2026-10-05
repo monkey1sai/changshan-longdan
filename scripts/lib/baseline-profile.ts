@@ -90,6 +90,7 @@ export function readEffectiveProfile(root: string) {
   // Imported objects and file hashes must refer to the same checkout.
   if (resolve(root) !== resolve(fileURLToPath(new URL('../../', import.meta.url)))) throw new Error('effective profile root must match the runner checkout')
   const paths = ['src/entities/player.ts', 'src/entities/enemies.ts', 'src/core/input.ts', 'src/game.ts',
+    'src/entities/battle.ts', 'src/entities/castle-setup.ts', 'src/entities/dragon-strike.ts',
     'src/combat/moves.ts', 'src/combat/stamp.ts', 'src/combat/hitshape.ts', 'src/core/math.ts',
     'src/core/difficulty.ts', 'src/entities/battle-director.ts', 'src/entities/arena.ts',
     'src/view/camera-rig.ts', 'src/world/layout.ts']
@@ -105,7 +106,8 @@ export function readEffectiveProfile(root: string) {
     notCovered: ['all private field defaults', 'all AI branch literals', 'guard cosine expression', 'renderer/GPU tuning', 'natural retry RNG history'],
     player: constants('src/entities/player.ts', ['MUSOU_MAX', 'RUN_SPEED', 'GRAVITY', 'JUMP_SPEED', 'DODGE_SPEED', 'DODGE_TIME', 'DASH_CANCEL_TIME', 'PARRY_TIME', 'COUNTER_TIME', 'BUFFER']),
     enemies: constants('src/entities/enemies.ts', ['GRAVITY', 'BODY_RADIUS', 'RELEASE_RANGE', 'MAX_ENGAGED', 'MIN_ENGAGED', 'RING_SIZE']),
-    game: { ...constants('src/game.ts', ['CAPACITY', 'MUSIC_LEVEL']), frameMaxDtSec: maxDt, feedbackSeed },
+    game: { CAPACITY: readNumericConstant(sources['src/entities/castle-setup.ts'], 'CASTLE_CAPACITY'),
+      ...constants('src/game.ts', ['MUSIC_LEVEL']), frameMaxDtSec: maxDt, feedbackSeed },
     input: { attackRepeatSec: repeats.find(rule => rule.kind === 'attackRepeat')!.value,
       chargeSuppressRepeatSec: repeats.find(rule => rule.kind === 'chargeSuppression')!.value, source: 'Input.poll validated conditional assignments', rules: repeats },
     camera: { fovDeg: camera[0], near: camera[1], far: camera[2] },

@@ -2,14 +2,13 @@ import { Frustum, Matrix4, Sphere, Vector3 } from 'three'
 import { Game } from '../../src/game.ts'
 import { Input, type InputFrame } from '../../src/core/input.ts'
 import { createRng } from '../../src/core/math.ts'
-import { DIFFICULTIES } from '../../src/core/difficulty.ts'
-import { MOVES, type HitWindow, type MoveId } from '../../src/combat/moves.ts'
-import { Arena } from '../../src/entities/arena.ts'
-import { BattleDirector } from '../../src/entities/battle-director.ts'
-import { EnemyStore, Kind, type HitInfo } from '../../src/entities/enemies.ts'
-import { Player, type AimFn, type PlayerControls, type PlayerEvent } from '../../src/entities/player.ts'
+import { MOVES, type MoveId } from '../../src/combat/moves.ts'
+import { Battle } from '../../src/entities/battle.ts'
+import { castleSetup } from '../../src/entities/castle-setup.ts'
+import { Kind, type EnemyStore, type HitInfo } from '../../src/entities/enemies.ts'
+import type { AimFn, Player, PlayerControls, PlayerEvent } from '../../src/entities/player.ts'
 import { CameraRig } from '../../src/view/camera-rig.ts'
-import { PLAY_LIMIT, PLAYER_START, obstacles } from '../../src/world/layout.ts'
+import { PLAYER_START } from '../../src/world/layout.ts'
 
 export interface RawEvent {
   at: number
@@ -48,23 +47,21 @@ interface PlayerPort {
   startMove(id: MoveId, controls: PlayerControls, aim: AimFn): void
 }
 
-// This is an explicit fixture port, not a new gameplay implementation.
+// Explicit fixture ports into Battle's private state, not a new gameplay implementation.
+interface BattlePort {
+  zhaoYun: Player
+  soldiers: EnemyStore
+}
+
 interface Kernel {
-  player: Player
-  enemies: EnemyStore
+  battle: Battle
   rig: CameraRig
   input: Input
   mode: string
   clock: number
   simClock: number
-  battleTime: number
-  hitstop: number
-  combo: number
-  ko: number
-  damageTaken: number
   tick(dt: number, input: InputFrame, render: boolean): void
   setPaused(paused: boolean): void
-  onHits(window: HitWindow, hits: HitInfo[]): void
 }
 
 const noop = () => {}
@@ -89,39 +86,33 @@ function validateScenario(scenario: Scenario, hz: number): void {
   }
 }
 
+const port = (game: Kernel) => game.battle as unknown as BattlePort
+
 function fixture(scenario: Scenario): { game: Kernel; target: EventTarget } {
   const target = new EventTarget()
   const surface = new EventTarget()
   const input = new Input(target as unknown as Window, surface as unknown as HTMLElement)
-  const player = new Player()
-  player.reset(PLAYER_START.x, PLAYER_START.z, PLAYER_START.facing)
-  const enemies = new EnemyStore(scenario.population, scenario.seed)
-  enemies.setPressure(DIFFICULTIES.normal)
-  enemies.reset(Array.from({ length: scenario.population }, (_, i) => ({
+  const spawns = Array.from({ length: scenario.population }, (_, i) => ({
     x: scenario.near ? PLAYER_START.x + (scenario.population === 1 ? 0 : (i % 5 - 2) * 0.6) : 10,
     z: scenario.near ? PLAYER_START.z - 1.6 - Math.floor(i / 5) * 0.6 : 10,
     yaw: 0, kind: Kind.Spear,
-  })))
+  }))
+  // The constructor's single reset applies the normal difficulty before spawning, as the real game does.
+  const battle = new Battle({ ...castleSetup(), spawns: () => spawns.map(spawn => ({ ...spawn })),
+    capacity: scenario.population, enemySeed: scenario.seed })
+  const player = battle.player
   const rig = new CameraRig(16 / 9)
   rig.snap(player.pos, PLAYER_START.facing)
   const game = Object.assign(Object.create(Game.prototype), {
-    player, enemies, rig, input,
-    arena: new Arena(PLAY_LIMIT, obstacles()), director: new BattleDirector(),
-    difficulty: 'normal', directorPhase: 'opening', mode: 'playing',
-    clock: 0, simClock: 0, battleTime: 0, hitstop: 0, slowmo: 0, debugTimeScale: 1,
-    combo: 0, comboTimer: 0, maxCombo: 0, ko: 0, damageTaken: 0,
-    endTimer: 0, resultShown: false, controls: { ...idle }, hits: [],
+    battle, rig, input, difficulty: 'normal', mode: 'playing',
+    clock: 0, simClock: 0, endTimer: 0, resultShown: false, controls: { ...idle },
     rng: createRng(99), tmp: new Vector3(),
     audio: null, music: null, perf: null,
     post: { focus: 9, musou: 0, flash: 0, aberration: 0, radial: 0, danger: 0, bars: 0, exposure: 1, dof: 0.8 },
     hud: { showBanner: noop }, screens: { showPause: noop, showResult: noop },
     sparks: { burst: noop, glitter: noop }, dust: { puff: noop },
-    waves: { ring: noop }, fragments: { spawnSoldier: noop }, dragon: { active: false }, dragonStrike: { active: false },
-    aim: (x: number, z: number, distance: number) => {
-      const i = enemies.nearest(x, z, distance)
-      return i < 0 ? null : { x: enemies.x[i], z: enemies.z[i] }
-    },
-    // Only presentation is replaced. tick/simulate/hits/mode transitions remain production methods.
+    waves: { ring: noop }, fragments: { spawnSoldier: noop }, dragon: { active: false },
+    // Only presentation is replaced. tick/simulate/Battle/mode transitions remain production methods.
     updateVisuals(dt: number, _simDt: number, frame: InputFrame) {
       rig.update(dt, player.pos, game.mode === 'playing' ? frame.camTurn : 0, frame.zoom, false, false, game.clock)
     },
@@ -132,7 +123,7 @@ function fixture(scenario: Scenario): { game: Kernel; target: EventTarget } {
 }
 
 function population(game: Kernel) {
-  const store = game.enemies
+  const store = port(game).soldiers
   let engaged = 0
   let tokens = 0
   let frustumProxy = 0
@@ -153,10 +144,11 @@ function population(game: Kernel) {
 }
 
 function snapshot(game: Kernel) {
-  const player = game.player
+  const player = port(game).zhaoYun
+  const battle = game.battle
   return {
-    mode: game.mode, clock: game.clock, simClock: game.simClock, battleTime: game.battleTime,
-    hitstop: game.hitstop, ko: game.ko, combo: game.combo, damageTaken: game.damageTaken,
+    mode: game.mode, clock: game.clock, simClock: game.simClock, battleTime: battle.battleTime,
+    hitstop: battle.hitstop, ko: battle.ko, combo: battle.combo, damageTaken: battle.damageTaken,
     player: { state: player.state, move: player.move?.id ?? null, moveTime: player.moveTime, stateTime: player.stateTime,
       hp: player.hp, musou: player.musou, facing: player.facing, position: player.pos.toArray() },
     population: population(game),
@@ -185,7 +177,8 @@ export function runScenario(scenario: Scenario, hz: number, options: { observe?:
   const owners = new Map<number, HitOwner>()
   let attackOrdinal = 0
   let accepted: HitRecord[] = []
-  const playerPort = game.player as unknown as PlayerPort
+  const player = port(game).zhaoYun
+  const playerPort = player as unknown as PlayerPort
   if (observe) {
     const originalStart = playerPort.startMove
     playerPort.startMove = function(id, controls, aim) {
@@ -193,19 +186,23 @@ export function runScenario(scenario: Scenario, hz: number, options: { observe?:
       const ordinal = ++attackOrdinal
       this.stamps.forEach((stamp, windowIndex) => owners.set(stamp, { attackOrdinal: ordinal, moveId: id, windowIndex }))
     }
-    const originalHits = game.onHits
-    game.onHits = function(window, hits) {
-      const active = game.player.activeHits.find(hit => hit.window === window)
+  }
+  /** Accepted player hits of the last tick, in Battle's resolution order. */
+  const recordHits = () => {
+    const battle = game.battle
+    for (const event of battle.events) {
+      if (event.type !== 'hit') continue
+      const active = player.activeHits.find(hit => hit.window === event.window)
       const owner = active === undefined ? undefined : owners.get(active.stamp)
-      if (active === undefined || owner === undefined || MOVES[owner.moveId].hits[owner.windowIndex] !== window) throw new Error('unmapped accepted hit owner')
-      // Copy before the shared hits array is reused; never infer owner from the post-tick move.
+      if (active === undefined || owner === undefined || MOVES[owner.moveId].hits[owner.windowIndex] !== event.window) throw new Error('unmapped accepted hit owner')
+      // Copy out of Battle's shared hit buffer; never infer owner from the post-tick move.
+      const hits = battle.hits.slice(event.start, event.start + event.count)
       accepted.push({ ...owner, stamp: active.stamp, targets: hits.map(hit => ({ ...hit })) })
-      originalHits.call(this, window, hits)
     }
   }
   if (scenario.initialMove) {
     playerPort.startMove(scenario.initialMove, { ...idle, moveZ: -1 }, () => null)
-    if (scenario.initialMoveTime !== undefined) game.player.moveTime = scenario.initialMoveTime
+    if (scenario.initialMoveTime !== undefined) player.moveTime = scenario.initialMoveTime
   }
   let nextEvent = 0
   const totalFrames = Math.ceil(scenario.duration * hz)
@@ -222,15 +219,16 @@ export function runScenario(scenario: Scenario, hz: number, options: { observe?:
     accepted = []
     const simBefore = game.simClock
     game.tick(1 / hz, input, false)
+    if (observe) recordHits()
     if (observe && before) {
       frames.push({ frame, tickStartSec, tickEndSec: (frame + 1) / hz, rawEvents, input, before,
         after: snapshot(game), hits: accepted,
         // hitstop leaves the old producer arrays intact; they are not new events.
-        events: game.simClock > simBefore ? game.player.events.map(event => ({ ...event })) : [],
+        events: game.simClock > simBefore ? player.events.map(event => ({ ...event })) : [],
       })
     }
   }
-  const store = game.enemies
+  const store = port(game).soldiers
   const rawHitStamps = Array.from(store.hitStamp.subarray(0, store.count))
   const nonzero = rawHitStamps.filter(stamp => stamp !== 0)
   const firstStamp = nonzero.length ? Math.min(...nonzero) : 0

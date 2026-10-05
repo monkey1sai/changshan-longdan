@@ -12,7 +12,8 @@ import {
   type BufferGeometry,
 } from 'three'
 import { smoothstep } from '../core/math.ts'
-import { Kind, State, type EnemyStore } from '../entities/enemies.ts'
+import type { EnemyView } from '../entities/battle.ts'
+import { Kind, State } from '../entities/enemies.ts'
 import { withInstanceFlash } from '../render/materials.ts'
 import { VoxelBuilder } from '../world/voxel-builder.ts'
 
@@ -175,7 +176,7 @@ export class SoldierView {
   }
 
   /** 每名士兵的色調變化；隊長採用深靛金調，配合長翎形成辨識點。 */
-  applyColors(store: EnemyStore, rng: () => number): void {
+  applyColors(store: EnemyView, rng: () => number): void {
     const c = new Color()
     for (let i = 0; i < store.count; i++) {
       if (store.kind[i] === Kind.Captain) c.setRGB(0.48, 0.42, 0.68)
@@ -194,7 +195,7 @@ export class SoldierView {
     }
   }
 
-  update(store: EnemyStore, time: number): void {
+  update(store: EnemyView, time: number): void {
     for (const p of this.allParts()) p.mesh.count = store.count * (p === this.legs || p === this.arms ? 2 : 1)
     for (let i = 0; i < store.count; i++) {
       if (store.alive[i] === 0) {

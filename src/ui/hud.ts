@@ -1,4 +1,5 @@
-import { Kind, type EnemyStore } from '../entities/enemies.ts'
+import type { EnemyView } from '../entities/battle.ts'
+import { Kind } from '../entities/enemies.ts'
 import { BARRACKS, INNER, KEEP, WALL_THICK } from '../world/layout.ts'
 import type { MoveId } from '../combat/moves.ts'
 import type { PlayerState } from '../entities/player.ts'
@@ -128,7 +129,7 @@ export class Hud {
     this.bannerTime = seconds
   }
 
-  updateOfficer(store: EnemyStore, px: number, pz: number): void {
+  updateOfficer(store: EnemyView, px: number, pz: number): void {
     let best = -1
     let bestD = 18 * 18
     for (let i = 0; i < store.count; i++) {
@@ -150,7 +151,7 @@ export class Hud {
     this.cutin.classList.add('play')
   }
 
-  drawMinimap(store: EnemyStore, px: number, pz: number, facing: number, camYaw: number): void {
+  drawMinimap(store: EnemyView, px: number, pz: number, facing: number, camYaw: number): void {
     const ctx = this.minimap
     const size = ctx.canvas.width
     const half = INNER + WALL_THICK

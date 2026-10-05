@@ -10,6 +10,7 @@ import {
   Vector3, Vector4, Color, type WebGLRenderer,
 } from 'three'
 import { Game } from '../src/game.ts'
+import type { Battle } from '../src/entities/battle.ts'
 import { initInterface } from '../src/ui/interface.ts'
 import type { EnemyStore } from '../src/entities/enemies.ts'
 import type { CameraRig } from '../src/view/camera-rig.ts'
@@ -33,17 +34,16 @@ interface GameView {
   pipeline: { renderer: WebGLRenderer }
   scene: Scene
   rig: CameraRig
-  enemies: EnemyStore
-  player: Player
+  battle: Battle
   soldiers: Record<'legs' | 'arms' | 'torso' | 'head' | 'spear' | 'sword' | 'shield' | 'plume', { mesh: InstancedMesh }>
   model: { assetStatus: { state: string } }
   mode: string
   clock: number
   simClock: number
-  battleTime: number
-  hitstop: number
 }
 const port = game as unknown as GameView
+/** Battle's private state; the diagnostic fingerprint needs every SoA field and the attacker count. */
+const battlePort = () => port.battle as unknown as { zhaoYun: Player; soldiers: EnemyStore }
 const parts: EnemyPart[] = ['legs', 'arms', 'torso', 'head', 'spear', 'sword', 'shield', 'plume'].map(name => ({
   mesh: port.soldiers[name as keyof GameView['soldiers']].mesh, instancesPerEnemy: name === 'legs' || name === 'arms' ? 2 : 1,
 }))
@@ -87,11 +87,11 @@ const digest = async (value: string | Uint8Array) => {
 }
 
 function gameplayFingerprint() {
-  const arrays = Object.fromEntries(Object.entries(port.enemies).filter(([, value]) => ArrayBuffer.isView(value))
+  const arrays = Object.fromEntries(Object.entries(battlePort().soldiers).filter(([, value]) => ArrayBuffer.isView(value))
     .map(([key, value]) => [key, Array.from(value as ArrayLike<number>)]))
-  return JSON.stringify({ mode: port.mode, clock: port.clock, simClock: port.simClock, battleTime: port.battleTime,
-    hitstop: port.hitstop, player: port.player, enemies: arrays, count: port.enemies.count,
-    alive: port.enemies.aliveCount, attackers: port.enemies.attackerCount,
+  return JSON.stringify({ mode: port.mode, clock: port.clock, simClock: port.simClock, battleTime: port.battle.battleTime,
+    hitstop: port.battle.hitstop, player: battlePort().zhaoYun, enemies: arrays, count: battlePort().soldiers.count,
+    alive: battlePort().soldiers.aliveCount, attackers: battlePort().soldiers.attackerCount,
     instanceMatrices: parts.map(part => Array.from(part.mesh.instanceMatrix.array)) })
 }
 
@@ -104,7 +104,7 @@ function rendererFingerprint() {
 }
 
 function population() {
-  const store = port.enemies
+  const store = battlePort().soldiers
   const camera = port.rig.camera
   camera.updateMatrixWorld()
   const frustum = new Frustum().setFromProjectionMatrix(new Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse))
@@ -139,7 +139,7 @@ captureButton.addEventListener('click', async () => {
     const counts = population()
     const before = gameplayFingerprint()
     const renderBefore = rendererFingerprint()
-    const clocks = { clock: port.clock, simClock: port.simClock, battleTime: port.battleTime, mode: port.mode }
+    const clocks = { clock: port.clock, simClock: port.simClock, battleTime: port.battle.battleTime, mode: port.mode }
     const result = captureEnemyVisibility(port.pipeline.renderer, port.scene, port.rig.camera, parts, counts.aliveFlags)
     const unchanged = before === gameplayFingerprint()
     const rendererRestored = renderBefore === rendererFingerprint()
