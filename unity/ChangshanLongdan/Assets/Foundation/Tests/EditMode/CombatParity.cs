@@ -206,6 +206,12 @@ namespace Changshan.Foundation.Tests
         string bits = (string)h["bits"];
         string at = $"shape {h["kind"]} r{R(shape.Range)} off{R(shape.Offset)} f{R(facing)}";
         result.Number(at + " reach", D(h["reach"]), shape.Reach, ContinuousTolerance);
+        int expectedBits = (2 * grid + 1) * (2 * grid + 1) * radii.Count;
+        if (bits.Length != expectedBits)
+        {
+          result.Fail($"{at}: {bits.Length} samples, expected {expectedBits}");
+          continue;
+        }
         int k = 0;
         for (int i = -grid; i <= grid; i++)
           for (int j = -grid; j <= grid; j++)

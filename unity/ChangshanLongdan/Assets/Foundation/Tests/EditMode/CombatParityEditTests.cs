@@ -12,6 +12,16 @@ namespace Changshan.Foundation.Tests
   public sealed class CombatParityEditTests
   {
     static readonly double[] Rates = { 30, 60, 120 };
+
+    // The E04 acceptance routes; the moving-action and auto-aim cases were added after advisory review round 1.
+    static readonly string[] PlayerScenarioIds =
+    {
+      "run_turn_stop", "normal_chain_early", "late_press_starts_over", "charge_after_n2", "charge_after_n4", "charge_after_n5",
+      "buffer_kept_within_450ms", "buffer_expires_after_450ms", "charge_wins_same_frame", "jump_attacks", "dodge_dash_and_cancel",
+      "back_dodge", "guard_parry_counter", "guard_block_then_side_hit", "heavy_hit_down", "armor_absorbs_hit", "musou_walk",
+      "hitstop_keeps_input", "clear_drops_buffer", "reset_restores", "lethal_hit", "attack_while_running", "attack_then_jump_cancel",
+      "guard_turn_then_dodge", "auto_aim_target", "arena_obstacle_and_edge",
+    };
     static string root;
     static Dictionary<string, object> fixture;
 
@@ -51,7 +61,9 @@ namespace Changshan.Foundation.Tests
     {
       var all = new CombatParity.Result();
       var traces = CombatParity.PlayerTraces(Fixture, hz).ToList();
-      Assert.That(traces, Has.Count.GreaterThanOrEqualTo(20));
+      // Exact set, so dropping a scenario from the generator fails here even after the fixture is regenerated.
+      Assert.That(traces.Select(t => (string)t["id"]), Is.EquivalentTo(PlayerScenarioIds), $"{hz} Hz scenarios");
+      Assert.That(traces.Single(t => (string)t["id"] == "auto_aim_target")["aim"], Is.Not.Null, "auto-aim scenario lost its target");
       foreach (var trace in traces) all.Merge((string)trace["id"], CombatParity.ReplayPlayer(trace));
       AssertClean(all, minimumFrames: (int)(hz * 30));
     }
@@ -65,8 +77,11 @@ namespace Changshan.Foundation.Tests
 
     [Test] public void HitShapesMatchWeb()
     {
-      var shapes = (List<object>)Fixture["hitShapes"];
-      Assert.That(shapes, Has.Count.GreaterThanOrEqualTo(60));
+      var shapes = ((List<object>)Fixture["hitShapes"]).Cast<Dictionary<string, object>>().ToList();
+      // 22 distinct move shapes plus two offset shapes, each at three facings; all three kinds and a non-zero offset.
+      Assert.That(shapes, Has.Count.EqualTo(72));
+      Assert.That(shapes.Select(s => (string)s["kind"]).Distinct(), Is.EquivalentTo(new[] { "arc", "circle", "line" }));
+      Assert.That(shapes.Count(s => (double)s["offset"] != 0), Is.EqualTo(6));
       var result = CombatParity.CompareHitShapes(Fixture);
       AssertClean(result, minimumFrames: shapes.Count * 242);
     }
