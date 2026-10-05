@@ -9,6 +9,8 @@ export const fixedDependencies = Object.freeze({
   'com.unity.searcher': '4.9.5',
   'com.unity.nuget.mono-cecil': '1.11.6',
   'com.unity.modules.screencapture': '1.0.0',
+  // E03: GLB importer, approved with its built-in mathematics and unitywebrequest dependencies.
+  'com.unity.cloud.gltfast': '6.20.0',
 })
 
 export function validatePackagePolicy(policy) {
@@ -19,11 +21,13 @@ export function validatePackagePolicy(policy) {
     'com.unity.test-framework': '1.8.0', 'com.unity.ext.nunit': '2.1.0', 'com.unity.test-framework.performance': '6.6.0',
     'com.unity.modules.imgui': '1.0.0', 'com.unity.modules.jsonserialize': '1.0.0',
     'com.unity.modules.screencapture': '1.0.0', 'com.unity.modules.imageconversion': '1.0.0',
+    'com.unity.mathematics': '1.4.0', 'com.unity.modules.unitywebrequest': '1.0.0',
   }
   const registryHashes = {
     'com.unity.profiling.core': '8a49f7027d0618e2cb86aa9e4ed5fb4392e8121a',
     'com.unity.searcher': 'a463122f2c00f83398f41790942a0793431e70ea',
     'com.unity.nuget.mono-cecil': 'ecb9724e46fff855c46a4f37f0a3377a3cfffc06',
+    'com.unity.cloud.gltfast': '11ddc2436f976fb498cfe518dd0ef7af58654d3a',
   }
   if (policy.schemaVersion !== 1 || policy.registry !== 'https://packages.unity.com' ||
       Object.keys(policy.packages ?? {}).length !== Object.keys(builtinVersions).length + Object.keys(registryHashes).length)

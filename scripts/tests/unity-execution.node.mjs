@@ -133,6 +133,21 @@ test('lock enforces exact actual set, versions and official registry', () => {
   delete changed.dependencies['com.unity.searcher']
   assert.throws(() => validatePackageLock(changed, policy))
 })
+test('committed manifest and lock match the policy, with depth as the shortest path from the manifest', () => {
+  const project = new URL('../../unity/ChangshanLongdan/Packages/', import.meta.url)
+  const manifest = JSON.parse(fs.readFileSync(new URL('manifest.json', project)))
+  const lock = JSON.parse(fs.readFileSync(new URL('packages-lock.json', project)))
+  validateExecutionScope(contract, manifest)
+  validatePackageLock(lock, policy)
+  // Unity rewrites the lock when a depth differs, which the runner then reports as a source change.
+  const depth = Object.fromEntries(Object.keys(manifest.dependencies).map(name => [name, 0]))
+  for (let queue = Object.keys(depth); queue.length;) {
+    const name = queue.shift()
+    for (const dependency of Object.keys(lock.dependencies[name].dependencies))
+      if (!(dependency in depth)) { depth[dependency] = depth[name] + 1; queue.push(dependency) }
+  }
+  assert.deepEqual(Object.fromEntries(Object.entries(lock.dependencies).map(([name, item]) => [name, item.depth])), depth)
+})
 test('installed packages must equal their verified manifest apart from the Unity fingerprint stamp', () => {
   const sha1 = policy.packages['com.unity.searcher'].sha1
   const registry = { ...policy.packages['com.unity.searcher'] }
