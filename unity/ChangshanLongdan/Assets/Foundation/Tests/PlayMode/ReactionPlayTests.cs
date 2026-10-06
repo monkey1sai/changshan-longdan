@@ -63,7 +63,7 @@ namespace Changshan.Foundation.Tests
       Assert.That(hit, Is.GreaterThanOrEqualTo(0), "N1 never hit a dummy");
       Assert.That(targets.State(hit), Is.EqualTo(EnemyState.Flinch));
       Assert.That(targets.Flash(hit), Is.GreaterThan(0.5));
-      Assert.That(controller.LastHit, Does.StartWith("Pierce x1"));
+      Assert.That(controller.LastHit, Does.StartWith("Pierce x")); // N1 reaches several ring dummies at once
       var dummy = dummies.Dummies[hit];
       Assert.That(dummy.gameObject.activeSelf, Is.True);
       // Leaning forward: the capsule's up axis is no longer vertical; the hit flash tints it toward white.
