@@ -23,6 +23,7 @@ namespace Changshan.Combat
     public bool SteppedThisFrame { get; private set; }
 
     bool externalOpen;
+    bool stepping;
 
     public CombatSimulation(HitTargets targets, PlayerTuning tuning = null, Arena arena = null)
     {
@@ -42,8 +43,23 @@ namespace Changshan.Combat
     }
 
     // One rendered frame (realDt already capped). Returns whether the game stepped. afterPlayerHits runs only when the
-    // game stepped, receives the game-time step and is the one place where ApplyExternal is allowed.
+    // game stepped, receives the game-time step and is the one place where ApplyExternal is allowed. Not reentrant:
+    // stepping or restarting from inside the callback would move hits to another step, so it is refused.
     public bool Step(double realDt, in PlayerControls c, Action<double> afterPlayerHits = null)
+    {
+      if (stepping) throw new InvalidOperationException("STEP_REENTRANT");
+      stepping = true;
+      try
+      {
+        return StepOnce(realDt, c, afterPlayerHits);
+      }
+      finally
+      {
+        stepping = false;
+      }
+    }
+
+    bool StepOnce(double realDt, in PlayerControls c, Action<double> afterPlayerHits)
     {
       hits.Clear();
       SteppedThisFrame = Driver.Step(realDt, c, aim);
@@ -87,6 +103,7 @@ namespace Changshan.Combat
 
     public void Restart()
     {
+      if (stepping) throw new InvalidOperationException("STEP_REENTRANT");
       Driver.Restart();
       Resolver.Clear();
       hits.Clear();

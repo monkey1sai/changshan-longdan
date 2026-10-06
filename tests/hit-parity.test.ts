@@ -56,7 +56,7 @@ describe('Web-to-Unity hit parity fixture', () => {
     for (const s of fresh.scenarios.filter((x) => x.id === 'musou_all_windows')) {
       const windows = new Set(hits(s).map((h) => h[0].split('=')[1]))
       expect(windows.size, `${s.hz} Hz`).toBe(MOVES.MUSOU.hits.length)
-      expect(Math.max(...s.frames.map((f) => f.hs)), `${s.hz} Hz`).toBe(MOVES.MUSOU.hits[19].hitstop)
+      expect(Math.max(...s.frames.map((f) => f.hs)), `${s.hz} Hz`).toBe(MOVES.MUSOU.hits[MOVES.MUSOU.hits.length - 1].hitstop)
     }
   })
 })

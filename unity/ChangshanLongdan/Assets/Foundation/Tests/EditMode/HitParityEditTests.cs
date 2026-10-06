@@ -173,6 +173,19 @@ namespace Changshan.Foundation.Tests
       bool called = false;
       Assert.That(sim.Step(1.0 / 60, default, _ => called = true), Is.False);
       Assert.That(called, Is.False, "the callback ran during hit-stop");
+
+      // Negative: stepping or restarting from inside the callback is refused, and the simulation stays usable.
+      while (sim.Clock.Hitstop > 0) sim.Step(1.0 / 60, default);
+      long steps = sim.Clock.SimSteps;
+      var nested = Assert.Throws<InvalidOperationException>(() => sim.Step(1.0 / 60, default, _ => sim.Step(1.0 / 60, default)));
+      StringAssert.StartsWith("STEP_REENTRANT", nested.Message);
+      Assert.That(sim.Clock.SimSteps, Is.EqualTo(steps + 1), "the nested step advanced the game");
+      StringAssert.StartsWith("STEP_REENTRANT",
+        Assert.Throws<InvalidOperationException>(() => sim.Step(1.0 / 60, default, _ => sim.Restart())).Message);
+      Assert.Throws<InvalidOperationException>(() => sim.ApplyExternal(sim.Stamps.Next(), window, 0, 0, ArenaLayout.StartZ, 0),
+        "a failed callback left external hits open");
+      Assert.That(sim.Step(1.0 / 60, default, _ => sim.ApplyExternal(sim.Stamps.Next(), window, 0, 0, ArenaLayout.StartZ, 0)), Is.True);
+      Assert.That(sim.Hits, Has.Count.EqualTo(1));
     }
 
     // Each sweep must straddle its edge, otherwise it would not test the boundary.
@@ -233,6 +246,7 @@ namespace Changshan.Foundation.Tests
       Assert.That(clock.SimTime, Is.EqualTo(sim));
       clock.StartSlowmo(0.5);
       Assert.That(clock.Advance(0.02, out _), Is.EqualTo(0.02 * GameClock.SlowmoScale).Within(1e-15));
+      Assert.That(clock.LastSimDt, Is.EqualTo(0.02 * GameClock.SlowmoScale).Within(1e-15), "LastSimDt ignores slow motion");
       Assert.That(clock.RealTime, Is.EqualTo(0.02 * 5).Within(1e-12));
       Assert.Throws<ArgumentOutOfRangeException>(() => clock.Advance(-0.01, out _));
       Assert.Throws<ArgumentOutOfRangeException>(() => clock.AddHitstop(double.NaN));
