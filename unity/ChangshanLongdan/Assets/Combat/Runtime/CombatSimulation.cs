@@ -3,13 +3,14 @@ using System.Collections.Generic;
 
 namespace Changshan.Combat
 {
-  // Battle.step's combat core: the clock decides whether the game steps; when it does, the player updates, the soldiers
-  // step their reactions (soldiers.update), the player's active windows hit soldiers once per (window instance, target)
-  // and apply their reactions, every window that hit asks for its hit-stop (the clock keeps the longest) and the player
-  // gains musou as in Battle.resolvePlayerHits; other sources (the musou dragon later) hit through the afterPlayerHits
-  // callback of the same step, like updateDragon after resolvePlayerHits (outside it ApplyExternal is refused); kills
-  // are then collected (resolveKills). Enemy strikes come from the AI in E08; until then InjectStrike plays Battle's
-  // debug.injectStrike. Combo, battle phases, victory and defeat are not ported yet.
+  // Battle.step's combat core: the clock decides whether the game steps; when it does, the player updates, the director
+  // sets the pressure from the kills so far (updatePressure), the soldiers step their AI and reactions (soldiers.update),
+  // the player's active windows hit soldiers once per (window instance, target) and apply their reactions, every window
+  // that hit asks for its hit-stop (the clock keeps the longest) and the player gains musou as in
+  // Battle.resolvePlayerHits; other sources (the musou dragon later) hit through the afterPlayerHits callback of the
+  // same step, like updateDragon after resolvePlayerHits (outside it ApplyExternal is refused); kills are collected
+  // (resolveKills) and the soldiers' strikes land on the player (resolveStrike). InjectStrike plays Battle's
+  // debug.injectStrike. Combo, victory and defeat are not ported yet.
   public sealed class CombatSimulation
   {
     public const double ParryHitstop = 0.06;
@@ -26,6 +27,9 @@ namespace Changshan.Combat
     public HitResolver Resolver { get; }
     public HitStampSource Stamps { get; }
     public Arena Arena { get; }
+    public BattleDirector Director { get; } = new BattleDirector();
+    public DifficultyProfile Difficulty { get; private set; } = Difficulties.Normal;
+    public BattlePhase Phase { get; private set; } = BattlePhase.Opening;
     public IReadOnlyList<HitEvent> Hits => hits; // this frame's hits
     public IReadOnlyList<KillInfo> Kills => kills; // this frame's kills
     public IReadOnlyList<CombatEvent> Events => events; // this frame's events (or the last injected strike's)
@@ -53,6 +57,14 @@ namespace Changshan.Combat
         tz = i < 0 ? 0 : Targets.Z(i);
         return i >= 0;
       };
+      Targets.SetPressure(Difficulty);
+    }
+
+    // Battle.reset(difficulty): takes effect at the next Restart (captain health is set when the soldiers are reset).
+    public void SetDifficulty(DifficultyProfile difficulty)
+    {
+      Difficulty = difficulty ?? throw new ArgumentNullException(nameof(difficulty));
+      Targets.SetPressure(Difficulty);
     }
 
     // One rendered frame (realDt already capped). Returns whether the game stepped. afterPlayerHits runs only when the
@@ -79,7 +91,8 @@ namespace Changshan.Combat
       events.Clear();
       SteppedThisFrame = Driver.Step(realDt, c, aim);
       if (!SteppedThisFrame) return false;
-      // Battle.step: soldiers.update runs after the player's update and before the player's hits are resolved.
+      // Battle.step: pressure from the kills so far, then soldiers.update, then the player's hits are resolved.
+      UpdatePressure();
       Targets.Step(Clock.LastSimDt, Player.X, Player.Y, Player.Z, Arena);
       Resolver.BeginStep();
       var active = Player.ActiveHits;
@@ -107,7 +120,21 @@ namespace Changshan.Combat
         }
       }
       ResolveKills();
+      // Battle.step: the soldiers' strikes of this step land after the player's hits and kills (a soldier killed or
+      // staggered this step still lands the blow it started).
+      var strikes = Targets.Strikes;
+      for (int i = 0; i < strikes.Count; i++) ResolveStrike(strikes[i]);
       return true;
+    }
+
+    // Battle.updatePressure: the director's phase from the kills before this step; a change is an event.
+    void UpdatePressure()
+    {
+      var pressure = Director.Update(KoCount, Difficulty);
+      Targets.SetPressure(Difficulty, pressure.EngageRange, pressure.MaxAttackers);
+      if (pressure.Phase == Phase) return;
+      Phase = pressure.Phase;
+      events.Add(CombatEvent.PhaseChanged(Phase));
     }
 
     // A non-player source inside Step's afterPlayerHits callback. No hit-stop or musou, like the Web dragon.
@@ -133,12 +160,18 @@ namespace Changshan.Combat
       Targets.ClearKills();
     }
 
-    // Battle.debug.injectStrike / resolveStrike: one enemy attack on the player, resolved now (outside a step). A parry
-    // asks for its own hit-stop; a block or a hit through the guard is reported with the strike's position.
+    // Battle.debug.injectStrike / resolveStrike: one enemy attack on the player, resolved now (outside a step).
     public void InjectStrike(EnemyStrike s)
     {
       if (stepping) throw new InvalidOperationException("STEP_REENTRANT");
       events.Clear();
+      ResolveStrike(s);
+    }
+
+    // Battle.resolveStrike: a parry asks for its own hit-stop; a block or a hit through the guard is reported with the
+    // strike's position.
+    void ResolveStrike(EnemyStrike s)
+    {
       events.Add(CombatEvent.EnemyStrike(s.X, s.Z, s.Heavy));
       var p = Player;
       double hpBefore = p.Hp;
@@ -163,11 +196,15 @@ namespace Changshan.Combat
 
     public void Interrupt() => Driver.Interrupt();
 
+    // Battle.reset without the soldiers: the caller refills or resets Targets first (their rng stream continues).
     public void Restart()
     {
       if (stepping) throw new InvalidOperationException("STEP_REENTRANT");
       Driver.Restart();
       Resolver.Clear();
+      Director.Reset();
+      Phase = BattlePhase.Opening;
+      Targets.SetPressure(Difficulty);
       Targets.ClearKills();
       hits.Clear();
       kills.Clear();

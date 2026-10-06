@@ -3,10 +3,9 @@ namespace Changshan.Combat
   // src/entities/enemies.ts Kind; declaration order and values match the Web.
   public enum EnemyKind : byte { Spear = 0, Sword = 1, Captain = 2 }
 
-  // src/entities/enemies.ts State. E07 ports the reaction states with the Web's values; the AI states (Formation, March,
-  // Engage, Windup, Strike, Recover) are E08 and collapse to Idle here: a soldier stands still, and a reaction that ends
-  // returns to Idle where the Web returns to Engage or March.
-  public enum EnemyState : byte { Idle = 0, Flinch = 6, Air = 7, Knockback = 8, Down = 9, Getup = 10, Dead = 11 }
+  // src/entities/enemies.ts State with the Web's values. Idle is the Web's Formation (standing, facing the player);
+  // March, Engage, Windup, Strike and Recover are the AI (E08); the reaction states are E07.
+  public enum EnemyState : byte { Idle = 0, March = 1, Engage = 2, Windup = 3, Strike = 4, Recover = 5, Flinch = 6, Air = 7, Knockback = 8, Down = 9, Getup = 10, Dead = 11 }
 
   public readonly struct Spawn
   {
@@ -27,7 +26,7 @@ namespace Changshan.Combat
     }
   }
 
-  // EnemyStore.Strike: one enemy attack landing on the player (from the AI in E08; injected for tests and dev until then).
+  // EnemyStore.Strike: one enemy attack landing on the player (from the AI's Strike state, or injected for tests and dev).
   public readonly struct EnemyStrike
   {
     public readonly double Damage, X, Z;

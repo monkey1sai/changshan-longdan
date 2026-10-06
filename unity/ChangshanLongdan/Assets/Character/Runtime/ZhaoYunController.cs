@@ -22,6 +22,9 @@ namespace Changshan.Character
     public CombatSimulation Simulation { get; private set; }
     public PlayerDriver Driver => Simulation.Driver;
     public TrainingDummies Dummies { get; private set; }
+    public bool PressureCrowd { get; private set; }
+    TrainingDummies sceneDummies, crowd;
+    Vector3 groundScale = Vector3.one;
     public LogicDisplayMapping Mapping { get; private set; }
     public IRawInputSource InputSource { get; set; }
     public Camera ViewCamera { get; set; }
@@ -57,7 +60,8 @@ namespace Changshan.Character
       Mapping = new LogicDisplayMapping(transform.position, transform.eulerAngles.y, ArenaLayout.StartX, ArenaLayout.StartZ, ArenaLayout.StartFacing);
       character = GetComponent<ZhaoYunCharacter>();
       var found = FindObjectsByType<TrainingDummies>();
-      Build(found.Length > 0 ? found[0] : null);
+      sceneDummies = found.Length > 0 ? found[0] : null;
+      Build(sceneDummies);
       if (InputSource == null) InputSource = new LegacyInputSource();
     }
 
@@ -72,7 +76,53 @@ namespace Changshan.Character
     {
       Dummies = dummies;
       var targets = new HitTargets(dummies != null ? dummies.Dummies.Count : 0);
+      var difficulty = Simulation != null ? Simulation.Difficulty : Difficulties.Normal;
       Simulation = new CombatSimulation(targets);
+      Simulation.SetDifficulty(difficulty);
+      ResetFight();
+    }
+
+    // E08: the castle's 300 soldiers as capsules around the character (the scene ground is widened to hold them), with
+    // the AI on; off again returns to the authored dummies.
+    public void UsePressureCrowd(bool on)
+    {
+      Initialise();
+      if (on == PressureCrowd) return;
+      PressureCrowd = on;
+      var ground = GameObject.Find("Ground");
+      if (on)
+      {
+        Material material = null;
+        if (sceneDummies != null && sceneDummies.Dummies.Count > 0)
+        {
+          var renderer = sceneDummies.Dummies[0].GetComponent<MeshRenderer>();
+          if (renderer != null) material = renderer.sharedMaterial;
+        }
+        crowd = CrowdSpawner.Create("Pressure Crowd", CastleLayout.Spawns(), Mapping, material);
+        if (sceneDummies != null) sceneDummies.gameObject.SetActive(false);
+        if (ground != null)
+        {
+          groundScale = ground.transform.localScale;
+          ground.transform.localScale = new Vector3(groundScale.x * 12, groundScale.y, groundScale.z * 12);
+        }
+        UseDummies(crowd);
+      }
+      else
+      {
+        if (crowd != null) Destroy(crowd.gameObject);
+        crowd = null;
+        if (ground != null) ground.transform.localScale = groundScale;
+        if (sceneDummies != null) sceneDummies.gameObject.SetActive(true);
+        UseDummies(sceneDummies);
+      }
+    }
+
+    // Battle.reset(difficulty): the next difficulty in order, and a fresh fight on it (captain health follows).
+    public void CycleDifficulty()
+    {
+      Initialise();
+      var next = Difficulties.All[((int)Simulation.Difficulty.Id + 1) % Difficulties.All.Count];
+      Simulation.SetDifficulty(next);
       ResetFight();
     }
 
@@ -82,6 +132,8 @@ namespace Changshan.Character
       if (Paused) return;
       if (Input.GetKeyDown(KeyCode.F4)) InjectStrike(false);
       if (Input.GetKeyDown(KeyCode.F5)) InjectStrike(true);
+      if (Input.GetKeyDown(KeyCode.F6)) CycleDifficulty();
+      if (Input.GetKeyDown(KeyCode.F7)) UsePressureCrowd(!PressureCrowd);
     }
 
     // One frame: read input, then simulate unless paused. Public so tests can step deterministically.
@@ -251,11 +303,13 @@ namespace Changshan.Character
       var p = Simulation.Player;
       string move = p.Move == null ? "-" : p.Move.Id.ToString();
       string text = string.Format(CultureInfo.InvariantCulture,
-        "State {0}  Move {1} {2:0.00}s  Musou {3:0}  HP {8:0}\nHits {4}  KO {9}  Hit-stop {5:0.000}s  Dummies {6}/{7}\nLast {10}  (F3 hides, F4/F5 strike)",
+        "State {0}  Move {1} {2:0.00}s  Musou {3:0}  HP {8:0}\nHits {4}  KO {9}  Hit-stop {5:0.000}s  Soldiers {6}/{7}\n{11} {12}  Engaged {13}  Attackers {14}/{15}  AI {16}\nLast {10}  (F3 hides, F4/F5 strike, F6 difficulty, F7 crowd 300)",
         p.State, move, p.MoveTime, p.Musou, Simulation.TotalHits, Math.Max(0, Simulation.Clock.Hitstop),
-        Simulation.Targets.AliveCount, Simulation.Targets.Count, p.Hp, Simulation.KoCount, LastHit);
-      GUI.Box(new UnityEngine.Rect(50, 300, 1000, 120), "");
-      GUI.Label(new UnityEngine.Rect(75, 310, 950, 110), text, hudStyle);
+        Simulation.Targets.AliveCount, Simulation.Targets.Count, p.Hp, Simulation.KoCount, LastHit,
+        Simulation.Difficulty.Name, Simulation.Phase, Simulation.Targets.EngagedCount, Simulation.Targets.Attackers, Simulation.Targets.MaxAttackers,
+        Simulation.Targets.AiEnabled ? "on" : "off");
+      GUI.Box(new UnityEngine.Rect(50, 300, 1000, 150), "");
+      GUI.Label(new UnityEngine.Rect(75, 310, 950, 140), text, hudStyle);
     }
   }
 }

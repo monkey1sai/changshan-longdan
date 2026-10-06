@@ -61,7 +61,7 @@ namespace Changshan.Foundation.Tests
     public static HitTargets Targets(Dictionary<string, object> scenario)
     {
       var spawns = L(scenario["spawns"]);
-      var targets = new HitTargets(spawns.Count);
+      var targets = new HitTargets(spawns.Count) { AiEnabled = false }; // the E07 harness replays the reactions without the AI
       var list = new List<Spawn>();
       foreach (var item in spawns)
       {

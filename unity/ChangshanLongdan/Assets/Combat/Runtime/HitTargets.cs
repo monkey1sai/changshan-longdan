@@ -3,35 +3,49 @@ using System.Collections.Generic;
 
 namespace Changshan.Combat
 {
-  // Port of src/entities/enemies.ts EnemyStore without the AI (E08): SoA state in single precision like the Web's
-  // Float32Array (every store rounds the same way), the spatial hash (hit order and rng consumption order follow the
-  // Web), the reaction state machine (flinch, air, knockback, down, get-up), the soldier/captain rules, separation and
-  // the arena constraint. A soldier that is not reacting stands like the Web's Formation state (brakes, turns toward
-  // the player); a reaction that ends returns there instead of to the AI's Engage/March.
+  // Port of src/entities/enemies.ts EnemyStore: SoA state in single precision like the Web's Float32Array (every store
+  // rounds the same way), the spatial hash (hit order and rng consumption order follow the Web), the reaction state
+  // machine (E07: flinch, air, knockback, down, get-up), and the AI (E08: engagement by distance every 0.2 s, attack
+  // tokens, marching, circling on rings, windup/strike/recover), the soldier/captain rules, separation and the arena
+  // constraint. AiEnabled false keeps the E07 behaviour: a soldier that is not reacting stands like the Web's Formation
+  // state and a reaction that ends returns there.
   public sealed class HitTargets
   {
     public const double BodyRadius = 0.42;
     public const double Gravity = 25;
     public const uint DefaultSeed = 7;
+    public const double ReleaseRange = 42, EngageTick = 0.2;
+    public const int MaxEngaged = 54, MinEngaged = 20, RingSize = 9;
     const double Tau = Math.PI * 2;
 
-    readonly float[] x, y, z, vx, vy, vz, yaw, hp, maxHp, stateTime, flash, phase, moveBlend, spin, spinVel, cooldown, scale, side;
+    readonly float[] x, y, z, vx, vy, vz, yaw, hp, maxHp, stateTime, flash, phase, moveBlend, spin, spinVel, cooldown, scale, side, ring, dist2;
     readonly EnemyState[] state;
     readonly EnemyKind[] kind;
-    readonly bool[] alive;
+    readonly bool[] alive, engaged, token;
     readonly SpatialHash hash = new SpatialHash(2);
     readonly List<int> candidates = new List<int>();
     readonly List<int> neighbors = new List<int>();
+    readonly List<int> order = new List<int>();
     readonly List<KillInfo> kills = new List<KillInfo>();
+    readonly List<EnemyStrike> strikes = new List<EnemyStrike>();
     readonly Mulberry32 rng;
+    readonly Comparison<int> byDistance;
+    double engageTimer, tokenTimer;
 
     public int Capacity { get; }
     public int Count { get; private set; }
     public int AliveCount { get; private set; }
+    public int Attackers { get; private set; } // soldiers holding an attack token
+    public IReadOnlyList<KillInfo> Kills => kills; // soldiers killed since ClearKills (CombatSimulation drains it each step)
+    public IReadOnlyList<EnemyStrike> Strikes => strikes; // this step's attacks on the player (Step clears it first)
+    public DifficultyProfile Difficulty { get; private set; } = Difficulties.Normal;
+    public double EngageRange { get; private set; } = Difficulties.Normal.EngageRange;
+    public int MaxAttackers { get; private set; } = Difficulties.Normal.MaxAttackers;
     // E05 reference mode: soldiers never run update() in the Web hit-parity harness, so Step does nothing while this is
     // set (hits still set reactions and velocities; they are just never integrated).
     public bool Static { get; set; }
-    public IReadOnlyList<KillInfo> Kills => kills; // soldiers killed since ClearKills (CombatSimulation drains it each step)
+    // E07 reference mode when false: no engagement, no tokens, no marching or attacking; reactions return to standing.
+    public bool AiEnabled { get; set; } = true;
 
     // The Web seeds the rng once per EnemyStore and does not reseed on reset; the same here (Reset continues the stream).
     public HitTargets(int capacity, uint seed = DefaultSeed)
@@ -40,11 +54,23 @@ namespace Changshan.Combat
       Capacity = capacity;
       float[] F() => new float[capacity];
       x = F(); y = F(); z = F(); vx = F(); vy = F(); vz = F(); yaw = F(); hp = F(); maxHp = F(); stateTime = F(); flash = F();
-      phase = F(); moveBlend = F(); spin = F(); spinVel = F(); cooldown = F(); scale = F(); side = F();
+      phase = F(); moveBlend = F(); spin = F(); spinVel = F(); cooldown = F(); scale = F(); side = F(); ring = F(); dist2 = F();
       state = new EnemyState[capacity];
       kind = new EnemyKind[capacity];
       alive = new bool[capacity];
+      engaged = new bool[capacity];
+      token = new bool[capacity];
       rng = new Mulberry32(seed);
+      // The Web sorts with a stable sort on Float32 distances; equal distances keep index order.
+      byDistance = (a, b) => dist2[a] != dist2[b] ? dist2[a].CompareTo(dist2[b]) : a.CompareTo(b);
+    }
+
+    // EnemyStore.setPressure: the difficulty, with the director's phase bonuses applied by the caller.
+    public void SetPressure(DifficultyProfile difficulty, double? engageRange = null, int? maxAttackers = null)
+    {
+      Difficulty = difficulty ?? throw new ArgumentNullException(nameof(difficulty));
+      EngageRange = engageRange ?? difficulty.EngageRange;
+      MaxAttackers = maxAttackers ?? difficulty.MaxAttackers;
     }
 
     // EnemyStore.reset: the rng is consumed in the Web's order (hp, state time, phase, cooldown, side, scale).
@@ -53,7 +79,10 @@ namespace Changshan.Combat
       if (spawns == null) throw new ArgumentNullException(nameof(spawns));
       if (spawns.Count > Capacity) throw new InvalidOperationException($"HIT_TARGETS_FULL: {spawns.Count} spawns, capacity {Capacity}");
       Count = AliveCount = spawns.Count;
+      Attackers = 0;
+      engageTimer = tokenTimer = 0;
       kills.Clear();
+      strikes.Clear();
       for (int i = 0; i < spawns.Count; i++)
       {
         var s = spawns[i];
@@ -64,7 +93,7 @@ namespace Changshan.Combat
         vx[i] = vy[i] = vz[i] = 0;
         yaw[i] = (float)s.Yaw;
         kind[i] = s.Kind;
-        hp[i] = (float)(captain ? 230 : rng.Range(40, 52)); // normal difficulty: captainHp 1
+        hp[i] = (float)(captain ? 230 * Difficulty.CaptainHp : rng.Range(40, 52));
         maxHp[i] = hp[i];
         state[i] = EnemyState.Idle;
         stateTime[i] = (float)(rng.Next() * 2);
@@ -73,9 +102,11 @@ namespace Changshan.Combat
         moveBlend[i] = 0;
         spin[i] = spinVel[i] = 0;
         cooldown[i] = (float)rng.Range(0.5, 3);
+        ring[i] = 3;
         side[i] = rng.Next() < 0.5 ? -1 : 1;
         scale[i] = (float)(captain ? 1.22 : rng.Range(0.96, 1.04));
         alive[i] = true;
+        engaged[i] = token[i] = false;
       }
       RebuildHash();
     }
@@ -93,10 +124,12 @@ namespace Changshan.Combat
       vx[i] = vy[i] = vz[i] = yaw[i] = stateTime[i] = flash[i] = phase[i] = moveBlend[i] = spin[i] = spinVel[i] = cooldown[i] = 0;
       scale[i] = (float)size;
       side[i] = 1;
+      ring[i] = 3;
       hp[i] = maxHp[i] = health;
       state[i] = EnemyState.Idle;
       kind[i] = EnemyKind.Spear;
       alive[i] = true;
+      engaged[i] = token[i] = false;
       AliveCount++;
       hash.Insert(i, x[i], z[i]);
       return i;
@@ -116,7 +149,10 @@ namespace Changshan.Combat
     public void Clear()
     {
       Count = AliveCount = 0;
+      Attackers = 0;
+      engageTimer = tokenTimer = 0;
       kills.Clear();
+      strikes.Clear();
       hash.Clear();
     }
 
@@ -134,12 +170,26 @@ namespace Changshan.Combat
     public double Flash(int i) => flash[Check(i)];
     public double Spin(int i) => spin[Check(i)];
     public double SpinVel(int i) => spinVel[Check(i)];
+    public double Cooldown(int i) => cooldown[Check(i)];
+    public double Ring(int i) => ring[Check(i)];
     public float Hp(int i) => hp[Check(i)];
     public float MaxHp(int i) => maxHp[Check(i)];
     public bool Alive(int i) => alive[Check(i)];
+    public bool Engaged(int i) => engaged[Check(i)];
+    public bool Token(int i) => token[Check(i)];
     public EnemyState State(int i) => state[Check(i)];
     public EnemyKind Kind(int i) => kind[Check(i)];
     public double Radius(int i) => BodyRadius * scale[Check(i)];
+
+    public int EngagedCount
+    {
+      get
+      {
+        int n = 0;
+        for (int i = 0; i < Count; i++) if (alive[i] && engaged[i]) n++;
+        return n;
+      }
+    }
 
     // Candidates in the Web's spatial-hash order (applyHit's loop order).
     public List<int> Query(double px, double pz, double radius, List<int> output) => hash.Query(px, pz, radius, output);
@@ -163,18 +213,29 @@ namespace Changshan.Combat
       return best;
     }
 
-    // EnemyStore.update without engagement and tokens (E08): timers, the reaction steps, separation and the arena.
+    // EnemyStore.update: engagement every 0.2 s, tokens every step, then timers, the state steps, separation and the arena.
     public void Step(double dt, double px, double py, double pz, Arena arena)
     {
       if (arena == null) throw new ArgumentNullException(nameof(arena));
+      strikes.Clear();
       if (Static) return;
+      if (AiEnabled)
+      {
+        engageTimer -= dt;
+        if (engageTimer <= 0)
+        {
+          engageTimer = EngageTick;
+          AssignEngagement(px, pz);
+        }
+        AssignTokens(dt, px, pz);
+      }
       for (int i = 0; i < Count; i++)
       {
         if (!alive[i]) continue;
         flash[i] = (float)Math.Max(0, flash[i] - dt * 9);
         cooldown[i] = (float)(cooldown[i] - dt);
         stateTime[i] = (float)(stateTime[i] + dt);
-        StepOne(i, dt, px, pz);
+        StepOne(i, dt, px, py, pz);
         double speed = CombatMath.Hypot(vx[i], vz[i]);
         moveBlend[i] = (float)CombatMath.Damp(moveBlend[i], Math.Min(1, speed / 3.5), 10, dt);
         phase[i] = (float)(phase[i] + speed * dt * 2.3);
@@ -183,19 +244,52 @@ namespace Changshan.Combat
       Separate(px, pz, arena);
     }
 
-    void StepOne(int i, double dt, double px, double pz)
+    void StepOne(int i, double dt, double px, double py, double pz)
     {
       float t = stateTime[i];
       switch (state[i])
       {
         case EnemyState.Idle:
         {
-          // The Web's Formation state: brake and face the player when within ~45 m. The engagement hand-off is E08.
+          // The Web's Formation state: brake and face the player when within ~45 m; engaged soldiers join the fight.
           Brake(i, dt, 8);
           double dx = px - x[i], dz = pz - z[i];
           if (dx * dx + dz * dz < 2000) yaw[i] = (float)CombatMath.DampAngle(yaw[i], Math.Atan2(dx, dz), 1.5, dt);
+          if (engaged[i]) SetState(i, EnemyState.Engage);
           break;
         }
+        case EnemyState.March:
+        {
+          double dx = px - x[i], dz = pz - z[i];
+          double d = CombatMath.Hypot(dx, dz);
+          if (d == 0) d = 1;
+          vx[i] = (float)CombatMath.Damp(vx[i], (dx / d) * 2.8, 4, dt);
+          vz[i] = (float)CombatMath.Damp(vz[i], (dz / d) * 2.8, 4, dt);
+          yaw[i] = (float)CombatMath.DampAngle(yaw[i], Math.Atan2(dx, dz), 6, dt);
+          if (engaged[i]) SetState(i, EnemyState.Engage);
+          break;
+        }
+        case EnemyState.Engage:
+          Engage(i, dt, px, pz);
+          break;
+        case EnemyState.Windup:
+          Brake(i, dt, 10);
+          yaw[i] = (float)CombatMath.DampAngle(yaw[i], Math.Atan2(px - x[i], pz - z[i]), 8, dt);
+          if (t >= (kind[i] == EnemyKind.Captain ? 0.85 : 0.55) * Difficulty.Windup) Strike(i, px, py, pz);
+          break;
+        case EnemyState.Strike:
+          Brake(i, dt, 6);
+          if (t >= 0.14) SetState(i, EnemyState.Recover);
+          break;
+        case EnemyState.Recover:
+          Brake(i, dt, 8);
+          if (t >= 0.5)
+          {
+            ReleaseToken(i);
+            cooldown[i] = (float)rng.Range(2.5, 5.5);
+            SetState(i, EnemyState.Engage);
+          }
+          break;
         case EnemyState.Flinch:
           Brake(i, dt, 5);
           if (t >= 0.42) Recover(i);
@@ -230,6 +324,112 @@ namespace Changshan.Combat
       }
       x[i] = (float)(x[i] + vx[i] * dt);
       z[i] = (float)(z[i] + vz[i] * dt);
+    }
+
+    // EnemyStore.engage: a soldier with a token closes to 1.55 m and winds up under 1.9 m; the others hold their ring,
+    // circling sideways when close to it.
+    void Engage(int i, double dt, double px, double pz)
+    {
+      double dx = x[i] - px, dz = z[i] - pz;
+      double d = Math.Max(CombatMath.Hypot(dx, dz), 1e-3);
+      double nx = dx / d, nz = dz / d;
+      bool hasToken = token[i];
+      double err = d - (hasToken ? 1.55 : ring[i]);
+      double speed = Math.Max(-2.5, Math.Min(err * 2.2, err > 3 ? 5.2 : 3.2));
+      double tx = -nx * speed, tz = -nz * speed;
+      if (!hasToken && Math.Abs(err) < 1.5)
+      {
+        tx += -nz * side[i] * 0.9;
+        tz += nx * side[i] * 0.9;
+      }
+      vx[i] = (float)CombatMath.Damp(vx[i], tx, 6, dt);
+      vz[i] = (float)CombatMath.Damp(vz[i], tz, 6, dt);
+      yaw[i] = (float)CombatMath.DampAngle(yaw[i], Math.Atan2(-dx, -dz), 9, dt);
+      if (hasToken && d < 1.9) SetState(i, EnemyState.Windup);
+    }
+
+    // EnemyStore.strike: lunge forward; the player is hit when within reach, low enough and in front.
+    void Strike(int i, double px, double py, double pz)
+    {
+      SetState(i, EnemyState.Strike);
+      bool captain = kind[i] == EnemyKind.Captain;
+      vx[i] = (float)(Math.Sin(yaw[i]) * 2.2);
+      vz[i] = (float)(Math.Cos(yaw[i]) * 2.2);
+      double dx = px - x[i], dz = pz - z[i];
+      bool inReach = CombatMath.Hypot(dx, dz) < (captain ? 2.9 : 2.4) && py < 1.4;
+      if (inReach && Math.Abs(CombatMath.WrapAngle(Math.Atan2(dx, dz) - yaw[i])) < 1.0)
+        strikes.Add(new EnemyStrike((captain ? 70 : 26) * Difficulty.EnemyDamage, captain, x[i], z[i]));
+    }
+
+    // EnemyStore.assignEngagement: the closest soldiers (stable order) within the engage range join, up to MaxEngaged,
+    // on rings of nine; the rest leave; and at least MinEngaged soldiers march in from formation.
+    void AssignEngagement(double px, double pz)
+    {
+      order.Clear();
+      for (int i = 0; i < Count; i++)
+      {
+        if (!alive[i]) continue;
+        double dx = x[i] - px, dz = z[i] - pz;
+        dist2[i] = (float)(dx * dx + dz * dz);
+        order.Add(i);
+      }
+      order.Sort(byDistance);
+      int engagedCount = 0;
+      for (int k = 0; k < order.Count; k++)
+      {
+        int i = order[k];
+        double d = Math.Sqrt(dist2[i]);
+        bool keep = engaged[i] && d < ReleaseRange;
+        if (engagedCount < MaxEngaged && (d < EngageRange || keep))
+        {
+          engaged[i] = true;
+          ring[i] = (float)(2.7 + 1.25 * Math.Floor(engagedCount / (double)RingSize));
+          engagedCount++;
+        }
+        else if (engaged[i])
+        {
+          engaged[i] = false;
+          ReleaseToken(i);
+          if (state[i] == EnemyState.Engage) SetState(i, EnemyState.March);
+        }
+      }
+      int need = MinEngaged - engagedCount;
+      for (int k = 0; k < order.Count; k++)
+      {
+        if (need <= 0) break;
+        int i = order[k];
+        if (engaged[i]) continue;
+        if (state[i] == EnemyState.Idle) SetState(i, EnemyState.March);
+        if (state[i] == EnemyState.March) need--;
+      }
+    }
+
+    // EnemyStore.assignTokens: at most one token per 0.2-0.6 s, to the closest engaged soldier within 8 m that is
+    // circling, off cooldown and without a token; never more than MaxAttackers at once.
+    void AssignTokens(double dt, double px, double pz)
+    {
+      tokenTimer -= dt;
+      if (tokenTimer > 0 || Attackers >= MaxAttackers) return;
+      int best = -1;
+      double bestD = 64;
+      for (int i = 0; i < Count; i++)
+      {
+        if (!alive[i] || !engaged[i] || token[i]) continue;
+        if (state[i] != EnemyState.Engage || cooldown[i] > 0) continue;
+        double dx = x[i] - px, dz = z[i] - pz;
+        double d2 = dx * dx + dz * dz;
+        if (d2 < bestD)
+        {
+          bestD = d2;
+          best = i;
+        }
+      }
+      if (best >= 0)
+      {
+        token[best] = true;
+        Attackers++;
+        tokenTimer = rng.Range(0.2, 0.6);
+      }
     }
 
     // EnemyStore.separate: grounded soldiers push each other apart, keep 0.95 m from the player, and stay in the arena.
@@ -278,7 +478,7 @@ namespace Changshan.Combat
       }
     }
 
-    // EnemyStore.damage: health, flash, facing and the reaction; a kill records how the body flies. Returns killed.
+    // EnemyStore.damage: health, flash, token release, facing and the reaction; a kill records how the body flies.
     internal bool Damage(int i, HitWindow w, double dirX, double dirZ)
     {
       bool captain = kind[i] == EnemyKind.Captain;
@@ -286,6 +486,7 @@ namespace Changshan.Combat
       double lift = captain ? 0.7 : 1;
       hp[i] = (float)(hp[i] - w.Damage);
       flash[i] = 1;
+      ReleaseToken(i);
       if (hp[i] <= 0)
       {
         alive[i] = false;
@@ -306,9 +507,9 @@ namespace Changshan.Combat
             vx[i] = (float)(dirX * push * 0.4);
             vz[i] = (float)(dirZ * push * 0.4);
           }
-          else
+          // A captain winding up shrugs off a flinch half of the time (the rng draw happens only then, as in the Web).
+          else if (!(captain && state[i] == EnemyState.Windup && rng.Next() < 0.5))
           {
-            // The Web's captain-in-Windup 50 % chance to shrug a flinch needs the Windup state (E08) and cannot occur here.
             SetState(i, EnemyState.Flinch);
             vx[i] = (float)(dirX * push);
             vz[i] = (float)(dirZ * push);
@@ -357,7 +558,15 @@ namespace Changshan.Combat
       stateTime[i] = 0;
     }
 
-    void Recover(int i) => SetState(i, EnemyState.Idle);
+    // EnemyStore.recover: back to the fight (engaged) or the march; without the AI, back to standing.
+    void Recover(int i) => SetState(i, !AiEnabled ? EnemyState.Idle : engaged[i] ? EnemyState.Engage : EnemyState.March);
+
+    void ReleaseToken(int i)
+    {
+      if (!token[i]) return;
+      token[i] = false;
+      Attackers = Math.Max(0, Attackers - 1);
+    }
 
     void Brake(int i, double dt, double lambda)
     {
