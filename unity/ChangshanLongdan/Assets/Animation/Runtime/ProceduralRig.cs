@@ -49,6 +49,8 @@ namespace Changshan.Animation
     public double RunBlend => runBlend;
     public double VisualFacing => visualFacing;
     public Vec3 Tip { get; private set; }
+    // True when this frame's legs were solved to reach the ground (not airborne, lying or flipping).
+    public bool FeetGrounded { get; private set; }
     public Vec3 TipBase { get; private set; }
 
     public ProceduralRig()
@@ -255,7 +257,8 @@ namespace Changshan.Animation
       ThighR.SetEuler(thighR, 0, -0.04);
       KneeL.SetEuler(kneeL, 0, 0);
       KneeR.SetEuler(kneeR, 0, 0);
-      if (!airborne && !lying && Math.Abs(p.Flip) < .05)
+      FeetGrounded = !airborne && !lying && Math.Abs(p.Flip) < .05;
+      if (FeetGrounded)
       {
         footLocalL = StepFoot(footFromL, 1, player.RunPhase * RunPhaseScale, runWeight);
         footLocalR = StepFoot(footFromR, -1, player.RunPhase * RunPhaseScale + Math.PI, runWeight);
@@ -267,6 +270,13 @@ namespace Changshan.Animation
         FootAnchorL.Position = KneeL.LocalToWorld(new Vec3(0, -LowerLeg, 0));
         FootAnchorR.Position = KneeR.LocalToWorld(new Vec3(0, -LowerLeg, 0));
       }
+    }
+
+    // Re-solves the legs so the feet reach these world positions (used by FootPlant after Update).
+    public void PlaceFeet(Vec3 worldL, Vec3 worldR)
+    {
+      SolveLeg(ThighL, KneeL, Root.WorldToLocal(worldL), FootAnchorL, 1);
+      SolveLeg(ThighR, KneeR, Root.WorldToLocal(worldR), FootAnchorR, -1);
     }
 
     Vec3 StepFoot(Vec3 fromLocal, double side, double phase, double run)

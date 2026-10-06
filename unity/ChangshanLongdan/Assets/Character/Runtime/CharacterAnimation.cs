@@ -9,13 +9,15 @@ namespace Changshan.Character
   // Shows the Web procedural rig on the imported Zhao Yun. The rig and skin binding run in the Web (logic) frame; the
   // imported model is glTFast's mirror of the GLB (X negated), so each placed bone's local transform is mirrored back
   // (position x negated, rotation y and z negated) and the model container is pinned to the display frame of the logic
-  // origin. Bones not driven by the Web (spine_01, neck, skirts) keep their imported pose, as in the Web.
+  // origin. Bones not driven by the Web (spine_01, neck, skirts) keep their imported pose, as in the Web. FootPlant
+  // locks planted feet on top of the Web rig (an intentional difference, see FootPlant).
   public sealed class CharacterAnimation
   {
     readonly Dictionary<RigNode, Transform> placed = new Dictionary<RigNode, Transform>();
     Transform container, weapon;
 
     public ProceduralRig Rig { get; } = new ProceduralRig();
+    public FootPlant FootPlant { get; } = new FootPlant();
     public SkinBinding Skin { get; private set; }
     public GameObject BoundModel { get; private set; }
 
@@ -67,12 +69,17 @@ namespace Changshan.Character
       container = weapon = null;
     }
 
-    public void Reset() => Rig.ResetCape();
+    public void Reset()
+    {
+      Rig.ResetCape();
+      FootPlant.Reset();
+    }
 
     // simDt is the game-time step (0 during hit-stop) and simTime the game clock, as Game.updateVisuals passes them.
     public void Step(Player player, double simDt, double simTime, LogicDisplayMapping mapping)
     {
       Rig.Update(player, simDt, simTime);
+      FootPlant.Apply(Rig, player, simDt); // E06 foot plant on top of the Web rig
       if (Skin == null || container == null) return;
       Skin.Update(Rig.Pose.Lh);
       container.SetPositionAndRotation(mapping.ToDisplayPosition(0, 0, 0), Quaternion.Euler(0, (float)mapping.BaseYawDegrees, 0));

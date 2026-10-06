@@ -190,7 +190,7 @@ export async function runRigScenario(s: RigScenario, hz: number, glb: ArrayBuffe
     if (full && frame % BONE_EVERY === 0) record.b = Object.fromEntries(BONES.map((name) => [name, boneRecord(rig.bones[name])]))
     frames.push(record)
   }
-  return { id: s.id, hz, holds: s.holds, presses: s.presses, ops: s.ops, frames, started }
+  return { id: s.id, hz, duration: s.duration, holds: s.holds, presses: s.presses, ops: s.ops, frames, started }
 }
 
 // Bind pose of the GLB's nodes as the loader builds them, for the C# bone tree.

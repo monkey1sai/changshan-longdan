@@ -151,6 +151,39 @@ namespace Changshan.Foundation.Tests
       return replay;
     }
 
+    // Runs a route scenario at its rate and measures what would be shown, with or without the E06 foot plant.
+    public static AnimationMetrics Measure(Dictionary<string, object> fixture, Dictionary<string, object> scenario, bool footPlant)
+    {
+      double hz = D(scenario["hz"]);
+      double dt = 1 / hz;
+      var (rig, skin) = CreateRig(fixture);
+      var plant = new FootPlant();
+      var metrics = new AnimationMetrics();
+      var player = new Player();
+      var arena = ArenaLayout.CreateArena();
+      player.Reset(ArenaLayout.StartX, ArenaLayout.StartZ, ArenaLayout.StartFacing);
+      rig.ResetCape();
+      var ops = OpsByFrame(scenario, hz);
+      int frames = (int)Math.Round(D(scenario["duration"]) * hz);
+      for (int frame = 0; frame < frames; frame++)
+      {
+        if (ops.TryGetValue(frame, out var list))
+          foreach (var op in list)
+          {
+            if ((string)op[0] == "hit") player.TakeHit(D(op[1]), B(op[2]), D(op[3]), D(op[4]));
+            else player.GainMusou(D(op[1]));
+          }
+        player.Update(dt, ControlsAt(scenario, frame, hz), null, arena);
+        rig.Update(player, dt, (frame + 1) * dt);
+        var desiredL = rig.FootAnchorL.Position;
+        var desiredR = rig.FootAnchorR.Position;
+        if (footPlant) plant.Apply(rig, player, dt);
+        skin.Update(rig.Pose.Lh);
+        metrics.Add(player, rig, rig.FootAnchorL.Position, rig.FootAnchorR.Position, desiredL, desiredR);
+      }
+      return metrics;
+    }
+
     static string StateName(PlayerState s)
     {
       string name = s.ToString();
@@ -175,7 +208,7 @@ namespace Changshan.Foundation.Tests
 
     static int FrameOf(double t, double hz) => Math.Max(0, (int)Math.Ceiling(t * hz - 1e-9));
 
-    static PlayerControls ControlsAt(Dictionary<string, object> scenario, int frame, double hz)
+    public static PlayerControls ControlsAt(Dictionary<string, object> scenario, int frame, double hz)
     {
       var c = new PlayerControls();
       foreach (var item in L(scenario["holds"]))
