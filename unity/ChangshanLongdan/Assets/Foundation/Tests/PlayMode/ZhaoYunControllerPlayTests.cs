@@ -47,6 +47,7 @@ namespace Changshan.Foundation.Tests
       root.transform.SetPositionAndRotation(new Vector3(3, 0, 5), Quaternion.Euler(0, 160, 0));
       var controller = root.AddComponent<ZhaoYunController>();
       controller.enabled = false; // stepped explicitly below
+      controller.UseDummies(null); // movement and move-route checks without targets (a loaded scene may have dummies)
       input = new ScriptedInput();
       controller.InputSource = input;
       controller.ViewCamera = view;

@@ -95,7 +95,7 @@ namespace Changshan.Foundation
       GUI.Box(new Rect(50, 50, 1000, 240), "");
       GUI.Label(new Rect(75, 70, 950, 220),
         "Changshan Longdan / E02 engine foundation\n" +
-        "Validation scene - Zhao Yun runtime import (E03); gameplay pending\n" +
+        "Validation scene - Zhao Yun (E03), input and moves (E04), hits on training dummies (E05)\n" +
         Application.unityVersion + " / " + SystemInfo.graphicsDeviceType + " / " + Screen.width + " x " + Screen.height +
         "\nRun: " + runId, style);
     }
