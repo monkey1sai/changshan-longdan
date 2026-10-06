@@ -4,13 +4,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Changshan.Combat;
+using Changshan.Feedback;
 using UnityEngine;
 
 namespace Changshan.Character
 {
-  // E06 video evidence: with "-e06Route <dir>" the Player plays the plan's route with scripted keys at a fixed 30 Hz
-  // step and writes one screenshot per frame to <dir>; scripts/record-route.mjs turns them into a video. Without the
-  // argument (normal play, runner validation) nothing happens.
+  // Video evidence: with "-e06Route <dir>" (E06 animation route, no dummies) or "-e07Feedback <dir>" (E07 feedback
+  // route: hits, kills, a shockwave, strikes on the player, the musou finale) the Player plays a scripted route at a fixed
+  // 30 Hz step, writes one screenshot per frame, the per-frame trace (game time, state, hits, damage and the feedback
+  // cues of that frame) and the sound mixed offline at the same clock (audio.wav, each frame's sounds starting at that
+  // frame's first sample); scripts/record-route.mjs turns them into a video. Without an argument nothing happens.
   public sealed class RouteRecorder : MonoBehaviour
   {
     public const double FrameSeconds = 1.0 / 30;
@@ -34,6 +37,21 @@ namespace Changshan.Character
     public const double Duration = 23.5;
     const double MusouGainAt = 18.9;
 
+    // E07: a string into the training dummies, a charge, JA's shockwave and heavy landing, a dodge, a light and a heavy
+    // strike on the player, a perfect guard and a guarded heavy strike, then the musou with its finale.
+    static readonly (double At, string Key, bool Down)[] FeedbackRoute =
+    {
+      (0.5, "KeyJ", true), (0.55, "KeyJ", false), (0.8, "KeyJ", true), (0.85, "KeyJ", false), (1.1, "KeyJ", true), (1.15, "KeyJ", false),
+      (1.4, "KeyJ", true), (1.45, "KeyJ", false), (1.7, "KeyK", true), (1.75, "KeyK", false),
+      (3.6, "Space", true), (3.65, "Space", false), (3.85, "KeyJ", true), (3.9, "KeyJ", false),
+      (5.3, "ShiftLeft", true), (5.35, "ShiftLeft", false),
+      (8.4, "KeyF", true), (9.6, "KeyF", false),
+      (10.6, "KeyL", true), (10.65, "KeyL", false),
+    };
+    static readonly (double At, bool Heavy)[] FeedbackStrikes = { (5.9, false), (6.3, true), (8.45, false), (9.3, true) };
+    public const double FeedbackDuration = 15.5;
+    const double FeedbackMusouGainAt = 10.3;
+
     sealed class ScriptedKeys : IRawInputSource
     {
       public readonly List<(string Key, bool Down)> Pending = new List<(string, bool)>();
@@ -47,10 +65,19 @@ namespace Changshan.Character
       }
     }
 
-    [Serializable] public sealed class RouteFrame { public int f; public double simTime; public string state; public string move; public double x; public double z; }
-    [Serializable] public sealed class RouteLog { public double duration; public int frameRate; public int pausedFrames; public RouteFrame[] frames; }
+    [Serializable] public sealed class RouteFrame
+    {
+      public int f; public double simTime; public string state; public string move; public double x; public double z;
+      public bool stepped; public int hits; public double damage; public int kills; public long audioSample; public string[] cues;
+    }
+    [Serializable] public sealed class RouteLog
+    {
+      public string mode; public double duration; public int frameRate; public int pausedFrames; public int audioRate; public long audioSamples;
+      public RouteFrame[] frames;
+    }
 
     string output;
+    bool feedbackRoute;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void Boot()
@@ -58,9 +85,13 @@ namespace Changshan.Character
       if (Application.isEditor) return;
       var args = Environment.GetCommandLineArgs();
       int i = Array.IndexOf(args, "-e06Route");
-      if (i < 0 || i + 1 >= args.Length) return;
-      var recorder = new GameObject("E06 Route Recorder").AddComponent<RouteRecorder>();
-      recorder.output = args[i + 1];
+      int j = Array.IndexOf(args, "-e07Feedback");
+      bool feedback = i < 0 && j >= 0;
+      int at = feedback ? j : i;
+      if (at < 0 || at + 1 >= args.Length) return;
+      var recorder = new GameObject(feedback ? "E07 Feedback Recorder" : "E06 Route Recorder").AddComponent<RouteRecorder>();
+      recorder.output = args[at + 1];
+      recorder.feedbackRoute = feedback;
     }
 
     IEnumerator Start()
@@ -82,12 +113,38 @@ namespace Changshan.Character
         Application.Quit(2);
         yield break;
       }
-      // The dummies would block the view of the body; this video reviews animation, not hits.
-      foreach (var dummies in FindObjectsByType<TrainingDummies>()) dummies.gameObject.SetActive(false);
       controller.enabled = false;
       var keys = new ScriptedKeys();
       controller.InputSource = keys;
-      controller.UseDummies(null);
+      if (!feedbackRoute)
+      {
+        // The dummies would block the view of the body; the E06 video reviews animation, not hits.
+        foreach (var dummies in FindObjectsByType<TrainingDummies>()) dummies.gameObject.SetActive(false);
+        controller.UseDummies(null);
+      }
+      else controller.Restart();
+      var route = feedbackRoute ? FeedbackRoute : Route;
+      double duration = feedbackRoute ? FeedbackDuration : Duration;
+      double gainAt = feedbackRoute ? FeedbackMusouGainAt : MusouGainAt;
+      var strikes = feedbackRoute ? FeedbackStrikes : Array.Empty<(double At, bool Heavy)>();
+
+      // Sound on the recording clock: the live output stops pulling the mixer, each frame's sounds start at that frame's
+      // first sample, and the mixer is rendered offline frame by frame into audio.wav.
+      var effects = controller.Effects;
+      var bank = effects.Sound;
+      var mixer = bank?.Mixer;
+      long audioSample = 0;
+      int samplesPerFrame = mixer != null ? (int)Math.Round(mixer.Rate * FrameSeconds) : 0;
+      var audio = new List<float>();
+      float[] block = mixer != null ? new float[samplesPerFrame * 2] : null;
+      if (bank != null)
+      {
+        foreach (var live in FindObjectsByType<FeedbackAudioOutput>()) live.Mixer = null;
+        if (effects.Prewarm != null) while (!effects.Prewarm.IsCompleted) yield return null;
+        bank.UseClock(() => audioSample / (double)mixer.Rate, () => audioSample);
+      }
+      var cues = new List<FeedbackCue>();
+      var traced = new List<FeedbackFrame>();
       // The window may lose focus while recording; the input is scripted, so focus loss must not pause the simulation.
       controller.IgnoreFocusLoss = true;
       controller.SetFocus(true);
@@ -101,16 +158,20 @@ namespace Changshan.Character
         return controller.Mapping.ToDisplayPosition(p.X, 0, p.Z);
       }
       var offset = view != null ? view.transform.position - Ground() : Vector3.zero;
-      int frames = (int)Math.Round(Duration / FrameSeconds);
-      int next = 0;
+      int frames = (int)Math.Round(duration / FrameSeconds);
+      int next = 0, nextStrike = 0;
       bool gained = false;
-      var log = new RouteLog { duration = Duration, frameRate = (int)Math.Round(1 / FrameSeconds), frames = new RouteFrame[frames] };
+      var log = new RouteLog
+      {
+        mode = feedbackRoute ? "e07-feedback" : "e06-route", duration = duration, frameRate = (int)Math.Round(1 / FrameSeconds),
+        audioRate = mixer?.Rate ?? 0, frames = new RouteFrame[frames],
+      };
       string logPath = Path.Combine(output, "route.json");
       for (int frame = 0; frame < frames; frame++)
       {
         double t = frame * FrameSeconds;
-        while (next < Route.Length && Route[next].At <= t + 1e-9) keys.Pending.Add((Route[next].Key, Route[next++].Down));
-        if (!gained && t >= MusouGainAt)
+        while (next < route.Length && route[next].At <= t + 1e-9) keys.Pending.Add((route[next].Key, route[next++].Down));
+        if (!gained && t >= gainAt)
         {
           controller.Simulation.Player.GainMusou(PlayerTuning.Default.MusouMax);
           gained = true;
@@ -124,21 +185,69 @@ namespace Changshan.Character
           Application.Quit(3);
           yield break;
         }
+        long traceStart = effects.Trace.FrameTotal;
         controller.Tick(FrameSeconds);
+        while (nextStrike < strikes.Length && strikes[nextStrike].At <= t + 1e-9) controller.InjectStrike(strikes[nextStrike++].Heavy);
         if (view != null) view.transform.position = Ground() + offset;
         var player = controller.Simulation.Player;
-        log.frames[frame] = new RouteFrame
+        // This frame's trace (the step and any strike) and its cues.
+        effects.Trace.CopyFrames(traced);
+        effects.Trace.CopyCues(cues);
+        var entry = new RouteFrame
         {
           f = frame, simTime = controller.Simulation.Clock.SimTime, state = player.State.ToString(), move = player.Move?.Id.ToString() ?? "", x = player.X, z = player.Z,
+          stepped = controller.Simulation.SteppedThisFrame, audioSample = audioSample,
         };
+        var names = new List<string>();
+        foreach (var tf in traced)
+        {
+          if (tf.Frame < traceStart) continue;
+          entry.hits += tf.Hits;
+          entry.damage += tf.Damage;
+          entry.kills += tf.Kills;
+          foreach (var c in cues) if (c.Frame == tf.Frame) names.Add(c.Name);
+        }
+        entry.cues = names.ToArray();
+        log.frames[frame] = entry;
+        if (mixer != null)
+        {
+          Array.Clear(block, 0, block.Length);
+          mixer.Render(block, samplesPerFrame, 2);
+          audio.AddRange(block);
+          audioSample += samplesPerFrame;
+        }
         ScreenCapture.CaptureScreenshot(Path.Combine(output, $"frame_{frame:0000}.png"));
         yield return null;
       }
       yield return null;
       yield return null;
-      // Per-frame game time, state and move: scripts/record-route.mjs checks the simulation never stalled and the route ran.
+      // Per-frame game time, state, move and feedback: scripts/record-route.mjs checks the route ran and encodes it.
+      log.audioSamples = audioSample;
       File.WriteAllText(logPath, JsonUtility.ToJson(log));
+      if (mixer != null) WriteWav(Path.Combine(output, "audio.wav"), audio, mixer.Rate);
       Application.Quit(0);
+    }
+
+    // 16-bit stereo PCM; samples beyond full scale are clipped like the output device would.
+    static void WriteWav(string path, List<float> interleaved, int rate)
+    {
+      using (var w = new BinaryWriter(File.Create(path)))
+      {
+        int bytes = interleaved.Count * 2;
+        w.Write(System.Text.Encoding.ASCII.GetBytes("RIFF"));
+        w.Write(36 + bytes);
+        w.Write(System.Text.Encoding.ASCII.GetBytes("WAVEfmt "));
+        w.Write(16);
+        w.Write((short)1);
+        w.Write((short)2);
+        w.Write(rate);
+        w.Write(rate * 4);
+        w.Write((short)4);
+        w.Write((short)16);
+        w.Write(System.Text.Encoding.ASCII.GetBytes("data"));
+        w.Write(bytes);
+        foreach (var v in interleaved) w.Write((short)Math.Round(Math.Max(-1, Math.Min(1, v)) * 32767));
+      }
     }
   }
 }

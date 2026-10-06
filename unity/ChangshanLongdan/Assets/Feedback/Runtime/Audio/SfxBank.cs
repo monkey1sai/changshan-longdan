@@ -16,7 +16,8 @@ namespace Changshan.Feedback.Audio
 
     readonly SfxSynth synth;
     readonly SfxMixer mixer;
-    readonly Func<double> audioTime;
+    Func<double> audioTime;
+    Func<long> scheduleAt; // null: start with the next audio buffer
     readonly Dictionary<int, float[][]> cache = new Dictionary<int, float[][]>();
     readonly Mulberry32 variantRng;
     readonly Mulberry32 renderRng;
@@ -39,6 +40,13 @@ namespace Changshan.Feedback.Audio
     }
 
     public SfxMixer Mixer => mixer;
+
+    // Offline rendering (recordings): sounds start at the sample scheduleAt returns, and the hit spacing uses audioTime.
+    public void UseClock(Func<double> audioTime, Func<long> scheduleAt)
+    {
+      this.audioTime = audioTime ?? throw new ArgumentNullException(nameof(audioTime));
+      this.scheduleAt = scheduleAt ?? throw new ArgumentNullException(nameof(scheduleAt));
+    }
 
     // Renders every variant now (call off the frame loop if the first sounds must not wait for rendering).
     public void Prewarm()
@@ -75,7 +83,7 @@ namespace Changshan.Feedback.Audio
       var clips = Clips(sound, heavy, kind, count);
       var clip = clips[(int)Math.Floor(variantRng.Next() * clips.Length)];
       LastSound = sound;
-      return LastRequest = mixer.Play(clip, pan);
+      return LastRequest = mixer.Play(clip, pan, 1, scheduleAt?.Invoke() ?? -1);
     }
 
     public void Swing(bool heavy) => Play(Sound.Swing, heavy);
