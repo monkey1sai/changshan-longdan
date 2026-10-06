@@ -134,8 +134,8 @@ namespace Changshan.Foundation.Tests
         }
       }
       Assert.That(sawFrozen, Is.True);
-      Assert.That(seen, Does.Contain(FeedbackEventType.Swing).And.Contain(FeedbackEventType.Hit).And.Contain(FeedbackEventType.Kill)
-        .And.Contain(FeedbackEventType.MusouReady));
+      Assert.That(seen, Has.Member(FeedbackEventType.Swing).And.Member(FeedbackEventType.Hit).And.Member(FeedbackEventType.Kill)
+        .And.Member(FeedbackEventType.MusouReady));
       Assert.That(seen.Count(t => t == FeedbackEventType.MusouReady), Is.EqualTo(1), "announced once when the gauge fills");
 
       sim.InjectStrike(new EnemyStrike(26, false, sim.Player.X, sim.Player.Z + 2));
@@ -146,7 +146,7 @@ namespace Changshan.Foundation.Tests
       sim.Player.GainMusou(100);
       sim.Step(1.0 / 60, default);
       FeedbackEvents.FromStep(sim, events);
-      Assert.That(events.Select(e => e.Type), Does.Contain(FeedbackEventType.MusouReady), "a restart forgets the gauge was full");
+      Assert.That(events.Select(e => e.Type), Has.Member(FeedbackEventType.MusouReady), "a restart forgets the gauge was full");
     }
 
     // The common trace keeps each frame's hits, damage and the cues issued for them together.
