@@ -1,6 +1,6 @@
 # E07 打擊回饋與受擊循環
 
-更新：2026-10-06（Asia/Taipei）。`stepStatus: IN_PROGRESS（草稿 PR 審查中）`。本檔記錄範圍、設計與驗證方法；各候選 SHA 的實際執行結果記在 PR，不寫回本檔以免自我引用。
+更新：2026-10-06（Asia/Taipei）。`stepStatus: IN_PROGRESS（PR #33 已合併；補件本機驗證通過，待審查、推送授權與使用者試玩）`。本檔記錄範圍、設計與驗證方法；各候選 SHA 的實際執行結果記在 PR，不寫回本檔以免自我引用。
 
 ## 範圍與授權
 
@@ -56,7 +56,7 @@
 
 ## 已知限制
 
-- 火花、塵土、碎片、刀光與音效未移植：事件流已含所需資料（命中位置、方向、`KillInfo`、sfx 種類），呈現留待特效步驟；計畫要求的「命中、扣血、聲音／VFX 時點共同 trace」目前只有命中與扣血（事件）與鏡頭震動。實際聽感無證據，保留缺口。
+- （PR #33 時）火花、塵土、碎片、刀光與音效未移植；由下方「補件」處理。補件後仍不呈現：後製（色差、徑向模糊、閃白、bloom，數值只記入 trace；HDR 顏色在無 bloom 時會飽和成白／黃）、無雙切入畫面、音樂與環境音、無雙龍。迴響與壓縮器是近似演算法，音效聲音是否與 Web 相近只能靠人耳判斷；碎片光照為主光源 Lambert 加固定環境光，沒有陰影（Web 是 MeshStandardMaterial 並投影）。
 - 敵兵不出手（E08）；玩家受擊循環只能以注入攻擊驗證。
 - Web 允許無限浮空／倒地循環（C1），隊長在 Web 只有 Windup 中 50% 免硬直，沒有真正的霸體／破防；E07 原樣保留，A1 下 Windup 不存在所以該機率路徑不會發生。
 - 連擊、`comboBreak`、戰鬥階段、勝負與慢動作、無雙龍未移植。
@@ -66,6 +66,10 @@
 - 重試照 Web 不重新播種亂數：第二場的體型與冷卻與第一場不同。
 
 - 審查延後項目（LOW／NIT）見 issue #34：容忍度對 Float32 寫入的直接斷言、反應 harness 對真 `EnemyStore.update` 的交叉驗證、`CameraShake` 前提、`Restart` 不重設目標、`rngHp` 比對。
+
+## PR #33 合併與合併後確認
+
+PR #33 由 monkey1sai 以一般合併提交合併為 `dfc71890699959ad6e63d724ae8f26d864e3f2ce`（head `f0326d6`，tree 與 head 相同）；GitHub 上沒有 review approval，兩項 CI 綁定 head 成功。合併後確認（merge SHA，全新 clone）：本機 Unity 五階段通過（runId `796992af-da60-4cbe-87e9-50fedd0d5ec9`，2026-10-06 17:30–17:36 +08:00；Edit 83/83、Play 30/30、build、Player）；Web Vitest 30 files／290 tests、typecheck、build、`parity:check` 四份一致、runner 65/65；main 的 Game CI（run 37443333387）success。這只確認合併沒有破壞既有驗證，不使 E07 DONE（見補件）。
 
 ## 補件：回饋呈現（特效與音效）
 
@@ -92,6 +96,28 @@ forbiddenChanges: [src/, public/models/, .blend, 新套件, 付費或生成, 推
 - **不納入（照 A1 與既有範圍）**：無雙龍（`dragonHit`、龍吼、龍身光點）、音樂與環境音、連擊／里程碑／階段／勝負橫幅與音效、後製（色差、徑向模糊、閃白、bloom）與無雙切入畫面；事件仍記入 trace，畫面不呈現。Web 的動態壓縮器與迴響以近似演算法實作（WebAudio 原生節點在 Unity 沒有對應），差異保留為已知限制。
 - **驗證**：Web Vitest、`parity:check`、runner 正負例；Unity 五階段於候選 SHA；路線影音；使用者試玩與聽感。缺聽感證據就保留缺口，不以數值通過代替。
 - **回滾**：revert 本補件提交，回到 PR #33 的狀態（只有鏡頭震動）。
+
+### 補件設計
+
+- **`Changshan.Feedback`（純 C#，無 Unity 參照）**：`FeedbackEvents` 把 `CombatSimulation` 的一步依 `Battle.step` 順序轉成呈現事件（玩家轉送事件 → 玩家命中 → 擊殺 → 無雙就緒；hit-stop 凍結的幀不讀玩家事件；注入攻擊單獨一批）。`FeedbackDirector` 是 `Presentation.play`／`groundFx`／`pan`／`musouState` 的移植。`SparkField`、`DustField`、`ShockwaveSet`、`FragmentField`、`TrailRibbon` 照 Web 類別以 `float` 陣列存值、`double` 運算。`FeedbackTrace` 是有界的共同 trace：每幀記模擬步、遊戲時間、命中數、扣血、擊殺與該幀所有輸出呼叫（`TracingSinks` 包住各輸出端先記錄再轉送）。
+- **`CombatSimulation`**：新增 `CombatEventType.MusouReady`（`Battle.step` 結尾的「氣滿」通知，重來時重置）。`Mulberry32.State` 供對照測試核對亂數位置。
+- **音效（`Changshan.Feedback.Audio`）**：`SynthGraph` 依 Web Audio API 規格模擬 AudioParam 自動化、振盪器（鋸齒／方波 PolyBLEP）、BiquadFilter（低通／高通 Q 為 dB）、WaveShaper 與增益包絡；`SfxSynth` 移植 `audio-engine.ts` 的揮擊、命中、碎裂、敵兵揮擊、受傷、跳躍、落地、閃避、無雙開始、無雙爆發、無雙就緒。每種聲音以固定種子預先算 3 個變體（Web 每次呼叫 Math.random）；命中依人數（1–8，第 8 人起不再變大）、碎裂依擊殺數（1–4）。`SfxMixer` 照 Web 的匯流排：等功率聲道、sfx 0.9、迴響送出 0.3、master 0.8、壓縮器；迴響以 8 線 FDN 近似 2.6 s 噪音脈衝（衰減 2.3 s，能量對齊 ConvolverNode 正規化後的 0.1645），壓縮器以軟膝近似（threshold −16、knee 12、ratio 4、attack 3 ms、release 250 ms、6 ms 前視、Chromium 式補償 +7.2 dB）。`SfxBank` 25 ms 內的第二個命中聲丟棄（同 Web）。
+- **Unity（`FeedbackView`）**：控制器每幀把事件交給導演，模擬在動畫之後以遊戲時間步長前進（hit-stop 時凍結，同 Web），刀光在招式的 trail 視窗內記錄 rig 的槍尖兩點。網格每幀以世界座標重建（火花沿速度拉長、塵土朝向鏡頭、地面環、光柱、刀光帶、六面體素碎片），共用 `Resources/ChangshanFeedback.shader`（無關鍵字，單一變體）。音效由 `FeedbackAudioOutput` 掛在 AudioListener 上以 `OnAudioFilterRead` 從音訊執行緒拉取混音器；場景沒有 listener 時加在視角相機上。無雙就緒以 OnGUI 橫幅顯示。
+- **錄影**：`npm run record:route -- --mode e07 --player <exe> --out release/e02/<名稱>`：Player 以 `-e07Feedback` 跑 15.5 s 路線（N1–N4、C2、JA、閃避、輕／重受擊、完美格擋、格擋重擊、無雙），30 Hz 截圖；音效改用錄影時鐘（每幀的聲音從該幀第一個取樣開始），混音器逐幀離線輸出 `audio.wav`；`route.json` 每幀記狀態、命中、扣血、擊殺與回饋指令。腳本核對每個有命中的幀同幀都有火花與命中音、必需的指令都出現、音軌長度等於幀數 × 1600，才以 ffmpeg 合成影音。E06 模式同樣附上音軌。
+
+### 補件驗證方法
+
+| 檢查 | 內容 |
+|---|---|
+| Vitest `presentation-parity.test.ts`（2） | fixture 逐位元組相同；13 種事件、各輸出、沒有龍的輸出；hit-stop 幀不耗亂數；刀光補點並清空 |
+| Edit Mode `PresentationParityEditTests` | 來源雜湊、碎片調色盤、30／60／120 Hz 逐幀：每個輸出呼叫與參數（1e-9）、每幀亂數消耗數（生成器狀態相等）、粒子數量與總和、環與光柱狀態、每半秒完整粒子狀態（2e-5）；刀光逐幀；負例（多抽一次亂數、火花不生成都被抓到）；模擬事件順序；trace 同幀綁定 |
+| Edit Mode `FeedbackAudioEditTests` | AudioParam 規則、濾波器頻率響應、振盪器起始相位與幅度、驅動曲線、11 種音效長度與包絡峰值、命中響度、可重現、等功率聲道、壓縮器曲線與補償、迴響能量與衰減、播放起點（下一個緩衝或指定取樣）、25 ms 命中間隔 |
+| Play Mode `FeedbackPlayTests` | 場景中 N1 命中同幀：火花數＝命中數 × 8、命中音、鏡頭 trauma，trace 的命中數與扣血相符；網格頂點數與 shader；hit-stop 凍結火花；擊殺 18 塊碎片、碎裂音；重來清空；受擊、無雙就緒橫幅、無雙光柱；音訊執行緒在一個 DSP 緩衝內開始播放 |
+| 錄影 | 上述 E07 路線影音（人工觀看與聆聽才算視聽證據） |
+
+### 補件審查
+
+獨立 advisory 審查 1 輪（Claude code-reviewer 子代理，唯讀，候選 `dc3bdf4`；不是 formal APPROVED）：無 blocker／HIGH。已處置：MEDIUM 錄影腳本只檢查音軌長度（改為解析 WAV，要求每個有音效指令的幀在 100 ms 內可聽到，並讓錄影期間的即時輸出不接混音器）；LOW 銷毀後即時輸出仍拉舊混音器、滿載時新聲音互相覆蓋、音色變體依渲染順序而變（各補測試）；NIT 對照資料來源補列 `moves.ts`／`player.ts`／`enemies.ts`、`GroundFx` 對其他 fx 的註解。延後（未開 issue，GitHub 變更未授權）：錄影 hit-stop 容忍 0.25 s 與最大 hit-stop 0.22 s 耦合；混音器整個緩衝在鎖內渲染；延遲線靜音後的 denormal；網格陣列首次高峰時倍增配置；除錯 HUD 每次命中配置字串；同幀注入攻擊時 `setMusicLevel` 與攻擊指令在 trace 中的先後。
 
 ## 回滾
 
