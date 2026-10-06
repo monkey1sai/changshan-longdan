@@ -71,7 +71,8 @@ namespace Changshan.Character
       var controller = FindObjectsByType<ZhaoYunController>().FirstOrDefault();
       var character = controller != null ? controller.GetComponent<ZhaoYunCharacter>() : null;
       float deadline = Time.realtimeSinceStartup + 30;
-      while (character != null && character.Status == CharacterLoadStatus.Loading && Time.realtimeSinceStartup < deadline) yield return null;
+      // The character starts loading after the scene is up (NotStarted first): wait for an outcome.
+      while (character != null && character.Status != CharacterLoadStatus.Ready && character.Status != CharacterLoadStatus.Failed && Time.realtimeSinceStartup < deadline) yield return null;
       if (controller == null || character == null || character.Status != CharacterLoadStatus.Ready)
       {
         Debug.LogError("E06_ROUTE_CHARACTER_NOT_READY");

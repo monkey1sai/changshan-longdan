@@ -39,7 +39,8 @@ namespace Changshan.Foundation.Tests
       var controller = Object.FindObjectsByType<ZhaoYunController>().Single();
       var character = controller.GetComponent<ZhaoYunCharacter>();
       float deadline = Time.realtimeSinceStartup + 30;
-      while (character.Status == CharacterLoadStatus.Loading && Time.realtimeSinceStartup < deadline) yield return null;
+      // The character starts loading after the scene is up (NotStarted first): wait for an outcome.
+      while (character.Status != CharacterLoadStatus.Ready && character.Status != CharacterLoadStatus.Failed && Time.realtimeSinceStartup < deadline) yield return null;
       Assert.That(character.Status, Is.EqualTo(CharacterLoadStatus.Ready), character.Report.failureDetail);
       controller.enabled = false;
       var input = new ScriptedInput();
@@ -97,8 +98,11 @@ namespace Changshan.Foundation.Tests
         var input = new ScriptedInput();
         controller.InputSource = input;
         controller.SetFocus(true);
+        // One tap: holding J auto-repeats the string (InputMapper), which would chain into N2 and N3.
         input.Down.Add("KeyJ");
-        for (int i = 0; i < 30; i++) controller.Tick(Dt);
+        controller.Tick(Dt);
+        input.Up.Add("KeyJ");
+        for (int i = 1; i < 20; i++) controller.Tick(Dt); // N1 lasts 0.42 s
         var rig = controller.Animation.Rig;
         Assert.That(controller.Animation.BoundModel, Is.Null);
         Assert.That(controller.Animation.Skin, Is.Null);
