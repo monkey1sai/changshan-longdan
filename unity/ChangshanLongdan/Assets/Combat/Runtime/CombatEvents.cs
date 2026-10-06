@@ -1,0 +1,43 @@
+using System;
+
+namespace Changshan.Combat
+{
+  // Battle.ts BattleEvent, the part E07 ports: what happened in one step (or one injected strike) for presentation.
+  // Player-side events (move start, swing, fx, jump, land, dodge, musou start) stay in Player.Events.
+  public enum CombatEventType { Hit, Kill, EnemyStrike, Parry, GuardBlock, Hurt }
+
+  public readonly struct CombatEvent
+  {
+    public readonly CombatEventType Type;
+    public readonly HitSource Source; // Hit
+    public readonly HitWindow Window; // Hit
+    public readonly int Start, Count; // Hit: CombatSimulation.Hits[Start, Start + Count); Kill: Kills[Start, Start + Count)
+    public readonly double X, Z, Facing; // EnemyStrike, Parry, GuardBlock, Hurt
+    public readonly bool Heavy; // EnemyStrike, GuardBlock, Hurt
+    public readonly double Damage; // GuardBlock: damage taken through the guard
+
+    CombatEvent(CombatEventType type, HitSource source = HitSource.Player, HitWindow window = null, int start = 0, int count = 0,
+      double x = 0, double z = 0, double facing = 0, bool heavy = false, double damage = 0)
+    {
+      Type = type;
+      Source = source;
+      Window = window;
+      Start = start;
+      Count = count;
+      X = x;
+      Z = z;
+      Facing = facing;
+      Heavy = heavy;
+      Damage = damage;
+    }
+
+    public static CombatEvent Hit(HitSource source, HitWindow window, int start, int count) =>
+      new CombatEvent(CombatEventType.Hit, source, window ?? throw new ArgumentNullException(nameof(window)), start, count);
+    public static CombatEvent Kill(int start, int count) => new CombatEvent(CombatEventType.Kill, start: start, count: count);
+    public static CombatEvent EnemyStrike(double x, double z, bool heavy) => new CombatEvent(CombatEventType.EnemyStrike, x: x, z: z, heavy: heavy);
+    public static CombatEvent Parry(double x, double z, double facing) => new CombatEvent(CombatEventType.Parry, x: x, z: z, facing: facing);
+    public static CombatEvent GuardBlock(double x, double z, double facing, bool heavy, double damage) =>
+      new CombatEvent(CombatEventType.GuardBlock, x: x, z: z, facing: facing, heavy: heavy, damage: damage);
+    public static CombatEvent Hurt(double x, double z, bool heavy) => new CombatEvent(CombatEventType.Hurt, x: x, z: z, heavy: heavy);
+  }
+}

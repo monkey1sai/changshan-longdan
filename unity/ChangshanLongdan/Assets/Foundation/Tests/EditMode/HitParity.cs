@@ -38,7 +38,7 @@ namespace Changshan.Foundation.Tests
     public static HitTargets Targets(Dictionary<string, object> scenario)
     {
       var list = L(scenario["targets"]);
-      var targets = new HitTargets(list.Count);
+      var targets = new HitTargets(list.Count) { Static = true }; // the E05 harness never runs the soldiers' update()
       foreach (var item in list)
       {
         var t = L(item);

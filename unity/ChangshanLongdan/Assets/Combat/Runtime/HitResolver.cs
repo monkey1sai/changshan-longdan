@@ -19,10 +19,14 @@ namespace Changshan.Combat
     public readonly float HpAfter;
     public readonly bool Killed;
     public readonly double DirX, DirZ;
+    public readonly double X, Y, Z; // the target's position when hit (Web HitInfo; sparks spawn here)
 
     public HitEvent(long step, double simTime, HitSource source, uint stamp, MoveId? move, int windowIndex, int target, double damage,
-      float hpAfter, bool killed, double dirX, double dirZ)
+      float hpAfter, bool killed, double dirX, double dirZ, double x, double y, double z)
     {
+      X = x;
+      Y = y;
+      Z = z;
       Step = step;
       SimTime = simTime;
       Source = source;
@@ -52,6 +56,7 @@ namespace Changshan.Combat
     readonly HashSet<uint> appliedThisStep = new HashSet<uint>();
     readonly Stack<List<int>> pool = new Stack<List<int>>();
     readonly List<uint> scratch = new List<uint>();
+    readonly List<int> candidates = new List<int>();
 
     public HitResolver(HitTargets targets) => this.targets = targets ?? throw new ArgumentNullException(nameof(targets));
 
@@ -88,8 +93,11 @@ namespace Changshan.Combat
       double cx = ax + fx * w.Shape.Offset, cz = az + fz * w.Shape.Offset;
       double yMin = ay + (w.YMin ?? DefaultYMin), yMax = ay + (w.YMax ?? DefaultYMax);
       int hits = 0;
-      for (int i = 0; i < targets.Count; i++)
+      // Candidates in the Web's spatial-hash order: hits, reactions and rng draws happen in the same order as applyHit.
+      targets.Query(ax, az, w.Shape.Reach + HitTargets.BodyRadius * 1.5 + 0.5, candidates);
+      for (int k = 0; k < candidates.Count; k++)
       {
+        int i = candidates[k];
         if (!targets.Alive(i) || pairs.Contains(Key(stamp, i))) continue;
         double ty = targets.Y(i);
         if (ty < yMin || ty > yMax) continue;
@@ -106,8 +114,9 @@ namespace Changshan.Combat
             dirZ = dz / d;
           }
         }
-        bool killed = targets.Damage(i, w.Damage);
-        output.Add(new HitEvent(step, simTime, source, stamp, move, windowIndex, i, w.Damage, targets.Hp(i), killed, dirX, dirZ));
+        bool killed = targets.Damage(i, w, dirX, dirZ);
+        output.Add(new HitEvent(step, simTime, source, stamp, move, windowIndex, i, w.Damage, targets.Hp(i), killed, dirX, dirZ,
+          targets.X(i), targets.Y(i), targets.Z(i)));
         hits++;
       }
       return hits;

@@ -29,6 +29,22 @@ namespace Changshan.Character
     // Scripted route recording: input is scripted, so losing the window focus must not pause or blur (RouteRecorder).
     public bool IgnoreFocusLoss { get; set; }
     public bool ShowDebug { get; set; } = true; // F3 toggles
+    public string LastHit { get; private set; } = "-"; // last feedback event, for the HUD
+
+    // The shake component on the view camera (added on first use; null without a camera).
+    public CameraShake Shake
+    {
+      get
+      {
+        if (shake != null) return shake;
+        var view = ViewCamera != null ? ViewCamera : Camera.main;
+        if (view == null) return null;
+        shake = view.GetComponent<CameraShake>();
+        if (shake == null) shake = view.gameObject.AddComponent<CameraShake>();
+        return shake;
+      }
+    }
+    CameraShake shake;
     public InputFrame LastInput { get; private set; }
     public CharacterAnimation Animation { get; } = new CharacterAnimation();
 
@@ -60,7 +76,13 @@ namespace Changshan.Character
       ResetFight();
     }
 
-    void Update() => Tick(Time.unscaledDeltaTime);
+    void Update()
+    {
+      Tick(Time.unscaledDeltaTime);
+      if (Paused) return;
+      if (Input.GetKeyDown(KeyCode.F4)) InjectStrike(false);
+      if (Input.GetKeyDown(KeyCode.F5)) InjectStrike(true);
+    }
 
     // One frame: read input, then simulate unless paused. Public so tests can step deterministically.
     public void Tick(double frameSeconds)
@@ -73,9 +95,74 @@ namespace Changshan.Character
       if (LastInput.Debug) ShowDebug = !ShowDebug;
       var controls = ControlComposer.Compose(LastInput, CameraYaw());
       Simulation.Step(dt, controls);
-      if (Dummies != null) Dummies.Show(Simulation.Targets);
+      Feedback(Simulation.SteppedThisFrame);
+      if (Dummies != null) Dummies.Show(Simulation.Targets, Mapping);
       ApplyTransform();
       Animate();
+    }
+
+    // E07: the presentation side of this frame's events (src/presentation.ts): camera trauma and kick for hits,
+    // hurts, parries, blocks, ground fx, the musou start and a heavy landing. Sparks, dust, fragments, rings and audio
+    // are not ported yet (see E07 doc). Player events are read only on a frame that stepped: during hit-stop the Web
+    // plays nothing, and Player.Events still holds the frozen step's events.
+    void Feedback(bool playerEvents)
+    {
+      var shake = Shake;
+      var events = Simulation.Events;
+      for (int i = 0; i < events.Count; i++)
+      {
+        var e = events[i];
+        switch (e.Type)
+        {
+          case CombatEventType.Hit when e.Source == HitSource.Player:
+            LastHit = FormattableString.Invariant($"{e.Window.Sfx} x{e.Count} shake {e.Window.Shake:0.00}");
+            if (shake != null)
+            {
+              shake.AddTrauma(e.Window.Shake * (e.Count > 3 ? 1.15 : 1));
+              if (e.Window.Sfx == HitSfx.Heavy) shake.Kick(0.5);
+            }
+            break;
+          case CombatEventType.Hurt:
+            LastHit = e.Heavy ? "hurt (heavy)" : "hurt";
+            if (shake != null) shake.AddTrauma(e.Heavy ? 0.45 : 0.25);
+            break;
+          case CombatEventType.Parry:
+            LastHit = "parry";
+            if (shake != null) shake.AddTrauma(0.12);
+            break;
+          case CombatEventType.GuardBlock:
+            LastHit = FormattableString.Invariant($"guard block {e.Damage:0.0}");
+            if (shake != null) shake.AddTrauma(0.04);
+            break;
+          case CombatEventType.Kill: LastHit = FormattableString.Invariant($"kill x{e.Count}"); break;
+        }
+      }
+      if (!playerEvents || shake == null) return;
+      var player = Simulation.Player.Events;
+      for (int i = 0; i < player.Count; i++)
+      {
+        var e = player[i];
+        switch (e.Type)
+        {
+          case PlayerEventType.MusouStart: shake.AddTrauma(0.35); break;
+          case PlayerEventType.Land when e.Heavy: shake.AddTrauma(0.15); break;
+          case PlayerEventType.Fx when e.Fx == HitFx.Shockwave: shake.AddTrauma(0.3); break;
+          case PlayerEventType.Fx when e.Fx == HitFx.Blast:
+            shake.AddTrauma(1);
+            shake.Kick(1);
+            break;
+        }
+      }
+    }
+
+    // Dev and tests until the AI (E08) attacks: one enemy strike from 2 m in front of the player (F4 light, F5 heavy).
+    public void InjectStrike(bool heavy)
+    {
+      Initialise();
+      var p = Simulation.Player;
+      double x = p.X + Math.Sin(p.Facing) * 2, z = p.Z + Math.Cos(p.Facing) * 2;
+      Simulation.InjectStrike(new EnemyStrike(heavy ? 70 : 26, heavy, x, z));
+      Feedback(false); // only the strike's own events; the frame's player events were already played
     }
 
     // E06: the Web procedural rig poses the imported model once it is READY; until then the fallback stays visible.
@@ -136,6 +223,7 @@ namespace Changshan.Character
       Simulation.Restart();
       Animation.Reset();
       ApplyTransform();
+      if (Dummies != null) Dummies.Show(targets, Mapping); // back at their spawns now, not on the next tick
     }
 
     double CameraYaw()
@@ -163,11 +251,11 @@ namespace Changshan.Character
       var p = Simulation.Player;
       string move = p.Move == null ? "-" : p.Move.Id.ToString();
       string text = string.Format(CultureInfo.InvariantCulture,
-        "State {0}  Move {1} {2:0.00}s  Musou {3:0}\nHits {4}  Hit-stop {5:0.000}s  Dummies {6}/{7}  (F3 hides)",
+        "State {0}  Move {1} {2:0.00}s  Musou {3:0}  HP {8:0}\nHits {4}  KO {9}  Hit-stop {5:0.000}s  Dummies {6}/{7}\nLast {10}  (F3 hides, F4/F5 strike)",
         p.State, move, p.MoveTime, p.Musou, Simulation.TotalHits, Math.Max(0, Simulation.Clock.Hitstop),
-        Simulation.Targets.AliveCount, Simulation.Targets.Count);
-      GUI.Box(new UnityEngine.Rect(50, 300, 1000, 90), "");
-      GUI.Label(new UnityEngine.Rect(75, 310, 950, 80), text, hudStyle);
+        Simulation.Targets.AliveCount, Simulation.Targets.Count, p.Hp, Simulation.KoCount, LastHit);
+      GUI.Box(new UnityEngine.Rect(50, 300, 1000, 120), "");
+      GUI.Label(new UnityEngine.Rect(75, 310, 950, 110), text, hudStyle);
     }
   }
 }

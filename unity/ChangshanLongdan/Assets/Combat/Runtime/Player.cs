@@ -205,6 +205,13 @@ namespace Changshan.Combat
       return true;
     }
 
+    // Battle.debug.setHp: tests and dev tooling put the player at a chosen health.
+    public void SetHp(double hp)
+    {
+      if (double.IsNaN(hp) || hp < 0 || hp > Tuning.MaxHp) throw new ArgumentOutOfRangeException(nameof(hp));
+      Hp = hp;
+    }
+
     public void GainMusou(double amount)
     {
       if (State == PlayerState.Musou) return;
