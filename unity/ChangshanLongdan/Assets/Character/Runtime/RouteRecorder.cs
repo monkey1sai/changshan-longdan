@@ -86,6 +86,16 @@ namespace Changshan.Character
       controller.InputSource = keys;
       controller.UseDummies(null);
       controller.SetFocus(true);
+      // The validation camera is fixed and the route lunges out of its view, so the camera keeps its starting offset to
+      // the character's ground point. It only translates: the controls are camera-relative and its yaw stays the same,
+      // so the route's input directions are unchanged. Ground point (y = 0) so jumps stay visible as height.
+      var view = controller.ViewCamera != null ? controller.ViewCamera : Camera.main;
+      Vector3 Ground()
+      {
+        var p = controller.Simulation.Player;
+        return controller.Mapping.ToDisplayPosition(p.X, 0, p.Z);
+      }
+      var offset = view != null ? view.transform.position - Ground() : Vector3.zero;
       int frames = (int)Math.Round(Duration / FrameSeconds);
       int next = 0;
       bool gained = false;
@@ -99,6 +109,7 @@ namespace Changshan.Character
           gained = true;
         }
         controller.Tick(FrameSeconds);
+        if (view != null) view.transform.position = Ground() + offset;
         ScreenCapture.CaptureScreenshot(Path.Combine(output, $"frame_{frame:0000}.png"));
         yield return null;
       }
