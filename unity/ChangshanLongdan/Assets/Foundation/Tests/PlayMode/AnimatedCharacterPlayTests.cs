@@ -56,6 +56,12 @@ namespace Changshan.Foundation.Tests
         [10] = ("KeyD", null), [40] = ("KeyW", "KeyD"), [70] = (null, "KeyW"), [100] = ("KeyJ", null), [102] = (null, "KeyJ"),
       };
       double worstBone = 0, worstGrip = 0;
+      // Diagnostics: every node of the imported scene (placed or not) against its Unity transform, worst per node.
+      var byName = new Dictionary<string, Transform>();
+      foreach (var t in character.Model.GetComponentsInChildren<Transform>(true)) if (!byName.ContainsKey(t.name)) byName[t.name] = t;
+      var sceneNodes = new List<RigNode>();
+      void Collect(RigNode n) { sceneNodes.Add(n); foreach (var c in n.Children) Collect(c); }
+      var worstNode = new Dictionary<string, (double Offset, int Frame, double Skew)>();
       for (int frame = 0; frame < 140; frame++)
       {
         if (script.TryGetValue(frame, out var keys))
@@ -71,11 +77,22 @@ namespace Changshan.Foundation.Tests
           Assert.That(Finite(t.position), Is.True, $"frame {frame} {node.Name}");
           worstBone = System.Math.Max(worstBone, Vector3.Distance(t.position, animation.DisplayPosition(node)));
         }
+        if (sceneNodes.Count == 0) Collect(animation.Skin.Scene); // bound by the first tick
+        foreach (var node in sceneNodes)
+        {
+          if (node.Name == null || !byName.TryGetValue(node.Name, out var t) || t == character.Model.transform) continue;
+          double offset = Vector3.Distance(t.position, animation.DisplayPosition(node));
+          // Does Unity's own parent matrix place this transform where its local position says (no skew loss)?
+          double skew = t.parent != null ? Vector3.Distance(t.position, t.parent.localToWorldMatrix.MultiplyPoint3x4(t.localPosition)) : 0;
+          if (!worstNode.TryGetValue(node.Name, out var w) || offset > w.Offset) worstNode[node.Name] = (offset, frame, skew);
+        }
         // The right hand bone holds the spear grip (the spear driver's origin).
         var hand = animation.TransformOf(animation.Skin.Bone("hand_r")).position;
         var grip = animation.TransformOf(animation.Skin.Weapon).position;
         worstGrip = System.Math.Max(worstGrip, Vector3.Distance(hand, grip));
       }
+      foreach (var kv in worstNode.OrderByDescending(k => k.Value.Offset).Take(8))
+        TestContext.WriteLine($"node {kv.Key}: offset {kv.Value.Offset:0.000000} m at frame {kv.Value.Frame}, unity parent-product gap {kv.Value.Skew:0.000000} m");
       TestContext.WriteLine($"worst bone offset {worstBone:0.000000} m, worst right-hand grip {worstGrip:0.0000} m, steps {animation.FootPlant.Steps}");
       Assert.That(worstBone, Is.LessThan(1e-3), "a Unity bone is not where the rig placed it");
       Assert.That(worstGrip, Is.LessThan(AnimationMetrics.GripLimit), "the right hand left the spear");
