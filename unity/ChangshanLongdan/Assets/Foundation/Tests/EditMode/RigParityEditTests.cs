@@ -64,7 +64,10 @@ namespace Changshan.Foundation.Tests
       foreach (var s in At(hz)) all.Merge((string)s["id"], RigParity.Run(Fixture, s).Result);
       TestContext.WriteLine(all.ToString());
       Assert.That(all.FailCount, Is.Zero, all.ToString());
-      Assert.That(all.Frames, Is.GreaterThan(1000));
+      // Every recorded frame was compared: the Web records each scenario's frames at the rate's sampling interval.
+      double every = Convert.ToDouble(((Dictionary<string, object>)Fixture["sampleEvery"])[hz.ToString(System.Globalization.CultureInfo.InvariantCulture)]);
+      int expected = At(hz).Sum(s => (int)Math.Ceiling(Math.Round((double)s["duration"] * hz) / every));
+      Assert.That(all.Frames, Is.EqualTo(expected));
     }
 
     [Test] public void EveryMoveIsPosed()
