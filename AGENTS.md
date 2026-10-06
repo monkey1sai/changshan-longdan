@@ -5,7 +5,7 @@
 A PS2-style musou action game for the browser (Zhao Yun vs. 300 Wei soldiers), built with Vite, TypeScript and Three.js. Zhao Yun uses a user-created skinned GLB driven by procedural poses; soldiers, castle and dragon are procedural voxels. All audio is synthesized with WebAudio.
 
 - `index.html` — page shell, HUD markup and title/pause/result screens.
-- `src/main.ts` — entry point; `src/game.ts` — main loop, mode switching and presentation of battle events.
+- `src/main.ts` — entry point; `src/game.ts` — main loop, mode switching and wiring; `src/presentation.ts` — turns `BattleEvent`s into sound, effects, camera shake and HUD banners through narrow sinks.
 - `src/combat/` — move data (hit windows, damage, reactions), combo rules, hit shapes. Pure logic.
 - `src/entities/` — battle rules (`battle.ts`: one fight's step, events, outcome, difficulty and battle-phase pressure), player state machine, enemy AI/physics in SoA typed arrays, the musou dragon strike, arena collision. Pure logic.
 - `src/core/` — math, input, spatial hash, two-bone IK.
@@ -31,7 +31,7 @@ Builds must keep relative asset paths (`base: './'`) because itch.io serves game
 
 ## Coding Style
 
-TypeScript strict mode with `erasableSyntaxOnly` (no enums or parameter properties; use `as const` objects), ES modules, 2-space indentation, LF line endings, UTF-8. Import local modules with the `.ts` extension. Keep game rules in `combat/` and `entities/` free of DOM and WebGL so they stay unit-testable; `game.ts` reacts to `BattleEvent`s and must not decide combat outcomes itself. Avoid per-frame allocations in hot paths; reuse scratch vectors and typed arrays. Place shared world coordinates in `src/world/layout.ts` so rendering and collision cannot drift apart.
+TypeScript strict mode with `erasableSyntaxOnly` (no enums or parameter properties; use `as const` objects), ES modules, 2-space indentation, LF line endings, UTF-8. Import local modules with the `.ts` extension. Keep game rules in `combat/` and `entities/` free of DOM and WebGL so they stay unit-testable; `game.ts` and `presentation.ts` react to `BattleEvent`s and must not decide combat outcomes themselves; change hit feel in `presentation.ts` and cover it in `tests/presentation.test.ts`. Avoid per-frame allocations in hot paths; reuse scratch vectors and typed arrays. Place shared world coordinates in `src/world/layout.ts` so rendering and collision cannot drift apart.
 
 ## Testing
 

@@ -1,7 +1,6 @@
-import { Color, FogExp2, PMREMGenerator, Scene, Vector2, Vector3, type Mesh } from 'three'
+import { Color, FogExp2, PMREMGenerator, Scene, Vector2, type Mesh } from 'three'
 import { AudioEngine } from './audio/audio-engine.ts'
 import { Music } from './audio/music.ts'
-import type { HitFx } from './combat/moves.ts'
 import { Input, type InputFrame } from './core/input.ts'
 import { clamp, createRng, damp } from './core/math.ts'
 import type { DifficultyId } from './core/difficulty.ts'
@@ -15,9 +14,10 @@ import { Shockwaves } from './fx/shockwave.ts'
 import { Sparks } from './fx/sparks.ts'
 import { Trail } from './fx/trail.ts'
 import { ThreatMarkers } from './fx/threat-markers.ts'
+import { MUSIC_LEVEL, Presentation } from './presentation.ts'
 import { Pipeline, type PostSettings } from './render/pipeline.ts'
 import { Hud } from './ui/hud.ts'
-import { t, translate } from './ui/i18n.ts'
+import { translate } from './ui/i18n.ts'
 import { Screens } from './ui/screens.ts'
 import { CameraRig, toPlayerControls } from './view/camera-rig.ts'
 import { updateRoofCutaway } from './view/roof-cutaway.ts'
@@ -33,11 +33,6 @@ import { createFlagTexture, createGroundTexture } from './world/textures.ts'
 
 type Mode = 'title' | 'playing' | 'paused' | 'ended'
 
-const MUSIC_LEVEL = 0.42
-const SHOCK = new Color(3.2, 2.2, 1.2)
-const GOLD = new Color(5, 3.4, 1.1)
-const WHITE = new Color(6, 6, 5)
-
 /** 遊戲主體：擁有場景、所有系統與主迴圈。 */
 export class Game {
   private readonly pipeline: Pipeline
@@ -46,6 +41,7 @@ export class Game {
   private readonly barracksRoofs: Mesh[]
   private readonly input: Input
   private readonly battle = new Battle(castleSetup())
+  private readonly presentation: Presentation
   private difficulty: DifficultyId = 'normal'
   private readonly model = new PlayerModel()
   private readonly soldiers = new SoldierView(this.battle.enemies.capacity)
@@ -64,7 +60,6 @@ export class Game {
   private readonly screens = new Screens()
   private readonly rng = createRng(99)
   private readonly post: PostSettings = { focus: 9, musou: 0, flash: 0, aberration: 0, radial: 0, danger: 0, bars: 0, exposure: 1, dof: 0.8 }
-  private readonly tmp = new Vector3()
   private readonly controls: PlayerControls = { moveX: 0, moveZ: 0, attack: false, charge: false, jump: false, dodge: false, musou: false }
   private audio: AudioEngine | null = null
   private music: Music | null = null
@@ -74,8 +69,6 @@ export class Game {
   private simClock = 0 // 遊戲時間（命中停頓時暫停）
   private endTimer = 0
   private resultShown = false
-  private roarsPlayed = 0
-  private wasMusou = false
   private frameAvg = 1 / 60
   private qualityTimer = 0
   private minimapTick = 0
@@ -85,6 +78,10 @@ export class Game {
     this.pipeline = new Pipeline(canvas)
     this.rig = new CameraRig(window.innerWidth / window.innerHeight)
     this.input = new Input(window, canvas, () => this.mode === 'title')
+    this.presentation = new Presentation({
+      audio: () => this.audio, sparks: this.sparks, dust: this.dust, waves: this.waves, fragments: this.fragments,
+      camera: this.rig, post: this.post, hud: this.hud, dragon: this.dragon, rng: this.rng,
+    })
 
     const castle = buildCastle(createGroundTexture())
     this.barracksRoofs = castle.barracksRoofs
@@ -200,7 +197,7 @@ export class Game {
     this.model.resetCape()
     this.endTimer = 0
     this.resultShown = false
-    this.wasMusou = false
+    this.presentation.reset()
     Object.assign(this.post, { musou: 0, flash: 0, aberration: 0, radial: 0, danger: 0, bars: 0 })
   }
 
@@ -238,177 +235,27 @@ export class Game {
     if (this.mode === 'playing' && input.recenter) this.rig.recenter(this.battle.player.facing)
     const dt = this.battle.step(realDt, this.controls)
     if (this.mode === 'ended') this.showResultLater(realDt)
-    this.present(this.battle.events)
+    this.presentation.play(this.battle.events, this.battle)
+    this.applyOutcome(this.battle.events)
     if (dt > 0) this.updateDragon()
     return dt
   }
 
-  /** 把戰鬥事件轉成音效、特效、鏡頭與 HUD。 */
-  private present(events: readonly BattleEvent[]): void {
-    const b = this.battle
-    const p = b.player.pos
+  /** 勝負分出：轉入結束畫面流程，稍後顯示戰果。 */
+  private applyOutcome(events: readonly BattleEvent[]): void {
     for (const e of events) {
-      switch (e.type) {
-        case 'swing':
-          this.audio?.swing(e.heavy)
-          break
-        case 'jump':
-          this.audio?.jump()
-          break
-        case 'land':
-          this.audio?.land(e.heavy)
-          this.dust.puff(p.x, 0, p.z, e.heavy ? 16 : 8, e.heavy ? 5 : 3, this.rng)
-          if (e.heavy) this.rig.addTrauma(0.15)
-          break
-        case 'dodge':
-          this.audio?.dodge()
-          this.dust.puff(p.x, 0, p.z, 6, 2.5, this.rng)
-          break
-        case 'musouStart':
-          this.beginMusou()
-          break
-        case 'fx':
-          this.groundFx(e.fx, e.x, e.z, e.radius)
-          break
-        case 'hit': {
-          const win = e.window
-          const heavy = win.sfx === 'heavy'
-          this.rig.addTrauma(win.shake * (e.count > 3 ? 1.15 : 1))
-          if (heavy) {
-            this.rig.kick(0.5)
-            this.post.aberration = Math.max(this.post.aberration, 0.8)
-          }
-          for (let i = e.start; i < e.start + e.count; i++) {
-            const h = b.hits[i]
-            this.sparks.burst(h.x, h.y + 1.1, h.z, h.dirX, h.dirZ, heavy ? 12 : 7, heavy, this.rng)
-          }
-          const first = b.hits[e.start]
-          this.audio?.hit(win.sfx, e.count, this.pan(first.x, first.z))
-          break
-        }
-        case 'dragonHit':
-          for (let i = e.start; i < e.start + e.count; i++) {
-            const h = b.hits[i]
-            this.sparks.burst(h.x, h.y + 1.1, h.z, h.dirX, h.dirZ, 6, false, this.rng)
-          }
-          this.audio?.hit('light', e.count, this.pan(e.x, e.z))
-          break
-        case 'kill': {
-          for (let i = e.start; i < e.start + e.count; i++) {
-            const k = b.kills[i]
-            this.fragments.spawnSoldier(k, this.rng)
-            this.dust.puff(k.x, 0, k.z, 3, 2.5, this.rng)
-          }
-          const first = b.kills[e.start]
-          this.audio?.shatter(e.count, this.pan(first.x, first.z))
-          break
-        }
-        case 'milestone': {
-          const ko = e.ko
-          this.hud.showBanner(() => translate(`${ko} 人斬！`, `${ko} KOs!`), 2, 'gold')
-          this.audio?.milestone()
-          break
-        }
-        case 'halfDefeated':
-          this.hud.showBanner(() => translate('魏軍 半數潰滅', 'Half the Wei Army Defeated'), 2)
-          break
-        case 'phase': {
-          const id = e.id
-          this.hud.showBanner(() => t(`battle.${id}`), 2)
-          break
-        }
-        case 'enemyStrike':
-          this.audio?.enemySwing(this.pan(e.x, e.z))
-          break
-        case 'parry':
-        case 'guardBlock': {
-          const perfect = e.type === 'parry'
-          const facing = e.facing
-          this.audio?.hit('pierce', 1, this.pan(e.x, e.z))
-          this.sparks.burst(p.x, p.y + 1.2, p.z, Math.sin(facing), Math.cos(facing), perfect ? 18 : 6, perfect, this.rng)
-          this.rig.addTrauma(perfect ? 0.12 : 0.04)
-          if (perfect) this.waves.ring(p.x, p.z, 2.4, 0.3, WHITE)
-          break
-        }
-        case 'hurt': {
-          this.audio?.playerHurt(e.heavy)
-          this.rig.addTrauma(e.heavy ? 0.45 : 0.25)
-          const dx = p.x - e.x
-          const dz = p.z - e.z
-          const d = Math.hypot(dx, dz) || 1
-          this.sparks.burst(p.x, p.y + 1.2, p.z, dx / d, dz / d, 6, e.heavy, this.rng)
-          break
-        }
-        case 'musouReady':
-          this.audio?.musouReady()
-          this.hud.showBanner(() => translate('龍膽 就緒', 'Longdan Ready'), 1.4, 'gold')
-          break
-        case 'victory':
-          this.mode = 'ended'
-          this.endTimer = 2.4
-          this.hud.showBanner(() => translate('完全勝利', 'Complete Victory'), 3, 'gold')
-          this.audio?.victory()
-          this.audio?.setMusicLevel(0.2)
-          break
-        case 'defeat':
-          this.mode = 'ended'
-          this.endTimer = 2.4
-          this.hud.showBanner(() => translate('趙雲 敗走…', 'Zhao Yun Has Fallen…'), 3)
-          this.audio?.defeat()
-          this.audio?.setMusicLevel(0.12)
-          break
-        default:
-          break
-      }
+      if (e.type !== 'victory' && e.type !== 'defeat') continue
+      this.mode = 'ended'
+      this.endTimer = 2.4
     }
   }
 
-  private groundFx(fx: HitFx, x: number, z: number, radius: number): void {
-    if (fx === 'shockwave') {
-      this.waves.ring(x, z, radius * 1.1, 0.45, SHOCK)
-      this.dust.ring(x, z, radius, 26, this.rng)
-      this.rig.addTrauma(0.3)
-      this.post.radial = Math.max(this.post.radial, 0.5)
-      return
-    }
-    // 無雙收尾：龍在趙雲前方 6 公尺撞地
-    const facing = this.battle.player.facing
-    const fxX = x + Math.sin(facing) * 6
-    const fxZ = z + Math.cos(facing) * 6
-    this.waves.ring(fxX, fxZ, 12, 0.8, GOLD)
-    this.waves.ring(fxX, fxZ, 6, 0.5, WHITE)
-    this.waves.pillar(fxX, fxZ, 3, 34, 0.9, GOLD)
-    this.dust.ring(fxX, fxZ, 9, 56, this.rng)
-    this.audio?.musouBlast()
-    this.post.flash = 0.5
-    this.post.radial = 1
-    this.rig.addTrauma(1)
-    this.rig.kick(1)
-  }
-
-  private beginMusou(): void {
-    this.roarsPlayed = 0
-    this.hud.playCutin()
-    this.audio?.musouStart()
-    this.audio?.setMusicLevel(0.14, 0.2)
-    this.rig.addTrauma(0.35)
-    this.post.radial = 1
-  }
-
-  /** 遊戲時間前進時更新蒼龍畫面、龍吼與金色光點。 */
+  /** 遊戲時間前進時更新蒼龍畫面，再播放龍吼與龍身光點。 */
   private updateDragon(): void {
     const strike = this.battle.dragon
     if (!strike.active && !this.dragon.active) return
     this.dragon.update(strike)
-    const t = strike.elapsed
-    if (strike.active && ((this.roarsPlayed === 0 && t > 0.35) || (this.roarsPlayed === 1 && t > 2.75))) {
-      this.audio?.dragonRoar()
-      this.roarsPlayed++
-    }
-    for (let i = 0; i < 5; i++) {
-      this.dragon.randomPoint(this.rng, this.tmp)
-      this.sparks.glitter(this.tmp.x, this.tmp.y, this.tmp.z, 4.5, 3.2, 1, this.rng)
-    }
+    this.presentation.dragonFrame(strike)
   }
 
   /** 勝負分出後稍待片刻再顯示戰果。 */
@@ -424,8 +271,7 @@ export class Game {
     const b = this.battle
     const player = b.player
     const musou = player.state === 'musou'
-    if (this.wasMusou && !musou && this.mode === 'playing') this.audio?.setMusicLevel(MUSIC_LEVEL, 1)
-    this.wasMusou = musou
+    this.presentation.musouState(musou, this.mode === 'playing')
 
     this.rig.update(realDt, player.pos, this.mode === 'playing' ? input.camTurn : 0, input.zoom, musou, this.mode === 'title', this.clock)
     updateRoofCutaway(this.barracksRoofs, player.pos.x, player.pos.z, this.mode === 'title')
@@ -491,12 +337,6 @@ export class Game {
     this.trail.setStyle(p.state === 'musou')
     if (active) this.trail.push(this.model.tipBase, this.model.tip, this.simClock)
     this.trail.update(this.simClock)
-  }
-
-  /** 依事件在鏡頭左右的位置決定聲道。 */
-  private pan(x: number, z: number): number {
-    const cam = this.rig.camera.position
-    return clamp(((x - cam.x) * this.rig.right.x + (z - cam.z) * this.rig.right.z) / 12, -1, 1) * 0.7
   }
 
   private resize(): void {
@@ -574,7 +414,8 @@ export class Game {
         strike: (damage: number, heavy = false, fromX = battle.player.pos.x, fromZ = battle.player.pos.z - 2) => {
           if (game.mode !== 'playing') return
           battle.debug.injectStrike({ damage, heavy, x: fromX, z: fromZ })
-          game.present(battle.events)
+          game.presentation.play(battle.events, battle)
+          game.applyOutcome(battle.events)
         },
         /**
          * 以固定 1/60 秒逐幀推進（分頁不可見、rAF 暫停時也能驗證）。

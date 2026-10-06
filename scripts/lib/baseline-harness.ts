@@ -7,6 +7,7 @@ import { Battle } from '../../src/entities/battle.ts'
 import { castleSetup } from '../../src/entities/castle-setup.ts'
 import { Kind, type EnemyStore, type HitInfo } from '../../src/entities/enemies.ts'
 import type { AimFn, Player, PlayerControls, PlayerEvent } from '../../src/entities/player.ts'
+import { Presentation } from '../../src/presentation.ts'
 import { CameraRig } from '../../src/view/camera-rig.ts'
 import { PLAYER_START } from '../../src/world/layout.ts'
 
@@ -103,15 +104,20 @@ function fixture(scenario: Scenario): { game: Kernel; target: EventTarget } {
   const player = battle.player
   const rig = new CameraRig(16 / 9)
   rig.snap(player.pos, PLAYER_START.facing)
+  const rng = createRng(99)
+  const post = { focus: 9, musou: 0, flash: 0, aberration: 0, radial: 0, danger: 0, bars: 0, exposure: 1, dof: 0.8 }
+  // Effects, sound and HUD are stubs; the camera is the real rig, as before, so shake still moves it.
+  const presentation = new Presentation({
+    audio: () => null, sparks: { burst: noop, glitter: noop }, dust: { puff: noop, ring: noop }, waves: { ring: noop, pillar: noop },
+    fragments: { spawnSoldier: noop }, camera: rig, post, hud: { showBanner: noop, playCutin: noop },
+    dragon: { randomPoint: (_rng: () => number, out: Vector3) => out }, rng,
+  })
   const game = Object.assign(Object.create(Game.prototype), {
-    battle, rig, input, difficulty: 'normal', mode: 'playing',
+    battle, rig, input, presentation, difficulty: 'normal', mode: 'playing',
     clock: 0, simClock: 0, endTimer: 0, resultShown: false, controls: { ...idle },
-    rng: createRng(99), tmp: new Vector3(),
-    audio: null, music: null, perf: null,
-    post: { focus: 9, musou: 0, flash: 0, aberration: 0, radial: 0, danger: 0, bars: 0, exposure: 1, dof: 0.8 },
-    hud: { showBanner: noop }, screens: { showPause: noop, showResult: noop },
-    sparks: { burst: noop, glitter: noop }, dust: { puff: noop },
-    waves: { ring: noop }, fragments: { spawnSoldier: noop }, dragon: { active: false },
+    rng,
+    audio: null, music: null, perf: null, post,
+    screens: { showPause: noop, showResult: noop }, dragon: { active: false },
     // Only presentation is replaced. tick/simulate/Battle/mode transitions remain production methods.
     updateVisuals(dt: number, _simDt: number, frame: InputFrame) {
       rig.update(dt, player.pos, game.mode === 'playing' ? frame.camTurn : 0, frame.zoom, false, false, game.clock)
