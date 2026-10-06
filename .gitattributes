@@ -15,3 +15,4 @@
 # 由 scripts/combat-parity.mjs 產生的 Web 對照資料
 unity/ChangshanLongdan/TestData/combat/web-parity.json linguist-generated -diff
 unity/ChangshanLongdan/TestData/combat/web-hits.json linguist-generated -diff
+unity/ChangshanLongdan/TestData/combat/web-rig.json linguist-generated -diff
