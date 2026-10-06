@@ -29,6 +29,22 @@ namespace Changshan.Character
     // Scripted route recording: input is scripted, so losing the window focus must not pause or blur (RouteRecorder).
     public bool IgnoreFocusLoss { get; set; }
     public bool ShowDebug { get; set; } = true; // F3 toggles
+    public string LastHit { get; private set; } = "-"; // last feedback event, for the HUD
+
+    // The shake component on the view camera (added on first use; null without a camera).
+    public CameraShake Shake
+    {
+      get
+      {
+        if (shake != null) return shake;
+        var view = ViewCamera != null ? ViewCamera : Camera.main;
+        if (view == null) return null;
+        shake = view.GetComponent<CameraShake>();
+        if (shake == null) shake = view.gameObject.AddComponent<CameraShake>();
+        return shake;
+      }
+    }
+    CameraShake shake;
     public InputFrame LastInput { get; private set; }
     public CharacterAnimation Animation { get; } = new CharacterAnimation();
 
@@ -60,7 +76,13 @@ namespace Changshan.Character
       ResetFight();
     }
 
-    void Update() => Tick(Time.unscaledDeltaTime);
+    void Update()
+    {
+      Tick(Time.unscaledDeltaTime);
+      if (Paused) return;
+      if (Input.GetKeyDown(KeyCode.F4)) InjectStrike(false);
+      if (Input.GetKeyDown(KeyCode.F5)) InjectStrike(true);
+    }
 
     // One frame: read input, then simulate unless paused. Public so tests can step deterministically.
     public void Tick(double frameSeconds)
@@ -73,9 +95,54 @@ namespace Changshan.Character
       if (LastInput.Debug) ShowDebug = !ShowDebug;
       var controls = ControlComposer.Compose(LastInput, CameraYaw());
       Simulation.Step(dt, controls);
-      if (Dummies != null) Dummies.Show(Simulation.Targets);
+      Feedback();
+      if (Dummies != null) Dummies.Show(Simulation.Targets, Mapping);
       ApplyTransform();
       Animate();
+    }
+
+    // E07: the presentation side of this frame's events (src/presentation.ts): camera trauma and kick for hits and
+    // hurts, the musou start and a heavy landing. Sparks, dust, fragments and audio are not ported yet (see E07 doc).
+    void Feedback()
+    {
+      var shake = Shake;
+      foreach (var e in Simulation.Events)
+      {
+        switch (e.Type)
+        {
+          case CombatEventType.Hit when e.Source == HitSource.Player:
+            LastHit = $"{e.Window.Sfx} x{e.Count} shake {e.Window.Shake:0.00}";
+            if (shake != null)
+            {
+              shake.AddTrauma(e.Window.Shake * (e.Count > 3 ? 1.15 : 1));
+              if (e.Window.Sfx == HitSfx.Heavy) shake.Kick(0.5);
+            }
+            break;
+          case CombatEventType.Hurt:
+            LastHit = e.Heavy ? "hurt (heavy)" : "hurt";
+            if (shake != null) shake.AddTrauma(e.Heavy ? 0.45 : 0.25);
+            break;
+          case CombatEventType.Parry: LastHit = "parry"; break;
+          case CombatEventType.GuardBlock: LastHit = $"guard block {e.Damage:0.0}"; break;
+          case CombatEventType.Kill: LastHit = $"kill x{e.Count}"; break;
+        }
+      }
+      foreach (var e in Simulation.Player.Events)
+      {
+        if (shake == null) break;
+        if (e.Type == PlayerEventType.MusouStart) shake.AddTrauma(0.35);
+        else if (e.Type == PlayerEventType.Land && e.Heavy) shake.AddTrauma(0.15);
+      }
+    }
+
+    // Dev and tests until the AI (E08) attacks: one enemy strike from 2 m in front of the player (F4 light, F5 heavy).
+    public void InjectStrike(bool heavy)
+    {
+      Initialise();
+      var p = Simulation.Player;
+      double x = p.X + Math.Sin(p.Facing) * 2, z = p.Z + Math.Cos(p.Facing) * 2;
+      Simulation.InjectStrike(new EnemyStrike(heavy ? 70 : 26, heavy, x, z));
+      Feedback();
     }
 
     // E06: the Web procedural rig poses the imported model once it is READY; until then the fallback stays visible.
@@ -163,11 +230,11 @@ namespace Changshan.Character
       var p = Simulation.Player;
       string move = p.Move == null ? "-" : p.Move.Id.ToString();
       string text = string.Format(CultureInfo.InvariantCulture,
-        "State {0}  Move {1} {2:0.00}s  Musou {3:0}\nHits {4}  Hit-stop {5:0.000}s  Dummies {6}/{7}  (F3 hides)",
+        "State {0}  Move {1} {2:0.00}s  Musou {3:0}  HP {8:0}\nHits {4}  KO {9}  Hit-stop {5:0.000}s  Dummies {6}/{7}\nLast {10}  (F3 hides, F4/F5 strike)",
         p.State, move, p.MoveTime, p.Musou, Simulation.TotalHits, Math.Max(0, Simulation.Clock.Hitstop),
-        Simulation.Targets.AliveCount, Simulation.Targets.Count);
-      GUI.Box(new UnityEngine.Rect(50, 300, 1000, 90), "");
-      GUI.Label(new UnityEngine.Rect(75, 310, 950, 80), text, hudStyle);
+        Simulation.Targets.AliveCount, Simulation.Targets.Count, p.Hp, Simulation.KoCount, LastHit);
+      GUI.Box(new UnityEngine.Rect(50, 300, 1000, 120), "");
+      GUI.Label(new UnityEngine.Rect(75, 310, 950, 110), text, hudStyle);
     }
   }
 }
