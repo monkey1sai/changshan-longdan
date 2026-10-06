@@ -90,6 +90,62 @@ namespace Changshan.Foundation.Tests
       LogAssert.NoUnexpectedReceived();
     }
 
+    // Review finding: during hit-stop Player.Events still holds the frozen step's events (the JA shockwave here); the
+    // feedback must not replay them, or the camera trauma grows by one dose per frozen frame.
+    [UnityTest] public IEnumerator HitStopDoesNotRepeatTheFrozenStepsFeedback()
+    {
+      var root = new GameObject("Hit-stop Feedback Controller");
+      var dummies = new GameObject("Hit-stop Feedback Dummies");
+      try
+      {
+        root.transform.SetPositionAndRotation(new Vector3(-6, 0, 9), Quaternion.Euler(0, 160, 0));
+        var controller = root.AddComponent<ZhaoYunController>();
+        controller.enabled = false;
+        var dummy = new GameObject("Dummy").transform;
+        dummy.SetParent(dummies.transform, false);
+        dummy.position = controller.Mapping.ToDisplayPosition(ArenaLayout.StartX, 0, ArenaLayout.StartZ - 1.5);
+        var component = dummies.AddComponent<TrainingDummies>();
+        component.SetDummies(new[] { dummy });
+        controller.UseDummies(component);
+        var input = new ScriptedInput();
+        controller.InputSource = input;
+        controller.SetFocus(true);
+        var sim = controller.Simulation;
+        // Jump, then JA in the air: its shockwave fx and its hit land on the same step (hit-stop 0.06 s).
+        bool hit = false;
+        for (int frame = 0; frame < 60 && !hit; frame++)
+        {
+          if (frame == 2) input.Down.Add("Space");
+          if (frame == 3) input.Up.Add("Space");
+          if (frame == 6) input.Down.Add("KeyJ");
+          if (frame == 7) input.Up.Add("KeyJ");
+          controller.Tick(Dt);
+          hit = sim.Hits.Count > 0;
+        }
+        Assert.That(hit, Is.True, "JA never hit the dummy");
+        Assert.That(sim.Player.Move?.Id, Is.EqualTo(MoveId.JA));
+        Assert.That(sim.Player.Events.Any(e => e.Type == PlayerEventType.Fx && e.Fx == HitFx.Shockwave), Is.True, "the hit step must carry the shockwave fx");
+        Assert.That(sim.Clock.Hitstop, Is.GreaterThan(0));
+        float trauma = controller.Shake.Trauma;
+        Assert.That(trauma, Is.GreaterThan(0.5f), "shockwave 0.3 plus the heavy hit's 0.3");
+        int frozen = 0;
+        while (sim.Clock.Hitstop > 0 && frozen++ < 10)
+        {
+          controller.Tick(Dt);
+          Assert.That(sim.SteppedThisFrame, Is.False);
+          Assert.That(controller.Shake.Trauma, Is.EqualTo(trauma), $"trauma grew on frozen frame {frozen}");
+        }
+        Assert.That(frozen, Is.GreaterThan(1), "the hit-stop must freeze at least two frames at 60 Hz");
+        LogAssert.NoUnexpectedReceived();
+      }
+      finally
+      {
+        Object.Destroy(root);
+        Object.Destroy(dummies);
+      }
+      yield return null;
+    }
+
     [UnityTest] public IEnumerator InjectedStrikeHurtsThenKnocksDown()
     {
       ZhaoYunController controller = null;

@@ -95,23 +95,27 @@ namespace Changshan.Character
       if (LastInput.Debug) ShowDebug = !ShowDebug;
       var controls = ControlComposer.Compose(LastInput, CameraYaw());
       Simulation.Step(dt, controls);
-      Feedback();
+      Feedback(Simulation.SteppedThisFrame);
       if (Dummies != null) Dummies.Show(Simulation.Targets, Mapping);
       ApplyTransform();
       Animate();
     }
 
-    // E07: the presentation side of this frame's events (src/presentation.ts): camera trauma and kick for hits and
-    // hurts, the musou start and a heavy landing. Sparks, dust, fragments and audio are not ported yet (see E07 doc).
-    void Feedback()
+    // E07: the presentation side of this frame's events (src/presentation.ts): camera trauma and kick for hits,
+    // hurts, parries, blocks, ground fx, the musou start and a heavy landing. Sparks, dust, fragments, rings and audio
+    // are not ported yet (see E07 doc). Player events are read only on a frame that stepped: during hit-stop the Web
+    // plays nothing, and Player.Events still holds the frozen step's events.
+    void Feedback(bool playerEvents)
     {
       var shake = Shake;
-      foreach (var e in Simulation.Events)
+      var events = Simulation.Events;
+      for (int i = 0; i < events.Count; i++)
       {
+        var e = events[i];
         switch (e.Type)
         {
           case CombatEventType.Hit when e.Source == HitSource.Player:
-            LastHit = $"{e.Window.Sfx} x{e.Count} shake {e.Window.Shake:0.00}";
+            LastHit = FormattableString.Invariant($"{e.Window.Sfx} x{e.Count} shake {e.Window.Shake:0.00}");
             if (shake != null)
             {
               shake.AddTrauma(e.Window.Shake * (e.Count > 3 ? 1.15 : 1));
@@ -122,16 +126,32 @@ namespace Changshan.Character
             LastHit = e.Heavy ? "hurt (heavy)" : "hurt";
             if (shake != null) shake.AddTrauma(e.Heavy ? 0.45 : 0.25);
             break;
-          case CombatEventType.Parry: LastHit = "parry"; break;
-          case CombatEventType.GuardBlock: LastHit = $"guard block {e.Damage:0.0}"; break;
-          case CombatEventType.Kill: LastHit = $"kill x{e.Count}"; break;
+          case CombatEventType.Parry:
+            LastHit = "parry";
+            if (shake != null) shake.AddTrauma(0.12);
+            break;
+          case CombatEventType.GuardBlock:
+            LastHit = FormattableString.Invariant($"guard block {e.Damage:0.0}");
+            if (shake != null) shake.AddTrauma(0.04);
+            break;
+          case CombatEventType.Kill: LastHit = FormattableString.Invariant($"kill x{e.Count}"); break;
         }
       }
-      foreach (var e in Simulation.Player.Events)
+      if (!playerEvents || shake == null) return;
+      var player = Simulation.Player.Events;
+      for (int i = 0; i < player.Count; i++)
       {
-        if (shake == null) break;
-        if (e.Type == PlayerEventType.MusouStart) shake.AddTrauma(0.35);
-        else if (e.Type == PlayerEventType.Land && e.Heavy) shake.AddTrauma(0.15);
+        var e = player[i];
+        switch (e.Type)
+        {
+          case PlayerEventType.MusouStart: shake.AddTrauma(0.35); break;
+          case PlayerEventType.Land when e.Heavy: shake.AddTrauma(0.15); break;
+          case PlayerEventType.Fx when e.Fx == HitFx.Shockwave: shake.AddTrauma(0.3); break;
+          case PlayerEventType.Fx when e.Fx == HitFx.Blast:
+            shake.AddTrauma(1);
+            shake.Kick(1);
+            break;
+        }
       }
     }
 
@@ -142,7 +162,7 @@ namespace Changshan.Character
       var p = Simulation.Player;
       double x = p.X + Math.Sin(p.Facing) * 2, z = p.Z + Math.Cos(p.Facing) * 2;
       Simulation.InjectStrike(new EnemyStrike(heavy ? 70 : 26, heavy, x, z));
-      Feedback();
+      Feedback(false); // only the strike's own events; the frame's player events were already played
     }
 
     // E06: the Web procedural rig poses the imported model once it is READY; until then the fallback stays visible.
@@ -203,6 +223,7 @@ namespace Changshan.Character
       Simulation.Restart();
       Animation.Reset();
       ApplyTransform();
+      if (Dummies != null) Dummies.Show(targets, Mapping); // back at their spawns now, not on the next tick
     }
 
     double CameraYaw()

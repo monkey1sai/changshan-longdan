@@ -18,7 +18,7 @@
 - **`HitTargets`（純 C#，`src/entities/enemies.ts` `EnemyStore` 去掉 AI）**：SoA `float` 陣列（位置、速度、朝向、血量、狀態時間、閃光、旋轉、旋轉速度、冷卻、相位、體型、側向）、`EnemyState`（Idle 與 Web 同值的 Flinch 6／Air 7／Knockback 8／Down 9／Getup 10／Dead 11）、`EnemyKind`（Spear／Sword／Captain）。`Reset(spawns)` 照 Web `reset` 的亂數順序（血量 40–52、狀態時間、相位、冷卻、側向、體型 0.96–1.04；隊長 230 血、1.22 倍體型）；`Add` 保留 E05 的靜態假人（不消耗亂數）。`Step(dt, 玩家位置, arena)` = Web `update` 去掉交戰與令牌：閃光每秒衰減 9、狀態計時、各狀態的煞車與計時（Flinch 0.42 s、Knockback 0.4 s、Down 1.15 s、Getup 0.5 s；Air 自行積分重力 25、落地時水平速度 ×0.35 進 Down）、重建格網、`separate`（著地的兵互推、與玩家保持 0.95 m、場地約束）。`Damage(i, window, dir)` = Web `damage`：扣血、閃光、面向攻擊來源、五種反應（隊長 push ×0.6、地面 lift ×0.7；空中 flinch 給 3.2 上升、launch 取 lift×0.75、knockback 2.5、knockdown 以 −10 砸下並減半推力）、擊殺記錄 `KillInfo`（飛散速度 push×0.8＋原速度×0.3、上升 max(lift, 2.5)×0.8）。`Static` 旗標給 E05 對照（Web 的命中 harness 從不呼叫 `update`）。
 - **`SpatialHash`／`Mulberry32`**：`spatial-hash.ts` 與 `createRng` 的逐位元移植；`HitResolver.Apply` 以格網順序走訪候選（E05 的去重規則不變），`HitTargets.Nearest` 也照 Web 走格網。
 - **`CombatSimulation`**：`Battle.step` 的順序——時鐘、玩家更新、`Targets.Step`（Web 在玩家命中前先跑 `soldiers.update`）、玩家判定窗命中（反應在命中當下套用）、第二來源回呼、`ResolveKills`。每步產生 `CombatEvent`（Hit 含來源與窗、Kill、EnemyStrike、Parry、GuardBlock、Hurt），`Hits` 每筆含命中位置與方向（火花用），`Kills` 含 `KillInfo`。`InjectStrike` 照 `Battle.resolveStrike`：完美格擋要求 0.06 s hit-stop、格擋事件帶穿透傷害、受傷事件帶來源位置；累計 `DamageSum`、`KoCount`。
-- **Unity 呈現（`Changshan.Character`）**：`TrainingDummies.Show` 每幀依目標狀態擺放膠囊——位置（含高度）、面向、`soldier-view.ts` 的姿勢（硬直前傾 −0.45·sin、擊退前傾 −0.4、空中依 spin 翻滾、倒地 −π/2 並下沉 0.74 m、起身以 smoothstep 回正）、受擊閃光以 `MaterialPropertyBlock` 把底色混向白色；死亡隱藏，重試回到原始生成點。`CameraShake`（`camera-rig.ts` 的震動）：trauma 平方決定位移與滾轉、每秒衰減 1.5；重擊 kick 收縮視野 4°、每秒衰減 6；在 `LateUpdate` 疊在當幀鏡頭之上。控制器把事件轉成回饋：命中 trauma = shake ×（>3 人 1.15）、重擊 kick 0.5、受傷 0.45／0.25、無雙開始 0.35、重落地 0.15；HUD 顯示血量、KO 數與最後一筆事件；F4／F5 注入輕／重攻擊（開發用，距玩家正前方 2 m）。火花、塵土、碎片、刀光與音效尚未移植。
+- **Unity 呈現（`Changshan.Character`）**：`TrainingDummies.Show` 每幀依目標狀態擺放膠囊——位置（含高度）、面向、`soldier-view.ts` 的姿勢（硬直前傾 −0.45·sin、擊退前傾 −0.4、空中依 spin 翻滾、倒地 −π/2 並下沉 0.74 m、起身以 smoothstep 回正）、受擊閃光以 `MaterialPropertyBlock` 把底色混向白色；死亡隱藏，重試回到原始生成點。`CameraShake`（`camera-rig.ts` 的震動）：trauma 平方決定位移與滾轉、每秒衰減 1.5；重擊 kick 收縮視野 4°、每秒衰減 6；在 `LateUpdate` 疊在當幀鏡頭之上。控制器把事件轉成回饋（`presentation.ts` 的鏡頭部分）：命中 trauma = shake ×（>3 人 1.15）、重擊 kick 0.5、受傷 0.45／0.25、完美格擋 0.12、格擋 0.04、shockwave 特效 0.3、blast 特效 trauma 1＋kick 1、無雙開始 0.35、重落地 0.15；玩家事件只在有前進的幀播放（hit-stop 期間 Web 不播任何事件，而 `Player.Events` 仍保有凍結那一步的事件，審查發現）；HUD 顯示血量、KO 數與最後一筆事件；F4／F5 注入輕／重攻擊（開發用，距玩家正前方 2 m）。火花、塵土、碎片、刀光與音效尚未移植。
 
 ## 對照資料
 
@@ -43,7 +43,7 @@
 |---|---|
 | Vitest `reaction-parity.test.ts`（3） | fixture 逐位元組相同；16 情境 × 3 頻率齊全、七種敵兵狀態都出現、各情境的關鍵狀態與事件；攻擊情境與真正的 `Battle` 一致 |
 | Edit Mode `ReactionParityEditTests`（13） | 來源雜湊、情境集合、30／60／120 Hz 逐幀比對（玩家 10 欄、hit-stop、事件逐筆、每個士兵 14 欄；狀態、存活、血量、命中名單完全相同，連續值容許 1e-4，見下）、七種狀態都在 Unity 出現、mulberry32 前四個值、命中順序照格網、隊長倍率與空中 knockdown、各反應計時回到站立、互推與與玩家距離、擊殺資料、注入攻擊只能在步外且照 Battle 規則、fixture 狀態覆蓋 |
-| Play Mode `ReactionPlayTests`（2） | 場景：N1 打中假人後假人硬直、前傾、閃白、鏡頭有 trauma，0.42 s 後回正站地；F4／F5 注入：受傷 0.4 s、重擊倒地與無敵、無敵中攻擊無效、倒地 1.3 s 後起身、trauma 隨真實時間衰減 |
+| Play Mode `ReactionPlayTests`（3） | 場景：N1 打中假人後假人硬直、前傾、閃白、鏡頭有 trauma，0.42 s 後回正站地；JA 命中（同一步帶 shockwave 特效）後 hit-stop 凍結的幀不再增加 trauma；F4／F5 注入：受傷 0.4 s、重擊倒地與無敵、無敵中攻擊無效、倒地 1.3 s 後起身、trauma 隨真實時間衰減 |
 | E05 既有 | `HitParity` 以 `Static` 重播：命中去重與 hit-stop 規則不變（士兵不移動） |
 
 ### 容許誤差
@@ -60,8 +60,12 @@
 - 敵兵不出手（E08）；玩家受擊循環只能以注入攻擊驗證。
 - Web 允許無限浮空／倒地循環（C1），隊長在 Web 只有 Windup 中 50% 免硬直，沒有真正的霸體／破防；E07 原樣保留，A1 下 Windup 不存在所以該機率路徑不會發生。
 - 連擊、`comboBreak`、戰鬥階段、勝負與慢動作、無雙龍未移植。
-- 假人姿勢是膠囊的傾斜與翻滾，不是士兵模型；數值通過不等於視覺通過，需要戰鬥／音效審查。
+- 假人姿勢是膠囊的傾斜與翻滾，不是士兵模型（倒地時以膠囊半徑貼地，不照 Web 的 0.74 m 下沉）；數值通過不等於視覺通過，需要戰鬥／音效審查。
+- 鏡頭震動在 `LateUpdate` 先撤銷上一幀的位移再疊加，前提是沒有其他元件在幀間絕對設定鏡頭姿勢；之後接鏡頭 rig 時要改為由 rig 每幀重設基準。
+- `Separate` 讀取 float 時先轉 double 再相減（Web 在 double 相減是精確的）；其餘運算都已混入 double 或在存入時轉 float。
 - 重試照 Web 不重新播種亂數：第二場的體型與冷卻與第一場不同。
+
+- 審查延後項目（LOW／NIT）見 issue #34：容忍度對 Float32 寫入的直接斷言、反應 harness 對真 `EnemyStore.update` 的交叉驗證、`CameraShake` 前提、`Restart` 不重設目標、`rngHp` 比對。
 
 ## 回滾
 

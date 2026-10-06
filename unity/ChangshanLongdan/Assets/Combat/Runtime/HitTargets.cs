@@ -243,9 +243,12 @@ namespace Changshan.Combat
           foreach (int j in hash.Query(x[i], z[i], 1.1, neighbors))
           {
             if (j <= i || !alive[j] || state[j] == EnemyState.Air) continue;
-            double dx = x[j] - x[i], dz = z[j] - z[i];
+            // Read the floats as doubles before combining them: the Web subtracts Float32Array elements in double
+            // (exact), while a float - float in C# may round to single precision on some runtimes.
+            double xi = x[i], zi = z[i], xj = x[j], zj = z[j], si = scale[i], sj = scale[j];
+            double dx = xj - xi, dz = zj - zi;
             double d2 = dx * dx + dz * dz;
-            double minD = (scale[i] + scale[j]) * BodyRadius;
+            double minD = (si + sj) * BodyRadius;
             if (d2 >= minD * minD) continue;
             if (d2 < 1e-6)
             {
@@ -259,7 +262,7 @@ namespace Changshan.Combat
             x[j] = (float)(x[j] + dx * push);
             z[j] = (float)(z[j] + dz * push);
           }
-          double ddx = x[i] - px, ddz = z[i] - pz;
+          double ddx = (double)x[i] - px, ddz = (double)z[i] - pz;
           double dd2 = ddx * ddx + ddz * ddz;
           if (dd2 < 0.9 && dd2 > 1e-6)
           {

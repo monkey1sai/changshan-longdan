@@ -13,6 +13,7 @@ namespace Changshan.Character
   {
     public const float DummyHp = 46; // inside the Web soldier range of 40-52 HP
     public const float Height = 1.8f; // the capsule stands 1.8 m tall; its pivot is its centre
+    public const float CapsuleRadius = 0.42f; // the Web body radius; the capsule is scaled to it
     static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
     static readonly int Color = Shader.PropertyToID("_Color");
 
@@ -98,10 +99,11 @@ namespace Changshan.Character
         }
         var ground = mapping.ToDisplayPosition(targets.X(i), targets.Y(i), targets.Z(i));
         var facing = mapping.ToDisplayRotation(targets.Yaw(i));
-        // Pivot at the capsule centre: lift lowers the body (lying), the pitch tips it forward about its feet.
+        // Like the Web soldier view, the body turns about its 0.9 m pivot (the capsule centre) and lift lowers it; a
+        // lying capsule is kept at its own radius above the ground so it does not sink into the floor.
         var pitch = Quaternion.AngleAxis((lean + tumble) * Mathf.Rad2Deg, Vector3.right);
-        var centre = pitch * new Vector3(0, Height / 2 + lift, 0);
-        dummy.SetPositionAndRotation(ground + facing * centre, facing * pitch);
+        float centreHeight = Mathf.Max(Height / 2 + lift, Mathf.Lerp(Height / 2, CapsuleRadius, Mathf.Abs(Mathf.Sin(lean + tumble))));
+        dummy.SetPositionAndRotation(ground + facing * new Vector3(0, centreHeight, 0), facing * pitch);
         var renderer = renderers[i];
         if (renderer == null) continue;
         float flash = (float)targets.Flash(i);
