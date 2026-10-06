@@ -7,12 +7,13 @@ import { MUSOU_MAX, Player, type AimFn, type PlayerControls } from '../../src/en
 import { PLAY_LIMIT, PLAYER_START, obstacles } from '../../src/world/layout.ts'
 
 // E05 reference data: the unmodified Web player hitting static soldiers through EnemyStore.applyHit, in the order of
-// Game.simulate (hit-stop queues input only; otherwise player update, then player hits, then the dragon-like source).
+// Battle.step (hit-stop queues input only; otherwise player update, then player hits, then the dragon-like source).
 // Soldiers never run update(), so they stay where they spawn; reactions and AI are later steps.
 
 export const HIT_PARITY_SOURCES = [
   'src/entities/player.ts', 'src/entities/enemies.ts', 'src/combat/moves.ts', 'src/combat/hitshape.ts', 'src/combat/combo.ts',
-  'src/core/math.ts', 'src/core/spatial-hash.ts', 'src/game.ts', 'scripts/lib/hit-parity.ts',
+  'src/core/math.ts', 'src/core/spatial-hash.ts', 'src/entities/battle.ts', 'src/entities/dragon-strike.ts', 'src/game.ts',
+  'scripts/lib/hit-parity.ts',
 ] as const
 
 type Button = 'attack' | 'charge' | 'jump' | 'dodge' | 'musou'
@@ -38,7 +39,7 @@ const RATES = [30, 60, 120]
 const attacks = (n: number): Step[] => Array.from({ length: n }, () => ['attack', 0.05])
 
 // Deterministic, deliberately asymmetric layouts in front of the player (front is -Z): no two soldiers at the same
-// distance from the player, so Game's nearest-soldier auto-aim never depends on spatial-hash iteration order.
+// distance from the player, so Battle's nearest-soldier auto-aim never depends on spatial-hash iteration order.
 function crowd(n: number): Target[] {
   if (n === 1) return [{ x: 0.13, z: S.z - 2.1 }]
   const out: Target[] = []
