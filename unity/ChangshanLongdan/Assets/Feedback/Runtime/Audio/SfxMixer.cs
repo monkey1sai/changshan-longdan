@@ -70,6 +70,7 @@ namespace Changshan.Feedback.Audio
     public int Play(float[] clip, double pan, double gain = 1, long atSample = -1)
     {
       if (clip == null) throw new ArgumentNullException(nameof(clip));
+      if (clip.Length == 0) throw new ArgumentException("SFX_EMPTY_CLIP", nameof(clip));
       // StereoPannerNode, mono input: x = (pan + 1) / 2, left cos(x pi / 2), right sin(x pi / 2).
       double x = (Math.Max(-1, Math.Min(1, pan)) + 1) / 2;
       lock (gate)
@@ -158,12 +159,15 @@ namespace Changshan.Feedback.Audio
       }
     }
 
+    // Not started yet (Start -1 or a future sample) sorts after every playing voice.
+    static long StartOrder(in VoiceState v) => v.Started ? v.Start : long.MaxValue;
+
     // A free slot, or the voice that started first when all are busy.
     int FreeVoice()
     {
       for (int i = 0; i < voices.Length; i++) if (!voices[i].Active) return i;
       int best = 0;
-      for (int i = 1; i < voices.Length; i++) if (voices[i].Start < voices[best].Start) best = i;
+      for (int i = 1; i < voices.Length; i++) if (StartOrder(voices[i]) < StartOrder(voices[best])) best = i;
       return best;
     }
 

@@ -72,7 +72,7 @@ if (mode === 'e07') {
   feedback = {
     hitFrames: hitFrames.length, hits: route.frames.reduce((n, f) => n + f.hits, 0), damage: route.frames.reduce((n, f) => n + f.damage, 0), kills,
     heldFrames: route.frames.filter((f) => f.stepped === false).length, cues: [...cues].sort(),
-    hitFramesWithSparksAndSoundOnTheSameFrame: hitFrames.length,
+    hitFramesWithSparksAndHitSoundCueOnTheSameFrame: hitFrames.length,
   }
 }
 const audioPath = path.join(frames, 'audio.wav')
@@ -81,6 +81,30 @@ if (hasAudio && route.audioSamples !== Math.round(route.audioRate / route.frameR
   throw new Error(`ROUTE_AUDIO_LENGTH: ${route.audioSamples} samples for ${expected} frames at ${route.audioRate} Hz`)
 }
 if (mode === 'e07' && !hasAudio) throw new Error('ROUTE_NO_AUDIO: the Player had no audio output to mix')
+// The sound itself, not only the cues: every frame that queued a sound must be audible within 100 ms of it.
+let audioCheck = null
+if (hasAudio) {
+  const wav = fs.readFileSync(audioPath)
+  if (wav.toString('ascii', 0, 4) !== 'RIFF' || wav.toString('ascii', 8, 12) !== 'WAVE' || wav.readUInt16LE(22) !== 2 || wav.readUInt16LE(34) !== 16)
+    throw new Error('ROUTE_AUDIO_FORMAT: expected 16-bit stereo PCM')
+  const data = wav.subarray(44)
+  const frameSamples = Math.round(route.audioRate / route.frameRate)
+  const rms = (from, count) => {
+    let sum = 0, n = 0
+    for (let i = from; i < Math.min(from + count, data.length / 4); i++, n += 2) {
+      const l = data.readInt16LE(i * 4) / 32768, r = data.readInt16LE(i * 4 + 2) / 32768
+      sum += l * l + r * r
+    }
+    return n ? Math.sqrt(sum / n) : 0
+  }
+  let peak = 0
+  for (let i = 0; i < data.length / 2; i++) peak = Math.max(peak, Math.abs(data.readInt16LE(i * 2)) / 32768)
+  const sounding = route.frames.filter((f) => (f.cues ?? []).some((c) => c.startsWith('audio.') && c !== 'audio.setMusicLevel'))
+  const silent = sounding.filter((f) => rms(f.f * frameSamples, Math.round(route.audioRate * 0.1)) < 1e-3).map((f) => f.f)
+  if (peak === 0 || sounding.length === 0 || silent.length > 0)
+    throw new Error(`ROUTE_AUDIO_SILENT: peak ${peak}, frames with sound cues ${sounding.length}, silent after cue ${silent.join(',')}`)
+  audioCheck = { peak, framesWithSoundCues: sounding.length, framesAudibleWithin100ms: sounding.length }
+}
 if (hasAudio) fs.renameSync(audioPath, path.join(out, 'audio.wav'))
 fs.renameSync(routeLogPath, path.join(out, 'route.json'))
 const video = path.join(out, 'route.mp4')
@@ -97,7 +121,7 @@ const manifest = {
   frames: frameFiles.length, frameRate: route.frameRate, resolution: '1280x720',
   route: { file: 'route.json', sha256: sha256(path.join(out, 'route.json')), duration: route.duration, finalSimTime: route.frames[route.frames.length - 1].simTime, states, moves },
   video: { file: 'route.mp4', bytes: fs.statSync(video).size, sha256: sha256(video) },
-  audio: hasAudio ? { file: 'audio.wav', sha256: sha256(path.join(out, 'audio.wav')), rate: route.audioRate, samples: route.audioSamples, clock: 'each frame\'s sounds start at that frame\'s first sample' } : null,
+  audio: hasAudio ? { file: 'audio.wav', sha256: sha256(path.join(out, 'audio.wav')), rate: route.audioRate, samples: route.audioSamples, check: audioCheck, clock: 'each frame\'s sounds start at that frame\'s first sample' } : null,
   feedback,
   contactSheet: { file: 'contact.png', sha256: sha256(contact), everySeconds: 2 },
 }

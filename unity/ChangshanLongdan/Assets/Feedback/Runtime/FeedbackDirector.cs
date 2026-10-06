@@ -150,6 +150,8 @@ namespace Changshan.Feedback
         s.Post.Radial = Math.Max(s.Post.Radial, 0.5);
         return;
       }
+      // The Web treats every other fx as the blast; Player only sends Fx events for windows with an fx, so None never
+      // arrives here, and a future fx value must be ported explicitly rather than shown as the blast.
       if (fx != HitFx.Blast) return;
       // The musou finale: the dragon hits the ground 6 m in front of Zhao Yun.
       double fxX = x + Math.Sin(facing) * 6;

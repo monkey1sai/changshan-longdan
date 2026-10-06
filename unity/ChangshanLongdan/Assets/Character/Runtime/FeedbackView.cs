@@ -35,6 +35,17 @@ namespace Changshan.Character
     public double BannerLeft { get; private set; }
     public int Cutins { get; private set; }
     public double SimClock { get; private set; } // game.ts simClock: the trail's time
+    // Recordings render the mixer themselves: no live output may pull it at the same time.
+    public bool OfflineAudio
+    {
+      get => offlineAudio;
+      set
+      {
+        offlineAudio = value;
+        if (value) DetachOutputs();
+      }
+    }
+    bool offlineAudio;
 
     readonly List<FeedbackEvent> events = new List<FeedbackEvent>();
     readonly ViewCamera cameraSink = new ViewCamera();
@@ -128,7 +139,7 @@ namespace Changshan.Character
       if (cameraSink.View == view && cameraSink.Shake == shake) return;
       cameraSink.View = view;
       cameraSink.Shake = shake;
-      if (Sound == null || view == null) return;
+      if (Sound == null || view == null || offlineAudio) return;
       // The audio thread mixes in through the listener (the scene has none unless the camera brings one).
       var listeners = FindObjectsByType<AudioListener>();
       var listener = listeners.Length > 0 ? listeners[0] : view.gameObject.AddComponent<AudioListener>();
@@ -377,6 +388,15 @@ namespace Changshan.Character
     void OnDestroy()
     {
       foreach (var l in new[] { sparkLayer, dustLayer, ringLayer, pillarLayer, trailLayer, fragmentLayer }) l?.Destroy();
+      DetachOutputs();
+    }
+
+    // Stops the audio thread pulling this view's mixer (outputs may outlive the view on a persistent camera).
+    void DetachOutputs()
+    {
+      if (Sound == null) return;
+      foreach (var output in FindObjectsByType<FeedbackAudioOutput>())
+        if (output.Mixer == Sound.Mixer) output.Mixer = null;
     }
 
     // One drawn mesh with preallocated vertex arrays (world-space vertices, identity transform).

@@ -210,6 +210,31 @@ namespace Changshan.Foundation.Tests
       Assert.That(mixer.SamplesRendered, Is.EqualTo(3 * 1024));
       Assert.That(mixer.ActiveVoices, Is.Zero, "short clips have ended");
       Assert.Throws<ArgumentNullException>(() => mixer.Play(null, 0));
+      Assert.Throws<ArgumentException>(() => mixer.Play(new float[0], 0));
+    }
+
+    // When every voice is busy, new sounds replace the voices that started first, not each other.
+    [Test] public void FullMixerStealsTheOldestPlayingVoices()
+    {
+      var mixer = new SfxMixer(Rate, 2);
+      var data = new float[2 * 256];
+      var starts = new List<(int Id, long Sample)>();
+      int a = mixer.Play(new float[Rate], 0), b = mixer.Play(new float[Rate], 0);
+      mixer.Render(data, 256, 2);
+      int c = mixer.Play(new float[Rate], 0), d = mixer.Play(new float[Rate], 0);
+      mixer.Render(data, 256, 2);
+      mixer.TakeStarts(starts);
+      Assert.That(starts.Select(s => s.Id), Is.EquivalentTo(new[] { a, b, c, d }), "both new sounds start");
+      Assert.That(mixer.ActiveVoices, Is.EqualTo(2));
+    }
+
+    // A sound's variants depend only on the seed, not on which sounds were rendered before it.
+    [Test] public void BankVariantsDoNotDependOnRenderOrder()
+    {
+      var first = new SfxBank(new SfxSynth(Rate), new SfxMixer(Rate), () => 0);
+      var second = new SfxBank(new SfxSynth(Rate), new SfxMixer(Rate), () => 0);
+      second.Clips(Sound.Dodge, false, HitSfx.Light, 0);
+      Assert.That(second.Clips(Sound.Swing, true, HitSfx.Light, 0), Is.EqualTo(first.Clips(Sound.Swing, true, HitSfx.Light, 0)));
     }
 
     [Test] public void BankSpacesHitsByTwentyFiveMilliseconds()

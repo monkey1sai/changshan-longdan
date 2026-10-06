@@ -139,7 +139,7 @@ namespace Changshan.Character
       float[] block = mixer != null ? new float[samplesPerFrame * 2] : null;
       if (bank != null)
       {
-        foreach (var live in FindObjectsByType<FeedbackAudioOutput>()) live.Mixer = null;
+        effects.OfflineAudio = true;
         if (effects.Prewarm != null) while (!effects.Prewarm.IsCompleted) yield return null;
         bank.UseClock(() => audioSample / (double)mixer.Rate, () => audioSample);
       }

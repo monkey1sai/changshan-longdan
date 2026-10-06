@@ -20,7 +20,7 @@ namespace Changshan.Feedback.Audio
     Func<long> scheduleAt; // null: start with the next audio buffer
     readonly Dictionary<int, float[][]> cache = new Dictionary<int, float[][]>();
     readonly Mulberry32 variantRng;
-    readonly Mulberry32 renderRng;
+    readonly uint renderSeed;
     readonly object gate = new object();
     double lastHitTime = double.NegativeInfinity;
 
@@ -36,7 +36,7 @@ namespace Changshan.Feedback.Audio
       this.audioTime = audioTime ?? throw new ArgumentNullException(nameof(audioTime));
       if (synth.Rate != mixer.Rate) throw new ArgumentException("SFX_RATE_MISMATCH");
       variantRng = new Mulberry32(seed);
-      renderRng = new Mulberry32(seed ^ 0x9e3779b9u);
+      renderSeed = seed ^ 0x9e3779b9u;
     }
 
     public SfxMixer Mixer => mixer;
@@ -72,7 +72,9 @@ namespace Changshan.Feedback.Audio
       {
         if (cache.TryGetValue(key, out var clips)) return clips;
         clips = new float[Variants][];
-        for (int i = 0; i < Variants; i++) clips[i] = synth.Render(sound, heavy, kind, count, renderRng);
+        // Each sound draws from its own seed, so its variants do not depend on which sound was rendered first.
+        var rng = new Mulberry32(renderSeed ^ (uint)key * 2654435761u);
+        for (int i = 0; i < Variants; i++) clips[i] = synth.Render(sound, heavy, kind, count, rng);
         cache[key] = clips;
         return clips;
       }

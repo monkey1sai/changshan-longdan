@@ -24,7 +24,8 @@ import { PLAY_LIMIT, PLAYER_START, obstacles } from '../../src/world/layout.ts'
 
 export const PRESENTATION_PARITY_SOURCES = [
   'src/presentation.ts', 'src/fx/sparks.ts', 'src/fx/dust.ts', 'src/fx/shockwave.ts', 'src/fx/fragments.ts', 'src/fx/trail.ts',
-  'src/view/soldier-view.ts', 'src/entities/battle.ts', 'src/core/math.ts', 'scripts/lib/presentation-parity.ts',
+  'src/view/soldier-view.ts', 'src/entities/battle.ts', 'src/entities/player.ts', 'src/entities/enemies.ts', 'src/combat/moves.ts',
+  'src/core/math.ts', 'scripts/lib/presentation-parity.ts',
 ] as const
 
 const PORTED = new Set<BattleEvent['type']>(['swing', 'jump', 'land', 'dodge', 'musouStart', 'fx', 'hit', 'kill', 'enemyStrike', 'parry',
