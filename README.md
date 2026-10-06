@@ -62,8 +62,9 @@ npm run package:itch  # 建置並打包成 itch.io 用的 release/changshan-long
 | 路徑 | 用途 |
 | --- | --- |
 | `src/game.ts` | 主迴圈、模式切換（標題／戰鬥／暫停／結果）與各系統的接線 |
+| `src/presentation.ts` | 把戰鬥事件轉成音效、火花、塵土、衝擊波、鏡頭震動與 HUD 橫幅（打擊手感在這裡調整） |
 | `src/combat/` | 招式表（判定窗、傷害、反應）、連段規則、判定形狀 |
-| `src/entities/` | 趙雲狀態機、魏兵 AI 與物理（SoA typed arrays）、場地碰撞 |
+| `src/entities/` | 戰鬥規則（`battle.ts`：每一步的結算、事件、勝敗、難度與戰況）、趙雲狀態機、魏兵 AI 與物理（SoA typed arrays）、無雙蒼龍撞擊、場地碰撞 |
 | `src/core/` | 數學、輸入（鍵盤／滑鼠／手把）、空間格網、兩節骨骼 IK |
 | `src/world/` | 城池配置與幾何、天空、軍旗、火焰、光照、程序貼圖 |
 | `src/view/` | 趙雲模型與姿勢、實例化士兵、跟隨鏡頭 |
