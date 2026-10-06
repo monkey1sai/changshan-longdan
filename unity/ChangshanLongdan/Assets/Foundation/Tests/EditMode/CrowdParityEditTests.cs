@@ -66,7 +66,8 @@ namespace Changshan.Foundation.Tests
       Assert.That(all.FailCount, Is.Zero, all.ToString());
       Assert.That(all.Frames, Is.GreaterThan(1000));
       Assert.That(invariants, Is.Empty);
-      Assert.That(states, Is.SupersetOf(new[] { EnemyState.Engage, EnemyState.Windup, EnemyState.Strike, EnemyState.Recover, EnemyState.March, EnemyState.Flinch, EnemyState.Dead }));
+      // Living soldiers only (a killed soldier leaves the living set), so Dead is checked through the kill events in the fixture.
+      Assert.That(states, Is.SupersetOf(new[] { EnemyState.Engage, EnemyState.Windup, EnemyState.Strike, EnemyState.Recover, EnemyState.March, EnemyState.Flinch }));
     }
 
     // The castle: 300 soldiers for six seconds, compared per second (counts, states, tokens, kills, the player).
