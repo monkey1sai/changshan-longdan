@@ -1,9 +1,31 @@
-import { PerspectiveCamera, Vector3 } from 'three'
+import { PerspectiveCamera, Vector3, type Vector3Like } from 'three'
+import type { InputFrame } from '../core/input.ts'
 import { clamp, damp, dampAngle, lerp } from '../core/math.ts'
+import type { PlayerControls } from '../entities/player.ts'
 import { PLAY_LIMIT } from '../world/layout.ts'
 import { cameraClearance, clearCameraOverhang } from './camera-clearance.ts'
 
 const TITLE_LOOK = new Vector3(0, 4, -6)
+
+/** 把相對鏡頭的搖桿輸入轉成世界方向的操作，寫入 out 後回傳。 */
+export function toPlayerControls(input: InputFrame, forward: Vector3Like, right: Vector3Like, out: PlayerControls): PlayerControls {
+  let mx = forward.x * input.moveY + right.x * input.moveX
+  let mz = forward.z * input.moveY + right.z * input.moveX
+  const len = Math.hypot(mx, mz)
+  if (len > 1) {
+    mx /= len
+    mz /= len
+  }
+  out.moveX = mx
+  out.moveZ = mz
+  out.attack = input.attack
+  out.charge = input.charge
+  out.jump = input.jump
+  out.dodge = input.dodge
+  out.musou = input.musou
+  out.guard = input.guard === true
+  return out
+}
 
 /** 第三人稱跟隨鏡頭：可旋轉縮放、受擊震動、無雙時低角度環繞，標題畫面則環繞城池。 */
 export class CameraRig {
@@ -37,7 +59,7 @@ export class CameraRig {
     this.punch = Math.max(this.punch, amount)
   }
 
-  snap(target: Vector3, yaw: number): void {
+  snap(target: Vector3Like, yaw: number): void {
     this.yaw = yaw
     this.recenterYaw = null
     this.forward.set(Math.sin(yaw), 0, Math.cos(yaw))
@@ -54,7 +76,7 @@ export class CameraRig {
     return lerp(near, this.camera.position.distanceTo(TITLE_LOOK), this.title)
   }
 
-  update(dt: number, target: Vector3, turn: number, zoom: number, musou: boolean, titleMode: boolean, time: number): void {
+  update(dt: number, target: Vector3Like, turn: number, zoom: number, musou: boolean, titleMode: boolean, time: number): void {
     this.yaw -= turn * 2.4 * dt
     if (Math.abs(turn) > 0.01) this.recenterYaw = null
     if (this.recenterYaw !== null) this.yaw = dampAngle(this.yaw, this.recenterYaw, 10, dt)

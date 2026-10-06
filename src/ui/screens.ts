@@ -1,25 +1,11 @@
+import type { BattleResult } from '../entities/battle.ts'
 import { subscribe, t } from './i18n.ts'
 import type { DifficultyId } from '../core/difficulty.ts'
-
-export interface ResultStats {
-  win: boolean
-  ko: number
-  maxCombo: number
-  seconds: number
-  damage: number
-}
 
 function must<T extends HTMLElement>(id: string): T {
   const el = document.getElementById(id)
   if (el === null) throw new Error(`找不到 #${id}`)
   return el as T
-}
-
-function rank(s: ResultStats): string {
-  if (!s.win) return s.ko >= 200 ? 'B' : s.ko >= 100 ? 'C' : 'D'
-  if (s.seconds < 300 && s.damage < 400) return 'S'
-  if (s.seconds < 480) return 'A'
-  return 'B'
 }
 
 function clock(seconds: number): string {
@@ -35,7 +21,7 @@ export class Screens {
   private readonly result = must('result')
   private readonly resultTitle = must('result-title')
   private readonly resultStats = must('result-stats')
-  private lastResult: ResultStats | null = null
+  private lastResult: BattleResult | null = null
 
   constructor() {
     subscribe(() => {
@@ -68,13 +54,13 @@ export class Screens {
     this.pause.hidden = !visible
   }
 
-  showResult(s: ResultStats): void {
+  showResult(s: BattleResult): void {
     this.lastResult = { ...s }
     this.renderResult(this.lastResult)
     this.result.hidden = false
   }
 
-  private renderResult(s: ResultStats): void {
+  private renderResult(s: BattleResult): void {
     this.resultTitle.textContent = s.win ? t('result.victory') : t('result.defeat')
     this.resultTitle.className = s.win ? 'win' : 'lose'
     const rows: [string, string][] = [
@@ -82,7 +68,7 @@ export class Screens {
       [t('result.maxCombo'), String(s.maxCombo)],
       [t('result.time'), clock(s.seconds)],
       [t('result.damage'), String(Math.round(s.damage))],
-      [t('result.rank'), rank(s)],
+      [t('result.rank'), s.rank],
     ]
     this.resultStats.replaceChildren(
       ...rows.map(([label, value]) => {

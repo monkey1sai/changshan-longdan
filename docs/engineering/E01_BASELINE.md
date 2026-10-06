@@ -45,6 +45,8 @@ npm run trace:baseline -- --out release/e01/review-b
 
 時鐘分別保存 runner 的 `tickStartSec/tickEndSec`、Game `clock`、`simClock`、`battleTime` 與 hitstop。Game.clock 每 tick 起首增加；simClock 在 simulate 返回後增加；onHits 發生於兩者之間。暫停保持的是 simClock，Game.clock 仍會走。
 
+> 2026-10-05 Battle 重構後：上述戰鬥規則移入 `src/entities/battle.ts`，`Game.onHits` 已移除。harness 改由 `Battle` 驅動，於每個 tick 後讀取 `battle.events` 的 `hit` 事件與 `battle.hits` 建立同一套 hit 歸屬紀錄；以本頁七情境 × 三種 Hz 加 cancel_hit_owner 共 24 條 trace 與重構前逐欄比對，結果相同。本節其餘內容保留為 E01 當時的紀錄。
+
 原始輸入排程只能在下一 tick 採樣：單一輸入採樣上限 `1/Hz`，狀態觀察同樣 `1/Hz`，合計量化界限 `2/Hz`。取消窗口等待、hit-stop 與暫停不屬於此量化誤差；它不是 input-to-photon 的上限。
 
 核心 trace 分列 `alive`、`engaged`、`tokenAttackers`、`visible:null`；另有明確名稱的球形視錐 `frustumProxy`。engaged 只計 alive，alive token 總數須等於正式 attackerCount。未知可見數不替換成 0 或 proxy。固定敵人 seed 7、回饋 seed 99、固定出生座標；fixture 僅 reset 一次，與自然首戰／重試 RNG 歷史不同。原始 stamp 保留，僅在最終比較正規化程序全域 ID 的 offset。
