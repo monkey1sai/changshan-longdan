@@ -41,7 +41,8 @@ namespace Changshan.Combat
       switch (Kind)
       {
         case HitShapeKind.Circle:
-          return dx * dx + dz * dz <= Math.Pow(Range + radius, 2);
+          // V8 evaluates (range + radius) ** 2 as an exact product (fdlibm pow special-cases y == 2).
+          return dx * dx + dz * dz <= (Range + radius) * (Range + radius);
         case HitShapeKind.Arc:
         {
           double dist = CombatMath.Hypot(dx, dz);

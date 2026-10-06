@@ -8,26 +8,30 @@ namespace Changshan.Combat
   {
     public Player Player { get; }
     public Arena Arena { get; }
-    public double Hitstop { get; private set; }
+    public GameClock Clock { get; }
+    public double Hitstop => Clock.Hitstop;
 
-    public PlayerDriver(Player player, Arena arena)
+    public PlayerDriver(Player player, Arena arena, GameClock clock = null)
     {
       Player = player ?? throw new ArgumentNullException(nameof(player));
       Arena = arena ?? throw new ArgumentNullException(nameof(arena));
+      Clock = clock ?? new GameClock();
     }
 
     // Hit-stop from several sources in one tick takes the longest, never the sum.
-    public void AddHitstop(double seconds) => Hitstop = Math.Max(Hitstop, seconds);
+    public void AddHitstop(double seconds) => Clock.AddHitstop(seconds);
 
-    public void Step(double dt, in PlayerControls c, AimFunction aim = null)
+    // Returns false when hit-stop held the game and the presses were only queued.
+    public bool Step(double dt, in PlayerControls c, AimFunction aim = null)
     {
-      if (Hitstop > 0)
+      double simDt = Clock.Advance(dt, out bool stepped);
+      if (!stepped)
       {
-        Hitstop -= dt;
         Player.Queue(c);
-        return;
+        return false;
       }
-      Player.Update(dt, c, aim, Arena);
+      Player.Update(simDt, c, aim, Arena);
+      return true;
     }
 
     // Pause, focus loss or a menu: drop pending presses.
@@ -35,7 +39,7 @@ namespace Changshan.Combat
 
     public void Restart()
     {
-      Hitstop = 0;
+      Clock.Reset();
       Player.Reset(ArenaLayout.StartX, ArenaLayout.StartZ, ArenaLayout.StartFacing);
     }
   }

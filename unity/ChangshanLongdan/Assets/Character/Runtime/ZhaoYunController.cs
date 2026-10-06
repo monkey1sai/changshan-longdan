@@ -1,25 +1,30 @@
 using System;
+using System.Globalization;
 using Changshan.Combat;
 using UnityEngine;
 
 namespace Changshan.Character
 {
   // Drives the character root from Changshan.Combat: raw input -> InputMapper -> camera-relative controls ->
-  // PlayerDriver. The logic position is the only displacement authority; the transform just displays it.
-  // The pose the scene gives the root becomes the logic start point (ArenaLayout start).
+  // CombatSimulation (clock, player, hits on the scene's training dummies). The logic position is the only
+  // displacement authority; the transform just displays it. The pose the scene gives the root becomes the logic start.
   [DisallowMultipleComponent]
   public sealed class ZhaoYunController : MonoBehaviour
   {
-    public const double MaxFrameSeconds = 0.05; // same cap as the Web main loop
+    public const double MaxFrameSeconds = GameClock.MaxFrameSeconds; // same cap as the Web main loop
 
     readonly InputMapper mapper = new InputMapper();
     bool initialised;
+    GUIStyle hudStyle;
 
-    public PlayerDriver Driver { get; private set; }
+    public CombatSimulation Simulation { get; private set; }
+    public PlayerDriver Driver => Simulation.Driver;
+    public TrainingDummies Dummies { get; private set; }
     public LogicDisplayMapping Mapping { get; private set; }
     public IRawInputSource InputSource { get; set; }
     public Camera ViewCamera { get; set; }
     public bool Paused { get; private set; }
+    public bool ShowDebug { get; set; } = true; // F3 toggles
     public InputFrame LastInput { get; private set; }
 
     void Awake() => Initialise();
@@ -29,10 +34,24 @@ namespace Changshan.Character
       if (initialised) return;
       initialised = true;
       Mapping = new LogicDisplayMapping(transform.position, transform.eulerAngles.y, ArenaLayout.StartX, ArenaLayout.StartZ, ArenaLayout.StartFacing);
-      Driver = new PlayerDriver(new Player(), ArenaLayout.CreateArena());
-      Driver.Restart();
+      var found = FindObjectsByType<TrainingDummies>();
+      Build(found.Length > 0 ? found[0] : null);
       if (InputSource == null) InputSource = new LegacyInputSource();
-      ApplyTransform();
+    }
+
+    // Uses these dummies (or none) as the hit targets and restarts the fight.
+    public void UseDummies(TrainingDummies dummies)
+    {
+      Initialise();
+      Build(dummies);
+    }
+
+    void Build(TrainingDummies dummies)
+    {
+      Dummies = dummies;
+      var targets = new HitTargets(dummies != null ? dummies.Dummies.Count : 0);
+      Simulation = new CombatSimulation(targets);
+      ResetFight();
     }
 
     void Update() => Tick(Time.unscaledDeltaTime);
@@ -45,8 +64,10 @@ namespace Changshan.Character
       double dt = Math.Min(MaxFrameSeconds, frameSeconds);
       InputSource.Feed(mapper);
       LastInput = mapper.Poll(dt);
+      if (LastInput.Debug) ShowDebug = !ShowDebug;
       var controls = ControlComposer.Compose(LastInput, CameraYaw());
-      Driver.Step(dt, controls);
+      Simulation.Step(dt, controls);
+      if (Dummies != null) Dummies.Show(Simulation.Targets);
       ApplyTransform();
     }
 
@@ -58,7 +79,7 @@ namespace Changshan.Character
       if (!focused)
       {
         mapper.Blur();
-        Driver.Interrupt();
+        Simulation.Interrupt();
       }
       Paused = !focused;
     }
@@ -70,11 +91,20 @@ namespace Changshan.Character
       if (paused) SetFocus(false);
     }
 
+    // Back to the start pose with every dummy restored; the same Player instance is kept.
     public void Restart()
     {
       Initialise();
       mapper.Blur();
-      Driver.Restart();
+      ResetFight();
+    }
+
+    void ResetFight()
+    {
+      var targets = Simulation.Targets;
+      targets.Clear();
+      if (Dummies != null) Dummies.Fill(targets, Mapping);
+      Simulation.Restart();
       ApplyTransform();
     }
 
@@ -91,8 +121,23 @@ namespace Changshan.Character
 
     void ApplyTransform()
     {
-      var p = Driver.Player;
+      var p = Simulation.Player;
       transform.SetPositionAndRotation(Mapping.ToDisplayPosition(p.X, p.Y, p.Z), Mapping.ToDisplayRotation(p.Facing));
+    }
+
+    // Debug readout until E06/E07 give moves and hits visible animation and effects.
+    void OnGUI()
+    {
+      if (!ShowDebug || Simulation == null) return;
+      if (hudStyle == null) hudStyle = new GUIStyle(GUI.skin.label) { fontSize = 24 };
+      var p = Simulation.Player;
+      string move = p.Move == null ? "-" : p.Move.Id.ToString();
+      string text = string.Format(CultureInfo.InvariantCulture,
+        "State {0}  Move {1} {2:0.00}s  Musou {3:0}\nHits {4}  Hit-stop {5:0.000}s  Dummies {6}/{7}  (F3 hides)",
+        p.State, move, p.MoveTime, p.Musou, Simulation.TotalHits, Math.Max(0, Simulation.Clock.Hitstop),
+        Simulation.Targets.AliveCount, Simulation.Targets.Count);
+      GUI.Box(new UnityEngine.Rect(50, 300, 1000, 90), "");
+      GUI.Label(new UnityEngine.Rect(75, 310, 950, 80), text, hudStyle);
     }
   }
 }
