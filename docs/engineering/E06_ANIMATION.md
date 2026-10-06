@@ -35,7 +35,7 @@
 | 檢查 | 內容 |
 |---|---|
 | Vitest `rig-parity.test.ts`（3） | fixture 與重新產生逐位元組相同、12 情境 × 3 頻率齊全、60 Hz 下 17 招全部出現 |
-| Edit Mode `RigParityEditTests`（11） | 來源雜湊、情境集合、30／60／120 Hz 逐幀比對（控制、狀態、姿勢、視覺欄位、槍尖、節點、骨骼，容許 2e-6，四元數對齊正負號）、17 招全部擺出姿勢、雙手握點 p95 ≤ 3 cm、root 只跟邏輯位置、踩地滑移 ≤ 5 cm（並確認 Web 基準在 run_stop_turn 仍 > 0.3 m 且鎖定後小於其 1/10）、跨步與釋放行為、缺骨與骨長退化負例、鏡像往返 |
+| Edit Mode `RigParityEditTests`（12） | 來源雜湊、情境集合、30／60／120 Hz 逐幀比對（控制、狀態、姿勢、視覺欄位、槍尖、節點、骨骼，容許 2e-6，四元數對齊正負號）、17 招全部擺出姿勢、雙手握點 p95 ≤ 3 cm、root 只跟邏輯位置、踩地滑移 ≤ 5 cm（並確認 Web 基準在 run_stop_turn 仍 > 0.3 m 且鎖定後小於其 1/10）、跨步與釋放行為、缺骨與骨長退化負例、鏡像往返 |
 | Play Mode `AnimatedCharacterPlayTests`（2） | 場景趙雲由 rig 驅動：轉向、跑、攻擊 140 幀，Unity 骨骼與 rig 位置差 < 1 mm、右手到槍握點 < 3 cm、有跨步；沒有模型時 rig 照常運算 |
 | 影片 | `npm run record:route -- --player <ChangshanLongdan.exe> --out release/e02/<名稱>`：Player 以 `-e06Route` 照路線（23.5 s，30 Hz 固定步長）逐幀截圖，本機 ffmpeg 編成 mp4、每 2 秒一格的縮圖表與含 SHA-256 的 manifest；截圖編碼後刪除。沒有 `-e06Route` 時錄製元件不啟動 |
 
