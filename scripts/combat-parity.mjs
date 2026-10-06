@@ -2,11 +2,13 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { buildParityFixture } from './lib/combat-parity.ts'
 import { buildHitFixture } from './lib/hit-parity.ts'
+import { buildRigFixture } from './lib/rig-parity.ts'
 
 const root = new URL('../', import.meta.url)
 const fixtures = [
   ['web-parity.json', buildParityFixture],
   ['web-hits.json', buildHitFixture],
+  ['web-rig.json', buildRigFixture],
 ]
 const mode = process.argv[2]
 if (mode !== '--write' && mode !== '--check') throw new Error('Usage: combat-parity.mjs --write | --check')
@@ -14,7 +16,7 @@ if (mode !== '--write' && mode !== '--check') throw new Error('Usage: combat-par
 let stale = 0
 for (const [name, build] of fixtures) {
   const file = new URL(`unity/ChangshanLongdan/TestData/combat/${name}`, root)
-  const text = `${JSON.stringify(build(root))}\n`
+  const text = `${JSON.stringify(await build(root))}\n`
   if (mode === '--write') {
     writeFileSync(file, text)
     console.log(`wrote ${name} (${text.length} bytes)`)

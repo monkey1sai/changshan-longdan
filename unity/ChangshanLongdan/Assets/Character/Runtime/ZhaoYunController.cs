@@ -15,6 +15,8 @@ namespace Changshan.Character
 
     readonly InputMapper mapper = new InputMapper();
     bool initialised;
+    ZhaoYunCharacter character;
+    GameObject failedModel;
     GUIStyle hudStyle;
 
     public CombatSimulation Simulation { get; private set; }
@@ -24,8 +26,11 @@ namespace Changshan.Character
     public IRawInputSource InputSource { get; set; }
     public Camera ViewCamera { get; set; }
     public bool Paused { get; private set; }
+    // Scripted route recording: input is scripted, so losing the window focus must not pause or blur (RouteRecorder).
+    public bool IgnoreFocusLoss { get; set; }
     public bool ShowDebug { get; set; } = true; // F3 toggles
     public InputFrame LastInput { get; private set; }
+    public CharacterAnimation Animation { get; } = new CharacterAnimation();
 
     void Awake() => Initialise();
 
@@ -34,6 +39,7 @@ namespace Changshan.Character
       if (initialised) return;
       initialised = true;
       Mapping = new LogicDisplayMapping(transform.position, transform.eulerAngles.y, ArenaLayout.StartX, ArenaLayout.StartZ, ArenaLayout.StartFacing);
+      character = GetComponent<ZhaoYunCharacter>();
       var found = FindObjectsByType<TrainingDummies>();
       Build(found.Length > 0 ? found[0] : null);
       if (InputSource == null) InputSource = new LegacyInputSource();
@@ -69,6 +75,28 @@ namespace Changshan.Character
       Simulation.Step(dt, controls);
       if (Dummies != null) Dummies.Show(Simulation.Targets);
       ApplyTransform();
+      Animate();
+    }
+
+    // E06: the Web procedural rig poses the imported model once it is READY; until then the fallback stays visible.
+    void Animate()
+    {
+      if (character != null && character.Status == CharacterLoadStatus.Ready && character.Model != null &&
+          character.Model != Animation.BoundModel && character.Model != failedModel)
+      {
+        try
+        {
+          Animation.Bind(character.Model);
+        }
+        catch (Exception exception)
+        {
+          failedModel = character.Model;
+          Animation.Unbind();
+          Debug.LogError("CHARACTER_ANIMATION_BIND_FAILED " + exception.Message);
+        }
+      }
+      var clock = Simulation.Clock;
+      Animation.Step(Simulation.Player, clock.LastSimDt, clock.SimTime, Mapping);
     }
 
     // Focus loss behaves like the Web blur: held keys and pending presses are dropped and simulation stops.
@@ -76,6 +104,7 @@ namespace Changshan.Character
     public void SetFocus(bool focused)
     {
       Initialise();
+      if (!focused && IgnoreFocusLoss) return;
       if (!focused)
       {
         mapper.Blur();
@@ -105,6 +134,7 @@ namespace Changshan.Character
       targets.Clear();
       if (Dummies != null) Dummies.Fill(targets, Mapping);
       Simulation.Restart();
+      Animation.Reset();
       ApplyTransform();
     }
 

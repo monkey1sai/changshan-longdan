@@ -1,5 +1,5 @@
 {
   "name": "Changshan.Foundation.PlayTests",
-  "references": ["Changshan.Foundation", "Changshan.Character", "Unity.RenderPipelines.Universal.Runtime", "Unity.RenderPipelines.Core.Runtime", "Changshan.Combat"],
+  "references": ["Changshan.Foundation", "Changshan.Character", "Unity.RenderPipelines.Universal.Runtime", "Unity.RenderPipelines.Core.Runtime", "Changshan.Combat", "Changshan.Animation"],
   "optionalUnityReferences": ["TestAssemblies"]
 }

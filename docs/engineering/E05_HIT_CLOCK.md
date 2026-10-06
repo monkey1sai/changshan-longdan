@@ -1,6 +1,6 @@
 # E05 命中去重與遊戲時鐘
 
-更新：2026-10-05（Asia/Taipei）。`stepStatus: AWAITING_REVIEW`（草稿 PR #27；advisory 審查第 1 輪的發現已依授權修正；未取得正式獨立核准、未合併）。本檔記錄範圍、設計與驗證方法；各候選 SHA 的實際執行結果（SHA、runId、測試數、截圖雜湊）記在 PR #27，不寫回本檔以免自我引用。
+更新：2026-10-06（Asia/Taipei）。`stepStatus: DONE（限定接受；無 formal independent APPROVED）`；PR #27 合併為 `246760970adebf1ed4a33de3e6668673713d817c`。本檔記錄範圍、設計與驗證方法；各候選 SHA 的實際執行結果記在 PR #27，不寫回本檔以免自我引用。
 
 ## 範圍與授權
 
@@ -52,3 +52,13 @@
 ## 回滾
 
 普通 revert 本步提交即可：移除命中解析、時鐘、假人、fixture 與測試，`PlayerDriver` 回到 E04 版本；Web 版、`src/`、`public/models/` 與 `.blend` 未變更。
+
+## 合併與合併後確認
+
+使用者原文：「手感可接受，授權合併 PR #27，合併後確認並開始 E06」。合併前即時核對：head `4910312dfb4d4f285fcce2e23edb819868abcbbb`、base `0db9668f97c454835c33c3e000503fcf8f85e6a6` 無漂移，兩項 CI 綁定 head 且成功，review threads 0，auto-merge 關閉。**GitHub 上沒有任何 review approval**，依使用者授權合併，屬限定接受；獨立 advisory 審查 2 輪不是 formal APPROVED；判定影片未錄製。
+
+- merge commit `246760970adebf1ed4a33de3e6668673713d817c`（一般合併，父提交 `0db9668`、`4910312`）；tree `bd489700bef6183b0d4e6a27d16719b2976423f2` 與候選相同；來源分支保留。
+- 合併 SHA 全新 clone：`npm run check` 25 files／237 tests 與 build 通過；Node 工具正負例 65／65；`parity:check` 兩份 fixture 通過；Unity runner `PASS_LOCAL_ENGINE_FOUNDATION`（runId `519ed430-9461-4a0f-a55a-2917fb721437`）：compile、57／57 Edit、25／25 Play、Windows build `Succeeded`、Player 角色 READY；各階段來源差異 0。
+- `main` 上該 merge commit 的 CI（Game CI）success。
+
+原始產物 local_only。延後項目見 #29；Web 去重缺陷見 #26。

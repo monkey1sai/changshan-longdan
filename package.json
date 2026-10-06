@@ -18,6 +18,7 @@
     "trace:baseline": "node --experimental-strip-types scripts/trace-baseline.mjs",
     "parity:write": "node --experimental-strip-types scripts/combat-parity.mjs --write",
     "parity:check": "node --experimental-strip-types scripts/combat-parity.mjs --check",
+    "record:route": "node scripts/record-route.mjs",
     "typecheck": "tsc",
     "package:itch": "npm run build && node scripts/package-itch.mjs",
     "check": "npm test && npm run build"
