@@ -1,6 +1,6 @@
 # E06 動畫連貫與雙手持槍
 
-更新：2026-10-06（Asia/Taipei）。`stepStatus: IN_PROGRESS（草稿 PR 審查中）`。本檔記錄範圍、設計與驗證方法；各候選 SHA 的實際執行結果記在 PR，不寫回本檔以免自我引用。
+更新：2026-10-06（Asia/Taipei）。`stepStatus: DONE（限定接受；無 formal independent APPROVED）`；PR #30 合併為 `fee50bb26c1923d31f9a1a78c3f43141af095e9c`。本檔記錄範圍、設計與驗證方法；各候選 SHA 的實際執行結果記在 PR #30，不寫回本檔以免自我引用。
 
 ## 範圍與授權
 
@@ -84,3 +84,10 @@ Unity Play Mode 量到右手骨偏離 rig 7.43 cm（左手 4.08 cm、腳 0.4–1
 ## 回滾
 
 普通 revert 本步提交即可：移除 `Changshan.Animation`、`CharacterAnimation`、`RouteRecorder`、fixture 與測試，控制器回到 E05 的靜止姿勢；Web 版、`src/`、`public/models/` 與 `.blend` 未變更。
+
+## 合併與合併後確認
+
+使用者原文：「我實際玩unity的手感良好」，接著「方向 1，授權合併 PR #30，合併後確認並開始 E07」。合併前即時核對：head `0e28fb93463623ce8ac8e3b6f10afbb12238e8e9` 與遠端相同，兩項 CI 綁定 head 且成功（CI 以 head 與當時 main `5acc14b` 的合併結果執行），review comments 0，auto-merge 關閉，草稿先標記 ready 再以一般合併提交。**GitHub 上沒有任何 review approval**，依使用者授權合併，屬限定接受；獨立 advisory 審查 1 輪不是 formal APPROVED；動畫／技術美術視覺審查未進行；使用者試玩屬手感確認，試玩 SHA 未指定。
+
+- merge commit `fee50bb26c1923d31f9a1a78c3f43141af095e9c`（一般合併，父提交 `5acc14b`（main 含 PR #31）、`0e28fb9`）；`src/` tree 與合併前 main 相同；候選與合併的差異即 PR #31 的 8 個檔案；來源分支保留。
+- 合併後確認（merge SHA）：Web Vitest 29 files／287 tests、typecheck、build、`parity:check` 三份一致、runner 65/65；全新 clone 本機 Unity 五階段通過（runId `d7872a42-7cb7-4e7f-b4f7-f6c158f1c00f`，2026-10-06 14:41–14:45 +08:00；Edit 70/70、Play 27/27、build、Player）。
