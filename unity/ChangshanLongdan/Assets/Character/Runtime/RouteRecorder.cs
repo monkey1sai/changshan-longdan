@@ -47,6 +47,9 @@ namespace Changshan.Character
       }
     }
 
+    [Serializable] public sealed class RouteFrame { public int f; public double simTime; public string state; public string move; public double x; public double z; }
+    [Serializable] public sealed class RouteLog { public double duration; public int frameRate; public int pausedFrames; public RouteFrame[] frames; }
+
     string output;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -85,6 +88,8 @@ namespace Changshan.Character
       var keys = new ScriptedKeys();
       controller.InputSource = keys;
       controller.UseDummies(null);
+      // The window may lose focus while recording; the input is scripted, so focus loss must not pause the simulation.
+      controller.IgnoreFocusLoss = true;
       controller.SetFocus(true);
       // The validation camera is fixed and the route lunges out of its view, so the camera keeps its starting offset to
       // the character's ground point. It only translates: the controls are camera-relative and its yaw stays the same,
@@ -99,6 +104,8 @@ namespace Changshan.Character
       int frames = (int)Math.Round(Duration / FrameSeconds);
       int next = 0;
       bool gained = false;
+      var log = new RouteLog { duration = Duration, frameRate = (int)Math.Round(1 / FrameSeconds), frames = new RouteFrame[frames] };
+      string logPath = Path.Combine(output, "route.json");
       for (int frame = 0; frame < frames; frame++)
       {
         double t = frame * FrameSeconds;
@@ -108,13 +115,29 @@ namespace Changshan.Character
           controller.Simulation.Player.GainMusou(PlayerTuning.Default.MusouMax);
           gained = true;
         }
+        if (controller.Paused)
+        {
+          // Never expected with IgnoreFocusLoss; a paused frame would silently desynchronise the video from the route.
+          log.pausedFrames++;
+          Debug.LogError($"E06_ROUTE_PAUSED at frame {frame}");
+          File.WriteAllText(logPath, JsonUtility.ToJson(log));
+          Application.Quit(3);
+          yield break;
+        }
         controller.Tick(FrameSeconds);
         if (view != null) view.transform.position = Ground() + offset;
+        var player = controller.Simulation.Player;
+        log.frames[frame] = new RouteFrame
+        {
+          f = frame, simTime = controller.Simulation.Clock.SimTime, state = player.State.ToString(), move = player.Move?.Id.ToString() ?? "", x = player.X, z = player.Z,
+        };
         ScreenCapture.CaptureScreenshot(Path.Combine(output, $"frame_{frame:0000}.png"));
         yield return null;
       }
       yield return null;
       yield return null;
+      // Per-frame game time, state and move: scripts/record-route.mjs checks the simulation never stalled and the route ran.
+      File.WriteAllText(logPath, JsonUtility.ToJson(log));
       Application.Quit(0);
     }
   }

@@ -179,7 +179,7 @@ namespace Changshan.Foundation.Tests
         var desiredR = rig.FootAnchorR.Position;
         if (footPlant) plant.Apply(rig, player, dt);
         skin.Update(rig.Pose.Lh);
-        metrics.Add(player, rig, rig.FootAnchorL.Position, rig.FootAnchorR.Position, desiredL, desiredR);
+        metrics.Add(player, rig, dt, rig.FootAnchorL.Position, rig.FootAnchorR.Position, desiredL, desiredR);
       }
       return metrics;
     }

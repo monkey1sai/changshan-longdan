@@ -26,6 +26,8 @@ namespace Changshan.Character
     public IRawInputSource InputSource { get; set; }
     public Camera ViewCamera { get; set; }
     public bool Paused { get; private set; }
+    // Scripted route recording: input is scripted, so losing the window focus must not pause or blur (RouteRecorder).
+    public bool IgnoreFocusLoss { get; set; }
     public bool ShowDebug { get; set; } = true; // F3 toggles
     public InputFrame LastInput { get; private set; }
     public CharacterAnimation Animation { get; } = new CharacterAnimation();
@@ -102,6 +104,7 @@ namespace Changshan.Character
     public void SetFocus(bool focused)
     {
       Initialise();
+      if (!focused && IgnoreFocusLoss) return;
       if (!focused)
       {
         mapper.Blur();

@@ -29,10 +29,24 @@ const started = new Date().toISOString()
 const run = spawnSync(player, ['-e06Route', frames, '-screen-width', '1280', '-screen-height', '720', '-screen-fullscreen', '0',
   '-logFile', path.join(out, 'player.log')], { timeout: 240000, windowsHide: false })
 const frameFiles = fs.readdirSync(frames).filter((f) => /^frame_\d{4}\.png$/.test(f)).sort()
-const expected = Math.round(23.5 * 30)
-if (run.error || run.status !== 0 || frameFiles.length !== expected) {
-  throw new Error(`ROUTE_PLAYER_FAILED: status=${run.status} error=${run.error?.message ?? ''} frames=${frameFiles.length}/${expected}`)
+const routeLogPath = path.join(frames, 'route.json')
+if (run.error || run.status !== 0 || !fs.existsSync(routeLogPath)) {
+  throw new Error(`ROUTE_PLAYER_FAILED: status=${run.status} error=${run.error?.message ?? ''} frames=${frameFiles.length}`)
 }
+// The Player's per-frame log proves the simulation ran the whole route without stalling (a paused frame would keep
+// screenshots coming while the pose froze) and that the route reached every state it is meant to show.
+const route = JSON.parse(fs.readFileSync(routeLogPath, 'utf8'))
+const expected = Math.round(route.duration * route.frameRate)
+if (route.pausedFrames !== 0 || route.frames.length !== expected || frameFiles.length !== expected) {
+  throw new Error(`ROUTE_INCOMPLETE: paused=${route.pausedFrames} logged=${route.frames.length} frames=${frameFiles.length}/${expected}`)
+}
+for (let i = 1; i < route.frames.length; i++) {
+  if (!(route.frames[i].simTime > route.frames[i - 1].simTime)) throw new Error(`ROUTE_STALLED: game time did not advance at frame ${i}`)
+}
+const states = [...new Set(route.frames.map((f) => f.state))]
+const moves = [...new Set(route.frames.map((f) => f.move).filter(Boolean))]
+for (const s of ['Move', 'Attack', 'Jump', 'Dodge', 'Guard', 'Musou']) if (!states.includes(s)) throw new Error(`ROUTE_MISSING_STATE: ${s}`)
+fs.renameSync(routeLogPath, path.join(out, 'route.json'))
 const video = path.join(out, 'route.mp4')
 const contact = path.join(out, 'contact.png')
 const encode = spawnSync(ffmpeg, ['-hide_banner', '-loglevel', 'error', '-framerate', '30', '-i', path.join(frames, 'frame_%04d.png'),
@@ -43,7 +57,8 @@ const sheet = spawnSync(ffmpeg, ['-hide_banner', '-loglevel', 'error', '-i', vid
 if (sheet.error || sheet.status !== 0) throw new Error(`FFMPEG_CONTACT_FAILED: ${sheet.error?.message ?? sheet.stderr?.toString()}`)
 const manifest = {
   schema: 'e06-route-video/v1', started, ended: new Date().toISOString(), player, playerSha256: sha256(player),
-  frames: frameFiles.length, frameRate: 30, resolution: '1280x720',
+  frames: frameFiles.length, frameRate: route.frameRate, resolution: '1280x720',
+  route: { file: 'route.json', sha256: sha256(path.join(out, 'route.json')), duration: route.duration, finalSimTime: route.frames[route.frames.length - 1].simTime, states, moves },
   video: { file: 'route.mp4', bytes: fs.statSync(video).size, sha256: sha256(video) },
   contactSheet: { file: 'contact.png', sha256: sha256(contact), everySeconds: 2 },
 }

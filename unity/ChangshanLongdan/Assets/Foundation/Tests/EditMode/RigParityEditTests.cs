@@ -145,6 +145,53 @@ namespace Changshan.Foundation.Tests
       Assert.That(plant.Left.DistanceTo(rig.FootAnchorL.Position), Is.LessThan(1e-9));
     }
 
+    // Review finding: the lift arc must be decided when a step starts. Switching it with the Web foot's ground contact
+    // mid-step dropped the shown foot by up to LiftHeight in one frame. Drives the Web target directly.
+    [Test] public void FootPlantLiftIsDecidedWhenTheStepStarts()
+    {
+      const double dt = 1.0 / 60;
+      var rig = new ProceduralRig();
+      var plant = new FootPlant();
+      var player = new Player();
+      player.Reset(ArenaLayout.StartX, ArenaLayout.StartZ, ArenaLayout.StartFacing);
+      rig.ResetCape();
+      rig.Update(player, dt, dt); // standing: FeetGrounded, legs solvable
+      double ground = ProceduralRig.SoleAnchorY;
+      var start = rig.FootAnchorL.Position;
+      start.Y = ground;
+      // The plant layer's own vertical discontinuity: the shown foot's change minus the Web target's change per frame
+      // (PlaceFeet rewrites the anchor, so the target is tracked here, not read back from the rig).
+      double worstJump = 0, previousDesired = 0;
+      bool first = true;
+      void Frame(Vec3 desired)
+      {
+        double before = plant.Left.Y;
+        rig.FootAnchorL.Position = desired;
+        plant.Apply(rig, player, dt);
+        if (!first) worstJump = Math.Max(worstJump, Math.Abs((plant.Left.Y - before) - (desired.Y - previousDesired)));
+        first = false;
+        previousDesired = desired.Y;
+      }
+      for (int i = 0; i < 3; i++) Frame(start);
+      Assert.That(plant.LeftMode, Is.EqualTo(FootPlant.Mode.Locked));
+      // A lifted step (target still on the ground), then the Web foot leaves the ground half-way through.
+      var far = start + new Vec3(0.2, 0, 0);
+      for (int i = 0; i < 4; i++) Frame(far);
+      Assert.That(plant.LeftMode, Is.EqualTo(FootPlant.Mode.Stepping));
+      for (int i = 1; i <= 8; i++) Frame(far + new Vec3(0, 0.01 * i, 0));
+      // A catch-up step (the Web foot lifting off), then the Web foot lands half-way through.
+      for (int i = 0; i < 6; i++) Frame(start);
+      Assert.That(plant.LeftMode, Is.EqualTo(FootPlant.Mode.Locked));
+      Frame(start + new Vec3(0.03, 0.005, 0));
+      Assert.That(plant.LeftMode, Is.EqualTo(FootPlant.Mode.Stepping));
+      Frame(start + new Vec3(0.045, 0.015, 0));
+      for (int i = 0; i < 6; i++) Frame(start + new Vec3(0.05, 0, 0));
+      Assert.That(plant.Steps, Is.EqualTo(2));
+      // The lift arc itself moves ~3 cm per frame at 60 Hz (measured 0.0296); switching the arc with the target's ground
+      // contact jumped 0.0718 in one frame.
+      Assert.That(worstJump, Is.LessThan(0.04), "the plant layer moved a foot vertically by a jump within one frame");
+    }
+
     [Test] public void SkinRejectsMissingOrDegenerateBones()
     {
       var (nodes, roots) = RigParity.GlbNodes(Fixture);

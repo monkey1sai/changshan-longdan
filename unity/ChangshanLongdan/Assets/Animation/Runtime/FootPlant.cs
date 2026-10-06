@@ -20,6 +20,7 @@ namespace Changshan.Animation
       public Mode Mode;
       public Vec3 Lock, From, Current;
       public double T, Duration;
+      public bool Lift; // decided when the step starts, so the arc cannot switch on or off mid-step
     }
 
     Foot left, right;
@@ -118,14 +119,15 @@ namespace Changshan.Animation
             f.T = 0;
             // The Web already lifted the foot (run cycle): catch up quickly instead of a full step.
             f.Duration = onGround ? StepTime : CatchUpTime;
+            f.Lift = onGround;
             Steps++;
-            return f.Current = StepPosition(f, desired, onGround);
+            return f.Current = StepPosition(f, desired);
           }
           return f.Current = f.Lock;
         }
         default: // Stepping
           f.T = Math.Min(1, f.T + dt / f.Duration);
-          f.Current = StepPosition(f, desired, onGround);
+          f.Current = StepPosition(f, desired);
           if (f.T >= 1)
           {
             if (onGround)
@@ -150,11 +152,11 @@ namespace Changshan.Animation
       return Vec3.Lerp(f.From, desired, CombatMath.Smoothstep(0, 1, f.T));
     }
 
-    static Vec3 StepPosition(in Foot f, Vec3 desired, bool onGround)
+    static Vec3 StepPosition(in Foot f, Vec3 desired)
     {
       double s = CombatMath.Smoothstep(0, 1, f.T);
       var p = Vec3.Lerp(f.From, desired, s);
-      if (onGround) p.Y += LiftHeight * Math.Sin(Math.PI * f.T);
+      if (f.Lift) p.Y += LiftHeight * Math.Sin(Math.PI * f.T);
       return p;
     }
 
