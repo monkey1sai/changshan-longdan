@@ -19,7 +19,7 @@ function battle(mode = 'title', difficulty: DifficultyId = 'chaos') {
     screens: { selectedDifficulty, showTitle: vi.fn(), showPause: vi.fn(), hideResult: vi.fn() },
     ensureAudio: vi.fn(), resetBattle: reset,
     hud: { setVisible: vi.fn(), showBanner: vi.fn() },
-    rig: { snap: vi.fn() }, player: { pos: {} }, music: null, audio: null,
+    rig: { snap: vi.fn() }, battle: { player: { pos: {} } }, music: null, audio: null,
   }) as BattleHarness
   return { game, reset, selectedDifficulty }
 }
@@ -39,7 +39,7 @@ describe('battle entry difficulty', () => {
     }
   }
   it('retry retains the battle difficulty instead of rereading the hidden selector', () => {
-    const { game, selectedDifficulty } = battle('defeat')
+    const { game, selectedDifficulty } = battle('ended')
     game.difficulty = 'hard'
     game.startBattle()
     expect(game.difficulty).toBe('hard')

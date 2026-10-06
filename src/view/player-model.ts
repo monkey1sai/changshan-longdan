@@ -2,7 +2,7 @@ import { Color, Group, Matrix4, Mesh, MeshStandardMaterial, Object3D, Quaternion
 import type { MoveId } from '../combat/moves.ts'
 import { solveTwoBone } from '../core/ik.ts'
 import { clamp, smoothstep, TAU, wrapAngle } from '../core/math.ts'
-import type { Player } from '../entities/player.ts'
+import type { PlayerView } from '../entities/battle.ts'
 import { VoxelBuilder } from '../world/voxel-builder.ts'
 import { AIR, blankPose, copyPose, crossfade, DOWN, GUARD, HURT, mixPose, movePose, ROLL, RUN, STANCE } from './player-poses.ts'
 import { ZhaoYunAdapter, ZHAOYUN_ASSET, ZHAOYUN_DIMENSIONS as D } from './zhaoyun-adapter.ts'
@@ -231,7 +231,7 @@ export class PlayerModel {
     this.footFromR.copy(this.footLocalR)
   }
 
-  update(player: Player, dt: number, time: number): void {
+  update(player: PlayerView, dt: number, time: number): void {
     const key = this.poseKey(player)
     const changed = key !== this.lastKey
     if (changed) {
@@ -265,7 +265,7 @@ export class PlayerModel {
 
   /** 受擊／自動鎖敵會瞬間改變規則朝向；僅讓可見角色沿最短角度銜接。
    * 攻擊在第一個命中窗口前完成，hitstop 的 dt=0 也凍結這段銜接。 */
-  private updateFacing(player: Player, dt: number, changed: boolean): void {
+  private updateFacing(player: PlayerView, dt: number, changed: boolean): void {
     if (!this.facingReady) {
       this.visualFacing = this.previousFacing = player.facing
       this.facingFade = 1
@@ -285,7 +285,7 @@ export class PlayerModel {
     this.previousFacing = player.facing
   }
 
-  private poseKey(player: Player): string {
+  private poseKey(player: PlayerView): string {
     if ((player.state === 'attack' || player.state === 'musou') && player.move !== null) {
       const id = player.move.id
       const restarted = id === this.lastMove && player.moveTime < this.lastMoveTime
@@ -298,7 +298,7 @@ export class PlayerModel {
     return player.state
   }
 
-  private targetPose(player: Player): void {
+  private targetPose(player: PlayerView): void {
     const t = this.target
     switch (player.state) {
       case 'move': {
@@ -340,7 +340,7 @@ export class PlayerModel {
     }
   }
 
-  private apply(player: Player): void {
+  private apply(player: PlayerView): void {
     const p = this.pose
     this.root.position.copy(player.pos)
     this.root.rotation.set(0, this.visualFacing + p.spin, 0)
@@ -419,7 +419,7 @@ export class PlayerModel {
     this.hips.localToWorld(marker.position.copy(hand))
   }
 
-  private solveArms(player: Player): void {
+  private solveArms(player: PlayerView): void {
     const p = this.pose
     this.shoulderAnchorL.getWorldPosition(shoulderL)
     this.shoulderAnchorR.getWorldPosition(shoulderR)

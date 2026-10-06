@@ -1,5 +1,6 @@
 import { Color, DynamicDrawUsage, InstancedMesh, Matrix4, MeshBasicMaterial, RingGeometry } from 'three'
-import { Kind, State, type EnemyStore } from '../entities/enemies.ts'
+import type { EnemyView } from '../entities/battle.ts'
+import { Kind, State } from '../entities/enemies.ts'
 
 /** 共用一個 draw call 標出正在蓄勢的敵兵，讓格擋方向有可讀的線索。 */
 export class ThreatMarkers {
@@ -16,7 +17,7 @@ export class ThreatMarkers {
     this.mesh.count = 0
   }
 
-  update(store: EnemyStore, time: number): void {
+  update(store: EnemyView, time: number): void {
     let count = 0
     for (let i = 0; i < store.count; i++) {
       if (store.alive[i] === 0 || (store.state[i] !== State.Windup && store.state[i] !== State.Strike)) continue

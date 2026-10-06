@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import { Vector3 } from 'three'
-import { CameraRig } from '../src/view/camera-rig.ts'
+import type { InputFrame } from '../src/core/input.ts'
+import type { PlayerControls } from '../src/entities/player.ts'
+import { CameraRig, toPlayerControls } from '../src/view/camera-rig.ts'
+
+const frame = (extra: Partial<InputFrame>): InputFrame => ({
+  moveX: 0, moveY: 0, camTurn: 0, zoom: 0, attack: false, charge: false, jump: false,
+  dodge: false, musou: false, pause: false, confirm: false, debug: false, ...extra,
+})
+const controls = (): PlayerControls => ({ moveX: 9, moveZ: 9, attack: true, charge: true, jump: true, dodge: true, musou: true, guard: true })
 
 describe('CameraRig', () => {
   it('重開戰鬥立即重設移動方向，避免上一局視角殘留', () => {
@@ -78,5 +86,29 @@ describe('CameraRig', () => {
     const ahead = rig.focus.clone().addScaledVector(rig.forward, 1).project(rig.camera)
     expect(ahead.y).toBeGreaterThan(center.y)
     expect(rig.camera.position.x < 38.5 || rig.camera.position.z < 12.5).toBe(true)
+  })
+})
+
+describe('toPlayerControls', () => {
+  it('搖桿方向依鏡頭轉成世界方向', () => {
+    const rig = new CameraRig(1.6)
+    rig.snap(new Vector3(), Math.PI / 2)
+    const out = toPlayerControls(frame({ moveY: 1 }), rig.forward, rig.right, controls())
+    expect(out.moveX).toBeCloseTo(1)
+    expect(out.moveZ).toBeCloseTo(0)
+    toPlayerControls(frame({ moveX: 1 }), rig.forward, rig.right, out)
+    expect(out.moveX).toBeCloseTo(0)
+    expect(out.moveZ).toBeCloseTo(1)
+  })
+
+  it('斜向移動長度不超過 1，按鍵逐項帶入', () => {
+    const rig = new CameraRig(1.6)
+    rig.snap(new Vector3(), 0)
+    const out = toPlayerControls(frame({ moveX: 1, moveY: 1, attack: true, guard: true }), rig.forward, rig.right, controls())
+    expect(Math.hypot(out.moveX, out.moveZ)).toBeCloseTo(1)
+    expect(out).toMatchObject({ attack: true, charge: false, jump: false, dodge: false, musou: false, guard: true })
+    toPlayerControls(frame({ moveX: 0.3 }), rig.forward, rig.right, out)
+    expect(Math.hypot(out.moveX, out.moveZ)).toBeCloseTo(0.3)
+    expect(out.guard).toBe(false)
   })
 })
