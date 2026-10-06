@@ -213,6 +213,7 @@ namespace Changshan.Foundation.Tests
           case CombatEventType.Parry: row.AddRange(new object[] { "parry", e.X, e.Z, e.Facing }); break;
           case CombatEventType.GuardBlock: row.AddRange(new object[] { "guardBlock", e.X, e.Z, e.Facing, e.Heavy ? 1.0 : 0.0, e.Damage }); break;
           case CombatEventType.Hurt: row.AddRange(new object[] { "hurt", e.X, e.Z, e.Heavy ? 1.0 : 0.0 }); break;
+          case CombatEventType.MusouReady: continue; // the reaction harness does not record it (web-presentation.json does)
         }
         rows.Add(row);
       }
