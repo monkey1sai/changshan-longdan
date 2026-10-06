@@ -1,6 +1,6 @@
 # E07 打擊回饋與受擊循環
 
-更新：2026-10-06（Asia/Taipei）。`stepStatus: IN_PROGRESS（草稿 PR 審查中）`。本檔記錄範圍、設計與驗證方法；各候選 SHA 的實際執行結果記在 PR，不寫回本檔以免自我引用。
+更新：2026-10-06（Asia/Taipei）。`stepStatus: DONE（限定接受；無 formal independent APPROVED）`；PR #33 合併為 `dfc71890699959ad6e63d724ae8f26d864e3f2ce`。本檔記錄範圍、設計與驗證方法；各候選 SHA 的實際執行結果記在 PR，不寫回本檔以免自我引用。
 
 ## 範圍與授權
 
@@ -70,3 +70,10 @@
 ## 回滾
 
 普通 revert 本步提交即可：`HitTargets` 回到 E05 的靜態版本、`CombatSimulation` 回到無事件流版本，移除 `EnemyTypes`、`Mulberry32`、`SpatialHash`、`CombatEvents`、`CameraShake`、fixture 與測試；Web 版、`src/`、`public/models/` 與 `.blend` 未變更。
+
+## 合併與合併後確認
+
+使用者原文：「可接受,授權下一步」（試玩後表示「趙雲腳色動作很靈活」；驗證場景沒有城池、voxel 士兵、AI、特效與音效，屬 E08 以後）。合併前即時核對：head `f0326d6e54caac403290ee397b21ed423d12dcdd` 與遠端相同、base `fee50bb` 無漂移，兩項 CI 綁定 head 且成功，review comments 0，auto-merge 關閉，草稿先標記 ready 再以一般合併提交。**GitHub 上沒有任何 review approval**，依使用者授權合併，屬限定接受；獨立 advisory 審查 1 輪不是 formal APPROVED；戰鬥／音效審查未進行；使用者試玩屬手感確認，未錄影。
+
+- merge commit `dfc71890699959ad6e63d724ae8f26d864e3f2ce`（一般合併，父提交 `fee50bb`、`f0326d6`）；tree 與候選相同；來源分支保留。
+- 合併後確認（merge SHA）：Web Vitest 30 files／290 tests、typecheck、build、`parity:check` 四份一致、runner 65/65；全新 clone 本機 Unity 五階段通過（runId `796992af-da60-4cbe-87e9-50fedd0d5ec9`，2026-10-06 17:30–17:36 +08:00；Edit 83/83、Play 30/30、build、Player）。
