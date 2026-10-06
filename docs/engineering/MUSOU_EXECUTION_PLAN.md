@@ -190,7 +190,7 @@ E02 的交付必須包含一個可重跑的本機 runner 及其 README：解析�
 
 ## 4. 執行台帳
 
-更新：2026-10-06（Asia/Taipei）。前六步 `DONE` 只涵蓋已記錄的人類限定接受；完整體驗／裝置／效能仍待後續驗收。E05 已依使用者授權合併並完成合併後確認，GitHub 上沒有 counted approval。E06 已依使用者授權合併並完成合併後確認，GitHub 上沒有 counted approval；視覺審查缺口延後。E07 範圍審查後依 A1／B1／C1 本機實作中（反應狀態機、事件流、假人呈現與鏡頭震動），Unity 正式驗證待補。
+更新：2026-10-06（Asia/Taipei）。前六步 `DONE` 只涵蓋已記錄的人類限定接受；完整體驗／裝置／效能仍待後續驗收。E05 已依使用者授權合併並完成合併後確認，GitHub 上沒有 counted approval。E06 已依使用者授權合併並完成合併後確認，GitHub 上沒有 counted approval；視覺審查缺口延後。E07 依 A1／B1／C1 完成本機實作與本機 Unity 五階段驗證，草稿 PR 審查中。
 
 | 步驟 | 依賴 | 狀態 | 實作 PR / candidate SHA | 驗證證據 | 正式 review | merge SHA / 合併後確認 |
 |---|---|---|---|---|---|---|
@@ -201,7 +201,7 @@ E02 的交付必須包含一個可重跑的本機 runner 及其 README：解析�
 | E04 | E03 | DONE（限定接受） | [#24](https://github.com/monkey1sai/changshan-longdan/pull/24) / `ff20810e631be7b879cb4c49b11613c4dca55071` | [E04 紀錄](./E04_INPUT_MOVES.md)：compile、39 Edit（Mono 對 Web 逐幀一致，最大偏差 7.1e-15；命中形狀 17,424 筆）、22 Play、Windows build、Player；Web 232 tests；使用者在 Unity 可見視窗限定試玩 | 使用者授權合併；GitHub counted approval NONE；獨立 advisory 審查 2 輪已處置，延後 #25 | `0db9668f97c454835c33c3e000503fcf8f85e6a6`；tree 與候選相同；Web 232 tests、兩平台 CI、本機 Unity 五階段於合併 SHA 重跑通過 |
 | E05 | E04 | DONE（限定接受） | [#27](https://github.com/monkey1sai/changshan-longdan/pull/27) / `4910312dfb4d4f285fcce2e23edb819868abcbbb` | [E05 紀錄](./E05_HIT_CLOCK.md)：compile、57 Edit（命中對照 20／30／60／120 Hz 全部一致，最大偏差 7.1e-15；完整 MUSOU 20 窗）、25 Play、Windows build、Player；Web 237 tests；使用者限定試玩 | 使用者授權合併；GitHub counted approval NONE；獨立 advisory 審查 2 輪已處置，延後 #29；Web 去重缺陷 #26 | `246760970adebf1ed4a33de3e6668673713d817c`；tree 與候選相同；Web 237 tests、CI success、本機 Unity 五階段於合併 SHA 重跑通過 |
 | E06 | E05 | DONE（限定接受） | [#30](https://github.com/monkey1sai/changshan-longdan/pull/30) / `0e28fb93463623ce8ac8e3b6f10afbb12238e8e9` | [E06 紀錄](./E06_ANIMATION.md)：compile、70 Edit（rig 對照 30／60／120 Hz 全部一致，最大偏差 5e-7；握點 p95 ≤ 0.72 cm、踩地滑移 ≤ 0.8 cm）、27 Play、Windows build、Player；路線影片 23.5 s 經 `route.json` 核對；Web 266 tests；使用者限定試玩「手感良好」 | 使用者授權合併；GitHub counted approval NONE；獨立 advisory 審查 1 輪已處置，延後 #32；動畫／技術美術視覺審查未進行 | `fee50bb26c1923d31f9a1a78c3f43141af095e9c`（父提交 `5acc14b` 含 #31、`0e28fb9`）；`src/` 與 main 相同；Web 287 tests、CI success、本機 Unity 五階段於合併 SHA 重跑通過（runId `d7872a42…`） |
-| E07 | E06 | IN_PROGRESS（本機實作） | 本機 `claude/e07-impact`；未推送／建立 PR | [E07 紀錄](./E07_IMPACT.md)；Unity 正式驗證待補 | 戰鬥／音效審查者待指定 | — |
+| E07 | E06 | IN_PROGRESS（草稿 PR 審查中） | `claude/e07-impact`；草稿 PR 建立後補連結 | [E07 紀錄](./E07_IMPACT.md)：本機 Unity 五階段通過（runId `9c5c2297…`）；結果記在 PR | 戰鬥／音效審查者待指定 | — |
 | E08 | E07 | NOT_STARTED | — | — | — | — |
 | E09 | E08 | NOT_STARTED | — | — | — | — |
 | E10 | E09 | NOT_STARTED | — | — | — | — |
