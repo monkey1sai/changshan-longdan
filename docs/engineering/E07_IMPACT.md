@@ -67,6 +67,32 @@
 
 - 審查延後項目（LOW／NIT）見 issue #34：容忍度對 Float32 寫入的直接斷言、反應 harness 對真 `EnemyStore.update` 的交叉驗證、`CameraShake` 前提、`Restart` 不重設目標、`rngHp` 比對。
 
+## 補件：回饋呈現（特效與音效）
+
+PR #33 已合併（`dfc71890699959ad6e63d724ae8f26d864e3f2ce`），但計畫 E07 交付的音效、刀光與「命中、扣血、聲音／VFX 時點共同 trace」沒有完成，所以 E07 不標 DONE。使用者決定：「補做 VFX＋音效」（選項說明：在 Unity 移植火花、塵土、刀光與合成音效，命中／扣血／聲音／VFX 共同 trace，跑完五階段後請使用者試玩，之後才以限定接受結案）。
+
+### 開始前範圍審查
+
+```text
+stepId: E07（補件）
+status: IN_PROGRESS
+implementationPr: null（未獲推送授權前只在本機分支 claude/e07-feedback）
+implementer: Claude（Opus 5.5）
+independentReviewer: 待指定（戰鬥／音效審查者仍未指定；advisory 審查不是 formal APPROVED）
+sourceBaseSha: dfc71890699959ad6e63d724ae8f26d864e3f2ce
+changedVariableIds: [V03, V11]
+requiredScenarioIdsAndSubcases: [S02 回饋時點, S04 群體命中回饋, S08 重置清除]
+allowedPaths: [scripts/, tests/, unity/ChangshanLongdan/, docs/engineering/, package.json, .gitattributes]
+forbiddenChanges: [src/, public/models/, .blend, 新套件, 付費或生成, 推送／PR／合併（未授權）]
+```
+
+- **交付**：Web 的 `Presentation.play`（`src/presentation.ts`）對 E07 已有事件的部分（揮擊、跳躍、落地、閃避、無雙開始、地面特效、命中、擊殺、敵兵出手、完美格擋、格擋、受傷、無雙就緒）以純 C# 移植成 `FeedbackDirector`；火花（`sparks.ts`）、塵土（`dust.ts`）、衝擊波環與光柱（`shockwave.ts`）、體素碎片（`fragments.ts`）、槍尖刀光（`trail.ts`）的模擬以純 C# 移植，Unity 只負責繪製；`audio-engine.ts` 的對應音效以純 C# 離線合成，Unity 以 `OnAudioFilterRead` 混音播放。亂數照 Web `createRng(99)`，在相同順序消耗。
+- **對照**：新增 `scripts/lib/presentation-parity.ts`，以未修改的 Web `Battle`、`Presentation` 與特效類別逐幀執行，記錄每幀輸入事件、各輸出端呼叫（含音效參數與聲道）、亂數消耗數與特效狀態；`TrailRibbon` 以合成的槍尖軌跡對照 Web `Trail`。Unity Edit Mode 逐幀比對。
+- **共同 trace**：每幀記錄模擬步、遊戲時間、命中與扣血、發出的音效與特效；音效另記混音器實際開始播放的取樣位置。Play Mode 驗證命中、火花、音效指令同一幀，聲音在一個 DSP 緩衝內開始。路線錄影加上離線混音的音軌。
+- **不納入（照 A1 與既有範圍）**：無雙龍（`dragonHit`、龍吼、龍身光點）、音樂與環境音、連擊／里程碑／階段／勝負橫幅與音效、後製（色差、徑向模糊、閃白、bloom）與無雙切入畫面；事件仍記入 trace，畫面不呈現。Web 的動態壓縮器與迴響以近似演算法實作（WebAudio 原生節點在 Unity 沒有對應），差異保留為已知限制。
+- **驗證**：Web Vitest、`parity:check`、runner 正負例；Unity 五階段於候選 SHA；路線影音；使用者試玩與聽感。缺聽感證據就保留缺口，不以數值通過代替。
+- **回滾**：revert 本補件提交，回到 PR #33 的狀態（只有鏡頭震動）。
+
 ## 回滾
 
 普通 revert 本步提交即可：`HitTargets` 回到 E05 的靜態版本、`CombatSimulation` 回到無事件流版本，移除 `EnemyTypes`、`Mulberry32`、`SpatialHash`、`CombatEvents`、`CameraShake`、fixture 與測試；Web 版、`src/`、`public/models/` 與 `.blend` 未變更。
