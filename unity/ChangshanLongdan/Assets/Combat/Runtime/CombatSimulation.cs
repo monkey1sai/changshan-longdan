@@ -5,8 +5,8 @@ namespace Changshan.Combat
 {
   // Game.simulate's combat core: the clock decides whether the game steps; when it does, the player updates, its active
   // windows hit targets once per (window instance, target), every window that hit asks for its hit-stop (the clock keeps
-  // the longest) and the player gains musou as in Game.onHits. Other sources (the musou dragon later) call ApplyExternal
-  // in the same step, after the player.
+  // the longest) and the player gains musou as in Game.onHits. Other sources (the musou dragon later) hit through the
+  // afterPlayerHits callback of the same step, like updateDragon after resolvePlayerHits; outside it ApplyExternal is refused.
   public sealed class CombatSimulation
   {
     readonly List<HitEvent> hits = new List<HitEvent>();
@@ -21,6 +21,8 @@ namespace Changshan.Combat
     public IReadOnlyList<HitEvent> Hits => hits; // this frame's hits
     public long TotalHits { get; private set; }
     public bool SteppedThisFrame { get; private set; }
+
+    bool externalOpen;
 
     public CombatSimulation(HitTargets targets, PlayerTuning tuning = null, Arena arena = null)
     {
@@ -39,8 +41,9 @@ namespace Changshan.Combat
       };
     }
 
-    // One rendered frame (realDt already capped). Returns whether the game stepped.
-    public bool Step(double realDt, in PlayerControls c)
+    // One rendered frame (realDt already capped). Returns whether the game stepped. afterPlayerHits runs only when the
+    // game stepped, receives the game-time step and is the one place where ApplyExternal is allowed.
+    public bool Step(double realDt, in PlayerControls c, Action<double> afterPlayerHits = null)
     {
       hits.Clear();
       SteppedThisFrame = Driver.Step(realDt, c, aim);
@@ -56,13 +59,25 @@ namespace Changshan.Combat
         Player.GainMusou(Math.Min(9, n * 1.4));
       }
       TotalHits += hits.Count;
+      if (afterPlayerHits != null)
+      {
+        externalOpen = true;
+        try
+        {
+          afterPlayerHits(Clock.LastSimDt);
+        }
+        finally
+        {
+          externalOpen = false;
+        }
+      }
       return true;
     }
 
-    // A non-player source in the current step (after Step returned true). No hit-stop or musou, like the Web dragon.
+    // A non-player source inside Step's afterPlayerHits callback. No hit-stop or musou, like the Web dragon.
     public int ApplyExternal(uint stamp, HitWindow window, double ax, double ay, double az, double facing)
     {
-      if (!SteppedThisFrame) throw new InvalidOperationException("EXTERNAL_HIT_OUTSIDE_STEP");
+      if (!externalOpen) throw new InvalidOperationException("EXTERNAL_HIT_OUTSIDE_STEP");
       int n = Resolver.Apply(stamp, window, ax, ay, az, facing, HitSource.External, null, -1, Clock.SimSteps, Clock.SimTime, hits);
       TotalHits += n;
       return n;

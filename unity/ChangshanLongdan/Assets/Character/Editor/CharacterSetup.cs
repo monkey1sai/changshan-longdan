@@ -25,6 +25,7 @@ namespace Changshan.Character.Editor
     public const string DummyMaterialPath = "Assets/Character/Materials/TrainingDummy.mat";
     static readonly Vector3 SceneAnchor = new Vector3(0, -1, 4.2f);
     const float SceneYaw = 160;
+    static readonly Vector3 GroundScale = new Vector3(1, 1, 1); // 10 m plane
     const string KeyLightName = "Key Light";
     const string GroundName = "Ground";
 
@@ -148,9 +149,19 @@ namespace Changshan.Character.Editor
         SceneManager.MoveGameObjectToScene(ground, scene);
         KeepRenderingComponents(ground);
         ground.transform.SetPositionAndRotation(new Vector3(0, -1, 4.2f), Quaternion.identity);
-        ground.transform.localScale = new Vector3(0.6f, 1, 0.6f);
+        ground.transform.localScale = GroundScale;
         ground.GetComponent<MeshRenderer>().sharedMaterial = groundMaterial;
         changed = true;
+      }
+      else
+      {
+        // E05: the 6 m ground of E03 left the outer dummies (4.2 m + 0.42 m body) off the edge; widen it once.
+        var ground = roots.First(root => root.name == GroundName).transform;
+        if (ground.localScale.x < GroundScale.x || ground.localScale.z < GroundScale.z)
+        {
+          ground.localScale = GroundScale;
+          changed = true;
+        }
       }
       if (!roots.Any(root => root.name == DummiesName))
       {

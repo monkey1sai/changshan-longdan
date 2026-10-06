@@ -100,7 +100,7 @@ namespace Changshan.Foundation.Tests
       }
       Assert.That(hits, Has.Count.EqualTo(1));
       Assert.That(hits[0].Move, Is.EqualTo(MoveId.N1));
-      Assert.That(hits[0].HpAfter, Is.EqualTo(TrainingDummies.DummyHp - 14));
+      Assert.That(hits[0].HpAfter, Is.EqualTo((float)(TrainingDummies.DummyHp - Moves.Get(MoveId.N1).Hits[0].Damage)));
       Assert.That(sim.Clock.Hitstop, Is.EqualTo(Moves.Get(MoveId.N1).Hits[0].Hitstop));
       double simTime = sim.Clock.SimTime, moveTime = sim.Player.MoveTime;
       controller.Tick(Dt);

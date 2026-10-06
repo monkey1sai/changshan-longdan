@@ -17,6 +17,7 @@ namespace Changshan.Combat
     public long SimSteps { get; private set; }
     public double Hitstop { get; private set; }
     public double Slowmo { get; private set; }
+    public double LastSimDt { get; private set; } // game-time step of the latest frame, 0 when hit-stop held it
 
     // Several hits in one tick (or 20 soldiers in one swing) stop the game for the longest request, never the sum.
     public void AddHitstop(double seconds)
@@ -42,6 +43,7 @@ namespace Changshan.Combat
       {
         Hitstop -= realDt;
         stepped = false;
+        LastSimDt = 0;
         return 0;
       }
       stepped = true;
@@ -49,12 +51,13 @@ namespace Changshan.Combat
       double dt = realDt * (Slowmo > 0 ? SlowmoScale : 1);
       SimTime += dt;
       SimSteps++;
+      LastSimDt = dt;
       return dt;
     }
 
     public void Reset()
     {
-      RealTime = SimTime = Hitstop = Slowmo = 0;
+      RealTime = SimTime = Hitstop = Slowmo = LastSimDt = 0;
       Frames = SimSteps = 0;
     }
   }

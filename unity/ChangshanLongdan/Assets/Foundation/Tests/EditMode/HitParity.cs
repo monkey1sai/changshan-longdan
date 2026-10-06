@@ -88,11 +88,10 @@ namespace Changshan.Foundation.Tests
           MoveX = D(c[0]), MoveZ = D(c[1]), Attack = B(c[2]), Charge = B(c[3]), Jump = B(c[4]), Dodge = B(c[5]), Musou = B(c[6]), Guard = B(c[7]),
         };
         row.Clear();
-        if (sim.Step(dt, controls))
-        {
-          foreach (var h in sim.Player.ActiveHits)
-            if (!labels.ContainsKey(h.Stamp)) labels[h.Stamp] = "P" + (++playerLabels).ToString(CultureInfo.InvariantCulture);
-          if (foreignWindow != null)
+        // The second source hits inside the step, after the player's windows, like updateDragon in Game.simulate.
+        Action<double> second = null;
+        if (foreignWindow != null)
+          second = _ =>
           {
             foreignTimer -= dt;
             if (foreignTimer <= 0)
@@ -101,7 +100,11 @@ namespace Changshan.Foundation.Tests
               foreignStamp = sim.Stamps.Next();
             }
             sim.ApplyExternal(foreignStamp, foreignWindow, foreignAt[0], foreignAt[1], foreignAt[2], 0);
-          }
+          };
+        if (sim.Step(dt, controls, second))
+        {
+          foreach (var h in sim.Player.ActiveHits)
+            if (!labels.ContainsKey(h.Stamp)) labels[h.Stamp] = "P" + (++playerLabels).ToString(CultureInfo.InvariantCulture);
           foreach (var e in sim.Hits)
           {
             string name;

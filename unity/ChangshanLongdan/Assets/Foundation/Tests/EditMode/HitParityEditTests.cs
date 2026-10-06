@@ -13,7 +13,7 @@ namespace Changshan.Foundation.Tests
   {
     static readonly string[] ScenarioIds =
     {
-      "n1_x1", "n1_x5", "n1_x20", "n4_x1", "n4_x5", "n4_x20", "c5_x1", "c5_x5", "c5_x20", "musou_x1", "musou_x5", "musou_x20",
+      "n1_x1", "n1_x5", "n1_x20", "n4_x1", "n4_x5", "n4_x20", "c5_x1", "c5_x5", "c5_x20", "musou_x1", "musou_x5", "musou_x20", "musou_all_windows",
       "n1_reach_sweep", "n1_width_sweep", "n2_angle_sweep", "n1_height_sweep", "c5_dodge_cancel", "kill_stops_later_hits",
       "c5_windows_shorter_than_step", "hitstop_charge_once", "n1_interleaved_second_source",
     };
@@ -131,6 +131,48 @@ namespace Changshan.Foundation.Tests
         var c5 = Replay(s).Events.Where(e => e.Move == MoveId.C5).Select(e => e.WindowIndex).ToList();
         Assert.That(c5, Is.EquivalentTo(Enumerable.Range(0, Moves.Get(MoveId.C5).Hits.Count)), $"{s["hz"]} Hz");
       }
+    }
+
+    // MUSOU is twenty windows; with soldiers that survive, every one of them and the finisher must strike once.
+    [Test] public void EveryMusouWindowAndTheFinisherHit()
+    {
+      var musou = Moves.Get(MoveId.MUSOU);
+      foreach (var s in HitParity.Scenarios(Fixture).Where(s => (string)s["id"] == "musou_all_windows"))
+      {
+        var r = Replay(s);
+        var windows = r.Events.Where(e => e.Move == MoveId.MUSOU).Select(e => e.WindowIndex).Distinct();
+        Assert.That(windows, Is.EquivalentTo(Enumerable.Range(0, musou.Hits.Count)), $"{s["hz"]} Hz");
+        Assert.That(r.MaxHitstop, Is.EqualTo(musou.Hits[musou.Hits.Count - 1].Hitstop), $"{s["hz"]} Hz");
+      }
+    }
+
+    // Other sources can only hit inside the step that just ran, so their events are never dropped or misdated.
+    [Test] public void ExternalHitsOnlyInsideTheStep()
+    {
+      var targets = new HitTargets(1);
+      targets.Add(0, 0, ArenaLayout.StartZ - 1, 1, 500);
+      var sim = new CombatSimulation(targets);
+      sim.Restart();
+      var window = Moves.Get(MoveId.N5).Hits[0];
+      Assert.Throws<InvalidOperationException>(() => sim.ApplyExternal(sim.Stamps.Next(), window, 0, 0, ArenaLayout.StartZ, 0));
+      sim.Step(1.0 / 60, default);
+      Assert.Throws<InvalidOperationException>(() => sim.ApplyExternal(sim.Stamps.Next(), window, 0, 0, ArenaLayout.StartZ, 0),
+        "between frames, after the step returned");
+      int hit = 0;
+      double stepDt = -1;
+      Assert.That(sim.Step(1.0 / 60, default, dt =>
+      {
+        stepDt = dt;
+        hit = sim.ApplyExternal(sim.Stamps.Next(), window, 0, 0, ArenaLayout.StartZ, 0);
+      }), Is.True);
+      Assert.That(hit, Is.EqualTo(1));
+      Assert.That(stepDt, Is.EqualTo(1.0 / 60));
+      Assert.That(sim.Hits.Single().Source, Is.EqualTo(HitSource.External));
+      Assert.That(sim.Clock.Hitstop, Is.Zero, "a second source asks for no hit-stop");
+      sim.Clock.AddHitstop(0.05);
+      bool called = false;
+      Assert.That(sim.Step(1.0 / 60, default, _ => called = true), Is.False);
+      Assert.That(called, Is.False, "the callback ran during hit-stop");
     }
 
     // Each sweep must straddle its edge, otherwise it would not test the boundary.

@@ -69,6 +69,8 @@ const DRAGON_LIKE: HitWindow = {
 
 export const HIT_SCENARIOS: HitScenario[] = [
   ...(['N1', 'N4', 'C5', 'MUSOU'] as const).flatMap((move) => [1, 5, 20].map((n) => ({ id: `${move.toLowerCase()}_x${n}`, targets: crowd(n), ...ROUTES[move] }))),
+  // Every MUSOU window, finisher included: soldiers tough enough (279 total damage) to survive the whole move.
+  { id: 'musou_all_windows', ...ROUTES.MUSOU, duration: 4.4, targets: crowd(5).map((t) => ({ ...t, hp: 900 })) },
   // Boundaries: each sweep straddles the edge, so some soldiers must be hit and some missed. Auto-aim turns toward the
   // nearest soldier, so lateral sweeps get an anchor soldier straight ahead (x = 0) that keeps the facing at PI.
   { id: 'n1_reach_sweep', ...ROUTES.N1, targets: Array.from({ length: 13 }, (_, i) => ({ x: 0.003 * i, z: S.z - 3.55 - 0.06 * i, scale: 1 })) },
