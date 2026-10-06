@@ -26,6 +26,10 @@
 - **唯一位移權威**：root 只跟隨邏輯位置（E04／E05 的 `Player`）；動畫不產生 root motion，也不回寫邏輯。
 - **Unity 整合（`CharacterAnimation`）**：綁定時把匯入模型的 Transform 樹轉成 `RigNode` 樹（反鏡像回 Web 座標）；每個模擬步依序 `Rig.Update` → `FootPlant.Apply` → `Skin.Update`，再把骨骼與槍鏡像回 Unity（位置 (-x, y, z)、旋轉 (x, -y, -z, w)）。動畫時鐘用 E05 `GameClock` 的 `LastSimDt`／`SimTime`，所以 hit-stop 時姿勢停住。換模型會先拆掉舊的場景與槍；`SkinnedMeshRenderer.updateWhenOffscreen` 打開以免動作超出原始包圍盒被剔除。綁定失敗記錄 `CHARACTER_ANIMATION_BIND_FAILED` 並保留回退，不會每幀重試。沒有模型時 rig 照常運算。
 
+## 驗證發現：非單位四元數
+
+Unity Play Mode 量到右手骨偏離 rig 7.43 cm（左手 4.08 cm、腳 0.4–1.2 cm），父骨位置誤差都小於 0.01 mm。原因：`SkinBinding.Place` 以「父骨世界矩陣的反矩陣 × 目標」求局部姿勢，父骨帶骨長的非等比縮放時這個矩陣有剪切，分解出的局部四元數不是單位四元數（.NET 重播最多偏 14%）。three.js 照樣拿它組矩陣，Unity 設定 `localRotation` 時會正規化，子關節因此偏移；.NET 以單位四元數模擬，右手最多偏 28 cm（蓄力技）。修正：Unity 每幀依父到子的順序直接設定被驅動骨骼的世界位置與旋轉（局部縮放照舊，讓未驅動的子骨繼承），所有關節落點與 rig 相同。Web 網格在骨長縮放的四肢上的輕微剪切變形不會重現，列入視覺審查。
+
 ## 對照資料
 
 `scripts/lib/rig-parity.ts` 以 Web `Player`、`PlayerModel`、`ZhaoYunSkin` 與去除貼圖的趙雲 GLB 逐幀執行，輸出 `unity/ChangshanLongdan/TestData/combat/web-rig.json`（約 4 MB，`.gitattributes` 標為 generated）。12 個情境照計畫路線：跑→急停→180° 轉向、N1–N6、C1／C2、C3、C4、C5、C6、跳躍／JA／JC／落地、閃避／DASH、格擋反擊、受擊／倒地、無雙；30／60／120 Hz。每幀記錄控制、狀態、姿勢、視覺欄位（面向、淡化、跑步混合、雙手握點誤差）、槍尖，60 Hz 記錄 13 個節點、其他頻率 6 個關鍵節點，60 Hz 每 4 幀記錄全部骨骼。數值捨入到 1e-6。Unity 比對的是**鎖定前**的 Web rig 與骨架；鎖定層只在量測與顯示時加上。

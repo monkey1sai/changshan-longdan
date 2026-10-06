@@ -14,6 +14,7 @@ namespace Changshan.Character
   public sealed class CharacterAnimation
   {
     readonly Dictionary<RigNode, Transform> placed = new Dictionary<RigNode, Transform>();
+    readonly List<(RigNode Node, Transform Transform)> parentsFirst = new List<(RigNode, Transform)>();
     Transform container, weapon;
 
     public ProceduralRig Rig { get; } = new ProceduralRig();
@@ -40,10 +41,22 @@ namespace Changshan.Character
       // Corrections come from the bind pose before the scene joins the rig, so the current pose does not matter.
       var skin = new SkinBinding(scene, Rig);
       Skin = skin;
-      foreach (var bone in skin.PlacedBones) placed[bone] = map[bone];
+      foreach (var bone in skin.PlacedBones)
+      {
+        placed[bone] = map[bone];
+        parentsFirst.Add((bone, map[bone]));
+      }
+      parentsFirst.Sort((a, b) => Depth(a.Node).CompareTo(Depth(b.Node)));
       weapon = map[skin.Weapon];
       foreach (var renderer in model.GetComponentsInChildren<SkinnedMeshRenderer>(true)) renderer.updateWhenOffscreen = true;
       BoundModel = model;
+    }
+
+    static int Depth(RigNode node)
+    {
+      int depth = 0;
+      for (var n = node.Parent; n != null; n = n.Parent) depth++;
+      return depth;
     }
 
     static RigNode Build(Transform t, Dictionary<RigNode, Transform> map)
@@ -66,6 +79,7 @@ namespace Changshan.Character
       Skin = null;
       BoundModel = null;
       placed.Clear();
+      parentsFirst.Clear();
       container = weapon = null;
     }
 
@@ -83,13 +97,15 @@ namespace Changshan.Character
       if (Skin == null || container == null) return;
       Skin.Update(Rig.Pose.Lh);
       container.SetPositionAndRotation(mapping.ToDisplayPosition(0, 0, 0), Quaternion.Euler(0, (float)mapping.BaseYawDegrees, 0));
-      foreach (var pair in placed)
+      // Placed bones get their local scale (bone-length scale, inherited by unplaced children), then their world pose,
+      // parents first. A local pose alone is not enough: under a non-uniformly scaled parent the rig's local rotation is
+      // decomposed from a sheared matrix, so it is not a unit quaternion (up to 14 % off); three.js composes it as is,
+      // Unity normalizes it, and the child joints drift (hands up to 28 cm). The world pose puts every joint where the
+      // rig does; only the shear the Web mesh shows on the length-scaled limbs is not reproduced.
+      foreach (var (node, t) in parentsFirst)
       {
-        var node = pair.Key;
-        var t = pair.Value;
-        t.localPosition = Mirror(node.Position);
-        t.localRotation = Mirror(node.Rotation);
         t.localScale = new Vector3((float)node.Scale.X, (float)node.Scale.Y, (float)node.Scale.Z);
+        t.SetPositionAndRotation(container.TransformPoint(Mirror(node.WorldPosition)), container.rotation * Mirror(node.WorldRotation));
       }
       // The spear mesh follows the spear driver; place it in the container frame like any other node.
       Skin.Weapon.WorldMatrix.Decompose(out var p, out var q, out _);
