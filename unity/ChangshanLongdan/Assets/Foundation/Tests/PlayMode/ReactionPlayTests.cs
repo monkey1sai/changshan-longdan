@@ -66,10 +66,15 @@ namespace Changshan.Foundation.Tests
       Assert.That(controller.LastHit, Does.StartWith("Pierce x")); // N1 reaches several ring dummies at once
       var dummy = dummies.Dummies[hit];
       Assert.That(dummy.gameObject.activeSelf, Is.True);
-      // The flinch lean is sin(t / 0.42 * pi): zero on the hit frame itself, visible two frames later.
+      // The hit's hit-stop (0.05 s) freezes the game, state time included, so the flinch lean sin(t / 0.42 * pi) stays
+      // zero until the game steps again; it is visible two steps after that.
+      int frozen = 0;
+      while (controller.Simulation.Clock.Hitstop > 0 && frozen++ < 10) controller.Tick(Dt);
       controller.Tick(Dt);
       controller.Tick(Dt);
+      TestContext.WriteLine($"hit {hit}: frozen frames {frozen}, state {targets.State(hit)}, stateTime {targets.StateTime(hit):0.0000}, flash {targets.Flash(hit):0.000}, up {dummy.up}, euler {dummy.rotation.eulerAngles}");
       Assert.That(targets.State(hit), Is.EqualTo(EnemyState.Flinch));
+      Assert.That(targets.StateTime(hit), Is.GreaterThan(0.02));
       // Leaning forward: the capsule's up axis is no longer vertical; the hit flash tints it toward white.
       Assert.That(Vector3.Dot(dummy.up, Vector3.up), Is.LessThan(0.999f), "a flinching dummy must lean");
       var block = new MaterialPropertyBlock();
