@@ -203,6 +203,8 @@ namespace Changshan.Foundation.Tests
           case CombatEventType.GuardBlock: row.AddRange(new object[] { "guardBlock", e.X, e.Z, e.Facing, e.Heavy ? 1.0 : 0.0, e.Damage }); break;
           case CombatEventType.Hurt: row.AddRange(new object[] { "hurt", e.X, e.Z, e.Heavy ? 1.0 : 0.0 }); break;
           case CombatEventType.Phase: row.AddRange(new object[] { "phase", (double)(int)e.Phase }); break;
+          case CombatEventType.MusouReady: continue; // the Web harness ignores it (web-presentation.json covers it)
+          default: continue;
         }
         rows.Add(row);
       }

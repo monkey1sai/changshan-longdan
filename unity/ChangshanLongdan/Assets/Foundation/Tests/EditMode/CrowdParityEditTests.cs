@@ -140,7 +140,70 @@ namespace Changshan.Foundation.Tests
       Assert.That(targets.Ring(0), Is.EqualTo(2.7).Within(1e-6));
       Assert.That(targets.Ring(10), Is.EqualTo(2.7).Within(1e-6));
       Assert.That(Enumerable.Range(0, 20).Count(i => targets.Ring(i) > 2.7 + 1e-6), Is.EqualTo(11), "the tenth and later soldiers take the second ring");
+      // The boundary pair decides stability: sorted order is 0,10,1,11,...; the ninth is soldier 4 (inner ring) and the
+      // tenth is soldier 14 (second ring). An unstable sort could swap any equal-distance pair and put 14 inside.
+      Assert.That(targets.Ring(4), Is.EqualTo(2.7).Within(1e-6), "the lower index of the boundary pair stays on the inner ring");
+      Assert.That(targets.Ring(14), Is.EqualTo(3.95).Within(1e-6), "the higher index of the boundary pair takes the second ring");
+      for (int k = 0; k < 10; k++) Assert.That(targets.Ring(k), Is.LessThanOrEqualTo(targets.Ring(10 + k) + 1e-9), $"pair {k}/{10 + k}");
       Assert.That(targets.EngagedCount, Is.EqualTo(20));
+    }
+
+    // Battle.step wiring of the director: the phase is decided from the kills before the step, so the step that reaches
+    // 60 KO still runs as Opening and the next step announces Pressure and widens the engage range; Surge adds an
+    // attacker; Restart returns to Opening with the base pressure.
+    [Test] public void PressureFollowsTheKillsInsideTheSimulation()
+    {
+      var targets = new HitTargets(200);
+      var sim = new CombatSimulation(targets);
+      sim.Restart();
+      double px = sim.Player.X, pz = sim.Player.Z;
+      var finale = Moves.Get(MoveId.MUSOU).Hits[19]; // circle 9.5 m, 70 damage
+      Assert.That(finale.Shape.Range, Is.GreaterThanOrEqualTo(9.5));
+      uint stamp = 1_000_000;
+      int killed = 0;
+      // 70 one-hit soldiers inside the circle, in rings so none overlaps the player; all die on step 1, which is still
+      // decided from 0 KO.
+      AddRing(targets, px, pz, 0, 70);
+      sim.Step(1.0 / 60, default, _ => { killed = sim.ApplyExternal(++stamp, finale, px, 0, pz, 0); });
+      Assert.That(killed, Is.EqualTo(70));
+      Assert.That(sim.KoCount, Is.EqualTo(70));
+      Assert.That(sim.Phase, Is.EqualTo(BattlePhase.Opening));
+      Assert.That(sim.Events.Any(e => e.Type == CombatEventType.Phase), Is.False, "the phase is read before this step's kills");
+      Assert.That(targets.EngageRange, Is.EqualTo(Difficulties.Normal.EngageRange));
+      // Step 2: Pressure from 70 KO, engage range +4, attackers unchanged.
+      sim.Step(1.0 / 60, default);
+      Assert.That(sim.Phase, Is.EqualTo(BattlePhase.Pressure));
+      Assert.That(sim.Events.Count(e => e.Type == CombatEventType.Phase && e.Phase == BattlePhase.Pressure), Is.EqualTo(1));
+      Assert.That(targets.EngageRange, Is.EqualTo(Difficulties.Normal.EngageRange + 4));
+      Assert.That(targets.MaxAttackers, Is.EqualTo(Difficulties.Normal.MaxAttackers));
+      sim.Step(1.0 / 60, default);
+      Assert.That(sim.Events.Any(e => e.Type == CombatEventType.Phase), Is.False, "announced once");
+      // 90 more: 160 KO -> Surge next step, one more attacker, +8 range.
+      AddRing(targets, px, pz, 70, 90);
+      sim.Step(1.0 / 60, default, _ => { killed = sim.ApplyExternal(++stamp, finale, px, 0, pz, 0); });
+      Assert.That(killed, Is.EqualTo(90));
+      Assert.That(sim.KoCount, Is.EqualTo(160));
+      sim.Step(1.0 / 60, default);
+      Assert.That(sim.Phase, Is.EqualTo(BattlePhase.Surge));
+      Assert.That(sim.Events.Count(e => e.Type == CombatEventType.Phase && e.Phase == BattlePhase.Surge), Is.EqualTo(1));
+      Assert.That(targets.EngageRange, Is.EqualTo(Difficulties.Normal.EngageRange + 8));
+      Assert.That(targets.MaxAttackers, Is.EqualTo(Difficulties.Normal.MaxAttackers + 1));
+      // Restart: Opening again with the base pressure.
+      sim.Restart();
+      Assert.That(sim.Phase, Is.EqualTo(BattlePhase.Opening));
+      Assert.That(sim.KoCount, Is.Zero);
+      sim.Step(1.0 / 60, default);
+      Assert.That(targets.EngageRange, Is.EqualTo(Difficulties.Normal.EngageRange));
+      Assert.That(targets.MaxAttackers, Is.EqualTo(Difficulties.Normal.MaxAttackers));
+    }
+
+    static void AddRing(HitTargets targets, double px, double pz, int first, int count)
+    {
+      for (int i = first; i < first + count; i++)
+      {
+        double a = i * 0.3927, r = 3 + (i % 10) * 0.55;
+        targets.Add(px + System.Math.Sin(a) * r, 0, pz + System.Math.Cos(a) * r, 1, 1);
+      }
     }
 
     [Test] public void TokensAreCappedAndReturnedOnHits()
