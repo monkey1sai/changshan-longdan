@@ -31,9 +31,27 @@ namespace Changshan.Character
     public FeedbackDirector Director { get; private set; }
     public SfxBank Sound { get; private set; } // null when the platform has no audio output
     public Task Prewarm { get; private set; }
-    public string BannerText { get; private set; } = "";
+    public string BannerText => bannerText != null ? bannerText() : "";
+    Func<string> bannerText;
+    public bool BannerGold { get; private set; }
     public double BannerLeft { get; private set; }
     public int Cutins { get; private set; }
+    public void ShowBanner(Func<string> text, double seconds = 2, bool gold = false)
+    {
+      bannerText = text ?? throw new ArgumentNullException(nameof(text));
+      BannerLeft = seconds;
+      BannerGold = gold;
+    }
+
+    public void ShowBattleBanner(CombatEvent e)
+    {
+      switch (e.Type)
+      {
+        case CombatEventType.Phase: ShowBanner(() => BattleStrings.Phase(e.Phase)); break;
+        case CombatEventType.Milestone: ShowBanner(() => BattleStrings.Milestone(e.Ko), gold: true); break;
+        case CombatEventType.HalfDefeated: ShowBanner(() => BattleStrings.HalfDefeated); break;
+      }
+    }
     public double SimClock { get; private set; } // game.ts simClock: the trail's time
     // Recordings render the mixer themselves: no live output may pull it at the same time.
     public bool OfflineAudio
@@ -214,7 +232,8 @@ namespace Changshan.Character
       Waves.Clear();
       Post.Clear();
       Director.Reset();
-      BannerText = "";
+      bannerText = null;
+      BannerGold = false;
       BannerLeft = 0;
     }
 
@@ -380,7 +399,8 @@ namespace Changshan.Character
     {
       if (BannerLeft <= 0 || BannerText.Length == 0) return;
       if (bannerStyle == null) bannerStyle = new GUIStyle(GUI.skin.label) { fontSize = 40, alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
-      bannerStyle.normal.textColor = new Color(1f, 0.82f, 0.35f, Mathf.Clamp01((float)BannerLeft * 2));
+      bannerStyle.normal.textColor = BannerGold ? new Color(1f, 0.82f, 0.35f, Mathf.Clamp01((float)BannerLeft * 2)) :
+        new Color(1f, 1f, 1f, Mathf.Clamp01((float)BannerLeft * 2));
       GUI.Label(new UnityEngine.Rect(0, Screen.height * 0.18f, Screen.width, 80), BannerText, bannerStyle);
     }
 
@@ -497,8 +517,7 @@ namespace Changshan.Character
 
       public void ShowBanner(Changshan.Feedback.Banner banner, double seconds, bool gold)
       {
-        view.BannerText = banner == Changshan.Feedback.Banner.MusouReady ? "龍膽 就緒 / Longdan Ready" : banner.ToString();
-        view.BannerLeft = seconds;
+        view.ShowBanner(() => banner == Changshan.Feedback.Banner.MusouReady ? "龍膽 就緒 / Longdan Ready" : banner.ToString(), seconds, gold);
       }
 
       public void PlayCutin() => view.Cutins++;

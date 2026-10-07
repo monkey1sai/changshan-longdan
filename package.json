@@ -11,7 +11,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:unity-runner": "node --test scripts/tests/unity-preflight.node.mjs scripts/tests/unity-execution.node.mjs",
+    "test:unity-runner": "node --test scripts/tests/unity-preflight.node.mjs scripts/tests/unity-execution.node.mjs scripts/tests/e11-route-validation.node.mjs",
     "unity:inventory": "node scripts/unity-preflight.mjs --mode inventory",
     "unity:preflight": "node scripts/unity-preflight.mjs --mode preflight",
     "unity:validate": "node scripts/unity-validate.mjs",

@@ -15,6 +15,7 @@ namespace Changshan.Combat
   public sealed class CombatSimulation
   {
     public const double ParryHitstop = 0.06;
+    public const int KoMilestone = 100;
 
     readonly List<HitEvent> hits = new List<HitEvent>();
     readonly List<KillInfo> kills = new List<KillInfo>();
@@ -42,10 +43,12 @@ namespace Changshan.Combat
     bool externalOpen;
     bool stepping;
     bool musouWasReady;
+    int spawnCount;
 
     public CombatSimulation(HitTargets targets, PlayerTuning tuning = null, Arena arena = null)
     {
       Targets = targets ?? throw new ArgumentNullException(nameof(targets));
+      spawnCount = targets.Count;
       Stamps = new HitStampSource();
       Clock = new GameClock();
       Arena = arena ?? ArenaLayout.CreateArena();
@@ -159,11 +162,18 @@ namespace Changshan.Combat
     {
       var fresh = Targets.Kills;
       if (fresh.Count == 0) return;
+      long before = KoCount;
       int start = kills.Count;
       for (int i = 0; i < fresh.Count; i++) kills.Add(fresh[i]);
       events.Add(CombatEvent.Kill(start, fresh.Count));
       KoCount += fresh.Count;
       Targets.ClearKills();
+      if (Targets.AliveCount == 0) return;
+      int half = (spawnCount + 1) / 2;
+      if (before / KoMilestone < KoCount / KoMilestone)
+        events.Add(CombatEvent.Milestone(KoCount / KoMilestone * KoMilestone));
+      else if (before < half && KoCount >= half)
+        events.Add(CombatEvent.HalfDefeated());
     }
 
     // Battle.debug.injectStrike / resolveStrike: one enemy attack on the player, resolved now (outside a step).
@@ -217,6 +227,7 @@ namespace Changshan.Combat
       events.Clear();
       TotalHits = 0;
       KoCount = 0;
+      spawnCount = Targets.Count;
       DamageSum = 0;
       SteppedThisFrame = false;
       musouWasReady = false;

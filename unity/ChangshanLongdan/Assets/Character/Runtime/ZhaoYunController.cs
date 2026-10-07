@@ -277,6 +277,9 @@ namespace Changshan.Character
         var e = events[i];
         switch (e.Type)
         {
+          case CombatEventType.Phase:
+          case CombatEventType.Milestone:
+          case CombatEventType.HalfDefeated: Effects.ShowBattleBanner(e); break;
           case CombatEventType.Hit when e.Source == HitSource.Player:
             LastHit = FormattableString.Invariant($"{e.Window.Sfx} x{e.Count} shake {e.Window.Shake:0.00}");
             break;

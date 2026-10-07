@@ -8,6 +8,7 @@ import { createHash } from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { validateE11Route } from './lib/e11-route-validation.mjs'
 
 const root = fs.realpathSync(fileURLToPath(new URL('../', import.meta.url)))
 const args = process.argv.slice(2)
@@ -19,7 +20,7 @@ const player = option('--player')
 const out = path.resolve(root, option('--out', ''))
 const ffmpeg = option('--ffmpeg', 'ffmpeg')
 const mode = option('--mode', 'e06')
-if (mode !== 'e06' && mode !== 'e07' && mode !== 'e09') throw new Error('--mode must be e06, e07 or e09')
+if (!['e06', 'e07', 'e09', 'e11'].includes(mode)) throw new Error('--mode must be e06, e07, e09 or e11')
 // E09 records the camera route at three window sizes; the others keep the single 1280x720 recording.
 const sizes = mode === 'e09' ? [[800, 600], [1440, 900], [1920, 1080]] : [[1280, 720]]
 const sizeArg = option('--size', null)
@@ -34,7 +35,7 @@ const started = new Date().toISOString()
 const recordings = []
 for (const [width, height] of selectedSizes) recordings.push(record(width, height))
 const manifest = {
-  schema: mode === 'e09' ? 'e09-camera-video/v1' : mode === 'e07' ? 'e07-feedback-video/v1' : 'e06-route-video/v1', started, ended: new Date().toISOString(),
+  schema: mode === 'e11' ? 'e11-director-video/v1' : mode === 'e09' ? 'e09-camera-video/v1' : mode === 'e07' ? 'e07-feedback-video/v1' : 'e06-route-video/v1', started, ended: new Date().toISOString(),
   player, playerSha256: sha256(player), mode, recordings,
 }
 fs.writeFileSync(path.join(out, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n', { flag: 'wx' })
@@ -46,7 +47,7 @@ const tag = selectedSizes.length > 1 || mode === 'e09' ? `${width}x${height}` : 
 const dir = tag ? path.join(out, tag) : out
 const frames = path.join(dir, 'frames')
 fs.mkdirSync(frames, { recursive: true })
-const modeArgs = mode === 'e09' ? ['-e09Camera', frames] : mode === 'e07' ? ['-e07Feedback', frames, '-e09NoFlow'] : ['-e06Route', frames, '-e09NoFlow']
+const modeArgs = mode === 'e11' ? ['-e11Director', frames] : mode === 'e09' ? ['-e09Camera', frames] : mode === 'e07' ? ['-e07Feedback', frames, '-e09NoFlow'] : ['-e06Route', frames, '-e09NoFlow']
 const run = spawnSync(player, [...modeArgs, '-screen-width', String(width), '-screen-height', String(height), '-screen-fullscreen', '0',
   '-logFile', path.join(dir, 'player.log')], { timeout: 300000, windowsHide: false })
 const frameFiles = fs.readdirSync(frames).filter((f) => /^frame_\d{4}\.png$/.test(f)).sort()
@@ -67,13 +68,23 @@ let held = 0
 for (let i = 1; i < route.frames.length; i++) {
   const f = route.frames[i]
   if (f.simTime > route.frames[i - 1].simTime) { held = 0; continue }
-  if ((mode === 'e07' || mode === 'e09') && f.stepped === false && f.simTime === route.frames[i - 1].simTime && ++held <= 0.25 * route.frameRate) continue
+  if ((mode === 'e07' || mode === 'e09' || mode === 'e11') && f.stepped === false && f.simTime === route.frames[i - 1].simTime && ++held <= 0.25 * route.frameRate) continue
   throw new Error(`ROUTE_STALLED: game time did not advance at frame ${i}`)
 }
 const states = [...new Set(route.frames.map((f) => f.state))]
 const moves = [...new Set(route.frames.map((f) => f.move).filter(Boolean))]
-const required = mode === 'e09' ? ['Move', 'Jump', 'Attack', 'Musou', 'Down'] : mode === 'e07' ? ['Move', 'Attack', 'Jump', 'Dodge', 'Guard', 'Musou', 'Hurt', 'Down'] : ['Move', 'Attack', 'Jump', 'Dodge', 'Guard', 'Musou']
+const required = mode === 'e11' ? ['Move'] : mode === 'e09' ? ['Move', 'Jump', 'Attack', 'Musou', 'Down'] : mode === 'e07' ? ['Move', 'Attack', 'Jump', 'Dodge', 'Guard', 'Musou', 'Hurt', 'Down'] : ['Move', 'Attack', 'Jump', 'Dodge', 'Guard', 'Musou']
 for (const s of required) if (!states.includes(s)) throw new Error(`ROUTE_MISSING_STATE: ${s}`)
+let director = null
+if (mode === 'e11') {
+  if (route.viewportWidth !== width || route.viewportHeight !== height) throw new Error(`ROUTE_VIEWPORT: ${route.viewportWidth}x${route.viewportHeight} for ${width}x${height}`)
+  const fixtureFile = path.join(root, 'unity/ChangshanLongdan/TestData/combat/web-director.json')
+  const fixture = JSON.parse(fs.readFileSync(fixtureFile, 'utf8'))
+  for (const [file, hash] of Object.entries(fixture.sources)) if (sha256(path.join(root, file)) !== hash) throw new Error(`E11_FIXTURE_STALE: ${file}`)
+  director = { ...validateE11Route(route, fixture), fixtureSha256: sha256(fixtureFile), sourceHashes: fixture.sources,
+    routeScheduleSha256: createHash('sha256').update(JSON.stringify(fixture.route)).digest('hex'),
+    evidenceKind: route.evidenceKind, injections: route.injections }
+}
 // E07: the common trace. Every frame that resolved hits issued its sparks and its hit sound on that same frame.
 let feedback = null
 if (mode === 'e07') {
@@ -127,7 +138,7 @@ const hasAudio = fs.existsSync(audioPath)
 if (hasAudio && route.audioSamples !== Math.round(route.audioRate / route.frameRate) * expected) {
   throw new Error(`ROUTE_AUDIO_LENGTH: ${route.audioSamples} samples for ${expected} frames at ${route.audioRate} Hz`)
 }
-if (mode === 'e07' && !hasAudio) throw new Error('ROUTE_NO_AUDIO: the Player had no audio output to mix')
+if ((mode === 'e07' || mode === 'e11') && !hasAudio) throw new Error('ROUTE_NO_AUDIO: the Player had no audio output to mix')
 // The sound itself, not only the cues: every frame that queued a sound must be audible within 100 ms of it.
 let audioCheck = null
 if (hasAudio) {
@@ -171,6 +182,7 @@ const recording = {
   camera,
   audio: hasAudio ? { file: path.relative(out, path.join(dir, 'audio.wav')), sha256: sha256(path.join(dir, 'audio.wav')), rate: route.audioRate, samples: route.audioSamples, check: audioCheck, clock: 'each frame\'s sounds start at that frame\'s first sample' } : null,
   feedback,
+  director,
   contactSheet: { file: path.relative(out, contact), sha256: sha256(contact), everySeconds: 2 },
 }
 for (const f of frameFiles) fs.unlinkSync(path.join(frames, f))
