@@ -9,6 +9,7 @@ import { requireSafePath, requireSafeEngineWrites, validateExecutionScope, valid
   validateResolvedPackage, validateSettings, validateRuntime, validateTestInventory, validateCharacterReport, glbJointNames,
   sha256, snapshotSource } from './lib/unity-execution.mjs'
 import { readUnityTestResults } from './lib/unity-test-results.mjs'
+import { snapshotPayload } from './lib/e12-process.mjs'
 
 const root = fs.realpathSync(fileURLToPath(new URL('../', import.meta.url)))
 const defaultEditor = 'C:\\Program Files\\Unity\\Hub\\Editor\\6000.6.4f1\\Editor\\Unity.exe'
@@ -230,6 +231,7 @@ try {
       if (stage === 'build') {
         if (!fs.existsSync(player) || fs.statSync(player).size === 0) throw new Error('PLAYER_MISSING')
         run.playerSha256 = sha256(player)
+        run.playerPayload = snapshotPayload(path.dirname(player))
         // The Player must ship the retained GLB itself, byte for byte.
         const shipped = requireSafePath(root, path.join(path.dirname(player), characterStreamingCopy))
         if (!fs.existsSync(shipped) || sha256(shipped) !== characterManifest.export.sha256) throw new Error('CHARACTER_STREAMING_COPY_MISMATCH')
@@ -248,6 +250,7 @@ try {
     validateCharacterReport(character, runId, characterManifest, glbJointNames(fs.readFileSync(requireSafePath(root, path.join(root, characterSource)))))
     run.character = { status: character.status, readyFrame: character.readyFrame, loadSeconds: character.loadSeconds, sourceSha256: character.sourceSha256 }
     run.sourceAfter = snapshotSource(root)
+    if (JSON.stringify(run.playerPayload) !== JSON.stringify(snapshotPayload(path.dirname(player)))) throw new Error('PLAYER_PAYLOAD_CHANGED')
     validateUnchangedSource(run.sourceBefore, run.sourceAfter)
     if (candidateCheckout() !== sourceHead) throw new Error('CANDIDATE_HEAD_CHANGED')
     run.stages.at(-1).verified = true

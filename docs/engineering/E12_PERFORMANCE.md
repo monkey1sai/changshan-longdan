@@ -11,7 +11,7 @@ E11 的 GitHub reviews 仍為空，不能補寫正式 APPROVED。合併後 Unity
 ## 重用與缺口
 
 - 重用既有 `unity-validate.mjs`、`unity-execution.mjs` 的 immutable head、source snapshot、建置雜湊、Unity tests 與 Player 啟停，不新增依賴或原生 plugin。
-- 用 Unity 6000.6 `ProfilerRecorder` 列舉 counter 與實際單位，Windows WMI 每 PID GPUProcessMemory 記錄各 adapter instance。可用 API 不等於實測能力。
+- 用 Unity 6000.6 `ProfilerRecorder` 列舉 counter 與實際單位，Windows WMI 每 PID GPUProcessMemory 記錄各 adapter instance。formatted provider 沒有時間戳，本輪改用 `Win32_PerfRawData_GPUPerformanceCounters_GPUProcessMemory`，先核對 65792 raw gauge，保留 Sys100NS 的原始字串及獨立 UTC。可用 API 不等於實測能力。[Microsoft raw counter 定義](https://learn.microsoft.com/en-us/windows/win32/wmisdk/noncomputational-counter-types)。
 - RouteRecorder 固定 30 Hz、逐幀 PNG、忽略失焦，不能作效能 runner。Gameplay dt 有 50ms cap，不能作 wall interval。
 - `PerformanceProbe` 只跑 3 秒暖機＋10 秒能力探測。它以 Stopwatch 實測 wall interval，保留原始 recorder 值、前景 PID、focus、記憶體與四種敵數。`visible` 無遮擋／pixel 證據時保留 null；frustum 另列。
 - Probe 起始 20 人／seed 7、normal、現有 capsule 兵；不是 300 人高品質骨架敵兵驗收。保持正常 controller Update、真實 dt、失焦行為；沒有固定模擬時鐘或無敵／補血／補兵注入。未固定正式 workload，不聲稱交戰與無雙峰值覆蓋。
@@ -39,7 +39,9 @@ CPU counter 已扣除等待，不再次扣等待。Recorder `TimeNanoseconds` / 
 
 暖機後每秒採 raw bytes；相同 workload cycle 比較，不強制 GC。超限阻擋並分析，不逕稱 leak。working set、Unity used/reserved、GC collections／alloc、shared／committed 分列。OS budget／occupancy 保留 null，不宣稱 budget pressure 或 paging 已驗收。
 
-VRAM provider 必須保留 PID、程序啟動時間、各 adapter instance 名稱、provider timestamp、bytes、查詢失敗。只聚合該 Player 的 dedicated；shared／committed 不混加。缺 instance 或 stale data 是 UNKNOWN。短 probe 尚只探測 provider 回傳值，正式 sample freshness 對齊仍需實作。
+VRAM provider 必須保留 PID、程序啟動時間、各 adapter instance 名稱、provider timestamp、bytes、查詢失敗。以 Player 自己回報的 processStart 核對外部 helper 身分；provider UTC 相對獨立 query start/end 最多落後 2 秒，future tolerance 250ms，query duration≤2 秒。重複／倒退 provider timestamp 不计有效樣本。只聚合該 Player 的 dedicated；shared／committed 不混加。缺 instance 或 stale data 是 UNKNOWN。正式每幀與每秒 sample 對齊仍需實作。
+
+建置 runner 在 build 完成時保存完整 Player payload 的 SHA-256／bytes，啟動前後重讀核對，包含 managed DLL、資料與模型；不能只用 EXE hash 代表完整 build。Probe output 與 build 必須分別位於 resolved release/e12、release/e02 子目錄，拒絕 traversal／既存 output；失敗報告只寫本次建立的新目錄。
 
 ## 當前停止條件與回滾
 

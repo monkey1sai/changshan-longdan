@@ -23,17 +23,17 @@ namespace Changshan.Character
     static readonly string[] Names = { "CPU Main Thread Frame Time", "CPU Render Thread Frame Time", "GPU Frame Time",
       "Draw Calls Count", "GC Allocated In Frame", "GC Used Memory", "GC Reserved Memory", "Total Used Memory" };
 
-    [Serializable] public sealed class CounterInfo { public string name, category, unit; public bool available; }
+    [Serializable] public sealed class CounterInfo { public string name, category, unit; public bool available, validAtEnd; public int sampleCount, reads; }
     [Serializable] public sealed class Report
     {
-      public string kind = "CAPABILITY_PROBE", runId, unityVersion, backend, visibleProvider = "UNAVAILABLE", error;
+      public string kind = "CAPABILITY_PROBE", runId, unityVersion, backend, visibleProvider = "UNAVAILABLE", error, processStart, castleAssets;
       public string wallProvider = "System.Diagnostics.Stopwatch", cpuProvider = "ProfilerRecorder active counters; max(main,render); ns to ms";
-      public int pid, population, spawnSeed, aiSeed, width, height, refresh, vSync, cap, frames;
+      public int pid, population, spawnSeed, aiSeed, width, height, refresh, vSync, cap, frames, errorCount;
       public double warmupSeconds = 3, sampleSeconds = 10;
       public float renderScale;
       public bool development, frameTimingEnabled, batchMode;
       public CounterInfo[] counters;
-      public string[] gaps = { "true camera visible count (occlusion/pixel tested)", "per-process VRAM (external telemetry required)", "fixed full workload and peak coverage", "formal 180s sampling / 30min soak" };
+      public string[] gaps = { "true camera visible count (occlusion/pixel tested)", "fixed full workload and peak coverage", "formal 180s sampling / 30min soak" };
     }
     struct Sample
     {
@@ -60,8 +60,13 @@ namespace Changshan.Character
           break;
         }
       }
-      public long? Read() => Info.available && recorder.Valid && recorder.Count > 0 ? recorder.LastValue : (long?)null;
-      public void Dispose() { if (recorder.Valid) recorder.Dispose(); }
+      public long? Read()
+      {
+        Info.validAtEnd = recorder.Valid; Info.sampleCount = recorder.Valid ? recorder.Count : 0;
+        if (!Info.available || !Info.validAtEnd || Info.sampleCount == 0) return null;
+        Info.reads++; return recorder.LastValue;
+      }
+      public void Dispose() { Info.validAtEnd = recorder.Valid; if (recorder.Valid) recorder.Dispose(); }
     }
     public static List<Spawn> ProbeSpawns(int population, uint seed)
     {
@@ -73,7 +78,10 @@ namespace Changshan.Character
         .OrderBy(s => (s.X - ArenaLayout.StartX) * (s.X - ArenaLayout.StartX) + (s.Z - ArenaLayout.StartZ) * (s.Z - ArenaLayout.StartZ))
         .Take(population).ToList();
     }
-    string output;
+    string output; int errors;
+    void Awake() { Application.logMessageReceived += CountErrors; }
+    void OnDestroy() { Application.logMessageReceived -= CountErrors; }
+    void CountErrors(string message, string stack, LogType type) { if (type == LogType.Error || type == LogType.Exception || type == LogType.Assert) errors++; }
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)] static void Boot()
     {
       if (Application.isEditor || !Debug.isDebugBuild) return;
@@ -88,6 +96,7 @@ namespace Changshan.Character
         unityVersion = Application.unityVersion, backend = SystemInfo.graphicsDeviceType.ToString(),
         development = Debug.isDebugBuild, frameTimingEnabled = FrameTimingManager.IsFeatureEnabled(), batchMode = Application.isBatchMode };
       var process = System.Diagnostics.Process.GetCurrentProcess(); report.pid = process.Id;
+      report.processStart = process.StartTime.ToUniversalTime().ToString("o", CultureInfo.InvariantCulture);
       var controller = FindObjectsByType<ZhaoYunController>().FirstOrDefault();
       var character = controller != null ? controller.GetComponent<ZhaoYunCharacter>() : null;
       double deadline = Time.realtimeSinceStartupAsDouble + 30;
@@ -105,6 +114,12 @@ namespace Changshan.Character
       var crowd = CrowdSpawner.Create("E12 probe capsules", ProbeSpawns(20, 7), controller.Mapping, material);
       controller.UseDummies(crowd, 7);
       controller.EnsureCastle(); controller.UseCameraRig(true);
+      var castle = controller.Castle != null ? controller.Castle.Assets : null;
+      deadline = Time.realtimeSinceStartupAsDouble + 30;
+      while (castle != null && !castle.Settled && Time.realtimeSinceStartupAsDouble < deadline) yield return null;
+      report.castleAssets = castle != null ? castle.Status.ToString() : "MISSING";
+      if (castle == null || castle.Status != CastleAssetStatus.Ready)
+      { report.error = "CASTLE_ASSETS_NOT_READY"; WriteReport(report); process.Dispose(); Application.Quit(2); yield break; }
       controller.ShowDebug = false;
       controller.SetFocus(Application.isFocused);
       var handles = new List<ProfilerRecorderHandle>(); ProfilerRecorderHandle.GetAvailable(handles);
@@ -144,6 +159,8 @@ namespace Changshan.Character
       }
       foreach (var c in counters) c.Dispose(); process.Dispose();
       report.frames = count;
+      report.errorCount = errors;
+      if (errors > 0) report.error = "PLAYER_LOG_ERRORS";
       using (var writer = new StreamWriter(Path.Combine(output, "frames.csv"), false))
       {
         writer.WriteLine("frame,seconds,wallMs,alive,visible,frustum,engaged,attackers,focus,foregroundPid,minimized,privateBytes,workingSet,gc0,gc1,gc2,cpuMainRaw,cpuRenderRaw,gpuRaw,draws,allocated,gcUsed,gcReserved,used");

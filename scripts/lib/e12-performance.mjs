@@ -25,7 +25,10 @@ export function metricSummary(frames) {
 }
 export function parseProbeCsv(text, report) {
   const lines = text.trim().split(/\r?\n/), keys = lines.shift().split(',')
-  const unit = name => report.counters?.find(c => c.name === name)?.unit
+  const unit = name => {
+    const c = report.counters?.find(c => c.name === name)
+    return c?.available && c.validAtEnd && c.sampleCount > 0 && c.reads >= report.frames ? c.unit : null
+  }
   return lines.map(line => {
     const cells = line.split(',')
     if (cells.length !== keys.length) throw new Error('TRUNCATED_CSV_ROW')
@@ -44,11 +47,13 @@ export function parseProbeCsv(text, report) {
   })
 }
 export function gpuInstances(sample, expected) {
-  if (!sample || sample.pid !== expected.pid || sample.processStart !== expected.processStart ||
-      !Number.isFinite(sample.seconds) || Math.abs(sample.seconds - expected.seconds) > 2 || !Array.isArray(sample.instances)) return null
+  const processStart = Date.parse(expected.processStart), queryStart = Date.parse(sample?.utc), queryEnd = Date.parse(sample?.queryEndUtc)
+  if (!sample || sample.pid !== expected.pid || !Number.isFinite(processStart) || Date.parse(sample.processStart) !== processStart ||
+      !Number.isFinite(queryStart) || !Number.isFinite(queryEnd) || queryEnd < queryStart || queryEnd - queryStart > 2000 || !Array.isArray(sample.instances)) return null
   const instances = sample.instances.filter(i => i.name?.startsWith(`pid_${expected.pid}_`))
   if (!instances.length || instances.length !== sample.instances.length || instances.some(i =>
-    ![i.dedicatedBytes, i.sharedBytes, i.committedBytes].every(v => Number.isSafeInteger(v) && v >= 0))) return null
+    i.counterType !== 65792 || !Number.isFinite(Date.parse(i.timestampUtc)) || Date.parse(i.timestampUtc) < queryStart - 2000 ||
+    Date.parse(i.timestampUtc) > queryEnd + 250 || ![i.dedicatedBytes, i.sharedBytes, i.committedBytes].every(v => Number.isSafeInteger(v) && v >= 0))) return null
   // Aggregate all raw adapter instances for this exact process; dedicated remains separate from shared/committed.
   return instances.reduce((a, i) => ({ dedicatedBytes: a.dedicatedBytes + i.dedicatedBytes,
     sharedBytes: a.sharedBytes + i.sharedBytes, committedBytes: a.committedBytes + i.committedBytes }),
