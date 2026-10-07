@@ -1,6 +1,6 @@
 # E09 鏡頭、遮擋與操作可讀性
 
-更新：2026-10-07（Asia/Taipei）。`stepStatus: IN_PROGRESS（本機 Unity 五階段、Web 回歸與三種解析度錄影通過；待使用者試玩、推送與草稿 PR 審查）`。本檔記錄範圍、設計與驗證方法；各候選 SHA 的實際執行結果記在 PR，不寫回本檔以免自我引用。
+更新：2026-10-07（Asia/Taipei）。`stepStatus: DONE（限定接受；無 formal independent APPROVED）`；PR #39 合併為 `bcbf5df1b8f4ec47499bf6131ecbf6a2ded65db3`。本檔記錄範圍、設計與驗證方法；各候選 SHA 的實際執行結果記在 PR #39，不寫回本檔以免自我引用。
 
 ## 範圍與授權
 
@@ -37,6 +37,14 @@
 Unity 失敗輪次（候選與原因，皆保留證據）：`baefe62` `Rect` 與 `UnityEngine.Rect` 同名；`2286795` 佔位方塊用了 Physics 模組的 `Collider`、錄影器參照 URP 命名空間（改以內建網格建方塊、經 `Foundation` 讀 render scale）；`5f4c98e` 兩個 Play 斷言錯（標題環繞以顯示空間量距、重擊無敵未等完）。錄影檢查修正：要求的狀態寫成 `Hurt`（重擊是 `Down`）；出陣後的標題 swoop（Web 的 title 混合以 2.2/s 衰減，約 3 s）被場地檢查誤判，改為前 4 s 豁免並記錄；錄影把「震動關閉」寫進 PlayerPrefs 使後續 Player 以關閉啟動（改為只改本次設定並在開始時強制開啟，已清除本機殘留值）。
 
 獨立 advisory 審查 1 輪（Claude code-reviewer 子代理，唯讀，候選 `2219f97`；不是 formal APPROVED）：無 blocker。已處置：HIGH R 回正未接線（接上並補 Play 正例）；HIGH 錄影路線在該版本無法通過（三項：swoop 豁免、營房段因 `Snap` 固定用起始朝向而碰巧走對方向——`Snap` 改用角色朝向並把營房段改為 S／W、第二次重擊移到無敵之後）；MEDIUM 暫停時表現層與程序動畫仍以上一步的 simDt 積分（改傳 0，補斷言）；MEDIUM 錄影的 `clearance` 量測無意義（改記 boom 收短量與「鏡頭在阻擋內」旗標）；MEDIUM runner 的 Player 截圖變成標題畫面（Player 階段加 `-e09NoFlow`，截圖維持驗證姿勢；標題由錄影覆蓋）；MEDIUM PlayerPrefs 污染（如上）；LOW 失焦旗標、開發鍵繞過模式機、IMGUI 每幀配置、測試強度（加右側投影與阻擋集合斷言）、地面縮放疊乘與材質釋放、`StartBattle` 多餘的清輸入。延後：fixture 直接記錄事件以免兩處重述、`Snap` 後一幀才套用、音效 pan 改用 `Rig.Right`、`CastleGeometry` 與 `ArenaLayout` 重複矩形、IMGUI 字型在 Player 的 CJK 顯示未驗證。
+
+## 合併與合併後確認
+
+使用者試玩候選 `298ae30` 的 Player（標題→出陣、轉鏡／縮放／回正、暫停與震動開關、戰果）後原文：「試玩後非常棒, 可接受PR39」，視為限定接受與合併授權。合併前即時核對：head `4f976eafa50b2740f16aa7e07d33fa94e1151995` 與本機相同，兩項 CI 綁定 head 成功，review comments 0，auto-merge 關閉，草稿先標記 ready 再以一般合併提交。**GitHub 上沒有任何 review approval**，依使用者授權合併，屬限定接受；advisory 子代理審查 1 輪不是 formal APPROVED；鏡頭／UX 審查者未指定。
+
+- merge commit `bcbf5df1b8f4ec47499bf6131ecbf6a2ded65db3`（2026-10-07 13:08 +08:00，一般合併，父提交 `ce501c6`、`4f976ea`）；tree 與 head 相同；來源分支保留。
+- 合併後確認（merge SHA，全新 clone）：本機 Unity 五階段通過（runId `d2f6e5d2-2ee9-47ee-910d-b6b3176f2e54`，2026-10-07 13:08–13:14 +08:00；compile、Edit 146/146、Play 39/39、Windows build、Player）；Web Vitest 33 files／296 tests、typecheck、build、`parity:check` 七份一致、runner 65/65；main 的 Game CI（run 37574865181）success。
+- E09 以限定接受標 DONE：V01／V08／V11 與 S06／S08 子情境在佔位城池上的程式、對照與錄影證據齊備；真實建築的視覺可讀性、鏡頭／UX 正式審查、手把與多裝置仍待後續。
 
 ## 已知限制
 
