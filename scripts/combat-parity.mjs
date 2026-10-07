@@ -2,6 +2,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { buildParityFixture } from './lib/combat-parity.ts'
 import { buildHitFixture } from './lib/hit-parity.ts'
+import { buildCameraFixture } from './lib/camera-parity.ts'
 import { buildCrowdFixture } from './lib/crowd-parity.ts'
 import { buildPresentationFixture } from './lib/presentation-parity.ts'
 import { buildReactionFixture } from './lib/reaction-parity.ts'
@@ -15,6 +16,7 @@ const fixtures = [
   ['web-reactions.json', buildReactionFixture],
   ['web-crowd.json', buildCrowdFixture],
   ['web-presentation.json', buildPresentationFixture],
+  ['web-camera.json', buildCameraFixture],
 ]
 const mode = process.argv[2]
 if (mode !== '--write' && mode !== '--check') throw new Error('Usage: combat-parity.mjs --write | --check')

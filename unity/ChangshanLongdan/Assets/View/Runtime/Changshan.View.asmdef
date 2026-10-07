@@ -1,0 +1,5 @@
+{
+  "name": "Changshan.View",
+  "references": ["Changshan.Combat", "Changshan.Animation"],
+  "noEngineReferences": true
+}

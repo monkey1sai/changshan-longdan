@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using Changshan.Combat;
+using Changshan.View;
 using UnityEngine;
 
 namespace Changshan.Character
@@ -33,6 +34,11 @@ namespace Changshan.Character
     public bool IgnoreFocusLoss { get; set; }
     public bool ShowDebug { get; set; } = true; // F3 toggles
     public string LastHit { get; private set; } = "-"; // last feedback event, for the HUD
+    // E09: the title/pause/result flow (null: the fight runs from the first frame, as in E03-E08) and the camera rig
+    // (null: the view camera stays where the scene put it).
+    public GameFlow Flow { get; set; }
+    public CameraRigView CameraView { get; private set; }
+    public CastlePlaceholders Castle { get; private set; }
 
     // The shake component on the view camera (added on first use; null without a camera).
     public CameraShake Shake
@@ -115,7 +121,7 @@ namespace Changshan.Character
         if (ground != null)
         {
           groundScale = ground.transform.localScale;
-          ground.transform.localScale = new Vector3(groundScale.x * 12, groundScale.y, groundScale.z * 12);
+          ground.transform.localScale = new Vector3(CastlePlaceholders.GroundScale, groundScale.y, CastlePlaceholders.GroundScale);
         }
         UseDummies(crowd);
       }
@@ -138,10 +144,63 @@ namespace Changshan.Character
       ResetFight();
     }
 
+    // E09: the placeholder castle (once) so the camera has something to avoid.
+    public CastlePlaceholders EnsureCastle()
+    {
+      Initialise();
+      if (Castle != null) return Castle;
+      Material material = null;
+      if (sceneDummies != null && sceneDummies.Dummies.Count > 0)
+      {
+        var renderer = sceneDummies.Dummies[0].GetComponent<MeshRenderer>();
+        if (renderer != null) material = renderer.sharedMaterial;
+      }
+      Castle = CastlePlaceholders.Create(Mapping, material);
+      return Castle;
+    }
+
+    // E09: the ported camera rig drives the view camera (on) or the camera is left alone (off).
+    public CameraRigView UseCameraRig(bool on)
+    {
+      Initialise();
+      var view = ViewCamera != null ? ViewCamera : Camera.main;
+      if (!on)
+      {
+        if (CameraView != null) Destroy(CameraView);
+        CameraView = null;
+        if (shake != null) shake.Rig = null;
+        return null;
+      }
+      if (view == null) return null;
+      CameraView = CameraRigView.Attach(view, Mapping);
+      shake = view.GetComponent<CameraShake>();
+      CameraView.Snap(Simulation.Player);
+      return CameraView;
+    }
+
+    // game.ts startBattle: the chosen difficulty, a fresh fight, the camera behind the character.
+    public void StartBattle(DifficultyProfile difficulty)
+    {
+      Initialise();
+      Simulation.SetDifficulty(difficulty ?? throw new ArgumentNullException(nameof(difficulty)));
+      ResetFight();
+      if (CameraView != null) CameraView.Snap(Simulation.Player);
+    }
+
+    // game.ts setPaused(true): held keys and pending presses are dropped and the fight stops stepping.
+    public void OnPaused()
+    {
+      mapper.Blur();
+      Simulation.Interrupt();
+    }
+
+    public void OnResumed() => mapper.Blur();
+
     void Update()
     {
       Tick(Time.unscaledDeltaTime);
-      if (Paused) return;
+      // Dev keys only while a fight runs (never on the title, the pause or the result screens).
+      if (Paused || (Flow != null && Flow.Modes.Mode != GameMode.Playing)) return;
       if (Input.GetKeyDown(KeyCode.F4)) InjectStrike(false);
       if (Input.GetKeyDown(KeyCode.F5)) InjectStrike(true);
       if (Input.GetKeyDown(KeyCode.F6)) CycleDifficulty();
@@ -157,13 +216,51 @@ namespace Changshan.Character
       InputSource.Feed(mapper);
       LastInput = mapper.Poll(dt);
       if (LastInput.Debug) ShowDebug = !ShowDebug;
-      var controls = ControlComposer.Compose(LastInput, CameraYaw());
-      Simulation.Step(dt, controls);
-      PlayFeedback(false);
-      if (Dummies != null) Dummies.Show(Simulation.Targets, Mapping);
-      ApplyTransform();
-      Animate();
-      Effects.AfterAnimate(Simulation, Animation.Rig, dt);
+      var modes = Flow != null ? Flow.Modes : null;
+      if (modes != null)
+      {
+        // game.ts handleModeInput before the step.
+        switch (modes.Step(LastInput, dt))
+        {
+          case ModeAction.StartBattle: StartBattle(Flow.SelectedDifficulty); break;
+          case ModeAction.Pause: OnPaused(); break;
+          case ModeAction.Resume: OnResumed(); break;
+        }
+      }
+      bool simulates = modes == null || modes.Simulates;
+      bool accepts = modes == null || modes.AcceptsCombatInput;
+      if (simulates)
+      {
+        var controls = accepts ? ControlComposer.Compose(LastInput, CameraYaw()) : default;
+        Simulation.Step(dt, controls);
+        PlayFeedback(false);
+        if (Dummies != null) Dummies.Show(Simulation.Targets, Mapping);
+        ApplyTransform();
+        CheckOutcome(modes);
+      }
+      // game.ts: the pose, the effects and the trail advance by the game-time step, which is 0 while paused or on the
+      // title (the Web passes simDt = 0 then); real time still drives the camera, the post values and the banner.
+      double simDt = simulates ? Simulation.Clock.LastSimDt : 0;
+      Animate(simDt);
+      Effects.AfterAnimate(Simulation, Animation.Rig, simDt, dt);
+      if (CameraView != null)
+      {
+        bool playing = modes == null || modes.Mode == GameMode.Playing;
+        bool title = modes != null && modes.IsTitle;
+        if (playing && LastInput.Recenter) CameraView.Rig.Recenter(Simulation.Player.Facing); // game.ts simulate: R recenters
+        CameraView.Follow(Simulation.Player, dt, playing ? LastInput.CamTurn : 0, LastInput.Zoom, Simulation.Player.State == PlayerState.Musou, title);
+      }
+    }
+
+    // Battle.checkOutcome: every soldier down is a victory, the character dead a defeat; the result follows.
+    void CheckOutcome(GameModes modes)
+    {
+      if (modes == null || modes.Mode != GameMode.Playing || Flow == null) return;
+      var targets = Simulation.Targets;
+      bool win = targets.Count > 0 && targets.AliveCount == 0;
+      bool lose = Simulation.Player.State == PlayerState.Dead;
+      if (!win && !lose) return;
+      Flow.Ended(win, Simulation.KoCount, Simulation.Clock.SimTime, Simulation.DamageSum);
     }
 
     // E07: the presentation of this frame's events (src/presentation.ts through FeedbackView): sound, sparks, dust,
@@ -204,7 +301,7 @@ namespace Changshan.Character
     }
 
     // E06: the Web procedural rig poses the imported model once it is READY; until then the fallback stays visible.
-    void Animate()
+    void Animate(double simDt)
     {
       if (character != null && character.Status == CharacterLoadStatus.Ready && character.Model != null &&
           character.Model != Animation.BoundModel && character.Model != failedModel)
@@ -221,7 +318,7 @@ namespace Changshan.Character
         }
       }
       var clock = Simulation.Clock;
-      Animation.Step(Simulation.Player, clock.LastSimDt, clock.SimTime, Mapping);
+      Animation.Step(Simulation.Player, simDt, clock.SimTime, Mapping);
     }
 
     // Focus loss behaves like the Web blur: held keys and pending presses are dropped and simulation stops.
@@ -230,6 +327,13 @@ namespace Changshan.Character
     {
       Initialise();
       if (!focused && IgnoreFocusLoss) return;
+      if (focused) Paused = false; // a focus loss before the flow attached must not leave the fight frozen
+      if (Flow != null)
+      {
+        // With the flow, focus loss is the Web's blur: the fight pauses behind the pause screen and stays paused.
+        if (!focused && Flow.Modes.FocusLost() == ModeAction.Pause) OnPaused();
+        return;
+      }
       if (!focused)
       {
         mapper.Blur();
@@ -272,6 +376,7 @@ namespace Changshan.Character
 
     double CameraYaw()
     {
+      if (CameraView != null) return CameraView.LogicYaw; // game.ts: the controls follow the rig's forward
       var view = ViewCamera != null ? ViewCamera : Camera.main;
       if (view == null) return Mapping.ToLogicYaw(transform.forward);
       var forward = view.transform.forward;
@@ -290,7 +395,7 @@ namespace Changshan.Character
     // Debug readout until E06/E07 give moves and hits visible animation and effects.
     void OnGUI()
     {
-      if (!ShowDebug || Simulation == null) return;
+      if (!ShowDebug || Simulation == null || (Flow != null && Flow.Modes.Mode != GameMode.Playing)) return;
       if (hudStyle == null) hudStyle = new GUIStyle(GUI.skin.label) { fontSize = 24 };
       var p = Simulation.Player;
       string move = p.Move == null ? "-" : p.Move.Id.ToString();
