@@ -9,8 +9,9 @@ using UnityEngine;
 
 namespace Changshan.Character
 {
-  // Video evidence: with "-e06Route <dir>" (E06 animation route, no dummies) or "-e07Feedback <dir>" (E07 feedback
-  // route: hits, kills, a shockwave, strikes on the player, the musou finale) the Player plays a scripted route at a fixed
+  // Video evidence: with "-e06Route <dir>" (E06 animation route, no dummies), "-e07Feedback <dir>" (E07 feedback
+  // route: hits, kills, a shockwave, strikes on the player, the musou finale) or "-e09Camera <dir>" (E09 camera route:
+  // walls, barracks eaves and corners, a walk under a roof, jump, musou, shake off) the Player plays a scripted route at a fixed
   // 30 Hz step, writes one screenshot per frame, the per-frame trace (game time, state, hits, damage and the feedback
   // cues of that frame) and the sound mixed offline at the same clock (audio.wav, each frame's sounds starting at that
   // frame's first sample); scripts/record-route.mjs turns them into a video. Without an argument nothing happens.
@@ -52,9 +53,37 @@ namespace Changshan.Character
     public const double FeedbackDuration = 15.5;
     const double FeedbackMusouGainAt = 10.3;
 
+    // E09: camera segments. Each starts by placing the character (a recording-only teleport, like the Web camera tests
+    // placing their target), then runs scripted keys; the camera is read back every frame.
+    public struct CameraSegment { public double At; public double X, Z, Facing; public string Name; }
+    static readonly CameraSegment[] CameraSegments =
+    {
+      new CameraSegment { At = 0, X = 0, Z = 42, Facing = Math.PI, Name = "open" },
+      new CameraSegment { At = 6, X = 0, Z = 54.5, Facing = Math.PI, Name = "south_wall" },
+      new CameraSegment { At = 8.5, X = 54.5, Z = 40, Facing = -Math.PI / 2, Name = "east_wall" },
+      new CameraSegment { At = 11, X = 36, Z = 0, Facing = -Math.PI / 2, Name = "barracks_walk" },
+      new CameraSegment { At = 17, X = 39.6, Z = 13.6, Facing = 0, Name = "barracks_corner" },
+      new CameraSegment { At = 22, X = 0, Z = 20, Facing = Math.PI, Name = "jump_musou" },
+      new CameraSegment { At = 28, X = 0, Z = 30, Facing = Math.PI, Name = "shake_off" },
+    };
+    static readonly (double At, string Key, bool Down)[] CameraRoute =
+    {
+      (0.5, "KeyW", true), (2.0, "KeyW", false), (2.2, "KeyE", true), (3.4, "KeyE", false), (3.6, "KeyQ", true), (4.0, "KeyQ", false),
+      (4.8, "KeyR", true), (4.85, "KeyR", false),
+      (11.5, "KeyD", true), (13.3, "KeyD", false), (14.0, "KeyA", true), (15.8, "KeyA", false),
+      (17.5, "KeyE", true), (21.5, "KeyE", false),
+      (22.5, "Space", true), (22.55, "Space", false), (22.8, "KeyJ", true), (22.85, "KeyJ", false),
+      (24.5, "KeyL", true), (24.55, "KeyL", false),
+    };
+    static readonly (double At, int Steps)[] CameraWheel = { (1.0, 1), (1.2, 1), (1.4, 1), (3.0, -1), (3.2, -1), (3.4, -1) };
+    static readonly (double At, bool Heavy)[] CameraStrikes = { (28.6, true), (30.2, true) }; // the second with shake off
+    const double CameraShakeOffAt = 29.6, CameraMusouGainAt = 24.2;
+    public const double CameraDuration = 32;
+
     sealed class ScriptedKeys : IRawInputSource
     {
       public readonly List<(string Key, bool Down)> Pending = new List<(string, bool)>();
+      public double Wheel;
 
       public void Feed(InputMapper mapper)
       {
@@ -62,6 +91,8 @@ namespace Changshan.Character
           if (down) mapper.KeyDown(key);
           else mapper.KeyUp(key);
         Pending.Clear();
+        if (Wheel != 0) mapper.Wheel(Wheel);
+        Wheel = 0;
       }
     }
 
@@ -69,15 +100,18 @@ namespace Changshan.Character
     {
       public int f; public double simTime; public string state; public string move; public double x; public double z;
       public bool stepped; public int hits; public double damage; public int kills; public long audioSample; public string[] cues;
+      // E09: the camera in logic space, its clearance, the roof flags, the focus in the viewport, the shake state.
+      public string segment; public double camX, camY, camZ, yaw, clearance, trauma; public int[] roofs; public double focusU, focusV; public bool shakeEnabled;
     }
     [Serializable] public sealed class RouteLog
     {
       public string mode; public double duration; public int frameRate; public int pausedFrames; public int audioRate; public long audioSamples;
+      public int viewportWidth, viewportHeight; public float renderScale; public int blockers;
       public RouteFrame[] frames;
     }
 
     string output;
-    bool feedbackRoute;
+    bool feedbackRoute, cameraRoute;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void Boot()
@@ -86,12 +120,15 @@ namespace Changshan.Character
       var args = Environment.GetCommandLineArgs();
       int i = Array.IndexOf(args, "-e06Route");
       int j = Array.IndexOf(args, "-e07Feedback");
+      int k = Array.IndexOf(args, "-e09Camera");
+      bool camera = i < 0 && j < 0 && k >= 0;
       bool feedback = i < 0 && j >= 0;
-      int at = feedback ? j : i;
+      int at = camera ? k : feedback ? j : i;
       if (at < 0 || at + 1 >= args.Length) return;
-      var recorder = new GameObject(feedback ? "E07 Feedback Recorder" : "E06 Route Recorder").AddComponent<RouteRecorder>();
+      var recorder = new GameObject(camera ? "E09 Camera Recorder" : feedback ? "E07 Feedback Recorder" : "E06 Route Recorder").AddComponent<RouteRecorder>();
       recorder.output = args[at + 1];
       recorder.feedbackRoute = feedback;
+      recorder.cameraRoute = camera;
     }
 
     IEnumerator Start()
@@ -116,17 +153,32 @@ namespace Changshan.Character
       controller.enabled = false;
       var keys = new ScriptedKeys();
       controller.InputSource = keys;
-      if (!feedbackRoute)
+      // The E09 flow boots in the Player: the camera route plays through it (title -> battle); the older routes run
+      // without it (the script passes -e09NoFlow), so their fixed camera and immediate stepping are unchanged.
+      var flow = controller.Flow;
+      if (cameraRoute && flow == null) flow = GameFlow.Attach(controller);
+      if (flow != null) flow.StartRequested();
+      if (!feedbackRoute && !cameraRoute)
       {
         // The dummies would block the view of the body; the E06 video reviews animation, not hits.
         foreach (var dummies in FindObjectsByType<TrainingDummies>()) dummies.gameObject.SetActive(false);
         controller.UseDummies(null);
       }
-      else controller.Restart();
-      var route = feedbackRoute ? FeedbackRoute : Route;
-      double duration = feedbackRoute ? FeedbackDuration : Duration;
-      double gainAt = feedbackRoute ? FeedbackMusouGainAt : MusouGainAt;
-      var strikes = feedbackRoute ? FeedbackStrikes : Array.Empty<(double At, bool Heavy)>();
+      else if (flow == null) controller.Restart();
+      var route = cameraRoute ? CameraRoute : feedbackRoute ? FeedbackRoute : Route;
+      double duration = cameraRoute ? CameraDuration : feedbackRoute ? FeedbackDuration : Duration;
+      double gainAt = cameraRoute ? CameraMusouGainAt : feedbackRoute ? FeedbackMusouGainAt : MusouGainAt;
+      var strikes = cameraRoute ? CameraStrikes : feedbackRoute ? FeedbackStrikes : Array.Empty<(double At, bool Heavy)>();
+      var cameraView = controller.CameraView;
+      if (cameraRoute && cameraView == null)
+      {
+        Debug.LogError("E09_ROUTE_NO_CAMERA_RIG");
+        Application.Quit(2);
+        yield break;
+      }
+      int nextSegment = 0;
+      bool shakeTurnedOff = false;
+      var mainCamera = controller.ViewCamera != null ? controller.ViewCamera : Camera.main;
 
       // Sound on the recording clock: the live output stops pulling the mixer, each frame's sounds start at that frame's
       // first sample, and the mixer is rendered offline frame by frame into audio.wav.
@@ -151,7 +203,7 @@ namespace Changshan.Character
       // The validation camera is fixed and the route lunges out of its view, so the camera keeps its starting offset to
       // the character's ground point. It only translates: the controls are camera-relative and its yaw stays the same,
       // so the route's input directions are unchanged. Ground point (y = 0) so jumps stay visible as height.
-      var view = controller.ViewCamera != null ? controller.ViewCamera : Camera.main;
+      var view = cameraRoute ? null : controller.ViewCamera != null ? controller.ViewCamera : Camera.main;
       Vector3 Ground()
       {
         var p = controller.Simulation.Player;
@@ -163,14 +215,31 @@ namespace Changshan.Character
       bool gained = false;
       var log = new RouteLog
       {
-        mode = feedbackRoute ? "e07-feedback" : "e06-route", duration = duration, frameRate = (int)Math.Round(1 / FrameSeconds),
+        mode = cameraRoute ? "e09-camera" : feedbackRoute ? "e07-feedback" : "e06-route", duration = duration, frameRate = (int)Math.Round(1 / FrameSeconds),
         audioRate = mixer?.Rate ?? 0, frames = new RouteFrame[frames],
+        viewportWidth = Screen.width, viewportHeight = Screen.height, blockers = Changshan.View.CastleGeometry.CameraBlockers.Count,
+        renderScale = UnityEngine.Rendering.GraphicsSettings.currentRenderPipeline is UnityEngine.Rendering.Universal.UniversalRenderPipelineAsset urp ? urp.renderScale : 0,
       };
       string logPath = Path.Combine(output, "route.json");
       for (int frame = 0; frame < frames; frame++)
       {
         double t = frame * FrameSeconds;
         while (next < route.Length && route[next].At <= t + 1e-9) keys.Pending.Add((route[next].Key, route[next++].Down));
+        if (cameraRoute)
+        {
+          foreach (var (wheelAt, steps) in CameraWheel) if (Math.Max(0, (int)Math.Ceiling(wheelAt / FrameSeconds - 1e-9)) == frame) keys.Wheel += steps;
+          while (nextSegment < CameraSegments.Length && CameraSegments[nextSegment].At <= t + 1e-9)
+          {
+            var seg = CameraSegments[nextSegment++];
+            controller.Simulation.Player.Reset(seg.X, seg.Z, seg.Facing);
+            if (seg.At > 0) cameraView.Snap(controller.Simulation.Player);
+          }
+          if (!shakeTurnedOff && t >= CameraShakeOffAt)
+          {
+            cameraView.ShakeEnabled = false;
+            shakeTurnedOff = true;
+          }
+        }
         if (!gained && t >= gainAt)
         {
           controller.Simulation.Player.GainMusou(PlayerTuning.Default.MusouMax);
@@ -208,6 +277,19 @@ namespace Changshan.Character
           foreach (var c in cues) if (c.Frame == tf.Frame) names.Add(c.Name);
         }
         entry.cues = names.ToArray();
+        if (cameraRoute)
+        {
+          var rig = cameraView.Rig;
+          entry.segment = CameraSegments[Math.Max(0, nextSegment - 1)].Name;
+          entry.camX = rig.Position.X; entry.camY = rig.Position.Y; entry.camZ = rig.Position.Z; entry.yaw = rig.Yaw;
+          entry.clearance = Changshan.View.CameraClearance.Clearance(rig.Focus.X, rig.Focus.Z, rig.Position.X, rig.Position.Z);
+          entry.trauma = rig.Trauma;
+          entry.shakeEnabled = rig.ShakeEnabled;
+          entry.roofs = new int[cameraView.RoofsVisible.Length];
+          for (int ri = 0; ri < entry.roofs.Length; ri++) entry.roofs[ri] = cameraView.RoofsVisible[ri] ? 1 : 0;
+          var vp = mainCamera != null ? mainCamera.WorldToViewportPoint(cameraView.DisplayFocus) : new Vector3(-1, -1, 0);
+          entry.focusU = vp.z > 0 ? vp.x : -1; entry.focusV = vp.z > 0 ? vp.y : -1;
+        }
         log.frames[frame] = entry;
         if (mixer != null)
         {
