@@ -1,6 +1,6 @@
 # E08 敵群決策與四難度壓力
 
-更新：2026-10-07（Asia/Taipei）。`stepStatus: IN_PROGRESS（本機 Unity 五階段與 Web 回歸通過；待推送、草稿 PR 審查與使用者試玩）`。本檔記錄範圍、設計與驗證方法；各候選 SHA 的實際執行結果記在 PR，不寫回本檔以免自我引用。
+更新：2026-10-07（Asia/Taipei）。`stepStatus: DONE（限定接受；無 formal independent APPROVED）`；PR #37 合併為 `02a4a7f960568d2f13fab212488da43ab30baa1d`。本檔記錄範圍、設計與驗證方法；各候選 SHA 的實際執行結果記在 PR #37，不寫回本檔以免自我引用。
 
 ## 範圍與授權
 
@@ -58,6 +58,14 @@
 Unity 失敗輪次（候選與原因）：`6000f29` Play `PressureCrowdEngagesAndStrikesThePlayer` 要求城池人群出現 March，但 Web `castle_normal_idle` 摘要開場即 36 人交戰（≥ 20）、六秒內 March 為 0，斷言改為不含 March；`853e5f4` 同測試把膠囊 y 歸零卻與錨點 y = −1 的邏輯點比距離（診斷輸出 xz 完全相同），改為只比水平距離。兩者都是測試錯，AI 與顯示和 Web 一致。
 
 獨立 advisory 審查 1 輪（Claude code-reviewer 子代理，唯讀；不是 formal APPROVED）：無 blocker／HIGH。已處置：MEDIUM 階段壓力接線沒有測試（新增 `PressureFollowsTheKillsInsideTheSimulation`：70 KO 當步仍 Opening、下一步 Pressure 且交戰距離 +4、160 KO 後 Surge 攻擊者 +1、Restart 回 Opening）；MEDIUM 穩定排序測試無法失敗（改為斷言邊界對 4／14 與每對順序）；LOW 兩個對照 harness 的 `Collect` 補上忽略 `MusouReady`／`Phase`；文件修正測試數、`SetDifficulty` 生效時機、階段橫幅與隊長膠囊高度列入已知限制。延後：壓力群材質未釋放、`order.Sort(Comparison)` 每 0.2 s 的小配置、`CastleLayout.Capacity` 與 `candidates` 死碼、`RingsSeen` 未斷言。
+
+## 合併與合併後確認
+
+使用者原文：「試玩可以, 合併 #37」（試玩 300 人壓力群與難度切換，限定接受；候選 Player 為 `45308db` 的 build）。合併前即時核對：head `39cdc06ce2bc7237c643111dfeaa7604b6982160` 與本機相同，兩項 CI 綁定 head 成功，review comments 0，auto-merge 關閉，草稿先標記 ready 再以一般合併提交。**GitHub 上沒有任何 review approval**，依使用者授權合併，屬限定接受；advisory 子代理審查 1 輪不是 formal APPROVED；群體／AI 審查者未指定。
+
+- merge commit `02a4a7f960568d2f13fab212488da43ab30baa1d`（2026-10-07 11:00 +08:00，一般合併，父提交 `6ca60b5`、`39cdc06`）；tree 與 head 相同；來源分支保留。
+- 合併後確認（merge SHA，全新 clone）：本機 Unity 五階段通過（runId `1dfaa617-b2d5-48e1-8acb-d9d45ce708fe`，2026-10-07 11:00–11:06 +08:00；compile、Edit 122/122、Play 36/36、Windows build、Player）；Web Vitest 32 files／294 tests、typecheck、build、`parity:check` 六份一致、runner 65/65；main 的 Game CI（run 37564694593）success。
+- E08 以限定接受標 DONE：V05／V06／V11／V12 與 S04／S05／S08 子情境的程式與對照證據齊備；決策分層（A1）、全規模長測與效能屬 E12，正式感官與獨立審查仍待後續。
 
 ## 已知限制
 
