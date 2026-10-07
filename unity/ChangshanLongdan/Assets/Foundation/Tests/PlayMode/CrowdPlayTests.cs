@@ -59,7 +59,11 @@ namespace Changshan.Foundation.Tests
         foreach (var e in controller.Simulation.Events) if (e.Type == CombatEventType.EnemyStrike) struck = true;
       }
       Assert.That(struck, Is.True, "no soldier struck within ten seconds");
-      Assert.That(seen, Is.SupersetOf(new[] { EnemyState.March, EnemyState.Engage, EnemyState.Windup, EnemyState.Strike }));
+      // No March here: the castle layout starts with 36 (normal) soldiers already engaged, above the 20 that would send the
+      // nearest waiting soldier marching, and the Web's castle summary shows zero marchers for its whole six seconds. The
+      // march rule is covered by the eighteen_march_normal parity scenario.
+      Assert.That(seen, Is.SupersetOf(new[] { EnemyState.Engage, EnemyState.Windup, EnemyState.Strike }));
+      Assert.That(seen, Has.No.Member(EnemyState.March), "a march here would differ from the Web castle summary");
       Assert.That(targets.EngagedCount, Is.GreaterThan(0).And.LessThanOrEqualTo(HitTargets.MaxEngaged));
       Assert.That(maxAttackers, Is.GreaterThan(0));
       // The capsules follow the soldiers: an engaged soldier's capsule is near its logic position.
