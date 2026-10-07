@@ -8,6 +8,7 @@
 
 - A1：延伸既有 `RouteRecorder`、Web `Battle` fixture 和 Unity Edit Mode replay，記錄固定 seed 路線每秒摘要與逐幀遭遇資料。
 - B1：移植 phase／milestone／halfDefeated 橫幅，沿用 Web 中英文與兩秒壽命，使用 `changshan.locale` 和 session 覆寫。此步不新增里程碑音效；既有 Unity 音效無對應方法。
+- B1 畫面修正：`FoundationSmoke` 僅在 Editor 或顯式 `-e02Output` 驗證模式顯示診斷面板；正常 Player 與所有路線錄製使用遊戲提示，避免面板與橫幅互相覆蓋。截圖、錯誤計數與退出驗證不變。
 - C1：以角色半徑 0.45 m、0.25 m 格距驗證 25 小隊中心與 seed 7 的 9 隊長位置可達，加入堵塞負例及通行寬度證據。
 - 不修改 `src/`、`public/models/`、場景位置、戰鬥數值、AI 行為或資產；不新增套件、真正增援、友軍、劇情任務、第二角色、付費生成。
 
@@ -57,6 +58,15 @@ Web 參考的前段結果：KO 0、Opening、raw inputNoProgress／eligible stuc
 profile SHA-256 `8490a542024c444299464af748573c8820cbc8d16a2d6adee5308743b5403577`；asset lock `9ae03b49e5464581124b17744549840eef4c771b043c1d8143033e7e856f9f17`；趙雲 GLB `7dccbfae4b61280889a7be98370692143898c3eeef8dcd55dfa36ad4b4248a33`。三者未修改，profile 沒有接入 runtime。
 
 工程驗收仍須同版本 Web 回歸、fresh clone Unity 五階段、固定路線影片、獨立 exact-candidate advisory 處置。使用者自然試玩、formal independent APPROVED、push／PR／merge、合併後確認尚未取得；不得標 VERIFIED 或 DONE。
+
+## 已保留的失敗與修正
+
+- 候選 `231437a3`：Unity Edit 164／164，Play 46／47；唯一失敗是 `2 - 1.99 - 0.01` 留下 `8.67e-18` 的精確零假設。分類 TEST_FAILURE，改用可精確表示的 `1.75 + 0.25` 邊界並新增 2.5 秒超時歸零；沒有修改產品計時器。
+- 候選 `916116d8`：Web／runner／建置／打包與 Unity Edit 164、Play 47、Windows build 通過；原完整 run `05bf21d5-3a2b-4270-9d04-6b93489c62c7` 的 Player 退出發生 native／Mono crash 並達 120 秒 timeout，原結果保留 BLOCKED。產品或環境根因 UNVERIFIED，不把 runtime 報告的 errorCount 0 當 PASS。
+- 同建置獨立 smoke `59c6d10a-5770-457d-a011-e3606c5c7c00` 正常 exit 0，runtime／character／source 與 Player＋六個 managed DLL 雜湊通過；focused=false，只作煙霧補測。不能改寫原 run 為單次五階段 PASS；native 根因仍未知。
+- `916116d8` 路線已錄得 450 幀、數據與音訊檢查通過、無 native crash；但實看中英文 phase／half 畫面，診斷面板與橫幅重疊。獨立審查確認 MEDIUM，分類 PRODUCT_FAILURE（提示可讀性），先做上述模式 guard，再以新候選 fresh clone／影片重新驗證。不得沿用舊影片冒充修正後成功。
+
+以上原始結果保留在 `.worktrees/_evidence/e11/`（local_only）；按原始失敗與實際修正輪次追溯，不重設任何預算。診斷面板修正是 E11 第二個來源修正候選；若必要檢查仍失敗，停止自動修正。最終候選、檢查與畫面結論在 commit 外的結案 evidence 登記。
 
 ## 回滾
 

@@ -15,7 +15,7 @@ previousStepPrAndDoneEvidence: PR #41 merge d554e253ad3be00a8a6fb27471d433baf40b
 reviewedPlanSha: 30bdbac8a549a3b6b27f062f1343f77c5021a7bf
 changedVariableIds: [V06, V07, V11, V12]
 requiredScenarioIdsAndSubcases: [S05 encounter content, S08 phases/death/retry/locale]
-allowedPaths: [Unity Combat/Character runtime and Foundation tests, scripts, tests, TestData fixture, E11 docs, test script registration]
+allowedPaths: [Unity Combat/Character runtime and Foundation tests, FoundationSmoke diagnostic-mode guard for B1 readability, scripts, tests, TestData fixture, E11 docs, test script registration]
 forbiddenChanges: [src runtime, asset/layout/balance/AI changes, paid generation, E12, external writes]
 preImplementationReview: advisory accept; no blocking scope issue
 preImplementationReviewEvidence: native agent final response for /root/e11_scope_review, 2026-10-07
@@ -78,6 +78,8 @@ finalSameVersionVerdict: NOT_RUN
 ```
 
 最終 advisory 另列 exact candidate 與 reviewer 打開的產物，不能填成 GitHub 正式 APPROVED。每個 correction round 與 log 保留；同問題兩輪未過則 BLOCKED，不擴重試預算。
+
+歷史失敗與必要 scope 修正見 `E11_DIRECTOR.md`：`231437a3` 計時測試 FAIL；`916116d8` 原 Player native crash／timeout FAIL、同建置獨立 smoke PASS（根因未知），路線數據 PASS／橫幅可讀性 FAIL。模式 guard 經同一獨立 reviewer 修改前確認，新的候選需重新取證，不能繼承舊影片或正式 approval。
 
 ## E. 完成與下一步門檻
 

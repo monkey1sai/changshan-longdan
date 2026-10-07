@@ -27,9 +27,12 @@ namespace Changshan.Foundation
 
     private string runId = "manual";
     private int errors;
+    private bool showDiagnostic;
 
     private void Awake()
     {
+      // Normal play and route recordings use the battle UI; the validation panel would cover its banners.
+      showDiagnostic = Application.isEditor || !string.IsNullOrEmpty(Argument("-e02Output"));
       Application.targetFrameRate = FoundationContract.FrameRate;
       QualitySettings.vSyncCount = FoundationContract.VSync;
       Application.logMessageReceived += CountErrors;
@@ -98,6 +101,7 @@ namespace Changshan.Foundation
 
     private void OnGUI()
     {
+      if (!showDiagnostic) return;
       var style = new GUIStyle(GUI.skin.label) { fontSize = 28, wordWrap = true };
       GUI.Box(new Rect(50, 50, 1000, 240), "");
       GUI.Label(new Rect(75, 70, 950, 220),
