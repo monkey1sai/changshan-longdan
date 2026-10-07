@@ -72,7 +72,7 @@ for (let i = 1; i < route.frames.length; i++) {
 }
 const states = [...new Set(route.frames.map((f) => f.state))]
 const moves = [...new Set(route.frames.map((f) => f.move).filter(Boolean))]
-const required = mode === 'e09' ? ['Move', 'Jump', 'Attack', 'Musou', 'Hurt'] : mode === 'e07' ? ['Move', 'Attack', 'Jump', 'Dodge', 'Guard', 'Musou', 'Hurt', 'Down'] : ['Move', 'Attack', 'Jump', 'Dodge', 'Guard', 'Musou']
+const required = mode === 'e09' ? ['Move', 'Jump', 'Attack', 'Musou', 'Down'] : mode === 'e07' ? ['Move', 'Attack', 'Jump', 'Dodge', 'Guard', 'Musou', 'Hurt', 'Down'] : ['Move', 'Attack', 'Jump', 'Dodge', 'Guard', 'Musou']
 for (const s of required) if (!states.includes(s)) throw new Error(`ROUTE_MISSING_STATE: ${s}`)
 // E07: the common trace. Every frame that resolved hits issued its sparks and its hit sound on that same frame.
 let feedback = null
@@ -97,9 +97,12 @@ if (mode === 'e07') {
 let camera = null
 if (mode === 'e09') {
   if (route.viewportWidth !== width || route.viewportHeight !== height) throw new Error(`ROUTE_VIEWPORT: ${route.viewportWidth}x${route.viewportHeight} for ${width}x${height}`)
-  const outside = route.frames.filter((f) => Math.abs(f.camX) > 55.5 || Math.abs(f.camZ) > 55.5).map((f) => f.f)
+  // The Web camera swoops in from the title orbit after "To Battle" (its title blend decays over about 3 s), so the
+  // arena and framing checks start after that transition.
+  const settled = 4 * route.frameRate
+  const outside = route.frames.filter((f) => f.f >= settled && (Math.abs(f.camX) > 55.5 || Math.abs(f.camZ) > 55.5)).map((f) => f.f)
   if (outside.length) throw new Error(`ROUTE_CAMERA_OUTSIDE_ARENA: frames ${outside.slice(0, 5).join(',')}`)
-  const unframed = route.frames.filter((f) => f.f > 10 && (f.focusU < 0.25 || f.focusU > 0.75 || f.focusV < 0.2 || f.focusV > 0.8)).map((f) => f.f)
+  const unframed = route.frames.filter((f) => f.f >= settled && (f.focusU < 0.25 || f.focusU > 0.75 || f.focusV < 0.2 || f.focusV > 0.8)).map((f) => f.f)
   if (unframed.length > 2) throw new Error(`ROUTE_FOCUS_UNFRAMED: frames ${unframed.slice(0, 8).join(',')}`)
   const walk = route.frames.filter((f) => f.segment === 'barracks_walk')
   if (!walk.some((f) => f.roofs[1] === 0)) throw new Error('ROUTE_ROOF_NOT_CUT')

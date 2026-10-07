@@ -113,7 +113,7 @@ namespace Changshan.Character
             var style = new GUIStyle(button) { fontStyle = i == DifficultyIndex ? FontStyle.Bold : FontStyle.Normal };
             if (GUI.Button(new UnityEngine.Rect(bx + i * (bw + 10), h * 0.43f, bw, 44), (i == DifficultyIndex ? "▶ " : "") + Difficulties.All[i].Name, style)) SelectDifficulty(i);
           }
-          if (GUI.Button(new UnityEngine.Rect(w / 2 - 110, h * 0.56f, 220, 54), "出陣 / To Battle (Enter, J)", button)) StartRequested();
+          if (GUI.Button(new UnityEngine.Rect(w / 2 - 190, h * 0.56f, 380, 54), "出陣 / To Battle (Enter, J)", button)) StartRequested();
           GUI.Label(new UnityEngine.Rect(0, h * 0.66f, w, 40), "WASD 移動  J 普攻  K 蓄力  Space 跳  Shift 閃避  F 防禦  L 無雙  Q/E 轉鏡頭  R 回正  Esc 暫停", label);
           break;
         }
@@ -121,7 +121,7 @@ namespace Changshan.Character
         {
           GUI.Box(new UnityEngine.Rect(w * 0.3f, h * 0.25f, w * 0.4f, h * 0.45f), "");
           GUI.Label(new UnityEngine.Rect(0, h * 0.29f, w, 70), "暫停 / Paused", title);
-          if (GUI.Button(new UnityEngine.Rect(w / 2 - 110, h * 0.42f, 220, 54), "繼續 / Resume (Esc, Enter)", button)) ResumeRequested();
+          if (GUI.Button(new UnityEngine.Rect(w / 2 - 190, h * 0.42f, 380, 54), "繼續 / Resume (Esc, Enter)", button)) ResumeRequested();
           bool shake = ShakeEnabled;
           bool next = GUI.Toggle(new UnityEngine.Rect(w / 2 - 110, h * 0.54f, 260, 40), shake, " 鏡頭震動 / Camera shake", new GUIStyle(GUI.skin.toggle) { fontSize = 24 });
           if (next != shake) ShakeEnabled = next;
@@ -135,7 +135,7 @@ namespace Changshan.Character
           string stats = string.Format(CultureInfo.InvariantCulture, "擊破 KO {0}\n時間 Time {1}:{2:00}\n受傷 Damage {3:0}\n評等 Rank {4}",
             r.Ko, (int)(r.Seconds / 60), (int)(r.Seconds % 60), r.Damage, r.Rank);
           GUI.Label(new UnityEngine.Rect(0, h * 0.36f, w, 160), stats, label);
-          if (GUI.Button(new UnityEngine.Rect(w / 2 - 110, h * 0.66f, 220, 54), "再戰 / Retry (Enter)", button)) StartRequested();
+          if (GUI.Button(new UnityEngine.Rect(w / 2 - 190, h * 0.66f, 380, 54), "再戰 / Retry (Enter)", button)) StartRequested();
           break;
         }
       }

@@ -76,9 +76,10 @@ namespace Changshan.Character
       (24.5, "KeyL", true), (24.55, "KeyL", false),
     };
     static readonly (double At, int Steps)[] CameraWheel = { (1.0, 1), (1.2, 1), (1.4, 1), (3.0, -1), (3.2, -1), (3.4, -1) };
-    static readonly (double At, bool Heavy)[] CameraStrikes = { (28.6, true), (30.2, true) }; // the second with shake off
-    const double CameraShakeOffAt = 29.6, CameraMusouGainAt = 24.2;
-    public const double CameraDuration = 32;
+    // The second strike lands after the first heavy hit's invulnerability, with the shake switched off for the session.
+    static readonly (double At, bool Heavy)[] CameraStrikes = { (28.6, true), (31.6, true) };
+    const double CameraShakeOffAt = 30.8, CameraMusouGainAt = 24.2;
+    public const double CameraDuration = 33.5;
 
     sealed class ScriptedKeys : IRawInputSource
     {
@@ -178,6 +179,7 @@ namespace Changshan.Character
       }
       int nextSegment = 0;
       bool shakeTurnedOff = false;
+      if (cameraRoute) cameraView.SetShakeForSession(true); // reproducible regardless of the saved setting
       var mainCamera = controller.ViewCamera != null ? controller.ViewCamera : Camera.main;
 
       // Sound on the recording clock: the live output stops pulling the mixer, each frame's sounds start at that frame's
@@ -236,7 +238,7 @@ namespace Changshan.Character
           }
           if (!shakeTurnedOff && t >= CameraShakeOffAt)
           {
-            cameraView.ShakeEnabled = false;
+            cameraView.SetShakeForSession(false);
             shakeTurnedOff = true;
           }
         }

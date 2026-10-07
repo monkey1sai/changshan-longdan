@@ -62,6 +62,12 @@ namespace Changshan.Character
       }
     }
 
+    // The switch for this run only (recordings): nothing is written to PlayerPrefs.
+    public void SetShakeForSession(bool enabled)
+    {
+      if (Rig != null) Rig.ShakeEnabled = enabled;
+    }
+
     public bool ShakeEnabled
     {
       get => Rig != null && Rig.ShakeEnabled;
