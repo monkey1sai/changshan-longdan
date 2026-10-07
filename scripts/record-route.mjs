@@ -19,19 +19,36 @@ const player = option('--player')
 const out = path.resolve(root, option('--out', ''))
 const ffmpeg = option('--ffmpeg', 'ffmpeg')
 const mode = option('--mode', 'e06')
-if (mode !== 'e06' && mode !== 'e07') throw new Error('--mode must be e06 or e07')
+if (mode !== 'e06' && mode !== 'e07' && mode !== 'e09') throw new Error('--mode must be e06, e07 or e09')
+// E09 records the camera route at three window sizes; the others keep the single 1280x720 recording.
+const sizes = mode === 'e09' ? [[800, 600], [1440, 900], [1920, 1080]] : [[1280, 720]]
+const sizeArg = option('--size', null)
+const selectedSizes = sizeArg ? [sizeArg.split('x').map(Number)] : sizes
 if (!player || !fs.existsSync(player)) throw new Error('--player must point to a built ChangshanLongdan.exe')
 const allowed = path.join(root, 'release', 'e02')
 const rel = path.relative(allowed, out)
 if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) throw new Error('--out must be a new child directory of release/e02')
 if (fs.existsSync(out)) throw new Error('Output directory already exists; preserve previous evidence')
-const frames = path.join(out, 'frames')
-fs.mkdirSync(frames, { recursive: true })
-
 const sha256 = (file) => createHash('sha256').update(fs.readFileSync(file)).digest('hex')
 const started = new Date().toISOString()
-const run = spawnSync(player, [mode === 'e07' ? '-e07Feedback' : '-e06Route', frames, '-screen-width', '1280', '-screen-height', '720', '-screen-fullscreen', '0',
-  '-logFile', path.join(out, 'player.log')], { timeout: 240000, windowsHide: false })
+const recordings = []
+for (const [width, height] of selectedSizes) recordings.push(record(width, height))
+const manifest = {
+  schema: mode === 'e09' ? 'e09-camera-video/v1' : mode === 'e07' ? 'e07-feedback-video/v1' : 'e06-route-video/v1', started, ended: new Date().toISOString(),
+  player, playerSha256: sha256(player), mode, recordings,
+}
+fs.writeFileSync(path.join(out, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n', { flag: 'wx' })
+console.log(JSON.stringify(manifest))
+
+// One recording at one window size: the Player writes frames, route.json and (with sound) audio.wav into dir/frames.
+function record(width, height) {
+const tag = selectedSizes.length > 1 || mode === 'e09' ? `${width}x${height}` : ''
+const dir = tag ? path.join(out, tag) : out
+const frames = path.join(dir, 'frames')
+fs.mkdirSync(frames, { recursive: true })
+const modeArgs = mode === 'e09' ? ['-e09Camera', frames] : mode === 'e07' ? ['-e07Feedback', frames, '-e09NoFlow'] : ['-e06Route', frames, '-e09NoFlow']
+const run = spawnSync(player, [...modeArgs, '-screen-width', String(width), '-screen-height', String(height), '-screen-fullscreen', '0',
+  '-logFile', path.join(dir, 'player.log')], { timeout: 300000, windowsHide: false })
 const frameFiles = fs.readdirSync(frames).filter((f) => /^frame_\d{4}\.png$/.test(f)).sort()
 const routeLogPath = path.join(frames, 'route.json')
 if (run.error || run.status !== 0 || !fs.existsSync(routeLogPath)) {
@@ -50,12 +67,12 @@ let held = 0
 for (let i = 1; i < route.frames.length; i++) {
   const f = route.frames[i]
   if (f.simTime > route.frames[i - 1].simTime) { held = 0; continue }
-  if (mode === 'e07' && f.stepped === false && f.simTime === route.frames[i - 1].simTime && ++held <= 0.25 * route.frameRate) continue
+  if ((mode === 'e07' || mode === 'e09') && f.stepped === false && f.simTime === route.frames[i - 1].simTime && ++held <= 0.25 * route.frameRate) continue
   throw new Error(`ROUTE_STALLED: game time did not advance at frame ${i}`)
 }
 const states = [...new Set(route.frames.map((f) => f.state))]
 const moves = [...new Set(route.frames.map((f) => f.move).filter(Boolean))]
-const required = mode === 'e07' ? ['Move', 'Attack', 'Jump', 'Dodge', 'Guard', 'Musou', 'Hurt', 'Down'] : ['Move', 'Attack', 'Jump', 'Dodge', 'Guard', 'Musou']
+const required = mode === 'e09' ? ['Move', 'Jump', 'Attack', 'Musou', 'Hurt'] : mode === 'e07' ? ['Move', 'Attack', 'Jump', 'Dodge', 'Guard', 'Musou', 'Hurt', 'Down'] : ['Move', 'Attack', 'Jump', 'Dodge', 'Guard', 'Musou']
 for (const s of required) if (!states.includes(s)) throw new Error(`ROUTE_MISSING_STATE: ${s}`)
 // E07: the common trace. Every frame that resolved hits issued its sparks and its hit sound on that same frame.
 let feedback = null
@@ -74,6 +91,29 @@ if (mode === 'e07') {
     heldFrames: route.frames.filter((f) => f.stepped === false).length, cues: [...cues].sort(),
     hitFramesWithSparksAndHitSoundCueOnTheSameFrame: hitFrames.length,
   }
+}
+// E09: the camera never leaves the arena, the focus stays framed, the roof opens under the eave and closes after,
+// clearance shortened the boom somewhere, the turn moved the camera, and the shake-off strike left no trauma.
+let camera = null
+if (mode === 'e09') {
+  if (route.viewportWidth !== width || route.viewportHeight !== height) throw new Error(`ROUTE_VIEWPORT: ${route.viewportWidth}x${route.viewportHeight} for ${width}x${height}`)
+  const outside = route.frames.filter((f) => Math.abs(f.camX) > 55.5 || Math.abs(f.camZ) > 55.5).map((f) => f.f)
+  if (outside.length) throw new Error(`ROUTE_CAMERA_OUTSIDE_ARENA: frames ${outside.slice(0, 5).join(',')}`)
+  const unframed = route.frames.filter((f) => f.f > 10 && (f.focusU < 0.25 || f.focusU > 0.75 || f.focusV < 0.2 || f.focusV > 0.8)).map((f) => f.f)
+  if (unframed.length > 2) throw new Error(`ROUTE_FOCUS_UNFRAMED: frames ${unframed.slice(0, 8).join(',')}`)
+  const walk = route.frames.filter((f) => f.segment === 'barracks_walk')
+  if (!walk.some((f) => f.roofs[1] === 0)) throw new Error('ROUTE_ROOF_NOT_CUT')
+  if (walk[walk.length - 1].roofs.some((v) => v === 0)) throw new Error('ROUTE_ROOF_NOT_RESTORED')
+  const shortened = route.frames.filter((f) => f.clearance < 1).length
+  if (shortened === 0) throw new Error('ROUTE_CLEARANCE_NEVER_ENGAGED')
+  const open = route.frames.filter((f) => f.segment === 'open')
+  const yawSpan = Math.max(...open.map((f) => f.yaw)) - Math.min(...open.map((f) => f.yaw))
+  if (yawSpan < 1) throw new Error(`ROUTE_CAMERA_DID_NOT_TURN: ${yawSpan}`)
+  const off = route.frames.filter((f) => f.segment === 'shake_off' && !f.shakeEnabled)
+  const on = route.frames.filter((f) => f.segment === 'shake_off' && f.shakeEnabled)
+  if (!on.some((f) => f.trauma > 0.3)) throw new Error('ROUTE_SHAKE_ON_NO_TRAUMA')
+  if (off.some((f) => f.trauma > 0) || !off.some((f) => (f.cues ?? []).includes('audio.playerHurt'))) throw new Error('ROUTE_SHAKE_OFF_TRAUMA')
+  camera = { viewport: [width, height], renderScale: route.renderScale, blockers: route.blockers, shortenedFrames: shortened, yawSpan, unframedFrames: unframed.length, roofCutFrames: walk.filter((f) => f.roofs[1] === 0).length }
 }
 const audioPath = path.join(frames, 'audio.wav')
 const hasAudio = fs.existsSync(audioPath)
@@ -105,27 +145,28 @@ if (hasAudio) {
     throw new Error(`ROUTE_AUDIO_SILENT: peak ${peak}, frames with sound cues ${sounding.length}, silent after cue ${silent.join(',')}`)
   audioCheck = { peak, framesWithSoundCues: sounding.length, framesAudibleWithin100ms: sounding.length }
 }
-if (hasAudio) fs.renameSync(audioPath, path.join(out, 'audio.wav'))
-fs.renameSync(routeLogPath, path.join(out, 'route.json'))
-const video = path.join(out, 'route.mp4')
-const contact = path.join(out, 'contact.png')
-const audioArgs = hasAudio ? ['-i', path.join(out, 'audio.wav'), '-c:a', 'aac', '-b:a', '192k'] : []
+if (hasAudio) fs.renameSync(audioPath, path.join(dir, 'audio.wav'))
+fs.renameSync(routeLogPath, path.join(dir, 'route.json'))
+const video = path.join(dir, 'route.mp4')
+const contact = path.join(dir, 'contact.png')
+const audioArgs = hasAudio ? ['-i', path.join(dir, 'audio.wav'), '-c:a', 'aac', '-b:a', '192k'] : []
 const encode = spawnSync(ffmpeg, ['-hide_banner', '-loglevel', 'error', '-framerate', '30', '-i', path.join(frames, 'frame_%04d.png'),
   ...audioArgs, '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '20', video], { timeout: 240000 })
 if (encode.error || encode.status !== 0) throw new Error(`FFMPEG_FAILED: ${encode.error?.message ?? encode.stderr?.toString()}`)
 const sheet = spawnSync(ffmpeg, ['-hide_banner', '-loglevel', 'error', '-i', video, '-vf', 'select=not(mod(n\\,60)),scale=426:-1,tile=4x3',
   '-frames:v', '1', contact], { timeout: 120000 })
 if (sheet.error || sheet.status !== 0) throw new Error(`FFMPEG_CONTACT_FAILED: ${sheet.error?.message ?? sheet.stderr?.toString()}`)
-const manifest = {
-  schema: mode === 'e07' ? 'e07-feedback-video/v1' : 'e06-route-video/v1', started, ended: new Date().toISOString(), player, playerSha256: sha256(player),
-  frames: frameFiles.length, frameRate: route.frameRate, resolution: '1280x720',
-  route: { file: 'route.json', sha256: sha256(path.join(out, 'route.json')), duration: route.duration, finalSimTime: route.frames[route.frames.length - 1].simTime, states, moves },
-  video: { file: 'route.mp4', bytes: fs.statSync(video).size, sha256: sha256(video) },
-  audio: hasAudio ? { file: 'audio.wav', sha256: sha256(path.join(out, 'audio.wav')), rate: route.audioRate, samples: route.audioSamples, check: audioCheck, clock: 'each frame\'s sounds start at that frame\'s first sample' } : null,
+const recording = {
+  size: tag || '1280x720',
+  frames: frameFiles.length, frameRate: route.frameRate, resolution: `${width}x${height}`,
+  route: { file: path.relative(out, path.join(dir, 'route.json')), sha256: sha256(path.join(dir, 'route.json')), duration: route.duration, finalSimTime: route.frames[route.frames.length - 1].simTime, states, moves },
+  video: { file: path.relative(out, video), bytes: fs.statSync(video).size, sha256: sha256(video) },
+  camera,
+  audio: hasAudio ? { file: path.relative(out, path.join(dir, 'audio.wav')), sha256: sha256(path.join(dir, 'audio.wav')), rate: route.audioRate, samples: route.audioSamples, check: audioCheck, clock: 'each frame\'s sounds start at that frame\'s first sample' } : null,
   feedback,
-  contactSheet: { file: 'contact.png', sha256: sha256(contact), everySeconds: 2 },
+  contactSheet: { file: path.relative(out, contact), sha256: sha256(contact), everySeconds: 2 },
 }
-fs.writeFileSync(path.join(out, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n', { flag: 'wx' })
 for (const f of frameFiles) fs.unlinkSync(path.join(frames, f))
 fs.rmdirSync(frames)
-console.log(JSON.stringify(manifest))
+return recording
+}
