@@ -4,7 +4,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { randomUUID } from 'node:crypto'
 import { requireSafePath, sha256, snapshotSource, validateUnchangedSource, validateCandidateCheckout } from './lib/unity-execution.mjs'
-import { parseProbeCsv, probeVerdict, gpuInstances } from './lib/e12-performance.mjs'
+import { parseProbeCsv, probeVerdict, validateGpuSeries, validateProbeIdentity } from './lib/e12-performance.mjs'
 import { scopedE12Path, snapshotPayload, watchExit } from './lib/e12-process.mjs'
 
 const root = fs.realpathSync(fileURLToPath(new URL('../', import.meta.url)))
@@ -39,8 +39,9 @@ try {
   fs.mkdirSync(output) // Exclusive leaf creation: a racing pre-existing directory is never ours.
   createdOutput = true
   const data = path.join(output, 'capture'); fs.mkdirSync(data)
-  const argv = ['-e12Probe', data, '-e09NoFlow', '-screen-width', '1920', '-screen-height', '1080', '-logFile', path.join(output, 'Player.log')]
-  const record = { runId: randomUUID(), kind: 'CAPABILITY_PROBE', sourceHead: head, validationRunId: validation.runId,
+  const runId = randomUUID()
+  const argv = ['-e12Probe', data, '-e12RunId', runId, '-e09NoFlow', '-screen-width', '1920', '-screen-height', '1080', '-logFile', path.join(output, 'Player.log')]
+  const record = { runId, kind: 'CAPABILITY_PROBE', sourceHead: head, validationRunId: validation.runId,
     playerSha256: validation.playerSha256, player, argv, start: new Date().toISOString(), timeoutMs: 90000,
     authorization: 'Local E12 measurement/probe only; no remote write, deployment, paid action or process termination outside own launch handles.' }
   write(path.join(output, 'command.json'), record)
@@ -63,20 +64,11 @@ try {
   write(path.join(output, 'exit.json'), record)
   if (exit.error || exit.code !== 0 || timedOut) throw new Error('PLAYER_PROBE_FAILED')
   const report = JSON.parse(fs.readFileSync(path.join(data, 'probe.json'), 'utf8'))
-  if (report.pid !== record.pid) throw new Error('PROBE_PID_MISMATCH')
+  validateProbeIdentity(report, record)
   const frames = parseProbeCsv(fs.readFileSync(path.join(data, 'frames.csv'), 'utf8'), report)
   const gpuFile = path.join(output, 'gpu.jsonl')
   const rawGpu = fs.existsSync(gpuFile) ? fs.readFileSync(gpuFile, 'utf8').trim().split(/\r?\n/).filter(Boolean).map(line => JSON.parse(line)) : []
-  const previous = new Map()
-  const gpu = rawGpu.map(s => {
-    let usage = gpuInstances(s, { pid: record.pid, processStart: report.processStart })
-    for (const i of s.instances ?? []) {
-      const at = Date.parse(i.timestampUtc)
-      if (previous.has(i.name) && at <= previous.get(i.name)) usage = null
-      previous.set(i.name, at)
-    }
-    return { ...s, usage }
-  })
+  const gpu = validateGpuSeries(rawGpu, { pid: record.pid, processStart: report.processStart })
   const verdict = probeVerdict(report, frames, gpu.filter(s => s.usage !== null))
   verdict.gpu = { samples: gpu.length, valid: gpu.filter(s => s.usage !== null).length, osBudgetBytes: null, budgetOccupancy: null }
   if (helperStatus.error || helperStatus.code !== 0) verdict.gaps.push('GPU_HELPER_FAILED')

@@ -39,9 +39,9 @@ CPU counter 已扣除等待，不再次扣等待。Recorder `TimeNanoseconds` / 
 
 暖機後每秒採 raw bytes；相同 workload cycle 比較，不強制 GC。超限阻擋並分析，不逕稱 leak。working set、Unity used/reserved、GC collections／alloc、shared／committed 分列。OS budget／occupancy 保留 null，不宣稱 budget pressure 或 paging 已驗收。
 
-VRAM provider 必須保留 PID、程序啟動時間、各 adapter instance 名稱、provider timestamp、bytes、查詢失敗。以 Player 自己回報的 processStart 核對外部 helper 身分；provider UTC 相對獨立 query start/end 最多落後 2 秒，future tolerance 250ms，query duration≤2 秒。重複／倒退 provider timestamp 不计有效樣本。只聚合該 Player 的 dedicated；shared／committed 不混加。缺 instance 或 stale data 是 UNKNOWN。正式每幀與每秒 sample 對齊仍需實作。
+VRAM provider 必須保留 PID、程序啟動時間、各 adapter instance 名稱、provider timestamp、bytes、查詢失敗。以 Player 自己回報的 processStart 核對外部 helper 身分；provider UTC 相對獨立 query start/end 最多落後 2 秒，future tolerance 250ms，query duration≤2 秒。只有整筆有效 sample 才推進各 instance 已接受的高水位；invalid／相等／倒退均不能降低或重設它。只聚合該 Player 的 dedicated；shared／committed 不混加。缺 instance 或 stale data 是 UNKNOWN。正式每幀與每秒 sample 對齊仍需實作。
 
-建置 runner 在 build 完成時保存完整 Player payload 的 SHA-256／bytes，啟動前後重讀核對，包含 managed DLL、資料與模型；不能只用 EXE hash 代表完整 build。Probe output 與 build 必須分別位於 resolved release/e12、release/e02 子目錄，拒絕 traversal／既存 output；失敗報告只寫本次建立的新目錄。
+建置 runner 在 build 完成時保存完整 Player payload 的 SHA-256／bytes，啟動前後重讀核對，包含 managed DLL、資料與模型；不能只用 EXE hash 代表完整 build。Probe output 與 build 必須分別位於 resolved release/e12、release/e02 子目錄，拒絕 traversal／既存 output；失敗報告只寫本次建立的新目錄。launcher 把同一 UUID 傳入 `-e12RunId`，再核對 Player report 的 UUID／PID。
 
 ## 當前停止條件與回滾
 

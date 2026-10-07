@@ -49,7 +49,7 @@ startEndTimeWithTimezone: local raw commands
 |---|---|---|---|
 | E11 合併後 Unity | be04336f | PASS | run e180ca75-2ffb-498a-86ce-8b68f19cf275；local_only |
 | E11 合併後 Web／parity／runner／build | be04336f | PASS | 308／8 fixtures／84；非 E12 成績 |
-| E12 分位數／單位／缺值／失焦／VRAM身分／CSV／輸出邊界／spawn failure反例 | commit 外 manifest | PASS：13新測試＋84既有＝97 | synthetic unit data，不是效能結果；原始 log local_only |
+| E12 分位數／單位／缺值／失焦／VRAM身分／CSV／輸出邊界／spawn failure／timestamp序列反例 | commit 外 manifest | PASS：15新測試＋84既有＝99 | synthetic unit data，不是效能結果；原始 log local_only |
 | E12 Unity seed／subset tests | commit 外 manifest | NOT_RUN | 等完整 Unity validator |
 | E12 短 Player 能力 probe | commit 外 manifest | NOT_RUN | 3+10 秒，不是正式 30+180 秒 |
 | 20／50／100／200／300 三 seed／30分鐘 soak | null | NOT_RUN | 必要能力、workload、timing alignment 未齊備 |
@@ -60,7 +60,8 @@ startEndTimeWithTimezone: local raw commands
 | 輪次 | candidate | 當輪結果與審查 | 修正 |
 |---|---|---|---|
 | 初始工具候選 | 2ae7db3bdd9de82a6a46c2c16be6a9b2805eaa36 | Unity run dc7c6f45-2af4-427f-8484-d4b8b9ff5de7 五階段 PASS；Web308／parity8／Node92 PASS；advisory 4 MEDIUM | 保留 raw；未執行此版本 probe |
-| correction round 1 | commit 外 manifest | Node97 PASS；新 Unity／raw probe 尚待實跑 | resolved scope＋exclusive output ownership、controlled helper error、Player身分／raw provider timestamp、Castle Ready、全 build payload hashes |
+| correction round 1 | 089948315f9dc69fbb0dadc76bba5112c2d7aa74 | Unity run 0b500855-f098-4ede-b199-c5cbb6c4f152 五階段 PASS；Web308／parity8／Node97 PASS；review 1 MEDIUM 殘留；尚未 probe | resolved scope＋exclusive output ownership、controlled helper error、Player身分／raw provider timestamp、Castle Ready、全 build payload hashes |
+| correction round 2 | commit 外 manifest | Node99 PASS；新 Unity／raw probe 尚待實跑 | GPU序列只更新已接受有效高水位；invalid／retreat不降基準；launcher UUID與Player report綁定 |
 
 初始 output 污染負例已重現：拒絕既存目錄後仍新增 result.json，測試 8 PASS／1 FAIL；修正後 incomplete／complete evidence 均保持原內容。此失敗保留於工具輸出紀錄，不宣稱從未失敗。
 

@@ -7,7 +7,7 @@ import { spawnSync } from 'node:child_process'
 import os from 'node:os'
 import { EventEmitter } from 'node:events'
 import { scopedE12Path, snapshotPayload, watchExit } from '../lib/e12-process.mjs'
-import { nearestRank, timeMs, metricSummary, gpuInstances, probeVerdict, parseProbeCsv } from '../lib/e12-performance.mjs'
+import { nearestRank, timeMs, metricSummary, gpuInstances, probeVerdict, parseProbeCsv, validateGpuSeries, validateProbeIdentity } from '../lib/e12-performance.mjs'
 
 test('nearest-rank boundary uses ceil and never interpolation', () => {
   assert.equal(nearestRank([5, 1, 4, 3, 2], 0.95), 5)
@@ -44,6 +44,19 @@ test('VRAM requires exact process identity, fresh sample and raw instances', () 
     { ...gpu, instances: [{ ...gpu.instances[0], name: 'pid_41_luid_A_phys_0' }] }]) assert.equal(gpuInstances(bad, expected), null)
   for (const timestampUtc of [null, 'invalid', '2026-10-07T10:00:00Z'])
     assert.equal(gpuInstances({ ...gpu, instances: [{ ...gpu.instances[0], timestampUtc }] }, expected), null)
+})
+test('invalid or retreating GPU timestamps cannot reset an accepted high-water mark', () => {
+  const sample = (query, at) => ({ ...gpu, utc: `2026-10-07T10:00:0${query}Z`, queryEndUtc: `2026-10-07T10:00:0${query}.100Z`,
+    instances: [{ ...gpu.instances[0], timestampUtc: at === null ? null : `2026-10-07T10:00:0${at}Z` }] })
+  for (const middle of [null, 2, 3])
+    assert.deepEqual(validateGpuSeries([sample(3, 3), sample(4, middle), sample(5, 3)], expected).map(s => s.usage !== null), [true, false, false])
+  assert.deepEqual(validateGpuSeries([sample(3, 3), sample(4, null), sample(5, 5)], expected).map(s => s.usage !== null), [true, false, true])
+})
+test('Player probe binds the same launch UUID and PID', () => {
+  const command = { pid: 42, runId: 'same-run' }, report = { ...command, kind: 'CAPABILITY_PROBE' }
+  assert.doesNotThrow(() => validateProbeIdentity(report, command))
+  assert.throws(() => validateProbeIdentity({ ...report, pid: 41 }, command))
+  assert.throws(() => validateProbeIdentity({ ...report, runId: 'other-run' }, command))
 })
 test('short probe never promotes diagnostic metrics to formal benchmark PASS', () => {
   const report = { kind: 'CAPABILITY_PROBE', frames: 1, pid: 42, width: 1920, height: 1080, renderScale: 1, refresh: 60,

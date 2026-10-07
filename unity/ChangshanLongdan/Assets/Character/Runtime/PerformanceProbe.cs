@@ -78,7 +78,7 @@ namespace Changshan.Character
         .OrderBy(s => (s.X - ArenaLayout.StartX) * (s.X - ArenaLayout.StartX) + (s.Z - ArenaLayout.StartZ) * (s.Z - ArenaLayout.StartZ))
         .Take(population).ToList();
     }
-    string output; int errors;
+    string output, runId; int errors;
     void Awake() { Application.logMessageReceived += CountErrors; }
     void OnDestroy() { Application.logMessageReceived -= CountErrors; }
     void CountErrors(string message, string stack, LogType type) { if (type == LogType.Error || type == LogType.Exception || type == LogType.Assert) errors++; }
@@ -87,14 +87,21 @@ namespace Changshan.Character
       if (Application.isEditor || !Debug.isDebugBuild) return;
       var args = Environment.GetCommandLineArgs();
       int i = Array.IndexOf(args, "-e12Probe");
-      if (i >= 0 && i + 1 < args.Length) new GameObject("E12 capability probe").AddComponent<PerformanceProbe>().output = args[i + 1];
+      if (i >= 0 && i + 1 < args.Length)
+      {
+        var recorder = new GameObject("E12 capability probe").AddComponent<PerformanceProbe>();
+        recorder.output = args[i + 1];
+        int id = Array.IndexOf(args, "-e12RunId");
+        recorder.runId = id >= 0 && id + 1 < args.Length ? args[id + 1] : null;
+      }
     }
     IEnumerator Start()
     {
       if (!Directory.Exists(output) || Directory.EnumerateFileSystemEntries(output).Any()) { Application.Quit(2); yield break; }
-      var report = new Report { runId = Guid.NewGuid().ToString(), population = 20, spawnSeed = 7, aiSeed = 7,
+      var report = new Report { runId = runId, population = 20, spawnSeed = 7, aiSeed = 7,
         unityVersion = Application.unityVersion, backend = SystemInfo.graphicsDeviceType.ToString(),
         development = Debug.isDebugBuild, frameTimingEnabled = FrameTimingManager.IsFeatureEnabled(), batchMode = Application.isBatchMode };
+      if (!Guid.TryParse(runId, out _)) { report.error = "INVALID_RUN_ID"; WriteReport(report); Application.Quit(2); yield break; }
       var process = System.Diagnostics.Process.GetCurrentProcess(); report.pid = process.Id;
       report.processStart = process.StartTime.ToUniversalTime().ToString("o", CultureInfo.InvariantCulture);
       var controller = FindObjectsByType<ZhaoYunController>().FirstOrDefault();

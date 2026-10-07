@@ -75,3 +75,21 @@ export function probeVerdict(report, frames, gpuSamples = []) {
   return { status: 'BLOCKED_CAPABILITY_PROBE', benchmarkAllowed: false, formalBenchmark: 'NOT_RUN',
     timingDiagnostic: timing, gaps: [...new Set(gaps)], frames: frames.length }
 }
+export function validateGpuSeries(samples, expected) {
+  const accepted = new Map()
+  return samples.map(sample => {
+    let usage = gpuInstances(sample, expected)
+    if (usage !== null) {
+      for (const instance of sample.instances) {
+        const at = Date.parse(instance.timestampUtc)
+        if (accepted.has(instance.name) && at <= accepted.get(instance.name)) usage = null
+      }
+      // Only an entirely valid sample advances the accepted high-water marks.
+      if (usage !== null) for (const instance of sample.instances) accepted.set(instance.name, Date.parse(instance.timestampUtc))
+    }
+    return { ...sample, usage }
+  })
+}
+export function validateProbeIdentity(report, command) {
+  if (report.pid !== command.pid || report.runId !== command.runId || report.kind !== 'CAPABILITY_PROBE') throw new Error('PROBE_IDENTITY_MISMATCH')
+}
