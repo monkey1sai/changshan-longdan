@@ -3,9 +3,9 @@ using System;
 namespace Changshan.Combat
 {
   // Battle.ts BattleEvent, the part E07 ports: what happened in one step (or one injected strike) for presentation.
-  // Player-side events (move start, swing, fx, jump, land, dodge, musou start) stay in Player.Events. MusouReady is
-  // Battle's notice that the gauge just became full (end of a step).
-  public enum CombatEventType { Hit, Kill, EnemyStrike, Parry, GuardBlock, Hurt, MusouReady }
+  // Player-side events (move start, swing, fx, jump, land, dodge, musou start) stay in Player.Events. Phase is the
+  // director's battle-phase change; MusouReady is Battle's notice that the gauge just became full (end of a step).
+  public enum CombatEventType { Hit, Kill, EnemyStrike, Parry, GuardBlock, Hurt, Phase, MusouReady }
 
   public readonly struct CombatEvent
   {
@@ -16,9 +16,10 @@ namespace Changshan.Combat
     public readonly double X, Z, Facing; // EnemyStrike, Parry, GuardBlock, Hurt
     public readonly bool Heavy; // EnemyStrike, GuardBlock, Hurt
     public readonly double Damage; // GuardBlock: damage taken through the guard
+    public readonly BattlePhase Phase; // Phase: the battle phase just entered
 
     CombatEvent(CombatEventType type, HitSource source = HitSource.Player, HitWindow window = null, int start = 0, int count = 0,
-      double x = 0, double z = 0, double facing = 0, bool heavy = false, double damage = 0)
+      double x = 0, double z = 0, double facing = 0, bool heavy = false, double damage = 0, BattlePhase phase = BattlePhase.Opening)
     {
       Type = type;
       Source = source;
@@ -30,7 +31,10 @@ namespace Changshan.Combat
       Facing = facing;
       Heavy = heavy;
       Damage = damage;
+      Phase = phase;
     }
+
+    public static CombatEvent PhaseChanged(BattlePhase phase) => new CombatEvent(CombatEventType.Phase, phase: phase);
 
     public static CombatEvent Hit(HitSource source, HitWindow window, int start, int count) =>
       new CombatEvent(CombatEventType.Hit, source, window ?? throw new ArgumentNullException(nameof(window)), start, count);

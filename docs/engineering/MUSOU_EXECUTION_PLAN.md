@@ -190,7 +190,7 @@ E02 的交付必須包含一個可重跑的本機 runner 及其 README：解析�
 
 ## 4. 執行台帳
 
-更新：2026-10-07（Asia/Taipei）。前七步 `DONE` 只涵蓋已記錄的人類限定接受；完整體驗／裝置／效能仍待後續驗收。E05 已依使用者授權合併並完成合併後確認，GitHub 上沒有 counted approval。E06 已依使用者授權合併並完成合併後確認，GitHub 上沒有 counted approval；視覺審查缺口延後。E07 的 PR #33 與補件 PR #35 都已依使用者授權合併並完成合併後確認，GitHub 上沒有 counted approval；E07 以限定接受標 DONE。
+更新：2026-10-07（Asia/Taipei）。前七步 `DONE` 只涵蓋已記錄的人類限定接受；完整體驗／裝置／效能仍待後續驗收。E05 已依使用者授權合併並完成合併後確認，GitHub 上沒有 counted approval。E06 已依使用者授權合併並完成合併後確認，GitHub 上沒有 counted approval；視覺審查缺口延後。E07 的 PR #33 與補件 PR #35 都已依使用者授權合併並完成合併後確認，GitHub 上沒有 counted approval；E07 以限定接受標 DONE。E08 依 A1／B1／C2 本機實作中（敵兵 AI、四難度與導演、300 人壓力群），已併入 E07 補件後的 main，Unity 正式驗證待補。
 
 | 步驟 | 依賴 | 狀態 | 實作 PR / candidate SHA | 驗證證據 | 正式 review | merge SHA / 合併後確認 |
 |---|---|---|---|---|---|---|
@@ -202,7 +202,7 @@ E02 的交付必須包含一個可重跑的本機 runner 及其 README：解析�
 | E05 | E04 | DONE（限定接受） | [#27](https://github.com/monkey1sai/changshan-longdan/pull/27) / `4910312dfb4d4f285fcce2e23edb819868abcbbb` | [E05 紀錄](./E05_HIT_CLOCK.md)：compile、57 Edit（命中對照 20／30／60／120 Hz 全部一致，最大偏差 7.1e-15；完整 MUSOU 20 窗）、25 Play、Windows build、Player；Web 237 tests；使用者限定試玩 | 使用者授權合併；GitHub counted approval NONE；獨立 advisory 審查 2 輪已處置，延後 #29；Web 去重缺陷 #26 | `246760970adebf1ed4a33de3e6668673713d817c`；tree 與候選相同；Web 237 tests、CI success、本機 Unity 五階段於合併 SHA 重跑通過 |
 | E06 | E05 | DONE（限定接受） | [#30](https://github.com/monkey1sai/changshan-longdan/pull/30) / `0e28fb93463623ce8ac8e3b6f10afbb12238e8e9` | [E06 紀錄](./E06_ANIMATION.md)：compile、70 Edit（rig 對照 30／60／120 Hz 全部一致，最大偏差 5e-7；握點 p95 ≤ 0.72 cm、踩地滑移 ≤ 0.8 cm）、27 Play、Windows build、Player；路線影片 23.5 s 經 `route.json` 核對；Web 266 tests；使用者限定試玩「手感良好」 | 使用者授權合併；GitHub counted approval NONE；獨立 advisory 審查 1 輪已處置，延後 #32；動畫／技術美術視覺審查未進行 | `fee50bb26c1923d31f9a1a78c3f43141af095e9c`（父提交 `5acc14b` 含 #31、`0e28fb9`）；`src/` 與 main 相同；Web 287 tests、CI success、本機 Unity 五階段於合併 SHA 重跑通過（runId `d7872a42…`） |
 | E07 | E06 | DONE（限定接受） | [#33](https://github.com/monkey1sai/changshan-longdan/pull/33) / `f0326d6e54caac403290ee397b21ed423d12dcdd`；補件 [#35](https://github.com/monkey1sai/changshan-longdan/pull/35) / `c54a4dcc4a51bf9cbdafa6fbf1174cf86dacad81`（程式候選 `124442d`） | [E07 紀錄](./E07_IMPACT.md)：#33 反應循環；#35 特效、合成音效與共同 trace：Unity 五階段（Edit 107、Play 34）、逐幀對照 30／60／120 Hz、路線影音（15 個命中幀同幀火花與命中音、38 個音效幀 100 ms 內可聽）；使用者限定試玩「手感好, 音樂可接受, 打擊感佳」 | 使用者授權合併；GitHub counted approval NONE；advisory 審查各 1 輪已處置，延後 #34 與 E07 紀錄所列；戰鬥／音效審查者未指定 | #33 `dfc7189…`、#35 `af8977c412fb3b9a11b9a4473f674b1a599696de`；tree 與候選相同；Web 292 tests、CI success、本機 Unity 五階段於合併 SHA 重跑通過（runId `82b3b26b…`） |
-| E08 | E07 | NOT_STARTED | — | — | — | — |
+| E08 | E07 | IN_PROGRESS（本機驗證通過，待推送與審查） | 本機 `claude/e08-crowd`（已併入 E07 補件後的 main）；未推送／建立 PR | [E08 紀錄](./E08_CROWD.md)：本機 Unity 五階段於候選通過（SHA 與 runId 記在 PR）、Web 294 tests、advisory 審查 1 輪已處置 | 群體／AI 審查者待指定 | — |
 | E09 | E08 | NOT_STARTED | — | — | — | — |
 | E10 | E09 | NOT_STARTED | — | — | — | — |
 | E11 | E10 | NOT_STARTED | — | — | — | — |

@@ -19,6 +19,12 @@ namespace Changshan.Foundation.Tests
       "guard_parry_then_block", "armor_half_damage", "death",
     };
 
+    // E07 covers the standing and reaction states; the AI states (March..Recover) are E08's crowd fixture.
+    static readonly EnemyState[] ReactionStates =
+    {
+      EnemyState.Idle, EnemyState.Flinch, EnemyState.Air, EnemyState.Knockback, EnemyState.Down, EnemyState.Getup, EnemyState.Dead,
+    };
+
     static string root;
     static Dictionary<string, object> fixture;
 
@@ -61,7 +67,7 @@ namespace Changshan.Foundation.Tests
       TestContext.WriteLine(all.ToString());
       Assert.That(all.FailCount, Is.Zero, all.ToString());
       Assert.That(all.Frames, Is.GreaterThan(1000));
-      Assert.That(states, Is.EquivalentTo((EnemyState[])Enum.GetValues(typeof(EnemyState))), "every reaction state must be shown");
+      Assert.That(states, Is.EquivalentTo(ReactionStates), "every reaction state must be shown");
     }
 
     [Test] public void Mulberry32MatchesTheWebStream()
@@ -106,7 +112,7 @@ namespace Changshan.Foundation.Tests
 
     [Test] public void ReactionsRecoverToStandingOnTheWebTimers()
     {
-      var targets = new HitTargets(1);
+      var targets = new HitTargets(1) { AiEnabled = false }; // E07 behaviour: a reaction ends standing, not marching
       targets.Reset(new[] { new Spawn(0, -2, 0, EnemyKind.Spear) });
       var arena = ArenaLayout.CreateArena();
       var resolver = new HitResolver(targets);
@@ -137,13 +143,13 @@ namespace Changshan.Foundation.Tests
 
     [Test] public void SeparationPushesOverlappingSoldiersApart()
     {
-      var targets = new HitTargets(2);
+      var targets = new HitTargets(2) { AiEnabled = false };
       targets.Reset(new[] { new Spawn(0, 5, 0, EnemyKind.Spear), new Spawn(0.2, 5, 0, EnemyKind.Spear) });
       targets.Step(1.0 / 60, 0, 0, 0, ArenaLayout.CreateArena());
       double minD = (targets.Scale(0) + targets.Scale(1)) * HitTargets.BodyRadius;
       Assert.That(Math.Abs(targets.X(1) - targets.X(0)), Is.EqualTo(minD).Within(1e-5));
       // Soldiers also keep 0.95 m from the player.
-      var near = new HitTargets(1);
+      var near = new HitTargets(1) { AiEnabled = false };
       near.Reset(new[] { new Spawn(0.3, 0.3, 0, EnemyKind.Spear) });
       near.Step(1.0 / 60, 0, 0, 0, ArenaLayout.CreateArena());
       Assert.That(CombatMath.Hypot(near.X(0), near.Z(0)), Is.EqualTo(0.95).Within(1e-5));
@@ -189,7 +195,7 @@ namespace Changshan.Foundation.Tests
       foreach (var s in At(60))
         foreach (var f in (List<object>)s["frames"])
           foreach (var n in (List<object>)((Dictionary<string, object>)f)["n"]) seen.Add((int)(double)((List<object>)n)[0]);
-      Assert.That(seen, Is.EquivalentTo(((EnemyState[])Enum.GetValues(typeof(EnemyState))).Select(v => (int)v)));
+      Assert.That(seen, Is.EquivalentTo(ReactionStates.Select(v => (int)v)));
     }
   }
 }

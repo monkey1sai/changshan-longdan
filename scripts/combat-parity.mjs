@@ -2,6 +2,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { buildParityFixture } from './lib/combat-parity.ts'
 import { buildHitFixture } from './lib/hit-parity.ts'
+import { buildCrowdFixture } from './lib/crowd-parity.ts'
 import { buildPresentationFixture } from './lib/presentation-parity.ts'
 import { buildReactionFixture } from './lib/reaction-parity.ts'
 import { buildRigFixture } from './lib/rig-parity.ts'
@@ -12,6 +13,7 @@ const fixtures = [
   ['web-hits.json', buildHitFixture],
   ['web-rig.json', buildRigFixture],
   ['web-reactions.json', buildReactionFixture],
+  ['web-crowd.json', buildCrowdFixture],
   ['web-presentation.json', buildPresentationFixture],
 ]
 const mode = process.argv[2]

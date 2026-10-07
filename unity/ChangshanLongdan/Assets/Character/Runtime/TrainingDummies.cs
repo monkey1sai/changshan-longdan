@@ -18,17 +18,23 @@ namespace Changshan.Character
     static readonly int Color = Shader.PropertyToID("_Color");
 
     [SerializeField] List<Transform> dummies = new List<Transform>();
+    [SerializeField] bool aiEnabled; // E08: off for the authored validation dummies (a hitting sandbox), on for the pressure crowd
+    List<Spawn> spawns; // when set, Fill resets the targets from these Web spawns (soldier kinds, captain health, rng) instead of adding static dummies
     readonly List<Vector3> spawnPositions = new List<Vector3>();
     readonly List<MeshRenderer> renderers = new List<MeshRenderer>();
     readonly List<Color> baseColors = new List<Color>();
     MaterialPropertyBlock block;
 
     public IReadOnlyList<Transform> Dummies => dummies;
+    public bool AiEnabled => aiEnabled;
 
-    public void SetDummies(IEnumerable<Transform> items)
+    public void SetDummies(IEnumerable<Transform> items, IReadOnlyList<Spawn> soldierSpawns = null, bool ai = false)
     {
       dummies.Clear();
       dummies.AddRange(items);
+      spawns = soldierSpawns == null ? null : new List<Spawn>(soldierSpawns);
+      if (spawns != null && spawns.Count != dummies.Count) throw new ArgumentException("one spawn per dummy", nameof(soldierSpawns));
+      aiEnabled = ai;
       spawnPositions.Clear();
       renderers.Clear();
     }
@@ -54,9 +60,15 @@ namespace Changshan.Character
     public void Fill(HitTargets targets, LogicDisplayMapping mapping)
     {
       Prepare();
+      targets.AiEnabled = aiEnabled;
+      for (int i = 0; i < dummies.Count; i++) dummies[i].gameObject.SetActive(true);
+      if (spawns != null)
+      {
+        targets.Reset(spawns);
+        return;
+      }
       for (int i = 0; i < dummies.Count; i++)
       {
-        dummies[i].gameObject.SetActive(true);
         var (x, z) = mapping.ToLogicPosition(spawnPositions[i]);
         targets.Add(x, 0, z, 1, DummyHp);
       }
