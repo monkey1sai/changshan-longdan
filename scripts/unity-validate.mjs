@@ -19,8 +19,8 @@ let run, lease, lockPath, output
 const archiveManifests = {}
 const testPrefix = 'Changshan.Foundation.Tests.'
 const testInventory = {
-  editmode: { FoundationEditTests: 11, CharacterSourceEditTests: 5, CombatParityEditTests: 11, CombatRuleEditTests: 8, LogicDisplayMappingEditTests: 4, HitParityEditTests: 18, RigParityEditTests: 13, ReactionParityEditTests: 13, PresentationParityEditTests: 10, FeedbackAudioEditTests: 14, CrowdParityEditTests: 15, CameraParityEditTests: 24 },
-  playmode: { FoundationPlayTests: 1, CharacterImportPlayTests: 16, ZhaoYunControllerPlayTests: 5, ZhaoYunHitPlayTests: 3, AnimatedCharacterPlayTests: 2, ReactionPlayTests: 3, FeedbackPlayTests: 4, CrowdPlayTests: 2, CameraPlayTests: 3 },
+  editmode: { FoundationEditTests: 11, CharacterSourceEditTests: 5, CombatParityEditTests: 11, CombatRuleEditTests: 8, LogicDisplayMappingEditTests: 4, HitParityEditTests: 18, RigParityEditTests: 13, ReactionParityEditTests: 13, PresentationParityEditTests: 10, FeedbackAudioEditTests: 14, CrowdParityEditTests: 15, CameraParityEditTests: 24, EnvironmentAssetEditTests: 4 },
+  playmode: { FoundationPlayTests: 1, CharacterImportPlayTests: 16, ZhaoYunControllerPlayTests: 5, ZhaoYunHitPlayTests: 3, AnimatedCharacterPlayTests: 2, ReactionPlayTests: 3, FeedbackPlayTests: 4, CrowdPlayTests: 2, CameraPlayTests: 3, EnvironmentAssetPlayTests: 3 },
 }
 const characterSource = 'public/models/zhaoyun.glb'
 const characterStreamingCopy = 'ChangshanLongdan_Data/StreamingAssets/Characters/zhaoyun.glb'
