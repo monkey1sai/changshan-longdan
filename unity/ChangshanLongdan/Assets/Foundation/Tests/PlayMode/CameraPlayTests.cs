@@ -161,13 +161,17 @@ namespace Changshan.Foundation.Tests
       Assert.That(System.Math.Abs(rig.Position.X), Is.LessThan(38.5), "the camera stays outside the barracks");
       Assert.That(Horizontal(Camera.main.transform.position, controller.transform.position), Is.LessThan(9.2f - 2));
       Assert.That(rig.Position.Y - rig.Focus.Y, Is.EqualTo(4.4).Within(0.05), "it keeps its height");
-      var roofs = controller.Castle.Roofs;
-      Assert.That(roofs[1].enabled, Is.False, "standing under the eave hides that roof");
-      Assert.That(roofs.Count(r => r.enabled), Is.EqualTo(5));
+      // E10: the delivered assets may replace the slabs mid-test; the cutaway is checked on whichever is shown.
+      var castle = controller.Castle;
+      float deadline = Time.realtimeSinceStartup + 30;
+      while (castle.Assets != null && !castle.Assets.Settled && Time.realtimeSinceStartup < deadline) yield return null;
+      controller.Tick(Dt);
+      Assert.That(castle.RoofVisible(1), Is.False, "standing under the eave hides that roof");
+      Assert.That(Enumerable.Range(0, 6).Count(i => castle.RoofVisible(i)), Is.EqualTo(5));
       // Walk away: the roof returns once the exit buffer is passed.
       sim.Player.Reset(30, 0, System.Math.PI / 2);
       for (int frame = 0; frame < 30; frame++) controller.Tick(Dt);
-      Assert.That(roofs.All(r => r.enabled), Is.True);
+      Assert.That(Enumerable.Range(0, 6).All(i => castle.RoofVisible(i)), Is.True);
       yield return null;
       LogAssert.NoUnexpectedReceived();
     }

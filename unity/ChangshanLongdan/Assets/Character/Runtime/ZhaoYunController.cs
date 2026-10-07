@@ -156,6 +156,8 @@ namespace Changshan.Character
         if (renderer != null) material = renderer.sharedMaterial;
       }
       Castle = CastlePlaceholders.Create(Mapping, material);
+      // E10: the delivered assets load over the blocks (the blocks stay until the load is verified complete).
+      CastleAssets.Create(Mapping, Castle);
       return Castle;
     }
 

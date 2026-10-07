@@ -17,6 +17,11 @@ namespace Changshan.Character
 
     public IReadOnlyList<MeshRenderer> Roofs => roofs;
     readonly List<MeshRenderer> roofs = new List<MeshRenderer>();
+    // E10: the blocks a delivered asset replaces (barracks bodies and roofs, braziers, wrecks); walls, keep and
+    // stairs have no asset yet and always stay.
+    readonly List<MeshRenderer> replaceable = new List<MeshRenderer>();
+    public CastleAssets Assets { get; private set; }
+    public bool AssetsShown => Assets != null && Assets.Status == CastleAssetStatus.Ready;
     public int BlockCount { get; private set; }
     Mesh cubeMesh;
     readonly List<Material> materials = new List<Material>();
@@ -52,12 +57,13 @@ namespace Changshan.Character
       Block(mapping, wall, "Stairs", CastleGeometry.Stairs, StairsHeight);
       for (int i = 0; i < CastleGeometry.Barracks.Count; i++)
       {
-        Block(mapping, wall, $"Barracks {i}", CastleGeometry.Barracks[i], BarracksHeight);
+        replaceable.Add(Block(mapping, wall, $"Barracks {i}", CastleGeometry.Barracks[i], BarracksHeight));
         var slab = Block(mapping, roof, $"Barracks roof {i}", CastleGeometry.Roofs[i], RoofThickness, BarracksHeight);
         roofs.Add(slab);
+        replaceable.Add(slab);
       }
-      foreach (var (x, z) in CastleGeometry.Braziers) Block(mapping, prop, "Brazier", new Rect(x - 0.6, x + 0.6, z - 0.6, z + 0.6), BrazierHeight);
-      foreach (var w in CastleGeometry.Wrecks) Block(mapping, prop, "Wreck", w, WreckHeight);
+      foreach (var (x, z) in CastleGeometry.Braziers) replaceable.Add(Block(mapping, prop, "Brazier", new Rect(x - 0.6, x + 0.6, z - 0.6, z + 0.6), BrazierHeight));
+      foreach (var w in CastleGeometry.Wrecks) replaceable.Add(Block(mapping, prop, "Wreck", w, WreckHeight));
     }
 
     MeshRenderer Block(LogicDisplayMapping mapping, Material material, string name, Rect r, float height, float bottom = 0)
@@ -83,8 +89,25 @@ namespace Changshan.Character
       materials.Clear();
     }
 
+    // Registers the asset loader (so its status is observable here); once it is Ready the blocks it covers are hidden
+    // and the roof flags drive the asset roof nodes instead of the slabs.
+    public void AttachAssets(CastleAssets assets)
+    {
+      Assets = assets;
+      if (!AssetsShown) return;
+      foreach (var r in replaceable) r.enabled = false;
+    }
+
+    // Whether barracks i currently shows a roof, whichever representation is on screen.
+    public bool RoofVisible(int i) => AssetsShown ? Assets.Roofs[i] != null && Assets.Roofs[i].activeSelf : roofs[i].enabled;
+
     public void ShowRoofs(bool[] visible)
     {
+      if (AssetsShown)
+      {
+        Assets.ShowRoofs(visible);
+        return;
+      }
       for (int i = 0; i < roofs.Count && i < visible.Length; i++)
         if (roofs[i].enabled != visible[i]) roofs[i].enabled = visible[i];
     }

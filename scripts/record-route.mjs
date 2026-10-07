@@ -97,6 +97,8 @@ if (mode === 'e07') {
 let camera = null
 if (mode === 'e09') {
   if (route.viewportWidth !== width || route.viewportHeight !== height) throw new Error(`ROUTE_VIEWPORT: ${route.viewportWidth}x${route.viewportHeight} for ${width}x${height}`)
+  // E10: the route is only evidence for the asset scene when the delivered castle assets were on screen.
+  if (route.castleAssets !== 'Ready') throw new Error(`ROUTE_CASTLE_ASSETS_NOT_READY: ${route.castleAssets}`)
   // The Web camera swoops in from the title orbit after "To Battle" (its title blend decays over about 3 s), so the
   // arena and framing checks start after that transition.
   const settled = 4 * route.frameRate
@@ -118,7 +120,7 @@ if (mode === 'e09') {
   const on = route.frames.filter((f) => f.segment === 'shake_off' && f.shakeEnabled)
   if (!on.some((f) => f.trauma > 0.3)) throw new Error('ROUTE_SHAKE_ON_NO_TRAUMA')
   if (off.some((f) => f.trauma > 0) || !off.some((f) => (f.cues ?? []).includes('audio.playerHurt'))) throw new Error('ROUTE_SHAKE_OFF_TRAUMA')
-  camera = { viewport: [width, height], renderScale: route.renderScale, blockers: route.blockers, shortenedFrames: shortened, yawSpan, unframedFrames: unframed.length, roofCutFrames: walk.filter((f) => f.roofs[1] === 0).length }
+  camera = { viewport: [width, height], renderScale: route.renderScale, blockers: route.blockers, castleAssets: route.castleAssets, shortenedFrames: shortened, yawSpan, unframedFrames: unframed.length, roofCutFrames: walk.filter((f) => f.roofs[1] === 0).length }
 }
 const audioPath = path.join(frames, 'audio.wav')
 const hasAudio = fs.existsSync(audioPath)

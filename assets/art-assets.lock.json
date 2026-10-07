@@ -1,0 +1,48 @@
+{
+ "schema_version": 1,
+ "note": "E10：環境資產鎖定清單；asset_id、delivery_id、來源與檔案雜湊。受控儲存為 mmo-asset-pipeline 的 deliveries/（本機 clone）。",
+ "assets": [
+  {
+   "asset_id": "cl-barracks",
+   "delivery_id": "cl-barracks-set-v1-d1",
+   "request_id": "cl-barracks-set-v1",
+   "request_sha256": "60573438cc8eb6dfca0235fb574e48635b5651a0d8ae870d6c543fcfe7a27ecf",
+   "source_repo": "mmo-asset-pipeline",
+   "source_head": "e78d10f9cc959ce914c0d25807b39eba9f56ec3d",
+   "source_worktree_dirty": true,
+   "path": "unity/ChangshanLongdan/Assets/StreamingAssets/Environment/cl-barracks.glb",
+   "bytes": 25292,
+   "sha256": "9431e8c367c55afe0b6d1876b1dec75923a6ff79540419b90f63434321a9142f",
+   "storage": "mmo-asset-pipeline:deliveries/cl-barracks-set-v1/v1/cl-barracks.glb",
+   "license": "原創程序建模（本 repo 製作），無第三方素材；依遊戲 repo 授權"
+  },
+  {
+   "asset_id": "cl-brazier",
+   "delivery_id": "cl-barracks-set-v1-d1",
+   "request_id": "cl-barracks-set-v1",
+   "request_sha256": "60573438cc8eb6dfca0235fb574e48635b5651a0d8ae870d6c543fcfe7a27ecf",
+   "source_repo": "mmo-asset-pipeline",
+   "source_head": "e78d10f9cc959ce914c0d25807b39eba9f56ec3d",
+   "source_worktree_dirty": true,
+   "path": "unity/ChangshanLongdan/Assets/StreamingAssets/Environment/cl-brazier.glb",
+   "bytes": 4396,
+   "sha256": "a31c49de3412e5654f860c959111b82ae25511704d57d06c2c353cc434d91daf",
+   "storage": "mmo-asset-pipeline:deliveries/cl-barracks-set-v1/v1/cl-brazier.glb",
+   "license": "原創程序建模（本 repo 製作），無第三方素材；依遊戲 repo 授權"
+  },
+  {
+   "asset_id": "cl-wreck",
+   "delivery_id": "cl-barracks-set-v1-d1",
+   "request_id": "cl-barracks-set-v1",
+   "request_sha256": "60573438cc8eb6dfca0235fb574e48635b5651a0d8ae870d6c543fcfe7a27ecf",
+   "source_repo": "mmo-asset-pipeline",
+   "source_head": "e78d10f9cc959ce914c0d25807b39eba9f56ec3d",
+   "source_worktree_dirty": true,
+   "path": "unity/ChangshanLongdan/Assets/StreamingAssets/Environment/cl-wreck.glb",
+   "bytes": 18496,
+   "sha256": "467f40473bbe7f5ed584eface2fea9d919e09c7c9b75e0ab7c963ee6dd5eebe0",
+   "storage": "mmo-asset-pipeline:deliveries/cl-barracks-set-v1/v1/cl-wreck.glb",
+   "license": "原創程序建模（本 repo 製作），無第三方素材；依遊戲 repo 授權"
+  }
+ ]
+}

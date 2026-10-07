@@ -109,7 +109,7 @@ namespace Changshan.Character
     [Serializable] public sealed class RouteLog
     {
       public string mode; public double duration; public int frameRate; public int pausedFrames; public int audioRate; public long audioSamples;
-      public int viewportWidth, viewportHeight; public float renderScale; public int blockers;
+      public int viewportWidth, viewportHeight; public float renderScale; public int blockers; public string castleAssets;
       public RouteFrame[] frames;
     }
 
@@ -160,6 +160,16 @@ namespace Changshan.Character
       // without it (the script passes -e09NoFlow), so their fixed camera and immediate stepping are unchanged.
       var flow = controller.Flow;
       if (cameraRoute && flow == null) flow = GameFlow.Attach(controller);
+      // E10: the camera route is recorded over the delivered castle assets; wait for their load and record its outcome.
+      var castleAssets = controller.Castle != null ? controller.Castle.Assets : null;
+      while (castleAssets != null && !castleAssets.Settled && Time.realtimeSinceStartup < deadline) yield return null;
+      string castleAssetStatus = castleAssets == null ? "None" : castleAssets.Status.ToString();
+      if (cameraRoute && castleAssetStatus != "Ready")
+      {
+        Debug.LogError("E10_ROUTE_CASTLE_ASSETS_NOT_READY " + castleAssetStatus + " " + (castleAssets != null ? castleAssets.FailureCode : ""));
+        Application.Quit(2);
+        yield break;
+      }
       if (flow != null) flow.StartRequested();
       if (!feedbackRoute && !cameraRoute)
       {
@@ -222,7 +232,7 @@ namespace Changshan.Character
         mode = cameraRoute ? "e09-camera" : feedbackRoute ? "e07-feedback" : "e06-route", duration = duration, frameRate = (int)Math.Round(1 / FrameSeconds),
         audioRate = mixer?.Rate ?? 0, frames = new RouteFrame[frames],
         viewportWidth = Screen.width, viewportHeight = Screen.height, blockers = Changshan.View.CastleGeometry.CameraBlockers.Count,
-        renderScale = Changshan.Foundation.FoundationSmoke.CurrentRenderScale(),
+        renderScale = Changshan.Foundation.FoundationSmoke.CurrentRenderScale(), castleAssets = castleAssetStatus,
       };
       string logPath = Path.Combine(output, "route.json");
       for (int frame = 0; frame < frames; frame++)
