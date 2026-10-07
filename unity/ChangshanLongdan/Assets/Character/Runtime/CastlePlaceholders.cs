@@ -89,7 +89,7 @@ namespace Changshan.Character
         if (roofs[i].enabled != visible[i]) roofs[i].enabled = visible[i];
     }
 
-    static Material Tint(Material source, Color color, string name)
+    Material Tint(Material source, Color color, string name)
     {
       if (source == null) return null;
       var m = new Material(source) { name = source.name + " " + name };
