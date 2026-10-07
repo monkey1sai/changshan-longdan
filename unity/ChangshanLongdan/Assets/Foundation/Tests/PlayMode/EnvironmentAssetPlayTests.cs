@@ -94,9 +94,9 @@ namespace Changshan.Foundation.Tests
       Assert.That(castle.transform.Find("Barracks 0").GetComponent<MeshRenderer>().enabled, Is.False);
       // Sizes and placement: the barracks body and roof match the delivery on the first layout rectangle.
       var r0 = CastleGeometry.Barracks[0];
-      var frame = assets.Barracks[0].transform;
+      var barracksFrame = assets.Barracks[0].transform;
       var bodyNode = CastleAssets.FindNode(assets.Barracks[0], CastleAssets.BarracksNode);
-      var body = LocalBoundsOf(bodyNode, frame);
+      var body = LocalBoundsOf(bodyNode, barracksFrame);
       Assert.That(body.size.y, Is.EqualTo(4.75f).Within(0.05f));
       Assert.That(body.size.z, Is.EqualTo(14.4f).Within(0.1f), "the long side runs along the asset's +Z");
       Assert.That(body.size.x, Is.EqualTo(12.4f).Within(0.1f));
@@ -104,7 +104,7 @@ namespace Changshan.Foundation.Tests
       var bodyWorld = BoundsOf(bodyNode);
       Assert.That(Vector2.Distance(new Vector2(bodyWorld.center.x, bodyWorld.center.z), new Vector2(centre.x, centre.z)), Is.LessThan(0.05f));
       Assert.That(bodyWorld.min.y, Is.EqualTo(centre.y).Within(0.05f), "the body stands on the ground");
-      var roof = LocalBoundsOf(assets.Roofs[0], frame);
+      var roof = LocalBoundsOf(assets.Roofs[0], barracksFrame);
       Assert.That(roof.size.z, Is.EqualTo(17.45f).Within(0.1f), "roof overhang 1.225 m beyond the 15 m side");
       Assert.That(roof.size.x, Is.EqualTo(15.45f).Within(0.1f));
       Assert.That(roof.max.y - body.min.y, Is.EqualTo(7.57f).Within(0.1f), "ridge height");
