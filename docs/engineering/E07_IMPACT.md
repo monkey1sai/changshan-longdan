@@ -1,6 +1,6 @@
 # E07 打擊回饋與受擊循環
 
-更新：2026-10-06（Asia/Taipei）。`stepStatus: DONE（限定接受；無 formal independent APPROVED）`；PR #33 合併為 `dfc71890699959ad6e63d724ae8f26d864e3f2ce`。本檔記錄範圍、設計與驗證方法；各候選 SHA 的實際執行結果記在 PR，不寫回本檔以免自我引用。
+更新：2026-10-07（Asia/Taipei）。`stepStatus: DONE（限定接受；無 formal independent APPROVED）`；PR #33 合併為 `dfc71890699959ad6e63d724ae8f26d864e3f2ce`，補件 PR #35 合併為 `af8977c412fb3b9a11b9a4473f674b1a599696de`。本檔記錄範圍、設計與驗證方法；各候選 SHA 的實際執行結果記在 PR #33／#35，不寫回本檔以免自我引用。
 
 ## 範圍與授權
 
@@ -56,7 +56,7 @@
 
 ## 已知限制
 
-- 火花、塵土、碎片、刀光與音效未移植：事件流已含所需資料（命中位置、方向、`KillInfo`、sfx 種類），呈現留待特效步驟；計畫要求的「命中、扣血、聲音／VFX 時點共同 trace」目前只有命中與扣血（事件）與鏡頭震動。實際聽感無證據，保留缺口。
+- （PR #33 時）火花、塵土、碎片、刀光與音效未移植；由下方「補件」處理。補件後仍不呈現：後製（色差、徑向模糊、閃白、bloom，數值只記入 trace；HDR 顏色在無 bloom 時會飽和成白／黃）、無雙切入畫面、音樂與環境音、無雙龍。迴響與壓縮器是近似演算法，音效聲音是否與 Web 相近只能靠人耳判斷；碎片光照為主光源 Lambert 加固定環境光，沒有陰影（Web 是 MeshStandardMaterial 並投影）。
 - 敵兵不出手（E08）；玩家受擊循環只能以注入攻擊驗證。
 - Web 允許無限浮空／倒地循環（C1），隊長在 Web 只有 Windup 中 50% 免硬直，沒有真正的霸體／破防；E07 原樣保留，A1 下 Windup 不存在所以該機率路徑不會發生。
 - 連擊、`comboBreak`、戰鬥階段、勝負與慢動作、無雙龍未移植。
@@ -67,13 +67,70 @@
 
 - 審查延後項目（LOW／NIT）見 issue #34：容忍度對 Float32 寫入的直接斷言、反應 harness 對真 `EnemyStore.update` 的交叉驗證、`CameraShake` 前提、`Restart` 不重設目標、`rngHp` 比對。
 
+## PR #33 合併與合併後確認
+
+PR #33 由 monkey1sai 以一般合併提交合併為 `dfc71890699959ad6e63d724ae8f26d864e3f2ce`（head `f0326d6`，tree 與 head 相同）；GitHub 上沒有 review approval，兩項 CI 綁定 head 成功。合併後確認（merge SHA，全新 clone）：本機 Unity 五階段通過（runId `796992af-da60-4cbe-87e9-50fedd0d5ec9`，2026-10-06 17:30–17:36 +08:00；Edit 83/83、Play 30/30、build、Player）；Web Vitest 30 files／290 tests、typecheck、build、`parity:check` 四份一致、runner 65/65；main 的 Game CI（run 37443333387）success。這只確認合併沒有破壞既有驗證，不使 E07 DONE（見補件）。
+
+## 補件：回饋呈現（特效與音效）
+
+PR #33 已合併（`dfc71890699959ad6e63d724ae8f26d864e3f2ce`），但計畫 E07 交付的音效、刀光與「命中、扣血、聲音／VFX 時點共同 trace」沒有完成，所以 E07 不標 DONE。使用者決定：「補做 VFX＋音效」（選項說明：在 Unity 移植火花、塵土、刀光與合成音效，命中／扣血／聲音／VFX 共同 trace，跑完五階段後請使用者試玩，之後才以限定接受結案）。
+
+### 開始前範圍審查
+
+```text
+stepId: E07（補件）
+status: IN_PROGRESS
+implementationPr: null（未獲推送授權前只在本機分支 claude/e07-feedback）
+implementer: Claude（Opus 5.5）
+independentReviewer: 待指定（戰鬥／音效審查者仍未指定；advisory 審查不是 formal APPROVED）
+sourceBaseSha: dfc71890699959ad6e63d724ae8f26d864e3f2ce
+changedVariableIds: [V03, V11]
+requiredScenarioIdsAndSubcases: [S02 回饋時點, S04 群體命中回饋, S08 重置清除]
+allowedPaths: [scripts/, tests/, unity/ChangshanLongdan/, docs/engineering/, package.json, .gitattributes]
+forbiddenChanges: [src/, public/models/, .blend, 新套件, 付費或生成, 推送／PR／合併（未授權）]
+```
+
+- **交付**：Web 的 `Presentation.play`（`src/presentation.ts`）對 E07 已有事件的部分（揮擊、跳躍、落地、閃避、無雙開始、地面特效、命中、擊殺、敵兵出手、完美格擋、格擋、受傷、無雙就緒）以純 C# 移植成 `FeedbackDirector`；火花（`sparks.ts`）、塵土（`dust.ts`）、衝擊波環與光柱（`shockwave.ts`）、體素碎片（`fragments.ts`）、槍尖刀光（`trail.ts`）的模擬以純 C# 移植，Unity 只負責繪製；`audio-engine.ts` 的對應音效以純 C# 離線合成，Unity 以 `OnAudioFilterRead` 混音播放。亂數照 Web `createRng(99)`，在相同順序消耗。
+- **對照**：新增 `scripts/lib/presentation-parity.ts`，以未修改的 Web `Battle`、`Presentation` 與特效類別逐幀執行，記錄每幀輸入事件、各輸出端呼叫（含音效參數與聲道）、亂數消耗數與特效狀態；`TrailRibbon` 以合成的槍尖軌跡對照 Web `Trail`。Unity Edit Mode 逐幀比對。
+- **共同 trace**：每幀記錄模擬步、遊戲時間、命中與扣血、發出的音效與特效；音效另記混音器實際開始播放的取樣位置。Play Mode 驗證命中、火花、音效指令同一幀，聲音在一個 DSP 緩衝內開始。路線錄影加上離線混音的音軌。
+- **不納入（照 A1 與既有範圍）**：無雙龍（`dragonHit`、龍吼、龍身光點）、音樂與環境音、連擊／里程碑／階段／勝負橫幅與音效、後製（色差、徑向模糊、閃白、bloom）與無雙切入畫面；事件仍記入 trace，畫面不呈現。Web 的動態壓縮器與迴響以近似演算法實作（WebAudio 原生節點在 Unity 沒有對應），差異保留為已知限制。
+- **驗證**：Web Vitest、`parity:check`、runner 正負例；Unity 五階段於候選 SHA；路線影音；使用者試玩與聽感。缺聽感證據就保留缺口，不以數值通過代替。
+- **回滾**：revert 本補件提交，回到 PR #33 的狀態（只有鏡頭震動）。
+
+### 補件設計
+
+- **`Changshan.Feedback`（純 C#，無 Unity 參照）**：`FeedbackEvents` 把 `CombatSimulation` 的一步依 `Battle.step` 順序轉成呈現事件（玩家轉送事件 → 玩家命中 → 擊殺 → 無雙就緒；hit-stop 凍結的幀不讀玩家事件；注入攻擊單獨一批）。`FeedbackDirector` 是 `Presentation.play`／`groundFx`／`pan`／`musouState` 的移植。`SparkField`、`DustField`、`ShockwaveSet`、`FragmentField`、`TrailRibbon` 照 Web 類別以 `float` 陣列存值、`double` 運算。`FeedbackTrace` 是有界的共同 trace：每幀記模擬步、遊戲時間、命中數、扣血、擊殺與該幀所有輸出呼叫（`TracingSinks` 包住各輸出端先記錄再轉送）。
+- **`CombatSimulation`**：新增 `CombatEventType.MusouReady`（`Battle.step` 結尾的「氣滿」通知，重來時重置）。`Mulberry32.State` 供對照測試核對亂數位置。
+- **音效（`Changshan.Feedback.Audio`）**：`SynthGraph` 依 Web Audio API 規格模擬 AudioParam 自動化、振盪器（鋸齒／方波 PolyBLEP）、BiquadFilter（低通／高通 Q 為 dB）、WaveShaper 與增益包絡；`SfxSynth` 移植 `audio-engine.ts` 的揮擊、命中、碎裂、敵兵揮擊、受傷、跳躍、落地、閃避、無雙開始、無雙爆發、無雙就緒。每種聲音以固定種子預先算 3 個變體（Web 每次呼叫 Math.random）；命中依人數（1–8，第 8 人起不再變大）、碎裂依擊殺數（1–4）。`SfxMixer` 照 Web 的匯流排：等功率聲道、sfx 0.9、迴響送出 0.3、master 0.8、壓縮器；迴響以 8 線 FDN 近似 2.6 s 噪音脈衝（衰減 2.3 s，能量對齊 ConvolverNode 正規化後的 0.1645），壓縮器以軟膝近似（threshold −16、knee 12、ratio 4、attack 3 ms、release 250 ms、6 ms 前視、Chromium 式補償 +7.2 dB）。`SfxBank` 25 ms 內的第二個命中聲丟棄（同 Web）。
+- **Unity（`FeedbackView`）**：控制器每幀把事件交給導演，模擬在動畫之後以遊戲時間步長前進（hit-stop 時凍結，同 Web），刀光在招式的 trail 視窗內記錄 rig 的槍尖兩點。網格每幀以世界座標重建（火花沿速度拉長、塵土朝向鏡頭、地面環、光柱、刀光帶、六面體素碎片），共用 `Resources/ChangshanFeedback.shader`（無關鍵字，單一變體）。音效由 `FeedbackAudioOutput` 掛在 AudioListener 上以 `OnAudioFilterRead` 從音訊執行緒拉取混音器；場景沒有 listener 時加在視角相機上。無雙就緒以 OnGUI 橫幅顯示。
+- **錄影**：`npm run record:route -- --mode e07 --player <exe> --out release/e02/<名稱>`：Player 以 `-e07Feedback` 跑 15.5 s 路線（N1–N4、C2、JA、閃避、輕／重受擊、完美格擋、格擋重擊、無雙），30 Hz 截圖；音效改用錄影時鐘（每幀的聲音從該幀第一個取樣開始），混音器逐幀離線輸出 `audio.wav`；`route.json` 每幀記狀態、命中、扣血、擊殺與回饋指令。腳本核對每個有命中的幀同幀都有火花與命中音、必需的指令都出現、音軌長度等於幀數 × 1600，才以 ffmpeg 合成影音。E06 模式同樣附上音軌。
+
+### 補件驗證方法
+
+| 檢查 | 內容 |
+|---|---|
+| Vitest `presentation-parity.test.ts`（2） | fixture 逐位元組相同；13 種事件、各輸出、沒有龍的輸出；hit-stop 幀不耗亂數；刀光補點並清空 |
+| Edit Mode `PresentationParityEditTests` | 來源雜湊、碎片調色盤、30／60／120 Hz 逐幀：每個輸出呼叫與參數（1e-9）、每幀亂數消耗數（生成器狀態相等）、粒子數量與總和、環與光柱狀態、每半秒完整粒子狀態（2e-5）；刀光逐幀；負例（多抽一次亂數、火花不生成都被抓到）；模擬事件順序；trace 同幀綁定 |
+| Edit Mode `FeedbackAudioEditTests` | AudioParam 規則、濾波器頻率響應、振盪器起始相位與幅度、驅動曲線、11 種音效長度與包絡峰值、命中響度、可重現、等功率聲道、壓縮器曲線與補償、迴響能量與衰減、播放起點（下一個緩衝或指定取樣）、25 ms 命中間隔 |
+| Play Mode `FeedbackPlayTests` | 場景中 N1 命中同幀：火花數＝命中數 × 8、命中音、鏡頭 trauma，trace 的命中數與扣血相符；網格頂點數與 shader；hit-stop 凍結火花；擊殺 18 塊碎片、碎裂音；重來清空；受擊、無雙就緒橫幅、無雙光柱；音訊執行緒在一個 DSP 緩衝內開始播放 |
+| 錄影 | 上述 E07 路線影音（人工觀看與聆聽才算視聽證據） |
+
+### 使用者試玩（限定接受）
+
+使用者在 Unity 試玩候選 `124442d` 的回饋後回覆：「手感好, 音樂可接受, 打擊感佳」，並授權：「開PR授權推送」。這是使用者的手感與聽感確認（限定接受），不是 formal independent APPROVED；「音樂」指本補件的合成音效（音樂與環境音未移植）。迴響與壓縮器的近似、錄影音軌在多重命中時的削波（峰值約 1.0）仍記為已知差異。合併需另行授權。
+
+### 補件審查
+
+獨立 advisory 審查 1 輪（Claude code-reviewer 子代理，唯讀，候選 `dc3bdf4`；不是 formal APPROVED）：無 blocker／HIGH。已處置：MEDIUM 錄影腳本只檢查音軌長度（改為解析 WAV，要求每個有音效指令的幀在 100 ms 內可聽到，並讓錄影期間的即時輸出不接混音器）；LOW 銷毀後即時輸出仍拉舊混音器、滿載時新聲音互相覆蓋、音色變體依渲染順序而變（各補測試）；NIT 對照資料來源補列 `moves.ts`／`player.ts`／`enemies.ts`、`GroundFx` 對其他 fx 的註解。延後（未開 issue，GitHub 變更未授權）：錄影 hit-stop 容忍 0.25 s 與最大 hit-stop 0.22 s 耦合；混音器整個緩衝在鎖內渲染；延遲線靜音後的 denormal；網格陣列首次高峰時倍增配置；除錯 HUD 每次命中配置字串；同幀注入攻擊時 `setMusicLevel` 與攻擊指令在 trace 中的先後。
+
+## 補件合併與合併後確認
+
+使用者原文：「授權PR 35」。合併前即時核對：head `c54a4dcc4a51bf9cbdafa6fbf1174cf86dacad81` 與本機相同，兩項 CI 綁定 head 成功（run 37558593665），review comments 0，auto-merge 關閉，Codex 安全審查當時仍在執行（非合併門檻）。**GitHub 上沒有任何 review approval**，依使用者授權合併，屬限定接受；advisory 子代理審查 1 輪不是 formal APPROVED；戰鬥／音效審查者未指定；使用者試玩為手感與聽感確認（候選 `124442d`）。
+
+- merge commit `af8977c412fb3b9a11b9a4473f674b1a599696de`（2026-10-07 09:57 +08:00，一般合併，父提交 `dfc7189`、`c54a4dc`）；tree 與 head 相同；來源分支保留。
+- 合併後確認（merge SHA，全新 clone）：本機 Unity 五階段通過（runId `82b3b26b-3047-43ac-9105-fe691e0d077f`，2026-10-07 09:57–10:03 +08:00；compile、Edit 107/107、Play 34/34、Windows build、Player 123 frames／0 errors）；Web Vitest 31 files／292 tests、typecheck、build、`parity:check` 五份一致、runner 65/65；main 的 Game CI（run 37559604317）success。
+- E07 以限定接受標 DONE：V03／V11 與 S02／S04／S08 子情境的程式與對照證據齊備；完整體驗、裝置、效能與正式感官審查仍待後續驗收。
+
 ## 回滾
 
 普通 revert 本步提交即可：`HitTargets` 回到 E05 的靜態版本、`CombatSimulation` 回到無事件流版本，移除 `EnemyTypes`、`Mulberry32`、`SpatialHash`、`CombatEvents`、`CameraShake`、fixture 與測試；Web 版、`src/`、`public/models/` 與 `.blend` 未變更。
-
-## 合併與合併後確認
-
-使用者原文：「可接受,授權下一步」（試玩後表示「趙雲腳色動作很靈活」；驗證場景沒有城池、voxel 士兵、AI、特效與音效，屬 E08 以後）。合併前即時核對：head `f0326d6e54caac403290ee397b21ed423d12dcdd` 與遠端相同、base `fee50bb` 無漂移，兩項 CI 綁定 head 且成功，review comments 0，auto-merge 關閉，草稿先標記 ready 再以一般合併提交。**GitHub 上沒有任何 review approval**，依使用者授權合併，屬限定接受；獨立 advisory 審查 1 輪不是 formal APPROVED；戰鬥／音效審查未進行；使用者試玩屬手感確認，未錄影。
-
-- merge commit `dfc71890699959ad6e63d724ae8f26d864e3f2ce`（一般合併，父提交 `fee50bb`、`f0326d6`）；tree 與候選相同；來源分支保留。
-- 合併後確認（merge SHA）：Web Vitest 30 files／290 tests、typecheck、build、`parity:check` 四份一致、runner 65/65；全新 clone 本機 Unity 五階段通過（runId `796992af-da60-4cbe-87e9-50fedd0d5ec9`，2026-10-06 17:30–17:36 +08:00；Edit 83/83、Play 30/30、build、Player）。

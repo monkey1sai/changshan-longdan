@@ -1,0 +1,5 @@
+{
+  "name": "Changshan.Feedback",
+  "references": ["Changshan.Combat"],
+  "noEngineReferences": true
+}

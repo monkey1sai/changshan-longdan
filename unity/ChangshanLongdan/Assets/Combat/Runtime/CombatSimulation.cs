@@ -10,7 +10,8 @@ namespace Changshan.Combat
   // Battle.resolvePlayerHits; other sources (the musou dragon later) hit through the afterPlayerHits callback of the
   // same step, like updateDragon after resolvePlayerHits (outside it ApplyExternal is refused); kills are collected
   // (resolveKills) and the soldiers' strikes land on the player (resolveStrike). InjectStrike plays Battle's
-  // debug.injectStrike. Combo, victory and defeat are not ported yet.
+  // debug.injectStrike. A gauge that just became full is announced at the end of the step. Combo, victory and defeat
+  // are not ported yet.
   public sealed class CombatSimulation
   {
     public const double ParryHitstop = 0.06;
@@ -40,6 +41,7 @@ namespace Changshan.Combat
 
     bool externalOpen;
     bool stepping;
+    bool musouWasReady;
 
     public CombatSimulation(HitTargets targets, PlayerTuning tuning = null, Arena arena = null)
     {
@@ -124,6 +126,10 @@ namespace Changshan.Combat
       // staggered this step still lands the blow it started).
       var strikes = Targets.Strikes;
       for (int i = 0; i < strikes.Count; i++) ResolveStrike(strikes[i]);
+      // Battle.step: the gauge just became full (no outcome is ported, so the battle is always ongoing).
+      bool ready = Player.MusouReady;
+      if (ready && !musouWasReady) events.Add(CombatEvent.MusouReady());
+      musouWasReady = ready;
       return true;
     }
 
@@ -213,6 +219,7 @@ namespace Changshan.Combat
       KoCount = 0;
       DamageSum = 0;
       SteppedThisFrame = false;
+      musouWasReady = false;
     }
   }
 }

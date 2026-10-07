@@ -1,6 +1,6 @@
 {
   "name": "Changshan.Foundation.EditTests",
-  "references": ["Changshan.Foundation", "Changshan.Foundation.Editor", "Changshan.Character", "Changshan.Character.Editor", "Unity.RenderPipelines.Universal.Runtime", "Unity.RenderPipelines.Core.Runtime", "Changshan.Combat", "Changshan.Animation"],
+  "references": ["Changshan.Foundation", "Changshan.Foundation.Editor", "Changshan.Character", "Changshan.Character.Editor", "Unity.RenderPipelines.Universal.Runtime", "Unity.RenderPipelines.Core.Runtime", "Changshan.Combat", "Changshan.Animation", "Changshan.Feedback"],
   "includePlatforms": ["Editor"],
   "optionalUnityReferences": ["TestAssemblies"]
 }

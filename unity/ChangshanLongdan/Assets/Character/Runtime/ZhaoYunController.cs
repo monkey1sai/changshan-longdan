@@ -48,6 +48,18 @@ namespace Changshan.Character
       }
     }
     CameraShake shake;
+
+    // The E07 effects and sound for this fight (created on first use, placed with the logic-to-display mapping).
+    public FeedbackView Effects
+    {
+      get
+      {
+        if (effects != null) return effects;
+        effects = FeedbackView.Create(Mapping);
+        return effects;
+      }
+    }
+    FeedbackView effects;
     public InputFrame LastInput { get; private set; }
     public CharacterAnimation Animation { get; } = new CharacterAnimation();
 
@@ -147,19 +159,19 @@ namespace Changshan.Character
       if (LastInput.Debug) ShowDebug = !ShowDebug;
       var controls = ControlComposer.Compose(LastInput, CameraYaw());
       Simulation.Step(dt, controls);
-      Feedback(Simulation.SteppedThisFrame);
+      PlayFeedback(false);
       if (Dummies != null) Dummies.Show(Simulation.Targets, Mapping);
       ApplyTransform();
       Animate();
+      Effects.AfterAnimate(Simulation, Animation.Rig, dt);
     }
 
-    // E07: the presentation side of this frame's events (src/presentation.ts): camera trauma and kick for hits,
-    // hurts, parries, blocks, ground fx, the musou start and a heavy landing. Sparks, dust, fragments, rings and audio
-    // are not ported yet (see E07 doc). Player events are read only on a frame that stepped: during hit-stop the Web
-    // plays nothing, and Player.Events still holds the frozen step's events.
-    void Feedback(bool playerEvents)
+    // E07: the presentation of this frame's events (src/presentation.ts through FeedbackView): sound, sparks, dust,
+    // rings, fragments, camera trauma and kick, post values and the HUD banner, all recorded in the common trace.
+    // Player events are read only on a frame that stepped: during hit-stop the Web plays nothing, and Player.Events
+    // still holds the frozen step's events.
+    void PlayFeedback(bool strike)
     {
-      var shake = Shake;
       var events = Simulation.Events;
       for (int i = 0; i < events.Count; i++)
       {
@@ -168,43 +180,17 @@ namespace Changshan.Character
         {
           case CombatEventType.Hit when e.Source == HitSource.Player:
             LastHit = FormattableString.Invariant($"{e.Window.Sfx} x{e.Count} shake {e.Window.Shake:0.00}");
-            if (shake != null)
-            {
-              shake.AddTrauma(e.Window.Shake * (e.Count > 3 ? 1.15 : 1));
-              if (e.Window.Sfx == HitSfx.Heavy) shake.Kick(0.5);
-            }
             break;
-          case CombatEventType.Hurt:
-            LastHit = e.Heavy ? "hurt (heavy)" : "hurt";
-            if (shake != null) shake.AddTrauma(e.Heavy ? 0.45 : 0.25);
-            break;
-          case CombatEventType.Parry:
-            LastHit = "parry";
-            if (shake != null) shake.AddTrauma(0.12);
-            break;
-          case CombatEventType.GuardBlock:
-            LastHit = FormattableString.Invariant($"guard block {e.Damage:0.0}");
-            if (shake != null) shake.AddTrauma(0.04);
-            break;
+          case CombatEventType.Hurt: LastHit = e.Heavy ? "hurt (heavy)" : "hurt"; break;
+          case CombatEventType.Parry: LastHit = "parry"; break;
+          case CombatEventType.GuardBlock: LastHit = FormattableString.Invariant($"guard block {e.Damage:0.0}"); break;
           case CombatEventType.Kill: LastHit = FormattableString.Invariant($"kill x{e.Count}"); break;
         }
       }
-      if (!playerEvents || shake == null) return;
-      var player = Simulation.Player.Events;
-      for (int i = 0; i < player.Count; i++)
-      {
-        var e = player[i];
-        switch (e.Type)
-        {
-          case PlayerEventType.MusouStart: shake.AddTrauma(0.35); break;
-          case PlayerEventType.Land when e.Heavy: shake.AddTrauma(0.15); break;
-          case PlayerEventType.Fx when e.Fx == HitFx.Shockwave: shake.AddTrauma(0.3); break;
-          case PlayerEventType.Fx when e.Fx == HitFx.Blast:
-            shake.AddTrauma(1);
-            shake.Kick(1);
-            break;
-        }
-      }
+      var view = Effects;
+      if (Shake != null) view.SetCamera(ViewCamera != null ? ViewCamera : Camera.main, Shake);
+      if (strike) view.PlayStrike(Simulation);
+      else view.PlayStep(Simulation);
     }
 
     // Dev and tests until the AI (E08) attacks: one enemy strike from 2 m in front of the player (F4 light, F5 heavy).
@@ -214,7 +200,7 @@ namespace Changshan.Character
       var p = Simulation.Player;
       double x = p.X + Math.Sin(p.Facing) * 2, z = p.Z + Math.Cos(p.Facing) * 2;
       Simulation.InjectStrike(new EnemyStrike(heavy ? 70 : 26, heavy, x, z));
-      Feedback(false); // only the strike's own events; the frame's player events were already played
+      PlayFeedback(true); // only the strike's own events; the frame's player events were already played
     }
 
     // E06: the Web procedural rig poses the imported model once it is READY; until then the fallback stays visible.
@@ -254,6 +240,11 @@ namespace Changshan.Character
 
     void OnApplicationFocus(bool focused) => SetFocus(focused);
 
+    void OnDestroy()
+    {
+      if (effects != null) Destroy(effects.gameObject);
+    }
+
     void OnApplicationPause(bool paused)
     {
       if (paused) SetFocus(false);
@@ -274,6 +265,7 @@ namespace Changshan.Character
       if (Dummies != null) Dummies.Fill(targets, Mapping);
       Simulation.Restart();
       Animation.Reset();
+      if (effects != null) effects.Clear();
       ApplyTransform();
       if (Dummies != null) Dummies.Show(targets, Mapping); // back at their spawns now, not on the next tick
     }
