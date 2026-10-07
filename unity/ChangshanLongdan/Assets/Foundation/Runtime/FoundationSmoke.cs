@@ -9,6 +9,13 @@ namespace Changshan.Foundation
 {
   public sealed class FoundationSmoke : MonoBehaviour
   {
+    // The active URP asset's render scale (0 without URP), for recordings that log their viewport.
+    public static float CurrentRenderScale()
+    {
+      var pipeline = UnityEngine.Rendering.GraphicsSettings.currentRenderPipeline as UnityEngine.Rendering.Universal.UniversalRenderPipelineAsset;
+      return pipeline == null ? 0 : pipeline.renderScale;
+    }
+
     [Serializable]
     public sealed class RuntimeReport
     {

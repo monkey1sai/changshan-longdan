@@ -218,7 +218,7 @@ namespace Changshan.Character
         mode = cameraRoute ? "e09-camera" : feedbackRoute ? "e07-feedback" : "e06-route", duration = duration, frameRate = (int)Math.Round(1 / FrameSeconds),
         audioRate = mixer?.Rate ?? 0, frames = new RouteFrame[frames],
         viewportWidth = Screen.width, viewportHeight = Screen.height, blockers = Changshan.View.CastleGeometry.CameraBlockers.Count,
-        renderScale = UnityEngine.Rendering.GraphicsSettings.currentRenderPipeline is UnityEngine.Rendering.Universal.UniversalRenderPipelineAsset urp ? urp.renderScale : 0,
+        renderScale = Changshan.Foundation.FoundationSmoke.CurrentRenderScale(),
       };
       string logPath = Path.Combine(output, "route.json");
       for (int frame = 0; frame < frames; frame++)

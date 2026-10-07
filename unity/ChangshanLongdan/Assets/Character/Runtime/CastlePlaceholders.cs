@@ -18,6 +18,7 @@ namespace Changshan.Character
     public IReadOnlyList<MeshRenderer> Roofs => roofs;
     readonly List<MeshRenderer> roofs = new List<MeshRenderer>();
     public int BlockCount { get; private set; }
+    Mesh cubeMesh;
 
     public static CastlePlaceholders Create(LogicDisplayMapping mapping, Material material)
     {
@@ -32,10 +33,12 @@ namespace Changshan.Character
 
     void Build(LogicDisplayMapping mapping, Material material)
     {
+      cubeMesh = Resources.GetBuiltinResource<Mesh>("Cube.fbx");
       var wall = Tint(material, new Color(0.42f, 0.40f, 0.36f), "Wall");
       var roof = Tint(material, new Color(0.23f, 0.26f, 0.31f), "Roof");
       var prop = Tint(material, new Color(0.35f, 0.22f, 0.14f), "Prop");
-      double inner = CastleGeometry.Inner, thick = CastleGeometry.WallThick, h = CastleGeometry.WallHeight, gate = CastleGeometry.GateHalf;
+      double inner = CastleGeometry.Inner, thick = CastleGeometry.WallThick, gate = CastleGeometry.GateHalf;
+      float h = (float)CastleGeometry.WallHeight;
       // Walls: north, east, west full length; south split around the gate.
       Block(mapping, wall, "Wall N", new Rect(-inner - thick, inner + thick, -inner - thick, -inner), h);
       Block(mapping, wall, "Wall E", new Rect(inner, inner + thick, -inner, inner), h);
@@ -58,10 +61,11 @@ namespace Changshan.Character
 
     MeshRenderer Block(LogicDisplayMapping mapping, Material material, string name, Rect r, float height, float bottom = 0)
     {
-      var box = GameObject.CreatePrimitive(PrimitiveType.Cube);
-      box.name = name;
-      var collider = box.GetComponent<Collider>();
-      if (collider != null) Destroy(collider); // collision is the logic arena's job
+      // Built from the built-in mesh like the crowd capsules: no collider (collision is the logic arena's job) and no
+      // Physics module.
+      var box = new GameObject(name);
+      box.AddComponent<MeshFilter>().sharedMesh = cubeMesh;
+      box.AddComponent<MeshRenderer>();
       box.transform.SetParent(transform, false);
       double cx = (r.MinX + r.MaxX) / 2, cz = (r.MinZ + r.MaxZ) / 2;
       box.transform.SetPositionAndRotation(mapping.ToDisplayPosition(cx, bottom + height / 2.0, cz), mapping.ToDisplayRotation(0));
