@@ -158,6 +158,57 @@ namespace Changshan.Foundation.Tests
       LogAssert.NoUnexpectedReceived();
     }
 
+    // A future delivery that renames the roof node passes the hash check (the test supplies the matching hashes) but
+    // must still fail before anything is placed, keeping the blocks and their cutaway.
+    [UnityTest] public IEnumerator RenamedRoofNodeKeepsThePlaceholderBlocks()
+    {
+      ZhaoYunController controller = null;
+      yield return Scene((c, f) => controller = c);
+      var live = Object.FindObjectsByType<CastleAssets>().Single();
+      yield return WaitForAssets(live);
+      string folder = Path.Combine(Application.temporaryCachePath, "e10-renamed");
+      Directory.CreateDirectory(folder);
+      var expected = new List<(string Id, string Sha256, long Bytes)>();
+      foreach (var (id, _, _) in CastleAssets.Delivery)
+      {
+        var bytes = File.ReadAllBytes(Path.Combine(Application.streamingAssetsPath, CastleAssets.Folder, id + ".glb"));
+        if (id == "cl-barracks")
+        {
+          // Same-length rename inside the JSON chunk keeps the container valid.
+          var text = System.Text.Encoding.ASCII.GetString(bytes);
+          int at = text.IndexOf("\"" + CastleAssets.RoofNode + "\"", System.StringComparison.Ordinal);
+          Assert.That(at, Is.GreaterThan(0));
+          var renamed = System.Text.Encoding.ASCII.GetBytes("\"barracks-rooX\"");
+          System.Array.Copy(renamed, 0, bytes, at, renamed.Length);
+        }
+        File.WriteAllBytes(Path.Combine(folder, id + ".glb"), bytes);
+        using (var sha = System.Security.Cryptography.SHA256.Create())
+          expected.Add((id, System.BitConverter.ToString(sha.ComputeHash(bytes)).Replace("-", "").ToLowerInvariant(), bytes.LongLength));
+      }
+      var placeholders = CastlePlaceholders.Create(controller.Mapping, null);
+      try
+      {
+        LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex("CASTLE_ASSETS_NODES_MISSING"));
+        var renamedAssets = CastleAssets.Create(controller.Mapping, placeholders, folder, expected);
+        Assert.That(placeholders.Assets, Is.SameAs(renamedAssets), "the loader is observable from the castle while loading");
+        yield return WaitForAssets(renamedAssets, 10);
+        Assert.That(renamedAssets.Status, Is.EqualTo(CastleAssetStatus.Failed));
+        Assert.That(renamedAssets.FailureCode, Is.EqualTo("NODES_MISSING"));
+        Assert.That(renamedAssets.Barracks.Count + renamedAssets.Braziers.Count + renamedAssets.Wrecks.Count, Is.Zero);
+        Assert.That(placeholders.AssetsShown, Is.False);
+        Assert.That(placeholders.Roofs.All(r => r.enabled), Is.True, "blocks stay visible as the fallback");
+        Assert.That(placeholders.RoofVisible(0), Is.True);
+        Object.Destroy(renamedAssets.gameObject);
+      }
+      finally
+      {
+        Object.Destroy(placeholders.gameObject);
+        Directory.Delete(folder, true);
+      }
+      yield return null;
+      LogAssert.NoUnexpectedReceived();
+    }
+
     [UnityTest] public IEnumerator TamperedFileIsRejected()
     {
       ZhaoYunController controller = null;

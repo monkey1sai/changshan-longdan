@@ -30,8 +30,8 @@
 | 檢查 | 內容 |
 |---|---|
 | Edit Mode `EnvironmentAssetEditTests`（4） | 鎖定清單與出貨檔案、契約常數的位元組數／雜湊一致，交付 manifest 與鎖定清單一致；GLB JSON：營房只有 `barracks-body`／`barracks-roof` 兩個網格節點、三角形 360 ≤ 6000、材質 ≤ 8、無 images、無 extensionsRequired；火盆 36、殘骸 288 與節點名 |
-| Play Mode `EnvironmentAssetPlayTests`（3） | 場景：資產載入 Ready，6 棟營房／6 片屋頂／16 火盆／2 殘骸，佔位營房與屋頂板隱藏而城牆保留；營房牆身 12.4×4.75×14.4、屋頂 17.45 長邊、脊頂 7.57、火盆 1.15 寬並落在碰撞方格中心；站到屋簷下資產屋頂隱藏、離開恢復；負例：資料夾缺檔→`FILE_MISSING`、佔位方塊仍可見且剖視仍驅動方塊；竄改一個位元組→`HASH_MISMATCH`、不放置任何實例 |
-| E09 回歸 | `CameraPlayTests` 與 `record:route --mode e09` 三種解析度（屋頂剖開／恢復、鏡頭不進建築）在資產場景重跑 |
+| Play Mode `EnvironmentAssetPlayTests`（4） | 場景：資產載入 Ready，6 棟營房／6 片屋頂／16 火盆／2 殘骸，佔位營房與屋頂板隱藏而城牆保留；營房牆身 12.4×4.75×14.4、屋頂 15.45×17.45、脊頂 7.57（在資產自身座標系量測，場景整體有顯示旋轉）、火盆 1.15 寬並落在碰撞方格中心、牆身落地；站到屋簷下資產屋頂隱藏、離開恢復；負例：資料夾缺檔→`FILE_MISSING`、佔位方塊仍可見且剖視仍驅動方塊；竄改一個位元組→`HASH_MISMATCH`、不放置任何實例；屋頂節點改名（測試自供雜湊）→`NODES_MISSING`、不放置、方塊保留 |
+| E09 回歸 | `CameraPlayTests` 的屋頂斷言改用 `CastlePlaceholders.RoofVisible(i)`（資產 Ready 時讀資產屋頂節點，否則讀方塊）並先等載入落定；`RouteRecorder` 在鏡頭路線開始前等 `CastleAssets` 落定、把狀態寫入 route.json `castleAssets`，`record:route --mode e09` 要求 `Ready`（否則 `ROUTE_CASTLE_ASSETS_NOT_READY`），三種解析度重錄 |
 | 美術 | 固定視角預覽（美術端）與 Unity Player 截圖／錄影（遊戲端）；視覺可讀性由人工審查 |
 
 ## 已知限制
@@ -40,6 +40,8 @@
 - 殘骸視覺散落大於 4.4 m 碰撞矩形（同 Web），不加入碰撞。
 - 無 LOD；300 人加城池的效能屬 E12。
 - 美術工作台的交付檔案與新工具尚未在該 repo 提交（manifest 記錄 head 與髒工作樹項目）；`library/index.json` 項目狀態 `delivered`。
+- Unity Player 五階段的 player 煙霧測試帶 `-e09NoFlow`，不建立 `CastleAssets`；資產在 Player 的證據來自路線錄製（`castleAssets: Ready`）與試玩。
+- 計畫列的「重載負例」未做（執行期不提供重載）；LOD／碰撞代理不在本批。advisory 審查延後項：`Sha256`／glTFast 錯誤判定（E03 計 `Assert`、E10 不計）抽共用 helper。
 
 ## 回滾
 

@@ -47,41 +47,40 @@ namespace Changshan.Character
     LogicDisplayMapping mapping;
     string folder;
 
-    // folder: the directory holding the GLBs (default StreamingAssets/Environment; tests pass another to fail on purpose).
-    public static CastleAssets Create(LogicDisplayMapping mapping, CastlePlaceholders placeholders, string folder = null)
+    IReadOnlyList<(string Id, string Sha256, long Bytes)> expected = Delivery;
+
+    // folder: the directory holding the GLBs (default StreamingAssets/Environment); tests pass another folder, and
+    // their own expected hashes, to exercise the failure paths on purpose.
+    public static CastleAssets Create(LogicDisplayMapping mapping, CastlePlaceholders placeholders, string folder = null,
+      IReadOnlyList<(string Id, string Sha256, long Bytes)> expected = null)
     {
       var go = new GameObject("E10 Castle Assets");
       var assets = go.AddComponent<CastleAssets>();
       assets.mapping = mapping;
       assets.Placeholders = placeholders;
       assets.folder = folder ?? Path.Combine(Application.streamingAssetsPath, Folder);
+      if (expected != null) assets.expected = expected;
+      if (placeholders != null) placeholders.AttachAssets(assets); // registers the loader so its status is observable
+      assets.Status = CastleAssetStatus.Loading;
       _ = assets.LoadAll();
       return assets;
     }
 
-    public Task Loading { get; private set; } = Task.CompletedTask;
+    public bool Settled => Status == CastleAssetStatus.Ready || Status == CastleAssetStatus.Failed;
 
     async Task LoadAll()
-    {
-      Status = CastleAssetStatus.Loading;
-      var task = LoadAllInner();
-      Loading = task;
-      await task;
-    }
-
-    async Task LoadAllInner()
     {
       var templates = new Dictionary<string, GameObject>();
       try
       {
-        foreach (var (id, sha, bytes) in Delivery)
+        foreach (var (id, sha, bytes) in expected)
         {
           var template = await LoadTemplate(id, sha, bytes);
           if (Gone) return; // the scene unloaded mid-load: nothing to place and nothing to report
           if (template == null) return; // Fail already recorded
           templates[id] = template;
         }
-        Place(templates);
+        if (!Place(templates)) return; // Fail already recorded; the blocks stay
         Status = CastleAssetStatus.Ready;
         if (Placeholders != null) Placeholders.AttachAssets(this);
       }
@@ -124,13 +123,13 @@ namespace Changshan.Character
       return container;
     }
 
-    void Place(Dictionary<string, GameObject> templates)
+    bool Place(Dictionary<string, GameObject> templates)
     {
       var barracksTemplate = templates["cl-barracks"];
       if (FindNode(barracksTemplate, RoofNode) == null || FindNode(barracksTemplate, BarracksNode) == null)
       {
         Fail("NODES_MISSING", "cl-barracks lacks " + BarracksNode + " / " + RoofNode);
-        return;
+        return false;
       }
       var list = CastleGeometry.Barracks;
       for (int i = 0; i < list.Count; i++)
@@ -144,6 +143,7 @@ namespace Changshan.Character
       }
       foreach (var (x, z) in CastleGeometry.Braziers) braziers.Add(Instance(templates["cl-brazier"], "Brazier", x, z, 0));
       foreach (var w in CastleGeometry.Wrecks) wrecks.Add(Instance(templates["cl-wreck"], "Wreck", (w.MinX + w.MaxX) / 2, (w.MinZ + w.MaxZ) / 2, 0));
+      return true;
     }
 
     GameObject Instance(GameObject template, string name, double x, double z, double facing)

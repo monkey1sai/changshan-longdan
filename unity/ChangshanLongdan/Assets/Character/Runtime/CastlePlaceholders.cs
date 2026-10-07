@@ -89,13 +89,17 @@ namespace Changshan.Character
       materials.Clear();
     }
 
-    // A verified, complete asset load replaces the blocks it covers; the roof flags then drive the asset roof nodes.
+    // Registers the asset loader (so its status is observable here); once it is Ready the blocks it covers are hidden
+    // and the roof flags drive the asset roof nodes instead of the slabs.
     public void AttachAssets(CastleAssets assets)
     {
       Assets = assets;
       if (!AssetsShown) return;
       foreach (var r in replaceable) r.enabled = false;
     }
+
+    // Whether barracks i currently shows a roof, whichever representation is on screen.
+    public bool RoofVisible(int i) => AssetsShown ? Assets.Roofs[i] != null && Assets.Roofs[i].activeSelf : roofs[i].enabled;
 
     public void ShowRoofs(bool[] visible)
     {
