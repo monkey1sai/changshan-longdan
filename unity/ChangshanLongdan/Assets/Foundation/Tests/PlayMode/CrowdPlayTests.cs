@@ -70,7 +70,8 @@ namespace Changshan.Foundation.Tests
       int engaged = Enumerable.Range(0, 300).First(i => targets.Engaged(i));
       var shown = controller.Dummies.Dummies[engaged].position;
       var logic = controller.Mapping.ToDisplayPosition(targets.X(engaged), 0, targets.Z(engaged));
-      Assert.That(Vector3.Distance(new Vector3(shown.x, 0, shown.z), logic), Is.LessThan(0.01f));
+      // Horizontal distance only: the scene anchor sits at y = -1, so the logic ground point is not at y = 0.
+      Assert.That(Vector2.Distance(new Vector2(shown.x, shown.z), new Vector2(logic.x, logic.z)), Is.LessThan(0.01f));
       controller.UsePressureCrowd(false);
       Assert.That(controller.Simulation.Targets.Count, Is.EqualTo(20));
       Assert.That(controller.PressureCrowd, Is.False);
