@@ -15,6 +15,8 @@
     "unity:inventory": "node scripts/unity-preflight.mjs --mode inventory",
     "unity:preflight": "node scripts/unity-preflight.mjs --mode preflight",
     "unity:validate": "node scripts/unity-validate.mjs",
+    "e12:probe": "node scripts/e12-probe.mjs",
+    "test:e12": "node --test scripts/tests/e12-performance.node.mjs",
     "trace:baseline": "node --experimental-strip-types scripts/trace-baseline.mjs",
     "parity:write": "node --experimental-strip-types scripts/combat-parity.mjs --write",
     "parity:check": "node --experimental-strip-types scripts/combat-parity.mjs --check",

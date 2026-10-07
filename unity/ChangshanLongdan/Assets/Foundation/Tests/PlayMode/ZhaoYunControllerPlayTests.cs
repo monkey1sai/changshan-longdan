@@ -157,6 +157,46 @@ namespace Changshan.Foundation.Tests
       yield return null;
     }
 
+    [UnityTest] public IEnumerator SeededDummiesReproduceInitialAiAndRetryContinuesStream()
+    {
+      var controller = Create(out var input);
+      var dummiesObject = new GameObject("Seeded dummies");
+      try
+      {
+        var dummy = new GameObject("Soldier"); dummy.transform.SetParent(dummiesObject.transform);
+        var dummies = dummiesObject.AddComponent<TrainingDummies>();
+        dummies.SetDummies(new[] { dummy.transform }, new[] { new Spawn(0, 20, 0, EnemyKind.Spear) }, true);
+        controller.UseDummies(dummies, 11);
+        float hp = controller.Simulation.Targets.Hp(0);
+        controller.Restart();
+        Assert.That(controller.Simulation.Targets.Hp(0), Is.Not.EqualTo(hp), "retry must continue the stream");
+        controller.UseDummies(dummies, 11);
+        Assert.That(controller.Simulation.Targets.Hp(0), Is.EqualTo(hp), "independent seeded construction must reproduce");
+        controller.UseDummies(dummies, 23);
+        Assert.That(controller.Simulation.Targets.Hp(0), Is.Not.EqualTo(hp));
+      }
+      finally { Object.Destroy(dummiesObject); }
+      yield return null;
+    }
+
+    [UnityTest] public IEnumerator DefaultDummySeedRemainsSeven()
+    {
+      var controller = Create(out var input);
+      var dummiesObject = new GameObject("Default seed dummies");
+      try
+      {
+        var dummy = new GameObject("Soldier"); dummy.transform.SetParent(dummiesObject.transform);
+        var dummies = dummiesObject.AddComponent<TrainingDummies>();
+        dummies.SetDummies(new[] { dummy.transform }, new[] { new Spawn(0, 20, 0, EnemyKind.Spear) }, true);
+        controller.UseDummies(dummies);
+        float hp = controller.Simulation.Targets.Hp(0);
+        controller.UseDummies(dummies, 7);
+        Assert.That(controller.Simulation.Targets.Hp(0), Is.EqualTo(hp));
+      }
+      finally { Object.Destroy(dummiesObject); }
+      yield return null;
+    }
+
     [UnityTest] public IEnumerator RestartRestoresTheStartState()
     {
       var controller = Create(out var input);

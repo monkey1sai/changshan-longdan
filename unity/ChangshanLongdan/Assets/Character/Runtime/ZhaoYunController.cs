@@ -84,16 +84,16 @@ namespace Changshan.Character
     }
 
     // Uses these dummies (or none) as the hit targets and restarts the fight.
-    public void UseDummies(TrainingDummies dummies)
+    public void UseDummies(TrainingDummies dummies, uint seed = HitTargets.DefaultSeed)
     {
       Initialise();
-      Build(dummies);
+      Build(dummies, seed);
     }
 
-    void Build(TrainingDummies dummies)
+    void Build(TrainingDummies dummies, uint seed = HitTargets.DefaultSeed)
     {
       Dummies = dummies;
-      var targets = new HitTargets(dummies != null ? dummies.Dummies.Count : 0);
+      var targets = new HitTargets(dummies != null ? dummies.Dummies.Count : 0, seed);
       var difficulty = Simulation != null ? Simulation.Difficulty : Difficulties.Normal;
       Simulation = new CombatSimulation(targets);
       Simulation.SetDifficulty(difficulty);

@@ -23,6 +23,8 @@ const testInventory = {
   playmode: { FoundationPlayTests: 1, CharacterImportPlayTests: 16, ZhaoYunControllerPlayTests: 5, ZhaoYunHitPlayTests: 3, AnimatedCharacterPlayTests: 2, ReactionPlayTests: 3, FeedbackPlayTests: 4, CrowdPlayTests: 2, CameraPlayTests: 3, EnvironmentAssetPlayTests: 4, DirectorFlowPlayTests: 4 },
 }
 const characterSource = 'public/models/zhaoyun.glb'
+testInventory.editmode.PerformanceScopeEditTests = 4
+testInventory.playmode.ZhaoYunControllerPlayTests = 7
 const characterStreamingCopy = 'ChangshanLongdan_Data/StreamingAssets/Characters/zhaoyun.glb'
 const readJson = filename => JSON.parse(fs.readFileSync(requireSafePath(root, filename), 'utf8'))
 const writeJson = (filename, data) => fs.writeFileSync(requireSafePath(root, filename), JSON.stringify(data, null, 2) + '\n', { flag: 'wx' })

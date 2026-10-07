@@ -39,6 +39,7 @@ namespace Changshan.Foundation.Editor
       PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
       PlayerSettings.resizableWindow = false;
       PlayerSettings.runInBackground = true;
+      PlayerSettings.enableFrameTimingStats = true; // E12: expose timing counters; no quality or gameplay tuning.
       PlayerSettings.companyName = "ChangshanLongdan";
       PlayerSettings.productName = "ChangshanLongdan E02";
       QualitySettings.vSyncCount = FoundationContract.VSync;
