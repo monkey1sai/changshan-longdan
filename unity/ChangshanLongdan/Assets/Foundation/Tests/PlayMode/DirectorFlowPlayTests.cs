@@ -84,9 +84,13 @@ namespace Changshan.Foundation.Tests
       Assert.That(view.BannerGold, Is.False);
       BattleStrings.SetLocaleForSession(BattleStrings.English);
       Assert.That(view.BannerText, Is.EqualTo("Half the Wei Army Defeated"));
-      view.AfterAnimate(c.Simulation, null, 0, 1.99);
-      Assert.That(view.BannerLeft, Is.EqualTo(0.01).Within(1e-9));
-      view.AfterAnimate(c.Simulation, null, 0, 0.01);
+      // Exact binary fractions check the two-second boundary without decimal subtraction residue.
+      view.AfterAnimate(c.Simulation, null, 0, 1.75);
+      Assert.That(view.BannerLeft, Is.EqualTo(0.25));
+      view.AfterAnimate(c.Simulation, null, 0, 0.25);
+      Assert.That(view.BannerLeft, Is.Zero);
+      view.ShowBattleBanner(CombatEvent.HalfDefeated());
+      view.AfterAnimate(c.Simulation, null, 0, 2.5);
       Assert.That(view.BannerLeft, Is.Zero);
       c.Restart();
       Assert.That(view.BannerText, Is.Empty);
