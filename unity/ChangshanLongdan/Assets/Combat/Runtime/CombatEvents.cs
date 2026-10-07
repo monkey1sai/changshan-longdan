@@ -3,8 +3,9 @@ using System;
 namespace Changshan.Combat
 {
   // Battle.ts BattleEvent, the part E07 ports: what happened in one step (or one injected strike) for presentation.
-  // Player-side events (move start, swing, fx, jump, land, dodge, musou start) stay in Player.Events.
-  public enum CombatEventType { Hit, Kill, EnemyStrike, Parry, GuardBlock, Hurt }
+  // Player-side events (move start, swing, fx, jump, land, dodge, musou start) stay in Player.Events. MusouReady is
+  // Battle's notice that the gauge just became full (end of a step).
+  public enum CombatEventType { Hit, Kill, EnemyStrike, Parry, GuardBlock, Hurt, MusouReady }
 
   public readonly struct CombatEvent
   {
@@ -39,5 +40,6 @@ namespace Changshan.Combat
     public static CombatEvent GuardBlock(double x, double z, double facing, bool heavy, double damage) =>
       new CombatEvent(CombatEventType.GuardBlock, x: x, z: z, facing: facing, heavy: heavy, damage: damage);
     public static CombatEvent Hurt(double x, double z, bool heavy) => new CombatEvent(CombatEventType.Hurt, x: x, z: z, heavy: heavy);
+    public static CombatEvent MusouReady() => new CombatEvent(CombatEventType.MusouReady);
   }
 }

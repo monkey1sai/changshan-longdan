@@ -18,6 +18,7 @@
     "com.unity.modules.imageconversion": { "version": "1.0.0", "source": "builtin" },
     "com.unity.mathematics": { "version": "1.4.0", "source": "builtin" },
     "com.unity.modules.unitywebrequest": { "version": "1.0.0", "source": "builtin" },
+    "com.unity.modules.audio": { "version": "1.0.0", "source": "builtin" },
     "com.unity.profiling.core": { "version": "1.0.3", "source": "registry", "sha1": "8a49f7027d0618e2cb86aa9e4ed5fb4392e8121a" },
     "com.unity.searcher": { "version": "4.9.5", "source": "registry", "sha1": "a463122f2c00f83398f41790942a0793431e70ea" },
     "com.unity.nuget.mono-cecil": { "version": "1.11.6", "source": "registry", "sha1": "ecb9724e46fff855c46a4f37f0a3377a3cfffc06" },

@@ -8,6 +8,9 @@ namespace Changshan.Combat
 
     public Mulberry32(uint seed) => a = seed;
 
+    // The generator's position in its stream (two generators with equal states produce the same values).
+    public uint State => a;
+
     public double Next()
     {
       unchecked

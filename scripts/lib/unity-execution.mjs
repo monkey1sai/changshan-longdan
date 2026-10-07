@@ -11,6 +11,8 @@ export const fixedDependencies = Object.freeze({
   'com.unity.modules.screencapture': '1.0.0',
   // E03: GLB importer, approved with its built-in mathematics and unitywebrequest dependencies.
   'com.unity.cloud.gltfast': '6.20.0',
+  // E07: the built-in audio module, approved so the synthesized feedback sounds reach the output device.
+  'com.unity.modules.audio': '1.0.0',
 })
 
 export function validatePackagePolicy(policy) {
@@ -21,7 +23,7 @@ export function validatePackagePolicy(policy) {
     'com.unity.test-framework': '1.8.0', 'com.unity.ext.nunit': '2.1.0', 'com.unity.test-framework.performance': '6.6.0',
     'com.unity.modules.imgui': '1.0.0', 'com.unity.modules.jsonserialize': '1.0.0',
     'com.unity.modules.screencapture': '1.0.0', 'com.unity.modules.imageconversion': '1.0.0',
-    'com.unity.mathematics': '1.4.0', 'com.unity.modules.unitywebrequest': '1.0.0',
+    'com.unity.mathematics': '1.4.0', 'com.unity.modules.unitywebrequest': '1.0.0', 'com.unity.modules.audio': '1.0.0',
   }
   const registryHashes = {
     'com.unity.profiling.core': '8a49f7027d0618e2cb86aa9e4ed5fb4392e8121a',
