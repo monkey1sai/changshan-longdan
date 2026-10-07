@@ -47,12 +47,31 @@ namespace Changshan.Foundation.Tests
       }
     }
 
+    // World-space bounds (for placement) and bounds in the instance's own frame (for sizes: the whole castle is
+    // turned by the scene's display yaw, so world AABBs of a rotated box are wider than the box).
     static Bounds BoundsOf(GameObject go)
     {
       var renderers = go.GetComponentsInChildren<Renderer>(true);
       var b = renderers[0].bounds;
       foreach (var r in renderers) b.Encapsulate(r.bounds);
       return b;
+    }
+
+    static Bounds LocalBoundsOf(GameObject part, Transform frame)
+    {
+      Bounds result = default;
+      bool first = true;
+      foreach (var filter in part.GetComponentsInChildren<MeshFilter>(true))
+      {
+        var mb = filter.sharedMesh.bounds;
+        for (int corner = 0; corner < 8; corner++)
+        {
+          var local = new Vector3((corner & 1) == 0 ? mb.min.x : mb.max.x, (corner & 2) == 0 ? mb.min.y : mb.max.y, (corner & 4) == 0 ? mb.min.z : mb.max.z);
+          var p = frame.InverseTransformPoint(filter.transform.TransformPoint(local));
+          if (first) { result = new Bounds(p, Vector3.zero); first = false; } else result.Encapsulate(p);
+        }
+      }
+      return result;
     }
 
     [UnityTest] public IEnumerator DeliveredAssetsReplaceTheBlocksOnTheLayout()
@@ -75,21 +94,26 @@ namespace Changshan.Foundation.Tests
       Assert.That(castle.transform.Find("Barracks 0").GetComponent<MeshRenderer>().enabled, Is.False);
       // Sizes and placement: the barracks body and roof match the delivery on the first layout rectangle.
       var r0 = CastleGeometry.Barracks[0];
-      var body = BoundsOf(CastleAssets.FindNode(assets.Barracks[0], CastleAssets.BarracksNode));
+      var frame = assets.Barracks[0].transform;
+      var bodyNode = CastleAssets.FindNode(assets.Barracks[0], CastleAssets.BarracksNode);
+      var body = LocalBoundsOf(bodyNode, frame);
       Assert.That(body.size.y, Is.EqualTo(4.75f).Within(0.05f));
-      Assert.That(Mathf.Max(body.size.x, body.size.z), Is.EqualTo(14.4f).Within(0.1f));
-      Assert.That(Mathf.Min(body.size.x, body.size.z), Is.EqualTo(12.4f).Within(0.1f));
+      Assert.That(body.size.z, Is.EqualTo(14.4f).Within(0.1f), "the long side runs along the asset's +Z");
+      Assert.That(body.size.x, Is.EqualTo(12.4f).Within(0.1f));
       var centre = controller.Mapping.ToDisplayPosition((r0.MinX + r0.MaxX) / 2, 0, (r0.MinZ + r0.MaxZ) / 2);
-      Assert.That(Vector2.Distance(new Vector2(body.center.x, body.center.z), new Vector2(centre.x, centre.z)), Is.LessThan(0.05f));
-      var roof = BoundsOf(assets.Roofs[0]);
-      Assert.That(Mathf.Max(roof.size.x, roof.size.z), Is.EqualTo(17.45f).Within(0.1f), "roof overhang 1.225 m beyond the 15 m side");
+      var bodyWorld = BoundsOf(bodyNode);
+      Assert.That(Vector2.Distance(new Vector2(bodyWorld.center.x, bodyWorld.center.z), new Vector2(centre.x, centre.z)), Is.LessThan(0.05f));
+      Assert.That(bodyWorld.min.y, Is.EqualTo(centre.y).Within(0.05f), "the body stands on the ground");
+      var roof = LocalBoundsOf(assets.Roofs[0], frame);
+      Assert.That(roof.size.z, Is.EqualTo(17.45f).Within(0.1f), "roof overhang 1.225 m beyond the 15 m side");
+      Assert.That(roof.size.x, Is.EqualTo(15.45f).Within(0.1f));
       Assert.That(roof.max.y - body.min.y, Is.EqualTo(7.57f).Within(0.1f), "ridge height");
       // A brazier stands on its collision square; a wreck on its centre.
       var (bx, bz) = CastleGeometry.Braziers[0];
       var brazier = BoundsOf(assets.Braziers[0]);
       var bc = controller.Mapping.ToDisplayPosition(bx, 0, bz);
       Assert.That(Vector2.Distance(new Vector2(brazier.center.x, brazier.center.z), new Vector2(bc.x, bc.z)), Is.LessThan(0.05f));
-      Assert.That(brazier.size.x, Is.EqualTo(1.15f).Within(0.05f));
+      Assert.That(LocalBoundsOf(assets.Braziers[0], assets.Braziers[0].transform).size.x, Is.EqualTo(1.15f).Within(0.05f));
       // The roof cutaway now drives the asset roof node: stand under barracks 1's eave.
       flow.StartRequested();
       controller.Simulation.Player.Reset(39.55, 0, -System.Math.PI / 2);

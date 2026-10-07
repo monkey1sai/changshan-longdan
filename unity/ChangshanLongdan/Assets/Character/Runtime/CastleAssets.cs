@@ -77,10 +77,10 @@ namespace Changshan.Character
         foreach (var (id, sha, bytes) in Delivery)
         {
           var template = await LoadTemplate(id, sha, bytes);
+          if (Gone) return; // the scene unloaded mid-load: nothing to place and nothing to report
           if (template == null) return; // Fail already recorded
           templates[id] = template;
         }
-        if (this == null || lifetime.IsCancellationRequested) return;
         Place(templates);
         Status = CastleAssetStatus.Ready;
         if (Placeholders != null) Placeholders.AttachAssets(this);
@@ -88,9 +88,13 @@ namespace Changshan.Character
       catch (OperationCanceledException) { }
       catch (Exception exception)
       {
+        if (Gone) return;
         Fail("UNEXPECTED_EXCEPTION", exception.GetType().Name + ": " + exception.Message);
       }
     }
+
+    // True once this component was destroyed (scene unload, tests) while a load was still awaiting.
+    bool Gone => this == null || lifetime.IsCancellationRequested;
 
     async Task<GameObject> LoadTemplate(string id, string expectedSha, long expectedBytes)
     {
@@ -108,11 +112,13 @@ namespace Changshan.Character
         decoded = false;
         logger.Error(exception.GetType().Name + ": " + exception.Message);
       }
+      if (Gone) { import.Dispose(); return null; }
       if (!decoded || Errors(logger) > 0) { Fail("DECODE_FAILED", id + ": " + Summary(logger)); import.Dispose(); return null; }
       var container = new GameObject(id + " template");
       container.SetActive(false);
       container.transform.SetParent(transform, false);
       bool instantiated = await import.InstantiateMainSceneAsync(container.transform, lifetime.Token);
+      if (Gone) { import.Dispose(); return null; }
       if (!instantiated || Errors(logger) > 0) { Fail("INSTANTIATE_FAILED", id + ": " + Summary(logger)); import.Dispose(); Destroy(container); return null; }
       imports.Add(import);
       return container;
