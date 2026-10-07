@@ -105,16 +105,19 @@ namespace Changshan.Character
       // boomShort: how much shorter the horizontal boom is than the rig asked for (clearance or the eave push);
       // insideBlocker: the camera point lies strictly inside a camera blocker or beyond the arena edge.
       public string segment; public double camX, camY, camZ, yaw, boomShort, trauma; public int[] roofs; public double focusU, focusV; public bool shakeEnabled, insideBlocker;
+      public DirectorRoute.Sample director; public string locale, bannerText, injection; public double bannerLeft; public bool bannerGold;
     }
     [Serializable] public sealed class RouteLog
     {
       public string mode; public double duration; public int frameRate; public int pausedFrames; public int audioRate; public long audioSamples;
       public int viewportWidth, viewportHeight; public float renderScale; public int blockers; public string castleAssets;
       public RouteFrame[] frames;
+      public int seed, resetCount; public double cameraYaw, routeDuration, dt; public string routeId, difficulty, inputSchedule, evidenceKind, injections, startingLocale, flow;
+      public DirectorRoute.Sample[] summaries;
     }
 
     string output;
-    bool feedbackRoute, cameraRoute;
+    bool feedbackRoute, cameraRoute, directorRoute;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void Boot()
@@ -124,14 +127,16 @@ namespace Changshan.Character
       int i = Array.IndexOf(args, "-e06Route");
       int j = Array.IndexOf(args, "-e07Feedback");
       int k = Array.IndexOf(args, "-e09Camera");
+      int d = Array.IndexOf(args, "-e11Director");
       bool camera = i < 0 && j < 0 && k >= 0;
       bool feedback = i < 0 && j >= 0;
-      int at = camera ? k : feedback ? j : i;
+      int at = d >= 0 ? d : camera ? k : feedback ? j : i;
       if (at < 0 || at + 1 >= args.Length) return;
       var recorder = new GameObject(camera ? "E09 Camera Recorder" : feedback ? "E07 Feedback Recorder" : "E06 Route Recorder").AddComponent<RouteRecorder>();
       recorder.output = args[at + 1];
       recorder.feedbackRoute = feedback;
       recorder.cameraRoute = camera;
+      recorder.directorRoute = d >= 0;
     }
 
     IEnumerator Start()
@@ -159,31 +164,37 @@ namespace Changshan.Character
       // The E09 flow boots in the Player: the camera route plays through it (title -> battle); the older routes run
       // without it (the script passes -e09NoFlow), so their fixed camera and immediate stepping are unchanged.
       var flow = controller.Flow;
-      if (cameraRoute && flow == null) flow = GameFlow.Attach(controller);
+      if ((cameraRoute || directorRoute) && flow == null) flow = GameFlow.Attach(controller);
+      if (directorRoute) {
+        if (controller.PressureCrowd) { Debug.LogError("E11_ROUTE_UNEXPECTED_PREEXISTING_CROWD"); Application.Quit(2); yield break; }
+        controller.UsePressureCrowd(true); // first reset of a fresh seed7 crowd
+        flow.SelectDifficulty((int)DifficultyId.Normal);
+        flow.SetLocaleForSession(BattleStrings.Chinese);
+      }
       // E10: the camera route is recorded over the delivered castle assets; wait for their load and record its outcome.
       var castleAssets = controller.Castle != null ? controller.Castle.Assets : null;
       while (castleAssets != null && !castleAssets.Settled && Time.realtimeSinceStartup < deadline) yield return null;
       string castleAssetStatus = castleAssets == null ? "None" : castleAssets.Status.ToString();
-      if (cameraRoute && castleAssetStatus != "Ready")
+      if ((cameraRoute || directorRoute) && castleAssetStatus != "Ready")
       {
         Debug.LogError("E10_ROUTE_CASTLE_ASSETS_NOT_READY " + castleAssetStatus + " " + (castleAssets != null ? castleAssets.FailureCode : ""));
         Application.Quit(2);
         yield break;
       }
       if (flow != null) flow.StartRequested();
-      if (!feedbackRoute && !cameraRoute)
+      if (!feedbackRoute && !cameraRoute && !directorRoute)
       {
         // The dummies would block the view of the body; the E06 video reviews animation, not hits.
         foreach (var dummies in FindObjectsByType<TrainingDummies>()) dummies.gameObject.SetActive(false);
         controller.UseDummies(null);
       }
       else if (flow == null) controller.Restart();
-      var route = cameraRoute ? CameraRoute : feedbackRoute ? FeedbackRoute : Route;
-      double duration = cameraRoute ? CameraDuration : feedbackRoute ? FeedbackDuration : Duration;
+      var route = directorRoute ? DirectorRoute.Keys : cameraRoute ? CameraRoute : feedbackRoute ? FeedbackRoute : Route;
+      double duration = directorRoute ? DirectorRoute.Duration + 6 : cameraRoute ? CameraDuration : feedbackRoute ? FeedbackDuration : Duration;
       double gainAt = cameraRoute ? CameraMusouGainAt : feedbackRoute ? FeedbackMusouGainAt : MusouGainAt;
-      var strikes = cameraRoute ? CameraStrikes : feedbackRoute ? FeedbackStrikes : Array.Empty<(double At, bool Heavy)>();
+      var strikes = directorRoute ? Array.Empty<(double At, bool Heavy)>() : cameraRoute ? CameraStrikes : feedbackRoute ? FeedbackStrikes : Array.Empty<(double At, bool Heavy)>();
       var cameraView = controller.CameraView;
-      if (cameraRoute && cameraView == null)
+      if ((cameraRoute || directorRoute) && cameraView == null)
       {
         Debug.LogError("E09_ROUTE_NO_CAMERA_RIG");
         Application.Quit(2);
@@ -217,7 +228,7 @@ namespace Changshan.Character
       // The validation camera is fixed and the route lunges out of its view, so the camera keeps its starting offset to
       // the character's ground point. It only translates: the controls are camera-relative and its yaw stays the same,
       // so the route's input directions are unchanged. Ground point (y = 0) so jumps stay visible as height.
-      var view = cameraRoute ? null : controller.ViewCamera != null ? controller.ViewCamera : Camera.main;
+      var view = cameraRoute || directorRoute ? null : controller.ViewCamera != null ? controller.ViewCamera : Camera.main;
       Vector3 Ground()
       {
         var p = controller.Simulation.Player;
@@ -229,11 +240,19 @@ namespace Changshan.Character
       bool gained = false;
       var log = new RouteLog
       {
-        mode = cameraRoute ? "e09-camera" : feedbackRoute ? "e07-feedback" : "e06-route", duration = duration, frameRate = (int)Math.Round(1 / FrameSeconds),
+        mode = directorRoute ? "e11-director" : cameraRoute ? "e09-camera" : feedbackRoute ? "e07-feedback" : "e06-route", duration = duration, frameRate = (int)Math.Round(1 / FrameSeconds),
         audioRate = mixer?.Rate ?? 0, frames = new RouteFrame[frames],
         viewportWidth = Screen.width, viewportHeight = Screen.height, blockers = Changshan.View.CastleGeometry.CameraBlockers.Count,
         renderScale = Changshan.Foundation.FoundationSmoke.CurrentRenderScale(), castleAssets = castleAssetStatus,
       };
+      if (directorRoute) {
+        log.seed = DirectorRoute.Seed; log.resetCount = DirectorRoute.Resets; log.cameraYaw = Math.PI; log.routeDuration = DirectorRoute.Duration;
+        log.routeId = DirectorRoute.Id; log.difficulty = "normal"; log.inputSchedule = "W:[0,9); cameraYaw=PI";
+        log.dt = FrameSeconds; log.startingLocale = BattleStrings.Chinese; log.flow = "title->battle";
+        log.evidenceKind = "scripted_walk_then_DEV_presentation_probe";
+        log.injections = "9 phase Pressure zh-Hant;10 locale en;11 milestone100 en;12 locale zh-Hant;13 halfDefeated zh-Hant;14 locale en (presentation only; no KO mutation)";
+      }
+      var directorSummaries = new List<DirectorRoute.Sample>();
       string logPath = Path.Combine(output, "route.json");
       for (int frame = 0; frame < frames; frame++)
       {
@@ -254,7 +273,7 @@ namespace Changshan.Character
             shakeTurnedOff = true;
           }
         }
-        if (!gained && t >= gainAt)
+        if (!directorRoute && !gained && t >= gainAt)
         {
           controller.Simulation.Player.GainMusou(PlayerTuning.Default.MusouMax);
           gained = true;
@@ -269,6 +288,9 @@ namespace Changshan.Character
           yield break;
         }
         long traceStart = effects.Trace.FrameTotal;
+        var beforePlayer = controller.Simulation.Player;
+        double beforeX = beforePlayer.X, beforeZ = beforePlayer.Z; var beforeState = beforePlayer.State;
+        if (directorRoute) cameraView.Rig.Yaw = Math.PI;
         controller.Tick(FrameSeconds);
         while (nextStrike < strikes.Length && strikes[nextStrike].At <= t + 1e-9) controller.InjectStrike(strikes[nextStrike++].Heavy);
         if (view != null) view.transform.position = Ground() + offset;
@@ -291,6 +313,20 @@ namespace Changshan.Character
           foreach (var c in cues) if (c.Frame == tf.Frame) names.Add(c.Name);
         }
         entry.cues = names.ToArray();
+        if (directorRoute) {
+          entry.segment = t < DirectorRoute.Duration ? "scripted_walk" : "dev_banner_probe";
+          if (frame == 270) { effects.ShowBattleBanner(CombatEvent.PhaseChanged(BattlePhase.Pressure)); entry.injection = "DEV presentation phase Pressure"; }
+          if (frame == 300 || frame == 420) { flow.SetLocaleForSession(BattleStrings.English); entry.injection = "DEV session locale en"; }
+          if (frame == 330) { effects.ShowBattleBanner(CombatEvent.Milestone(100)); entry.injection = "DEV presentation milestone100"; }
+          if (frame == 360) { flow.SetLocaleForSession(BattleStrings.Chinese); entry.injection = "DEV session locale zh-Hant"; }
+          if (frame == 390) { effects.ShowBattleBanner(CombatEvent.HalfDefeated()); entry.injection = "DEV presentation halfDefeated"; }
+          entry.locale = flow.Locale; entry.bannerText = effects.BannerText; entry.bannerLeft = effects.BannerLeft; entry.bannerGold = effects.BannerGold;
+          entry.yaw = cameraView.Rig.Yaw;
+          if (t < DirectorRoute.Duration) {
+            entry.director = DirectorRoute.Capture(controller.Simulation, frame, beforeX, beforeZ, beforeState, true);
+            if ((frame + 1) % DirectorRoute.Hz == 0) directorSummaries.Add(entry.director);
+          }
+        }
         if (cameraRoute)
         {
           var rig = cameraView.Rig;
@@ -323,6 +359,7 @@ namespace Changshan.Character
       yield return null;
       // Per-frame game time, state, move and feedback: scripts/record-route.mjs checks the route ran and encodes it.
       log.audioSamples = audioSample;
+      if (directorRoute) log.summaries = directorSummaries.ToArray();
       File.WriteAllText(logPath, JsonUtility.ToJson(log));
       if (mixer != null) WriteWav(Path.Combine(output, "audio.wav"), audio, mixer.Rate);
       Application.Quit(0);

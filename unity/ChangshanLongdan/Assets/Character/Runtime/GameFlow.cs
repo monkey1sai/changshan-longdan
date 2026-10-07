@@ -21,6 +21,12 @@ namespace Changshan.Character
     public DifficultyProfile SelectedDifficulty => Difficulties.All[DifficultyIndex];
     public BattleOutcome Result { get; private set; }
     public bool HasResult { get; private set; }
+    public string Locale
+    {
+      get => BattleStrings.Locale;
+      set => BattleStrings.PreferredLocale = value;
+    }
+    public void SetLocaleForSession(string locale) => BattleStrings.SetLocaleForSession(locale);
 
     GUIStyle title, label, button, buttonBold, toggle;
     string[] difficultyLabels, difficultyLabelsSelected;
@@ -149,6 +155,11 @@ namespace Changshan.Character
           if (GUI.Button(new UnityEngine.Rect(w / 2 - 190, h * 0.66f, 380, 54), "再戰 / Retry (Enter)", button)) StartRequested();
           break;
         }
+      }
+      if (Modes.Mode == GameMode.Title || Modes.Mode == GameMode.Paused)
+      {
+        if (GUI.Button(new UnityEngine.Rect(w - 220, 20, 200, 44), Locale == BattleStrings.English ? "Language: English" : "語言：繁體中文", button))
+          Locale = Locale == BattleStrings.English ? BattleStrings.Chinese : BattleStrings.English;
       }
     }
   }

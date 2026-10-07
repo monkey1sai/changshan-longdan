@@ -7,6 +7,7 @@ import { buildCrowdFixture } from './lib/crowd-parity.ts'
 import { buildPresentationFixture } from './lib/presentation-parity.ts'
 import { buildReactionFixture } from './lib/reaction-parity.ts'
 import { buildRigFixture } from './lib/rig-parity.ts'
+import { buildDirectorFixture } from './lib/director-parity.ts'
 
 const root = new URL('../', import.meta.url)
 const fixtures = [
@@ -17,6 +18,7 @@ const fixtures = [
   ['web-crowd.json', buildCrowdFixture],
   ['web-presentation.json', buildPresentationFixture],
   ['web-camera.json', buildCameraFixture],
+  ['web-director.json', buildDirectorFixture],
 ]
 const mode = process.argv[2]
 if (mode !== '--write' && mode !== '--check') throw new Error('Usage: combat-parity.mjs --write | --check')
