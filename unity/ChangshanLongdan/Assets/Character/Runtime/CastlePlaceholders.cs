@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Changshan.Combat;
 using Changshan.View;
 using UnityEngine;
+using Rect = Changshan.Combat.Rect;
 
 namespace Changshan.Character
 {
