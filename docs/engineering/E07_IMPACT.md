@@ -1,6 +1,6 @@
 # E07 打擊回饋與受擊循環
 
-更新：2026-10-07（Asia/Taipei）。`stepStatus: AWAITING_REVIEW（補件已推送開 PR；使用者限定接受試玩；無 formal independent APPROVED，未合併）`。本檔記錄範圍、設計與驗證方法；各候選 SHA 的實際執行結果記在 PR，不寫回本檔以免自我引用。
+更新：2026-10-07（Asia/Taipei）。`stepStatus: DONE（限定接受；無 formal independent APPROVED）`；PR #33 合併為 `dfc71890699959ad6e63d724ae8f26d864e3f2ce`，補件 PR #35 合併為 `af8977c412fb3b9a11b9a4473f674b1a599696de`。本檔記錄範圍、設計與驗證方法；各候選 SHA 的實際執行結果記在 PR #33／#35，不寫回本檔以免自我引用。
 
 ## 範圍與授權
 
@@ -122,6 +122,14 @@ forbiddenChanges: [src/, public/models/, .blend, 新套件, 付費或生成, 推
 ### 補件審查
 
 獨立 advisory 審查 1 輪（Claude code-reviewer 子代理，唯讀，候選 `dc3bdf4`；不是 formal APPROVED）：無 blocker／HIGH。已處置：MEDIUM 錄影腳本只檢查音軌長度（改為解析 WAV，要求每個有音效指令的幀在 100 ms 內可聽到，並讓錄影期間的即時輸出不接混音器）；LOW 銷毀後即時輸出仍拉舊混音器、滿載時新聲音互相覆蓋、音色變體依渲染順序而變（各補測試）；NIT 對照資料來源補列 `moves.ts`／`player.ts`／`enemies.ts`、`GroundFx` 對其他 fx 的註解。延後（未開 issue，GitHub 變更未授權）：錄影 hit-stop 容忍 0.25 s 與最大 hit-stop 0.22 s 耦合；混音器整個緩衝在鎖內渲染；延遲線靜音後的 denormal；網格陣列首次高峰時倍增配置；除錯 HUD 每次命中配置字串；同幀注入攻擊時 `setMusicLevel` 與攻擊指令在 trace 中的先後。
+
+## 補件合併與合併後確認
+
+使用者原文：「授權PR 35」。合併前即時核對：head `c54a4dcc4a51bf9cbdafa6fbf1174cf86dacad81` 與本機相同，兩項 CI 綁定 head 成功（run 37558593665），review comments 0，auto-merge 關閉，Codex 安全審查當時仍在執行（非合併門檻）。**GitHub 上沒有任何 review approval**，依使用者授權合併，屬限定接受；advisory 子代理審查 1 輪不是 formal APPROVED；戰鬥／音效審查者未指定；使用者試玩為手感與聽感確認（候選 `124442d`）。
+
+- merge commit `af8977c412fb3b9a11b9a4473f674b1a599696de`（2026-10-07 09:57 +08:00，一般合併，父提交 `dfc7189`、`c54a4dc`）；tree 與 head 相同；來源分支保留。
+- 合併後確認（merge SHA，全新 clone）：本機 Unity 五階段通過（runId `82b3b26b-3047-43ac-9105-fe691e0d077f`，2026-10-07 09:57–10:03 +08:00；compile、Edit 107/107、Play 34/34、Windows build、Player 123 frames／0 errors）；Web Vitest 31 files／292 tests、typecheck、build、`parity:check` 五份一致、runner 65/65；main 的 Game CI（run 37559604317）success。
+- E07 以限定接受標 DONE：V03／V11 與 S02／S04／S08 子情境的程式與對照證據齊備；完整體驗、裝置、效能與正式感官審查仍待後續驗收。
 
 ## 回滾
 
