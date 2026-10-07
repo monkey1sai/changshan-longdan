@@ -19,6 +19,7 @@ namespace Changshan.Character
     readonly List<MeshRenderer> roofs = new List<MeshRenderer>();
     public int BlockCount { get; private set; }
     Mesh cubeMesh;
+    readonly List<Material> materials = new List<Material>();
 
     public static CastlePlaceholders Create(LogicDisplayMapping mapping, Material material)
     {
@@ -76,6 +77,12 @@ namespace Changshan.Character
       return renderer;
     }
 
+    void OnDestroy()
+    {
+      foreach (var m in materials) if (m != null) Destroy(m);
+      materials.Clear();
+    }
+
     public void ShowRoofs(bool[] visible)
     {
       for (int i = 0; i < roofs.Count && i < visible.Length; i++)
@@ -86,6 +93,7 @@ namespace Changshan.Character
     {
       if (source == null) return null;
       var m = new Material(source) { name = source.name + " " + name };
+      materials.Add(m);
       if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", color);
       if (m.HasProperty("_Color")) m.SetColor("_Color", color);
       return m;

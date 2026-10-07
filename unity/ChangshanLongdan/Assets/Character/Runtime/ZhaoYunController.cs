@@ -39,7 +39,6 @@ namespace Changshan.Character
     public GameFlow Flow { get; set; }
     public CameraRigView CameraView { get; private set; }
     public CastlePlaceholders Castle { get; private set; }
-    public string LastMode { get; private set; } = "playing";
 
     // The shake component on the view camera (added on first use; null without a camera).
     public CameraShake Shake
@@ -122,7 +121,7 @@ namespace Changshan.Character
         if (ground != null)
         {
           groundScale = ground.transform.localScale;
-          ground.transform.localScale = new Vector3(groundScale.x * 12, groundScale.y, groundScale.z * 12);
+          ground.transform.localScale = new Vector3(CastlePlaceholders.GroundScale, groundScale.y, CastlePlaceholders.GroundScale);
         }
         UseDummies(crowd);
       }
@@ -184,10 +183,8 @@ namespace Changshan.Character
     {
       Initialise();
       Simulation.SetDifficulty(difficulty ?? throw new ArgumentNullException(nameof(difficulty)));
-      mapper.Blur();
       ResetFight();
       if (CameraView != null) CameraView.Snap(Simulation.Player);
-      LastMode = "playing";
     }
 
     // game.ts setPaused(true): held keys and pending presses are dropped and the fight stops stepping.
@@ -202,7 +199,8 @@ namespace Changshan.Character
     void Update()
     {
       Tick(Time.unscaledDeltaTime);
-      if (Paused) return;
+      // Dev keys only while a fight runs (never on the title, the pause or the result screens).
+      if (Paused || (Flow != null && Flow.Modes.Mode != GameMode.Playing)) return;
       if (Input.GetKeyDown(KeyCode.F4)) InjectStrike(false);
       if (Input.GetKeyDown(KeyCode.F5)) InjectStrike(true);
       if (Input.GetKeyDown(KeyCode.F6)) CycleDifficulty();
@@ -228,7 +226,6 @@ namespace Changshan.Character
           case ModeAction.Pause: OnPaused(); break;
           case ModeAction.Resume: OnResumed(); break;
         }
-        LastMode = modes.Mode.ToString().ToLowerInvariant();
       }
       bool simulates = modes == null || modes.Simulates;
       bool accepts = modes == null || modes.AcceptsCombatInput;
@@ -241,12 +238,16 @@ namespace Changshan.Character
         ApplyTransform();
         CheckOutcome(modes);
       }
-      Animate();
-      Effects.AfterAnimate(Simulation, Animation.Rig, simulates ? dt : 0);
+      // game.ts: the pose, the effects and the trail advance by the game-time step, which is 0 while paused or on the
+      // title (the Web passes simDt = 0 then); real time still drives the camera, the post values and the banner.
+      double simDt = simulates ? Simulation.Clock.LastSimDt : 0;
+      Animate(simDt);
+      Effects.AfterAnimate(Simulation, Animation.Rig, simDt, dt);
       if (CameraView != null)
       {
         bool playing = modes == null || modes.Mode == GameMode.Playing;
         bool title = modes != null && modes.IsTitle;
+        if (playing && LastInput.Recenter) CameraView.Rig.Recenter(Simulation.Player.Facing); // game.ts simulate: R recenters
         CameraView.Follow(Simulation.Player, dt, playing ? LastInput.CamTurn : 0, LastInput.Zoom, Simulation.Player.State == PlayerState.Musou, title);
       }
     }
@@ -260,7 +261,6 @@ namespace Changshan.Character
       bool lose = Simulation.Player.State == PlayerState.Dead;
       if (!win && !lose) return;
       Flow.Ended(win, Simulation.KoCount, Simulation.Clock.SimTime, Simulation.DamageSum);
-      LastMode = "ended";
     }
 
     // E07: the presentation of this frame's events (src/presentation.ts through FeedbackView): sound, sparks, dust,
@@ -301,7 +301,7 @@ namespace Changshan.Character
     }
 
     // E06: the Web procedural rig poses the imported model once it is READY; until then the fallback stays visible.
-    void Animate()
+    void Animate(double simDt)
     {
       if (character != null && character.Status == CharacterLoadStatus.Ready && character.Model != null &&
           character.Model != Animation.BoundModel && character.Model != failedModel)
@@ -318,7 +318,7 @@ namespace Changshan.Character
         }
       }
       var clock = Simulation.Clock;
-      Animation.Step(Simulation.Player, clock.LastSimDt, clock.SimTime, Mapping);
+      Animation.Step(Simulation.Player, simDt, clock.SimTime, Mapping);
     }
 
     // Focus loss behaves like the Web blur: held keys and pending presses are dropped and simulation stops.
@@ -327,6 +327,7 @@ namespace Changshan.Character
     {
       Initialise();
       if (!focused && IgnoreFocusLoss) return;
+      if (focused) Paused = false; // a focus loss before the flow attached must not leave the fight frozen
       if (Flow != null)
       {
         // With the flow, focus loss is the Web's blur: the fight pauses behind the pause screen and stays paused.

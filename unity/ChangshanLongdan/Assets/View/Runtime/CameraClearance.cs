@@ -32,8 +32,10 @@ namespace Changshan.View
     // The focus may stand under an eave; the camera is pushed out of the nearest eave edge (plus the margin).
     public static void ClearOverhang(ref double x, ref double z, double margin = DefaultMargin)
     {
-      foreach (var r in CastleGeometry.Roofs)
+      var roofs = CastleGeometry.Roofs;
+      for (int i = 0; i < roofs.Count; i++)
       {
+        var r = roofs[i];
         if (!CastleGeometry.Inside(r, x, z, margin)) continue;
         double left = x - r.MinX + margin;
         double right = r.MaxX + margin - x;

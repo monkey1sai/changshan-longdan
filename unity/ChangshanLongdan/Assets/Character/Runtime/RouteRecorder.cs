@@ -70,7 +70,7 @@ namespace Changshan.Character
     {
       (0.5, "KeyW", true), (2.0, "KeyW", false), (2.2, "KeyE", true), (3.4, "KeyE", false), (3.6, "KeyQ", true), (4.0, "KeyQ", false),
       (4.8, "KeyR", true), (4.85, "KeyR", false),
-      (11.5, "KeyD", true), (13.3, "KeyD", false), (14.0, "KeyA", true), (15.8, "KeyA", false),
+      (11.5, "KeyS", true), (13.3, "KeyS", false), (14.0, "KeyW", true), (15.8, "KeyW", false), // facing -X: S walks +X under the eave, W back
       (17.5, "KeyE", true), (21.5, "KeyE", false),
       (22.5, "Space", true), (22.55, "Space", false), (22.8, "KeyJ", true), (22.85, "KeyJ", false),
       (24.5, "KeyL", true), (24.55, "KeyL", false),
@@ -102,7 +102,9 @@ namespace Changshan.Character
       public int f; public double simTime; public string state; public string move; public double x; public double z;
       public bool stepped; public int hits; public double damage; public int kills; public long audioSample; public string[] cues;
       // E09: the camera in logic space, its clearance, the roof flags, the focus in the viewport, the shake state.
-      public string segment; public double camX, camY, camZ, yaw, clearance, trauma; public int[] roofs; public double focusU, focusV; public bool shakeEnabled;
+      // boomShort: how much shorter the horizontal boom is than the rig asked for (clearance or the eave push);
+      // insideBlocker: the camera point lies strictly inside a camera blocker or beyond the arena edge.
+      public string segment; public double camX, camY, camZ, yaw, boomShort, trauma; public int[] roofs; public double focusU, focusV; public bool shakeEnabled, insideBlocker;
     }
     [Serializable] public sealed class RouteLog
     {
@@ -284,7 +286,11 @@ namespace Changshan.Character
           var rig = cameraView.Rig;
           entry.segment = CameraSegments[Math.Max(0, nextSegment - 1)].Name;
           entry.camX = rig.Position.X; entry.camY = rig.Position.Y; entry.camZ = rig.Position.Z; entry.yaw = rig.Yaw;
-          entry.clearance = Changshan.View.CameraClearance.Clearance(rig.Focus.X, rig.Focus.Z, rig.Position.X, rig.Position.Z);
+          double wanted = Changshan.Combat.CombatMath.Lerp(rig.ZoomedDistance, 11, rig.Musou);
+          entry.boomShort = wanted - Changshan.Combat.CombatMath.Hypot(rig.Position.X - rig.Focus.X, rig.Position.Z - rig.Focus.Z);
+          entry.insideBlocker = Math.Abs(rig.Position.X) > Changshan.View.CastleGeometry.PlayLimit || Math.Abs(rig.Position.Z) > Changshan.View.CastleGeometry.PlayLimit;
+          foreach (var b in Changshan.View.CastleGeometry.CameraBlockers)
+            if (rig.Position.X > b.MinX && rig.Position.X < b.MaxX && rig.Position.Z > b.MinZ && rig.Position.Z < b.MaxZ) entry.insideBlocker = true;
           entry.trauma = rig.Trauma;
           entry.shakeEnabled = rig.ShakeEnabled;
           entry.roofs = new int[cameraView.RoofsVisible.Length];

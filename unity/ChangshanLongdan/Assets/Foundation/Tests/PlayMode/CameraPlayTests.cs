@@ -89,13 +89,29 @@ namespace Changshan.Foundation.Tests
       var p = sim.Player;
       var ahead = controller.Mapping.ToDisplayPosition(p.X + System.Math.Sin(controller.CameraView.LogicYaw) * 2, p.Y + CameraRig.FocusHeight, p.Z + System.Math.Cos(controller.CameraView.LogicYaw) * 2);
       Assert.That(Camera.main.WorldToViewportPoint(ahead).y, Is.GreaterThan(vp.y));
+      // A point to the rig's right (logic space) shows on the right of the screen: the X mirror is not reversed.
+      var rig0 = controller.CameraView.Rig;
+      var rightOf = controller.Mapping.ToDisplayPosition(p.X + rig0.Right.X * 2, p.Y + CameraRig.FocusHeight, p.Z + rig0.Right.Z * 2);
+      Assert.That(Camera.main.WorldToViewportPoint(rightOf).x, Is.GreaterThan(vp.x + 0.05f));
+      // R recenters the camera behind the facing after a turn.
+      input.Down.Add("KeyE");
+      for (int frame = 0; frame < 30; frame++) controller.Tick(Dt);
+      input.Up.Add("KeyE");
+      controller.Tick(Dt);
+      double turnedYaw = rig0.Yaw;
+      Assert.That(System.Math.Abs(CombatMath.WrapAngle(turnedYaw - p.Facing)), Is.GreaterThan(0.5));
+      Press(controller, input, "KeyR");
+      for (int frame = 0; frame < 90; frame++) controller.Tick(Dt);
+      Assert.That(System.Math.Abs(CombatMath.WrapAngle(rig0.Yaw - sim.Player.Facing)), Is.LessThan(0.02), "R recenters behind the character");
       // Pause: Esc stops the simulation, Enter resumes.
       steps = sim.Clock.SimSteps;
       Press(controller, input, "Escape");
       Assert.That(flow.Modes.Mode, Is.EqualTo(GameMode.Paused));
       long paused = sim.Clock.SimSteps;
+      double simClock = controller.Effects.SimClock;
       Press(controller, input, "KeyJ");
       Assert.That(sim.Clock.SimSteps, Is.EqualTo(paused), "paused: no stepping, J does nothing");
+      Assert.That(controller.Effects.SimClock, Is.EqualTo(simClock), "paused: the effects and the trail do not advance");
       Press(controller, input, "Enter");
       Assert.That(flow.Modes.Mode, Is.EqualTo(GameMode.Playing));
       controller.Tick(Dt);

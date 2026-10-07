@@ -107,8 +107,10 @@ if (mode === 'e09') {
   const walk = route.frames.filter((f) => f.segment === 'barracks_walk')
   if (!walk.some((f) => f.roofs[1] === 0)) throw new Error('ROUTE_ROOF_NOT_CUT')
   if (walk[walk.length - 1].roofs.some((v) => v === 0)) throw new Error('ROUTE_ROOF_NOT_RESTORED')
-  const shortened = route.frames.filter((f) => f.clearance < 1).length
+  const shortened = route.frames.filter((f) => f.boomShort > 0.05).length
   if (shortened === 0) throw new Error('ROUTE_CLEARANCE_NEVER_ENGAGED')
+  const blocked = route.frames.filter((f) => f.f >= settled && f.insideBlocker).map((f) => f.f)
+  if (blocked.length) throw new Error(`ROUTE_CAMERA_IN_BLOCKER: frames ${blocked.slice(0, 5).join(',')}`)
   const open = route.frames.filter((f) => f.segment === 'open')
   const yawSpan = Math.max(...open.map((f) => f.yaw)) - Math.min(...open.map((f) => f.yaw))
   if (yawSpan < 1) throw new Error(`ROUTE_CAMERA_DID_NOT_TURN: ${yawSpan}`)

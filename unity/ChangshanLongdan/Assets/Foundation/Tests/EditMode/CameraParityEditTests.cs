@@ -228,7 +228,12 @@ namespace Changshan.Foundation.Tests
     {
       Assert.Throws<ArgumentOutOfRangeException>(() => new CameraRig(0));
       Assert.Throws<ArgumentException>(() => RoofCutaway.Update(new bool[3], 0, 0, false));
-      Assert.That(CastleGeometry.CameraBlockers.Count, Is.EqualTo(ArenaLayout.Obstacles().Length - 6 + 6), "barracks bodies replaced by their eave rectangles");
+      // The blockers are the collision set without the barracks bodies, plus the six eave rectangles.
+      var blockers = CastleGeometry.CameraBlockers;
+      foreach (var b in CastleGeometry.Barracks) Assert.That(blockers.Any(r => r.MinX == b.MinX && r.MaxX == b.MaxX && r.MinZ == b.MinZ && r.MaxZ == b.MaxZ), Is.False);
+      foreach (var r in CastleGeometry.Roofs) Assert.That(blockers.Any(x => x.MinX == r.MinX && x.MaxX == r.MaxX && x.MinZ == r.MinZ && x.MaxZ == r.MaxZ), Is.True);
+      Assert.That(blockers.Any(r => r.MinX == CastleGeometry.Keep.MinX && r.MaxZ == CastleGeometry.Keep.MaxZ), Is.True);
+      Assert.That(blockers.Count, Is.EqualTo(ArenaLayout.Obstacles().Length));
       Assert.That(CastleGeometry.Wrecks.Count, Is.EqualTo(2));
     }
   }

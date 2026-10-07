@@ -81,7 +81,7 @@ namespace Changshan.Character
     // game.ts startBattle: the camera snaps behind the character.
     public void Snap(Player player)
     {
-      Rig.Snap(new Vec3(player.X, player.Y, player.Z), ArenaLayout.StartFacing);
+      Rig.Snap(new Vec3(player.X, player.Y, player.Z), player.Facing); // game.ts snaps to the start facing, which the player has then
       Apply();
     }
 

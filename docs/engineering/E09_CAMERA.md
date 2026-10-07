@@ -32,11 +32,18 @@
 | Play Mode `CameraPlayTests` | 場景：佔位城池存在且屋頂六片；鏡頭跟隨角色並在營房旁收短、不進入方塊；走到屋簷下屋頂隱藏、離開恢復；標題→出陣→暫停→恢復→戰果→重試的流程；震動開關保存並生效；失焦暫停 |
 | 錄影 | 三種解析度的鏡頭路線影片與逐幀 trace（人工觀看才算視覺證據） |
 
+## 驗證輪次與審查處置
+
+Unity 失敗輪次（候選與原因，皆保留證據）：`baefe62` `Rect` 與 `UnityEngine.Rect` 同名；`2286795` 佔位方塊用了 Physics 模組的 `Collider`、錄影器參照 URP 命名空間（改以內建網格建方塊、經 `Foundation` 讀 render scale）；`5f4c98e` 兩個 Play 斷言錯（標題環繞以顯示空間量距、重擊無敵未等完）。錄影檢查修正：要求的狀態寫成 `Hurt`（重擊是 `Down`）；出陣後的標題 swoop（Web 的 title 混合以 2.2/s 衰減，約 3 s）被場地檢查誤判，改為前 4 s 豁免並記錄；錄影把「震動關閉」寫進 PlayerPrefs 使後續 Player 以關閉啟動（改為只改本次設定並在開始時強制開啟，已清除本機殘留值）。
+
+獨立 advisory 審查 1 輪（Claude code-reviewer 子代理，唯讀，候選 `2219f97`；不是 formal APPROVED）：無 blocker。已處置：HIGH R 回正未接線（接上並補 Play 正例）；HIGH 錄影路線在該版本無法通過（三項：swoop 豁免、營房段因 `Snap` 固定用起始朝向而碰巧走對方向——`Snap` 改用角色朝向並把營房段改為 S／W、第二次重擊移到無敵之後）；MEDIUM 暫停時表現層與程序動畫仍以上一步的 simDt 積分（改傳 0，補斷言）；MEDIUM 錄影的 `clearance` 量測無意義（改記 boom 收短量與「鏡頭在阻擋內」旗標）；MEDIUM runner 的 Player 截圖變成標題畫面（Player 階段加 `-e09NoFlow`，截圖維持驗證姿勢；標題由錄影覆蓋）；MEDIUM PlayerPrefs 污染（如上）；LOW 失焦旗標、開發鍵繞過模式機、IMGUI 每幀配置、測試強度（加右側投影與阻擋集合斷言）、地面縮放疊乘與材質釋放、`StartBattle` 多餘的清輸入。延後：fixture 直接記錄事件以免兩處重述、`Snap` 後一幀才套用、音效 pan 改用 `Rig.Right`、`CastleGeometry` 與 `ArenaLayout` 重複矩形、IMGUI 字型在 Player 的 CJK 顯示未驗證。
+
 ## 已知限制
 
 - 場景是佔位方塊，沒有真實建築、城門與材質；視覺可讀性（主角與威脅可辨識）要到 E10 才有意義的畫面。
 - 無雙龍未移植，無雙鏡頭拉高環繞時畫面沒有龍；慢動作、連擊與小地圖不在範圍。
 - IMGUI 畫面只有文字與按鈕；語言切換未移植（固定繁中加英文標註）。
+- runner 的 Player 階段以 `-e09NoFlow` 啟動，截圖仍是 E03 驗證姿勢；從輸出包直接啟動則進標題畫面（錄影與試玩走這條）。出陣後鏡頭從標題環繞 swoop 進場約 3 s，是 Web 原行為。
 
 ## 回滾
 

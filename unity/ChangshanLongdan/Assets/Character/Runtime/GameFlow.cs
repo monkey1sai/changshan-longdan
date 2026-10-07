@@ -22,7 +22,9 @@ namespace Changshan.Character
     public BattleOutcome Result { get; private set; }
     public bool HasResult { get; private set; }
 
-    GUIStyle title, label, button;
+    GUIStyle title, label, button, buttonBold, toggle;
+    string[] difficultyLabels, difficultyLabelsSelected;
+    string resultText = "";
 
     public readonly struct BattleOutcome
     {
@@ -78,6 +80,8 @@ namespace Changshan.Character
     {
       Result = new BattleOutcome(win, ko, seconds, damage);
       HasResult = true;
+      resultText = string.Format(CultureInfo.InvariantCulture, "擊破 KO {0}\n時間 Time {1}:{2:00}\n受傷 Damage {3:0}\n評等 Rank {4}",
+        Result.Ko, (int)(Result.Seconds / 60), (int)(Result.Seconds % 60), Result.Damage, Result.Rank);
       Modes.End();
     }
 
@@ -98,6 +102,15 @@ namespace Changshan.Character
         title = new GUIStyle(GUI.skin.label) { fontSize = 48, alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
         label = new GUIStyle(GUI.skin.label) { fontSize = 26, alignment = TextAnchor.MiddleCenter };
         button = new GUIStyle(GUI.skin.button) { fontSize = 26 };
+        buttonBold = new GUIStyle(button) { fontStyle = FontStyle.Bold };
+        toggle = new GUIStyle(GUI.skin.toggle) { fontSize = 24 };
+        difficultyLabels = new string[Difficulties.All.Count];
+        difficultyLabelsSelected = new string[Difficulties.All.Count];
+        for (int i = 0; i < Difficulties.All.Count; i++)
+        {
+          difficultyLabels[i] = Difficulties.All[i].Name;
+          difficultyLabelsSelected[i] = "▶ " + Difficulties.All[i].Name;
+        }
       }
       float w = Screen.width, h = Screen.height;
       switch (Modes.Mode)
@@ -110,8 +123,8 @@ namespace Changshan.Character
           float bw = 120, bx = w / 2 - (bw * Difficulties.All.Count + 10 * (Difficulties.All.Count - 1)) / 2;
           for (int i = 0; i < Difficulties.All.Count; i++)
           {
-            var style = new GUIStyle(button) { fontStyle = i == DifficultyIndex ? FontStyle.Bold : FontStyle.Normal };
-            if (GUI.Button(new UnityEngine.Rect(bx + i * (bw + 10), h * 0.43f, bw, 44), (i == DifficultyIndex ? "▶ " : "") + Difficulties.All[i].Name, style)) SelectDifficulty(i);
+            bool selected = i == DifficultyIndex;
+            if (GUI.Button(new UnityEngine.Rect(bx + i * (bw + 10), h * 0.43f, bw, 44), selected ? difficultyLabelsSelected[i] : difficultyLabels[i], selected ? buttonBold : button)) SelectDifficulty(i);
           }
           if (GUI.Button(new UnityEngine.Rect(w / 2 - 190, h * 0.56f, 380, 54), "出陣 / To Battle (Enter, J)", button)) StartRequested();
           GUI.Label(new UnityEngine.Rect(0, h * 0.66f, w, 40), "WASD 移動  J 普攻  K 蓄力  Space 跳  Shift 閃避  F 防禦  L 無雙  Q/E 轉鏡頭  R 回正  Esc 暫停", label);
@@ -123,7 +136,7 @@ namespace Changshan.Character
           GUI.Label(new UnityEngine.Rect(0, h * 0.29f, w, 70), "暫停 / Paused", title);
           if (GUI.Button(new UnityEngine.Rect(w / 2 - 190, h * 0.42f, 380, 54), "繼續 / Resume (Esc, Enter)", button)) ResumeRequested();
           bool shake = ShakeEnabled;
-          bool next = GUI.Toggle(new UnityEngine.Rect(w / 2 - 110, h * 0.54f, 260, 40), shake, " 鏡頭震動 / Camera shake", new GUIStyle(GUI.skin.toggle) { fontSize = 24 });
+          bool next = GUI.Toggle(new UnityEngine.Rect(w / 2 - 110, h * 0.54f, 260, 40), shake, " 鏡頭震動 / Camera shake", toggle);
           if (next != shake) ShakeEnabled = next;
           break;
         }
@@ -132,9 +145,7 @@ namespace Changshan.Character
           var r = Result;
           GUI.Box(new UnityEngine.Rect(w * 0.3f, h * 0.2f, w * 0.4f, h * 0.6f), "");
           GUI.Label(new UnityEngine.Rect(0, h * 0.24f, w, 70), r.Win ? "完全勝利 / Complete Victory" : "趙雲 敗走 / Zhao Yun Has Fallen", title);
-          string stats = string.Format(CultureInfo.InvariantCulture, "擊破 KO {0}\n時間 Time {1}:{2:00}\n受傷 Damage {3:0}\n評等 Rank {4}",
-            r.Ko, (int)(r.Seconds / 60), (int)(r.Seconds % 60), r.Damage, r.Rank);
-          GUI.Label(new UnityEngine.Rect(0, h * 0.36f, w, 160), stats, label);
+          GUI.Label(new UnityEngine.Rect(0, h * 0.36f, w, 160), resultText, label);
           if (GUI.Button(new UnityEngine.Rect(w / 2 - 190, h * 0.66f, 380, 54), "再戰 / Retry (Enter)", button)) StartRequested();
           break;
         }

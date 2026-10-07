@@ -236,8 +236,9 @@ try {
       run.stages.at(-1).verified = true
     }
     const runtimePath = path.join(output, 'player')
+    // -e09NoFlow keeps the E02/E03 capture on the validation pose rather than the E09 title screen.
     await processStage('player', player, ['-screen-fullscreen', '0', '-screen-width', '1920', '-screen-height', '1080',
-      '-force-d3d11', '-logFile', path.join(runtimePath, 'Player.log'), '-e02RunId', runId, '-e02Output', runtimePath],
+      '-force-d3d11', '-e09NoFlow', '-logFile', path.join(runtimePath, 'Player.log'), '-e02RunId', runId, '-e02Output', runtimePath],
     path.dirname(player), env, true)
     validateRuntime(readJson(path.join(runtimePath, 'runtime.json')), runId, path.join(runtimePath, 'scene.png'))
     run.screenshotSha256 = sha256(path.join(runtimePath, 'scene.png'))

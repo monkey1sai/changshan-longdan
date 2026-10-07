@@ -179,10 +179,9 @@ namespace Changshan.Character
 
     // game.ts updateVisuals after the model posed: the effects advance with the game-time step (frozen in hit-stop),
     // the trail records the spear while a move's trail window is open, post values and the banner decay in real time.
-    public void AfterAnimate(CombatSimulation sim, ProceduralRig rig, double realDt)
+    public void AfterAnimate(CombatSimulation sim, ProceduralRig rig, double simDt, double realDt)
     {
       Build();
-      double simDt = sim.Clock.LastSimDt;
       SimClock += simDt;
       Post.Decay(realDt);
       Fragments.Update(simDt);
