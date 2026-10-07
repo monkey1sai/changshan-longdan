@@ -18,7 +18,7 @@
 | 失敗回退 | pass | 缺檔／雜湊竄改／節點改名三個負例，方塊保留、不放置實例 |
 | 鏡頭路線回歸（三種解析度） | pass | `record:route --mode e09`：800×600／1440×900／1920×1080 皆 `castleAssets: Ready`、unframedFrames 0、鏡頭未進建築 |
 | Unity 五階段（fresh clone） | pass | runId `cadd076e-277b-4ab7-ada6-214a317de419`：Edit 150、Play 43、build、player |
-| 視覺可讀性（人工） | 製作者／coordinator 目視錄影幀：營房、火盆可辨識、風格同 Web 方塊造型 | 未經獨立技術美術審查；使用者試玩待進行 |
+| 視覺可讀性（人工） | 製作者／coordinator 目視錄影幀：營房、火盆可辨識、風格同 Web 方塊造型 | 使用者試玩通過（「是玩通過」，2026-10-07）；未經獨立技術美術審查 |
 
 證據封存：`.worktrees/_evidence/e10/unity-3d725df/`、`.worktrees/_evidence/e10/route-3d725df/`（本機，未入 Git）。
 
