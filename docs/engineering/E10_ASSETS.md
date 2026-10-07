@@ -1,6 +1,6 @@
 # E10 小規模場景資產管線
 
-更新：2026-10-07（Asia/Taipei）。`stepStatus: IN_PROGRESS（本機實作；未推送）`。本檔記錄範圍、設計與驗證方法；各候選 SHA 的實際執行結果記在 PR，不寫回本檔以免自我引用。
+更新：2026-10-07（Asia/Taipei）。`stepStatus: DONE（限定接受）`；PR [#41](https://github.com/monkey1sai/changshan-longdan/pull/41) 合併為 `d554e25`（2026-10-07），合併後確認：Web 296 tests、Unity 五階段 runId `d1c209b9-f3a5-4fc5-8a3f-0d1041951ec0`。本檔記錄範圍、設計與驗證方法；各候選 SHA 的實際執行結果記在 PR，不寫回本檔以免自我引用。
 
 ## 範圍與授權
 
