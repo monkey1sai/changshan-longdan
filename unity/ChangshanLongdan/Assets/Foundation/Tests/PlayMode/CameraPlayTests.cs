@@ -69,8 +69,9 @@ namespace Changshan.Foundation.Tests
       long steps = sim.Clock.SimSteps;
       Press(controller, input, "KeyW");
       Assert.That(sim.Clock.SimSteps, Is.EqualTo(steps), "the title does not simulate");
-      var titlePos = Camera.main.transform.position;
-      Assert.That(titlePos.magnitude, Is.GreaterThan(60), "the title camera orbits outside the castle");
+      // The title orbit circles the castle at 78 m (logic space); the display position differs by the scene anchor.
+      Assert.That(controller.CameraView.Rig.Position.Length(), Is.GreaterThan(60), "the title camera orbits outside the castle");
+      Assert.That(Horizontal(Camera.main.transform.position, controller.transform.position), Is.GreaterThan(30));
       flow.SelectDifficulty((int)DifficultyId.Hard);
       Press(controller, input, "KeyJ");
       Assert.That(flow.Modes.Mode, Is.EqualTo(GameMode.Playing), "J starts the battle from the title");
@@ -175,7 +176,9 @@ namespace Changshan.Foundation.Tests
         Assert.That(rig.Trauma, Is.Zero);
         Assert.That(controller.Shake.Trauma, Is.Zero, "the E07 shake forwards into the rig");
         Assert.That(Vector3.Distance(Camera.main.transform.position, rest), Is.LessThan(0.05f));
-        for (int frame = 0; frame < 120; frame++) controller.Tick(Dt);
+        // The heavy hit leaves the character invulnerable for over two seconds (E07 fixture): wait it out.
+        for (int frame = 0; frame < 220; frame++) controller.Tick(Dt);
+        Assert.That(controller.Simulation.Player.Invulnerable, Is.Zero);
         flow.ShakeEnabled = true;
         controller.InjectStrike(true);
         controller.Tick(Dt);
