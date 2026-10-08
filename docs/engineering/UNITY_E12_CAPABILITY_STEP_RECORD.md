@@ -6,7 +6,7 @@
 
 ```text
 stepId: E12/U1
-status: IN_PROGRESS_BLOCKED_CLOCK_DIAGNOSTIC
+status: IN_PROGRESS_BLOCKED_UTC_MAPPING
 implementationPr: null
 implementer: Codex root
 independentReviewer: native architecture_reviewer /root/unity_spec_review (advisory)
@@ -64,7 +64,7 @@ formalReviewCommitSha: null
 formalReviewUrlOrId: null
 latestCiHeadShaAndResults: NOT_RUN (not pushed)
 unresolvedReviewThreads: null
-unresolvedBlockingFindings: fresh clock evidence unavailable; method/scope approval incomplete
+unresolvedBlockingFindings: host clock values available but reliable UTC mapping unproven; method/scope approval incomplete
 reviewerOpenedArtifacts: final candidate advisory review pending
 baseDriftAssessment: latest origin805db86 same source base
 finalSameVersionVerdict: NOT_VERIFIED
@@ -74,7 +74,7 @@ finalSameVersionVerdict: NOT_VERIFIED
 
 ```text
 stepVerdict: BLOCKED, not VERIFIED/DONE
-remainingFailuresOrEvidenceGaps: clock diagnostic access/budget; approved instrumentation/error method; formal gate
+remainingFailuresOrEvidenceGaps: reliable clock UTC mapping; approved instrumentation/error method; formal gate
 mergeAuthorizedByAndEvidence: null
 mergeSha: null
 postMergeValidationAndCompatibility: NOT_RUN
@@ -85,3 +85,14 @@ releaseOrPaidActionPerformed: false
 ```
 
 無背景Player或美術製作。獨立advisory審查不能填成正式APPROVED；同候選最終回覆另記exact SHA，避免文件自引用commit迴圈。
+
+## 追加host診斷與狀態轉移
+
+使用者同意最多3筆host唯讀採樣；全部執行成功，沒有第4筆。原sandbox的拒絕存取仍保留，不重新計數或刪除。時間2026-10-08T08:13:05.1750759Z..08:13:07.9162601Z（Taipei16:13），raw與analysis hash見PLAN追加節。
+
+- VERIFIED：host能讀取所需GPU／PerfOS時鐘欄位；兩者FromFileTimeUtc皆約比query UTC超前8h、彼此相差14–56ms（毫秒解析）。
+- VERIFIED：第一筆combined query2673ms超過原2000ms上限；不放寬門檻、不標freshness PASS。
+- UNKNOWN：可靠UTC mapping／底層原因。原GPU-only假設不足；不改provider、固定減8h或以query UTC冒充provider時間。
+- NOT_RUN：指定Player PID/processStart/adapter／VRAM bytes身分與freshness、新runtime／visible／timing、正式benchmark。
+
+本次授權diagnostic已完成；U1仍BLOCKED且1.2–1.4不勾完成。下一步先審查獨立UTC FILETIME／native performance對照的方法與範圍；不自動新增採樣或越過merge gate。

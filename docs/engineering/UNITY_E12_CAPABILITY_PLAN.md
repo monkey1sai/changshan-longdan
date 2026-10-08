@@ -47,3 +47,28 @@ VRAM原provider與query相差約8小時，15樣本仍0有效。[Microsoft Win32_
 ## 出口
 
 本次已開始U1、counter原因定位有證據、raw保全PASS、原E12 Node15 tests PASS；新Player／visible／timing實測NOT_RUN。CIM新時鐘證據受阻、正式review/merge/postmerge未齊；tasks1.2／1.3／1.4不勾完成，不進第2單元。先解除窄時鐘診斷的環境與額度條件並review方法，再依原phase gate執行。
+
+## 追加：已授權host診斷
+
+使用者明確「同意」後，在host執行新增最多3筆唯讀GPU／PerfOS timestamp、frequency和query UTC。這是新授權診斷，保留先前sandbox3筆失敗及原E12兩輪budget；沒有改ACL／時區／provider或啟動遊戲。新增3筆均成功，存取阻礙已解除，UTC可靠mapping尚未證明。
+
+| 新產物（同local-only目錄） | SHA-256 |
+|---|---|
+| host-clock-diagnostic.json | 155443da2c2bb91747f7a916cb82212180d999a9f2b53b330e89d428e1c0519e |
+| host-clock-analysis.json | 2d7f2dfcbfd27d657806a53a328af5d8d1ff587640f348ecb22326d190c271b1 |
+
+採樣UTC：2026-10-08T08:13:05.1750759Z–08:13:07.9162601Z（Taipei16:13）。分析用JavaScript Date.parse，毫秒精度，不宣稱100ns測量精度。
+
+| sample | 合併query window(ms) | GPU比query end超前(ms) | PerfOS比query end超前(ms) | GPU－PerfOS(ms) |
+|---|---:|---:|---:|---:|
+| 1 | 2673 | 28799929 | 28799985 | -56 |
+| 2 | 36 | 28799974 | 28799989 | -15 |
+| 3 | 31 | 28799975 | 28799989 | -14 |
+
+GPU `Frequency_Sys100NS=10000000`、PerfTime／Frequency_PerfTime皆0；PerfOS Sys100NS frequency及PerfTime frequency均10000000。第一筆combined query超過既有2s門檻，不能以其作有效freshness樣本；其餘兩筆亦因UTC轉換未證明而不作PASS。此取樣不是指定Player、沒有PID／processStart／adapter／VRAM bytes，不能代替完整Player驗證。
+
+**已確認**：約8h偏移在GPU與PerfOS兩個來源均存在；GPU-only錯誤假設不足。**推論**：共同WMI時鐘／FILETIME解讀或跨時鐘基準較值得優先隔離，仍無法憑3筆數據裁定根因。不要硬減8h或用query時間覆蓋provider timestamp。
+
+下一個待審查方法是從獨立UTC FILETIME參考與Windows原生performance timestamp建立可追溯對照，核對WMI是否轉換／重標記，並驗證零偏移／非8h偏移／回退／重複／stale與query超限負例。實際原生擷取方式、窄允許欄位、額度與可靠語義須先受審查，不自動增加第4筆或切換provider。保持tasks1.2／1.3／1.4未完成；正式gate與runtime單元仍未開始。
+
+方法審查的新官方依據：[PDH_RAW_COUNTER.TimeStamp](https://learn.microsoft.com/en-us/windows/win32/api/pdh/ns-pdh-pdh_raw_counter) 明定是local time的FILETIME。因此不能把換用PDH視為UTC解法，也不能推定WMI必然繼承相同語義。可先用來源契約與指定時區規則作local-encoded假設判別（含ambiguous／invalid local time失敗），再對同一instance作WMI／PDH／獨立UTC對照；GPU PerfTime=0不能當QPC fallback。這是待驗證提案，不是本次已實測或已授權的新增採樣。
