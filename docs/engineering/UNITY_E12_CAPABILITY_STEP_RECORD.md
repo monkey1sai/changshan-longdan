@@ -181,3 +181,11 @@ releaseOrPaidActionPerformed: false
 - 分類 PRODUCT_FAILURE。採用來源呼叫依賴未納入 allowlist 的 controller overload；main 僅單參數 API，HitTargets 預設 seed=7、readonly RNG，沒有現成 reseed 介面。獨立審查接受最小修正：呼叫原 API，先用 RequireControllerSeed 驗證 seed；不支援者保存 UNSUPPORTED_CONTROLLER_AI_SEED 並退出，再開始任何戰鬥/crowd 修改。
 - 新增一項 EditMode 測試驗證 7 接受、11/23 拒絕，Telemetry 3→4、預期 EditMode 172、PlayMode 47。沒有修改 controller/combat、預設 RNG 或素材。三 seed AI 能力仍缺；此修正不完成 2.1、不重設原 E12 或既有修正預算。
 - 新 exact SHA 須先審查，才可使用新 exclusive output release/e02/unit2-counter-validation-v2 重跑原五階段。尚未取得新版 Unity 結果，SPEC 仍 4/22（18.2%）。
+
+### 修正後五階段實測與完整包追加提案
+
+- 原 project Temp/UnityLockfile 建立於 2026-10-08T14:04:51.9300278Z，吻合 v1；PID45920 已退出。現存 PID22688 的 command line 為 Unity Hub resources/unity.exe serve。preflight 禁止移除/接管 lock，故未刪 lock、未終止 Hub。獨立審查接受同 repo 內新隔離 worktree .worktrees/unity-e12-capability-validate、branch codex/unity-e12-capability-validate，同 exact SHA da959b40f229f2af66c52fd7bfd82353e422cc95；四個固定官方 tgz 採用前後 SHA-256 一致，runner 自行驗包，新的 HEAD/clean/no lock/no output 核對通過。只執行已批准的一次 v2，沒有重設預算或連續新 worktree 重跑。
+- Run 3ecafcf1-eca2-4985-a76e-c6eec0f4c694，結束 2026-10-08T14:21:18.323Z；輸出在上述新 worktree 的 release/e02/unit2-counter-validation-v2。結果 PASS_LOCAL_ENGINE_FOUNDATION，compile/EditMode172/172/PlayMode47/47/build/Player 全部 exit0 verified；tests failed/skipped/inconclusive 皆0。result.json SHA-256 c42126ada4e3875537615aebe07d1eac821a411b29ac28f6d99769c7b8d62ecb。runtime 為 Unity6000.6.4f1、D3D11、URP、Linear、1920x1080、renderScale1、vSync1/cap60、batchMode false、focused true、errorCount0、pendingCaptureGates0；source clean。這僅同版基礎 pipeline，不是自然玩法或效能驗收。
+- 已實際查看 Player scene.png：衣料仍有大片拉伸/尖角，保留資產品質 FAIL，未修改資產。PlayMode Editor.log 有 persistent allocation leak 訊息（79 individual allocations）；log SHA-256 feea3837adf3de26346bbb075d1bc2aa75abc6f611d297b9bf87b50022727107。runner 基礎 gates通過，不代表該 memory 風險解除；後續定位及正式 memory/soak 不可跳過。
+- 獨立審查確認 launcher 所需 validation.playerPayload 未由 runner 產出，完整包追加待人類批准（精確提案見 PLAN）。不補寫 v2 為已取得全包 provenance，也不啟動短 probe。
+- 審查另重現既有 snapshotPayload 一般 {} 容器漏掉根目錄 __proto__ 檔案。原 allowlist 內先加入新增/替換/刪除回歸，RED=1 FAIL，再改 Object.create(null)，全套 E12 Node25/25 PASS。這是 helper 完整性修正，非新增 runner 授權實作；待新 exact SHA 審查。五階段結果只屬 da959b4，不移作之後 helper 候選的 runtime PASS。SPEC 仍4/22（18.2%），2.1與完整遊戲驗收未完成；無背景 Unity/provider/probe。

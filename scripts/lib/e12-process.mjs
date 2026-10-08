@@ -10,7 +10,7 @@ export function scopedE12Path(root, relative, prefix) {
   return target
 }
 export function snapshotPayload(directory) {
-  const result = {}
+  const result = Object.create(null)
   const visit = target => {
     requireSafePath(directory, target)
     const stat = fs.lstatSync(target)

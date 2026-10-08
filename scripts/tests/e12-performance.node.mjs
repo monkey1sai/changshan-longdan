@@ -125,6 +125,25 @@ test('managed payload substitution changes immutable build snapshot', () => {
   } finally { fs.unlinkSync(filename); fs.rmdirSync(directory) }
 })
 
+test('payload includes prototype-like filenames across addition replacement and deletion', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'e12-payload-keys-'))
+  const ordinary = path.join(directory, 'Player.exe'), special = path.join(directory, '__proto__')
+  try {
+    fs.writeFileSync(ordinary, 'player'); const baseline = JSON.stringify(snapshotPayload(directory))
+    fs.writeFileSync(special, 'first'); const added = snapshotPayload(directory)
+    assert.equal(Object.hasOwn(added, '__proto__'), true)
+    assert.equal(JSON.parse(JSON.stringify(added)).__proto__.bytes, 5)
+    assert.notEqual(JSON.stringify(added), baseline)
+    fs.writeFileSync(special, 'other'); const replaced = JSON.stringify(snapshotPayload(directory))
+    assert.notEqual(replaced, JSON.stringify(added))
+    fs.unlinkSync(special); assert.equal(JSON.stringify(snapshotPayload(directory)), baseline)
+    assert.notEqual(JSON.stringify(snapshotPayload(directory)), replaced)
+  } finally {
+    if (fs.existsSync(special)) fs.unlinkSync(special)
+    fs.unlinkSync(ordinary); fs.rmdirSync(directory)
+  }
+})
+
 test('counter identity rejects wrong category, wrong unit, duplicate and missing metadata', () => {
   const csv = 'frame,focus,minimized,cpuMainRaw,cpuRenderRaw,gpuRaw\n1,True,False,1000000,2000000,3000000'
   const valid = { name: 'GPU Frame Time', category: 'Render', unit: 'TimeNanoseconds', available: true, validAtEnd: true, sampleCount: 1, reads: 1 }
