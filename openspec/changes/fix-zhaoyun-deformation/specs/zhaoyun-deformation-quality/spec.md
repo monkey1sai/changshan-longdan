@@ -62,7 +62,7 @@
 
 ### Requirement: Quality gate before formal performance work
 
-品質交付 MUST 經同版本測試、render／自然操作證據、正式獨立審查、相應合併與合併後 compatibility gates 才作為 E12 新基線；SHALL 保留 E12 原始 correction budget 及 blockers，完整效能／soak 與 E13 MUST 另行完成。
+品質交付 MUST 經同版本測試、render／自然操作證據、正式獨立審查後，才能執行已授權的候選資產／runtime 合併；合併後 compatibility 通過才作為 E12 新基線。SHALL 保留 E12 原始 correction budget 及 blockers，完整效能／soak 與 E13 MUST 另行完成。
 
 #### Scenario: New quality baseline
 - **WHEN** 品質候選通過所有必要門檻並完成已授權合併與 compatibility checks

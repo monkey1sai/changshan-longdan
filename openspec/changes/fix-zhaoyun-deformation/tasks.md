@@ -17,7 +17,7 @@
 - [ ] 3.2 只修已確認 topology／weights 原因；交付新 delivery_id、來源／GLB hash、export metadata、technical QA，保留原資產，不新增付費生成或第三方素材。
 - [ ] 3.3 若診斷確認另有 runtime 問題，另以 scoped commit 修復；記錄與資產候選的對照，遵守同一問題最多兩輪，不重設已消耗預算。
 - [ ] 3.4 驗證 21 骨／命名層級、4 influences、技術預算、root-motion=false、17 招式、tip/tipBase；加入缺骨、非法 weights、載入失敗的負例，確認可見 fallback 且不作品質 PASS。
-- [ ] 3.5 完成本單位獨立審查及已授權 merge／compatibility 後，再開始候選整合。
+- [ ] 3.5 審查 delivery／scoped runtime 候選後，只在隔離工作區進入第 4 組品質驗證；第 3／4 組屬同一修復整合單位，完整品質 gate 前不得把資產或 runtime 合併到穩定基準。
 
 ## 4. 同版本整合與品質驗收
 

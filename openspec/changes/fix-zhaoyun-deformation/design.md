@@ -57,7 +57,7 @@ Web／Unity 先核對座標與 logic-display mapping，再比較；共享 rig �
 
 1. spec scope review：確認本修復是 E12 正式長測前的插入品質工作；不改 E00–E13 已有 gate。
 2. 第一個 eligible 實作單位只做同版本診斷及 acceptance protocol；經驗證、獨立審查與相應合併門檻後再進資產／runtime 修復。
-3. 版本化 delivery 與 scoped integration；從新 build 做完整品質回歸，失敗保留原候選紀錄。
+3. 版本化 delivery、scoped runtime 修復與候選 integration／品質驗收屬同一修復整合單位（tasks 第 3／4 組），在隔離工作區從新 build 做完整品質回歸；必要 render／自然操作／正式 review gate 前不得將候選資產或 runtime 合併到穩定基準。失敗保留原候選紀錄。
 4. 通過品質後登錄新程式／profile／asset／build hashes，返回 E12；不沿用舊 benchmark 結果。
 
 回滾：保留基準 commit、原 GLB／manifest／source 與鎖定 hash；資產候選不覆寫來源。已授權的後續 integration 以 scoped revert 恢復原版本，原版本仍保留已知形變狀態，不標記為修復；不 reset／clean、遠端刪除或自動回退 itch。
