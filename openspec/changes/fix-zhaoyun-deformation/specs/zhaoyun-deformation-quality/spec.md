@@ -26,7 +26,7 @@
 
 ### Requirement: Preserve character and combat contracts
 
-修復交付 SHALL 保留既有 PS2 角色辨識度、21 骨命名／層級、SM_ZhaoYun／SM_ZhaoYunSpear、每頂點最多 4 influences、17 招式、rootMotion=false、FootPlant 與權威 weapon tip/tipBase；技術預算 MUST 不超過鎖定 manifest 的 triangles／materials／textures／LOD／clips 上限。必要契約差異 MUST 另行審查，不能靜默接入。
+修復交付 SHALL 保留既有 PS2 角色辨識度、21 骨命名／層級、SM_ZhaoYun／SM_ZhaoYunSpear、每頂點最多 4 influences、17 招式、rootMotion=false、FootPlant 與權威 weapon tip/tipBase；技術預算 MUST 不超過鎖定 manifest 的 triangles／textures／LOD／clips 上限。manifest 未明列的 material count MUST 在實作前從鎖定 GLB 盤點並登錄為基準上限，不能虛構數值。必要契約差異 MUST 另行審查，不能靜默接入。
 
 #### Scenario: Compatible candidate
 - **WHEN** 候選符合骨架／預算與既有姿勢、握點、腳接觸、tip/tipBase、命中回歸

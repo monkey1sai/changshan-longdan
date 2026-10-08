@@ -9,7 +9,7 @@
 - [ ] 2.1 重用現有 Web CPU／rig 診斷，核對舊 probe hash 與內容；輸出全部異常區域 edge/triangle/influence 定位，保留 fresh、bind-only、idle、短序列。
 - [ ] 2.2 建立同姿勢 Unity full palette、骨架 transform／scale 與 vertex 對照，明示 logic/display mapping，加入已知正常、錯接／跨部位配重與非有限資料的正／負／邊界例。
 - [ ] 2.3 分別記錄 topology／weights、程序姿勢與 Unity bridge 原因，證據不足保持 UNKNOWN；以原來源 bind pose 交叉確認，不能只以 shared parity 定案。
-- [ ] 2.4 完成本單位必要 tests、可定位 raw evidence、獨立 exact-candidate review 及相應 merge／compatibility 門檻；缺門檻不进入下一實作單位。
+- [ ] 2.4 完成本單位必要 tests、可定位 raw evidence、獨立 exact-candidate review 及相應 merge／compatibility 門檻；缺門檻不進入下一實作單位。
 
 ## 3. 版本化修復交付
 
