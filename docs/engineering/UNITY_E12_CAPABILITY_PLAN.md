@@ -2,7 +2,7 @@
 
 2026-10-08（Asia/Taipei）；第一個 eligible 單元 U1，對應 OpenSpec tasks1.1–1.3。規格審查版本 `6c5282bf752e71dd54e69de14819f32b74d0dd5c`；當次使用者指示「你審查spec, 通過之後開始spec」支持本機執行準備，不自動授權push／PR／merge／provider／美術傳送。原E12兩輪修正預算保持用完，本次未修量測器。
 
-**目前狀態（task1.3方案整理）**：task1.1／1.2完成；以下歷史追加段保留當時狀態，不能當目前台帳。完整方法及下一單元範圍見文末「Task1.3完整方法」。方法草案不等於工具可用；runtime新範圍批准、U1正式approval／merge／postmerge仍未取得。
+**目前狀態（task1.3方案退出）**：task1.1／1.2／1.3完成；以下歷史追加段保留當時狀態，不能當目前台帳。2026-10-08使用者同意下一步並明確接受M2-T工程量測定義，獨立方法審查接受M1–M7/M2-T與B/T/F成本對照修正；新範圍限本方案精確allowlist/fixtures與最多3短probe/12成本probe，不重設原budget。方法接受不等於工具可用，全部新runtime能力NOT_RUN；task1.4正式approval／獨立merge授權／postmerge仍未齊，不開始unit2。
 
 ## Baseline與新證據
 
@@ -188,7 +188,7 @@ sample關聯保留整個來源timestamp/query窗口與重疊frame/phase區間，
 
 同一完整包用三模式：B為最小wall/輸入/事件ledger（無IDpass/recorder）；T加正式timing來源；F在T上加所有counter/IDpass/window等完整量測。三模式共有同一個最小1Hz外部memory observer，使用M5完全相同的PID/start、adapter、時鐘、query-window與bytes來源，也都有最低限度foreground核對；不在B/T缺少memory時捏造對照。observer/helper的固定負擔算入所有模式，不稱B是無工具release。BuildFlags/FrameTimingStats保留一致。B→T比較wall；T→F比較同timing口徑CPU/GPU/wall，無GPU的B不捏造GPU差值。readback processing、helper、輸出與allocation都算成本；正式gate用F原始數據，包含instrumentation額外draw/CPU/GPU/RAM/VRAM，原draw另作來源分列，禁止減常數。
 
-待批准成本probe：20及300人、seed7、normal、每run暖機30s/採樣60s，模式順序B/T/F/F/T/B，共12runs；先鎖定合法輸入route、camera/交戰/無雙/倒地事件及群眾五數coverage。若同phase workload不相容或自然結局太早，保存失敗，不補血/無敵/teleport，也不裁掉受影響幀；須先修路線並重審，不能重設E12舊budget。這12runs僅工具成本，不能代替正式三seed分級或180s成績；尚未批准/執行。
+成本probe提案：20及300人、seed7、normal、每run暖機30s/採樣60s，模式順序B/T/F/F/T/B，共12runs；先鎖定合法輸入route、camera/交戰/無雙/倒地事件。B/T沒有ID/coverage pass，其visible明確為NOT_MEASURED，不是0、正式visible或缺失的工具能力，不借用F的值填補。三模式共同workload證據為同版合法inputs、camera/geometry/pose/material/phase來源及alive/engaged/attackers/frustum四數；逐simulation tick比對這些來源的identity與事件/四數一致性，任一差異或無法對齊即WORKLOAD_INCOMPATIBLE，不以鄰近wall-frame或跨run的F visible推定一致。F另須在兩次run各自取得完整同幀pixel coverage/visible，依M2/M2-T處理未知、失敗與收尾；任何必要F visible缺值仍BLOCKED。若同phase workload不相容或自然結局太早，保存失敗，不補血/無敵/teleport，也不裁掉受影響幀；須先修路線並重審，不能重設E12舊budget。這12runs僅工具成本，不能代替正式三seed分級或180s成績；未經task1.4 gate不得執行。
 
 **成本允收提案（新方法界線，待批准，不替代原效能gate）**：每個可比較CPU/GPU p95與wall p99的正向增量同時≤0.5ms且≤5%；對照模式自身兩次重跑的同指標差異也須符合此雙界線，否則NOISE_UNRESOLVED。B/T僅評wall。F相對T增加PrivateBytes及dedicated VRAM各≤256MiB；穩態工具自身per-frame managed allocation=0（startup/payload flush另外列），全部工具結果仍須原效能與memory gate。各phase及完整run都評，任一必要比較缺值/變異/超限BLOCKED，不看結果後調大界線；跨其他seed/正式workload的成本代表性在正式E12跑前另review確認。
 

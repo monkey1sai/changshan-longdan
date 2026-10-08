@@ -142,3 +142,11 @@ releaseOrPaidActionPerformed: false
 - 實際workspace jev_status：enabled0.9/10、workspace_override=true、advisory_only=true；沒有可呼叫Unity MCP executor。使用者於2026-10-08明確確認「Jev選擇，Unity工具執行」；Jev不是Unity直接執行器，缺實際執行能力不算完成。此次沒有provider Choice/recorded observation，無需虛構outcome。
 - 既有 `node scripts/unity-preflight.mjs --mode inventory --out release/e02/final-unity-jev-pending` 只讀PE/專案/保留素材，ready=true、Editor=6000.6.4f1_12bfff696524、asset hashes一致；engineExecutionSupported=false、unityProcessStarted=false、compile/Edit/Play/build/Player/visibleScene/license均NOT_RUN。這是precheck，不是Unity啟動或正式最終preflight。
 - 使用者最終要求已列為5.2/5.3的強制完成條件：可見Editor、同版輸出包、Jev/實際executor、所有必要測試及formal/merge/postmerge皆齊才22/22。沒有背景Unity/Player、provider採樣或美術製作；此補充文件不解除PR45與unit2gate。
+
+## Task1.3方案退出（2026-10-08）
+
+- 使用者明確「同意下一步，不要偏離spec」後，另明確選擇「接受M2-T工程量測定義，保留完整遊戲驗收」。此輪新範圍批准限已具體提出的unit2 allowlist、fixtures、最多3短probe及12成本probe與既定停止條件；未列檔案、追加採樣、降低門檻、merge/deploy仍不授權。只有task1.4全部gate齊備後才可使用此範圍，不在本輪執行。
+- 獨立reviewer `/root/unity_spec_review` 親讀M1–M7/M2-T，核對原始索引11份bytes/SHA及方案9份local-only JSON hashes吻合；方法審查發現M6 B/T無pixel pass卻要求五數coverage的矛盾。僅修該契約：B/T visible=NOT_MEASURED，不借用F；共同來源逐simulation tick identity/事件/四數相容，F每run自取完整pixel結果，任一不符fail closed。
+- 修正後独立方法advisory接受；不將此審查當formal GitHub APPROVED。逐tick相容在合法route能否達成仍NOT_RUN，失敗不得放寬或自增重試。確定性檢查：OpenSpec strict、diff check、四份本機JSON解析與原hash核對PASS；沒有新provider/Unity執行。提交後另核對exact candidate與其CI，舊head CI不移作新head結果。
+- Task1.3只完成方案/範圍批准，非能力工程。整體3/22（13.6% task計數）；task1.4仍缺正式獨立APPROVED、獨立merge授權與postmerge，不進unit2。PR45核對基準head7e69e51、base9ab737a、Draft/OPEN、reviews=0、auto-merge=null、unresolved threads=0且pagination無下一頁；舊head CI Ubuntu/Windows PASS。classic main protection API回404 Branch not protected，不能推定其他rulesets或repo正式審查規則取消。
+- 停止於formal gate；最終仍須可見打開Unity，Jev選擇/Unity工具執行、同版完整Player矩陣及使用者體驗確認皆通過才SPEC completed。沒有背景Unity、Player、provider採樣或美術製作。

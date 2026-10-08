@@ -1,6 +1,6 @@
 ## 進度回報與最終完成契約
 
-每次完成／受阻交付都回報已完成項目數／22、百分比、本次完成項目、剩餘gate與下一個eligible步驟。現在2/22（9.1%）只是任務計數，不代表遊戲工程品質或工作量比例。不得因文件、CI、Jev回應或子步驟完成而增加勾選。
+每次完成／受阻交付都回報已完成項目數／22、百分比、本次完成項目、剩餘gate與下一個eligible步驟。現在3/22（13.6%）只是任務計數，不代表遊戲工程品質或工作量比例。只有task本身約定的條件完成才勾選，不因文件格式、CI或Jev回應通過而勾選未驗收工程。
 
 使用者要求最終可見打開Unity、用Jev執行遊戲並通過全部必要測試，並於2026-10-08確認「Jev選擇，Unity工具執行」。按現有Jev Choice配置，由Jev支援選擇、已授權Unity/Player executor實際執行；缺executor時記UNAVAILABLE，不自行宣稱滿足。最終5.2/5.3全部證據與gates齊備且22/22後才能稱SPEC completed；必要FAIL/UNKNOWN/SKIPPED/NOT_RUN均阻擋。
 
@@ -8,7 +8,7 @@
 
 - [x] 1.1 核對最新base／E11與E12候選diff、歷史限定接受及formal缺口；指定單元負責人、reviewer、V/S、允許檔案與回滾，使用STEP_RECORD，未審查不實作。證據：docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md A/B。
 - [x] 1.2 保存既有601frame／15sample／0valid的raw與hash，記錄已用兩輪；取得新的VRAM時鐘語義／counter身分定位證據，不改validator門檻。證據：UNITY_E12_CAPABILITY_PLAN原生同instance對照及raw索引；只完成本機觀察來源定位，不代表指定Player freshness。
-- [ ] 1.3 提出camera-specific visible、前景、timing alignment／去重／收尾、記憶體對齊及量測成本方案；未知項保持BLOCKED，取得独立方案審查與新範圍批准，不重設原budget。具體方法/allowlist/額度見UNITY_E12_CAPABILITY_PLAN M1–M7；待最終獨立方案審查與人類unit2新範圍批准，暫不勾完成。
+- [x] 1.3 提出camera-specific visible、前景、timing alignment／去重／收尾、記憶體對齊及量測成本方案；未知項保持BLOCKED，取得独立方案審查與新範圍批准，不重設原budget。證據：UNITY_E12_CAPABILITY_PLAN M1–M7/M2-T與STEP_RECORD「Task1.3方案退出」；使用者同意下一步並明確接受M2-T工程量測定義，獨立方法審查接受成本對照修正。runtime仍NOT_RUN，task1.4 gate未齊不得開始unit2。
 - [ ] 1.4 完成本單元必要確定性驗證、raw evidence、exact-head review；需要提交合併時走正式approval／merge授權／postmerge gate後，才開始第2單元。
 
 ## 2. 量測能力工程（可於美術等待期間進行）
