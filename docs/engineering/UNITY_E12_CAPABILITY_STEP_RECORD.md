@@ -127,3 +127,10 @@ releaseOrPaidActionPerformed: false
 - 重用鎖定Feedback alpha/depth/geometry：opaque fragment進ID遮擋；additive保留destination，dust alpha1才完全覆蓋，unsupported來源BLOCKED。追加1個measurement coverage shader與精確fixtures、8組雙target buffer提案，額度與原gate不增加。
 - 透明方法所有GPU parity/成本/Player測試NOT_RUN；待獨立方案審查、實作scope批准及task1.4正式gate。task1.3仍未完成，沒有新採樣或runtime修改。
 - M2-T draft審查確認source/blend吻合，要求明列分析性權重不保證framebuffer有限精度/量化/飽和後實際色彩影響；已補齊此限制及人類scope語義批准，parity不能替代語義決策。
+
+## PR送審準備與最新base
+
+- 使用者明確「同意授權」推送`codex/spec-unity-migration-followup`至`origin`並建立SPEC/U1審查PR；目的地`monkey1sai/changshan-longdan`、base `main`。僅送審，不授權merge、unit2 runtime、採樣或部署。
+- 本次fetch確認`origin/main=9ab737ad0324f6922e116845490dada6d7c55c67`；相對805db86只新增MIT `LICENSE`，與本分支12個新增檔不重疊。保留原805db86來源盤點，不倒填歷史驗證；PR採最新main作base，不移除license或更新遊戲。
+- 修正README的舊「tasks均未執行」描述，使其與2/22台帳一致。必要全分支exact-head advisory及CI結果另於PR交付核對；正式APPROVED仍待取得。
+- Authorization Envelope：Destination=GitHub origin monkey1sai/changshan-longdan、指定feature branch/main PR；Purpose=SPEC/U1送審；Allowed=non-force push該branch、create PR、readback/checks；Data=12個tracked SPEC/紀錄/diagnostic檔及繁中PR本文；Forbidden=raw local-only產物/credentials、force/delete、merge/auto-merge、runtime/deploy/provider；Stop=base/head漂移、既有branch/PR衝突、必要review blocker、auth/network失敗。PR建立前後核對branch SHA；未批准gate保持不變。
