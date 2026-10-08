@@ -72,3 +72,23 @@ GPU `Frequency_Sys100NS=10000000`、PerfTime／Frequency_PerfTime皆0；PerfOS S
 下一個待審查方法是從獨立UTC FILETIME參考與Windows原生performance timestamp建立可追溯對照，核對WMI是否轉換／重標記，並驗證零偏移／非8h偏移／回退／重複／stale與query超限負例。實際原生擷取方式、窄允許欄位、額度與可靠語義須先受審查，不自動增加第4筆或切換provider。保持tasks1.2／1.3／1.4未完成；正式gate與runtime單元仍未開始。
 
 方法審查的新官方依據：[PDH_RAW_COUNTER.TimeStamp](https://learn.microsoft.com/en-us/windows/win32/api/pdh/ns-pdh-pdh_raw_counter) 明定是local time的FILETIME。因此不能把換用PDH視為UTC解法，也不能推定WMI必然繼承相同語義。可先用來源契約與指定時區規則作local-encoded假設判別（含ambiguous／invalid local time失敗），再對同一instance作WMI／PDH／獨立UTC對照；GPU PerfTime=0不能當QPC fallback。這是待驗證提案，不是本次已實測或已授權的新增採樣。
+
+## 追加：離線假設判別（無新增provider樣本）
+
+使用者「let's go next」後，native `/root/unity_spec_review` 開始前advisory接受新增一個離線腳本及文件。重用.NET FILETIME／TimeZoneInfo；repo沒有既有相符工具。腳本 [Test-E12ClockHypotheses.ps1](../../scripts/diagnostics/Test-E12ClockHypotheses.ps1) 不呼叫CIM／PDH、不讀host timezone、不接入runtime。輸入鎖host診斷SHA；JSON使用DateKind String保存原始ISO Z與100ns字串。要求支援該參數的PowerShell，缺少時明報環境限制。
+
+執行（此worktree根目錄）：`& './scripts/diagnostics/Test-E12ClockHypotheses.ps1' -OutputPath 'release/unity-followup-u1/clock-hypothesis-tests-v2.json'`。腳本拒絕覆寫既存output。
+
+| 版本／結果 | local-only產物／SHA-256 |
+|---|---|
+| 初跑18 PASS／6 FAIL | clock-hypothesis-tests.json／cdd37bb2b0a2119edf0ddcbc908028fa3823514d88561570664976b2fbedf998 |
+| correction1後26 PASS／0 FAIL | clock-hypothesis-tests-v2.json／e8531a69544eacd85a44e8f3b28e5d96c5bac66ef5c5b31709e46c3ced7661df |
+| 被測修正後腳本 | cb78e34df443ea92507188ba6bf04ae61ec6c6ea6f2dd7ae9bd57aa2b1aa7ede |
+
+初跑失敗分類TEST_FAILURE：PowerShell預設ConvertFrom-Json把ISO時間轉DateTime，隱式string丟Z／fraction，重播query被誤解析。修正只涉及離線腳本，不是E12 WMI偏移根因；原失敗保留。這一輪屬新離線工具，原E12兩輪與host3筆額度不重設。
+
+26個case覆蓋精確Int64與100ns、非法格式／範圍／frequency／mode、explicit Z、Taipei／Kolkata／New York冬夏、DST ambiguous／invalid拒絕、UTC zone兩假設不可區分、query／lag／future精確與100ns越界，以及3筆×2來源重播。[ConvertTimeToUtc官方契約](https://learn.microsoft.com/en-us/dotnet/api/system.timezoneinfo.converttimetoutc)會在模糊時間預設選standard time，因此本方法先顯式拒絕模糊時間，不讓library自選offset。
+
+**離線結論**：在明確fixture zone `Taipei Standard Time` 下，local-encoded假設的第2／3筆兩來源符合原query/freshness數值窗口，直接UTC解讀則FUTURE；第1筆兩種假設都QUERY_WINDOW_INVALID。這是指定假設的相容性，不證明host實際時區設定、不證明WMI繼承PDH語義、不證明指定Player有效VRAM。`providerMapping=UNPROVEN`、`playerFreshness=NOT_RUN`、`newProviderSamples=0`保留。
+
+下一個最小實測提案：同一GPU counter instance於單一窗口取WMI raw／PDH raw（只timestamp/frequency／來源status與必要instance識別）、獨立UTC FILETIME及query-window，帶明確時區來源規則；先核對各API契約和精確欄位，必要時預先批准新增最多3個窗口。保留原始值，分別檢驗UTC與local-encoded假設；若兩者都可／都不可或跨來源無法定位即UNKNOWN，不選最接近query的結果冒稱真相。此新增provider實测尚未執行／授權；formal phase gate與tasks1.2–1.4不變。

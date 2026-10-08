@@ -96,3 +96,10 @@ releaseOrPaidActionPerformed: false
 - NOT_RUN：指定Player PID/processStart/adapter／VRAM bytes身分與freshness、新runtime／visible／timing、正式benchmark。
 
 本次授權diagnostic已完成；U1仍BLOCKED且1.2–1.4不勾完成。下一步先審查獨立UTC FILETIME／native performance對照的方法與範圍；不自動新增採樣或越過merge gate。
+
+## 追加離線方法單元
+
+- 當次授權：「let's go next」；開始前native architecture reviewer `/root/unity_spec_review` advisory accept。允許新增 `scripts/diagnostics/Test-E12ClockHypotheses.ps1`、local-only測試結果與本兩份docs追加；禁止新的CIM／PDH、host timezone讀取、runtime/provider/threshold修改。
+- 首輪18 PASS／6 FAIL，TEST_FAILURE，失敗JSON保留。定位為離線JSON解析自動DateTime後隱式字串丟Z/fraction；correct1改DateKind String和explicitZ並加回歸，26 PASS／0 FAIL。被測script及兩次結果SHA見PLAN，未反覆重跑既有E12測試。
+- VERIFIED：離線fixtures與指定fixturezone重播結果；首筆query超限兩種解讀均拒絕。UNCERTAINTY：實際WMI時鐘mapping未證明，原生跨來源對照未執行。
+- 原E12兩輪與host3筆額度保持已用完；沒有新provider sample、Player或美術工作。task1.1保持完成，其餘未勾。U1不標VERIFIED／DONE，不進runtime第2單元。
