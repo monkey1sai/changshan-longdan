@@ -224,3 +224,12 @@ releaseOrPaidActionPerformed: false
 - Player readback：6000.6.4f1、D3D11、URP、Linear、1920×1080、scale1、vSync1/cap60、focused=true/batch=false、errorCount=0/pendingCaptureGates=0。已查看本次 scene.png，仍有衣料形變；不延伸原 artifact 的限定例外，也不宣稱視覺修复或完整自然遊玩通過。PlayMode Editor.log:1537 仍報87 persistent individual allocations，來源未定位，不以工具 PASS 消除此缺口。
 - Jev 本機 deterministic governed/before_delivery 路由要求 architecture review，provider_called=false；observation `909076e2-48f3-4d1b-8155-ae42283fb1f2` 已回報 caller_reported completed（只指review派工完成，不是遊戲/SPEC完成）。首次呼叫被自動審查拒絕缺少可核實 envelope；查本機 decision.py 確認 required gate 在 evaluator 前退出，補具體本機限定 envelope 後成功，未呼叫 provider。
 - SPEC 維持4/22（18.2%）。clock/Player來源映射、window/visible/timing/workload、正式review/merge/postmerge與完整遊戲仍缺。未push/merge/發布，未啟動probe/helper或增加額度。下一個已批准 scope 內 M1 純 ledger/fixtures 的方法審查接受，僅驗證資料完整性，尚未runtime接線或來源映射。
+
+### M1 純 ledger 與 fixtures（來源／callback 尚未接入）
+
+- 以既有 M1/M4 方案及批准 allowlist 新增 `PerformanceFrameLedger.cs/.meta`，pre-implementation 獨立審查接受 fixture-first 最小契約。只驗值型 raw frame 與不可修改保存列；不用 Stopwatch/UTC/provider/callback 實採，也不修改玩法、品質、資產、量測門檻或預算。相同目的本地盤點未找到既有 ledger 可重用，故在列名範圍內自建純 validator；既有 runner 的精確 testInventory 延伸實際 case 數。
+- 固定 UUID/camera（負 camera ID 合法、0拒絕）/clock domain/正 frequency；sequence 從1連續、frameCount從首筆非負值連續。nullable 表達 missing，tick0/frameCount0/dt0合法；callback ticks非遞減、wall interval嚴格正。整數比較及差值不轉 double，long/int上限拒絕回繞。UTC保存讀取窗口、DateTime ticks和precision，只檢bounds/順序/倒退，沒有UTC↔monotonic mapping通過主張。
+- wall 僅連接相鄰結構有效列；首筆或前筆失敗保留 MISSING，禁止跨失敗列補接。phase為來源wall end的半開区間 `[warmupStart,measureStart)`／`[measureStart,drainStart)`／drain；interval兩端跨區記 AMBIGUOUS，原差值保留而不視為有效measure。結構有效與wall有效分開；所有列的 FormalSourcesComplete 及 ledger FormalSummaryAllowed 永遠 false，尚無CPU/GPU/visible/window join。
+- 固定capacity，滿時保留既有列、首次拒收raw/拒收總數/overflow永久狀態；拒收raw不宣稱全保存，沒有無界overflow list。多個failure reasons與原值保留；caller改input或嘗試改reasons不能覆寫保存列。尚未包含完整camera descriptor、輸入/workload快照、來源對齊或runtime讀回；本候選只是M1資料拒絕基礎，不完成2.1–2.3。
+- 新增8個 Edit fixtures 涵蓋正常連續/合法零值與負camera、bad contract、缺樣/不跨缺失、identity/domain/frequency/重複倒退斷號、多個理由、等tick/零wall/整數極值、精確phase邊界/跨界、UTC與tickbounds/倒退、capacity滿/多一列與不可變性。TelemetryEdit4→12，總Edit172→180，Play51保持，其他counts/gates不動。Node runner89/89、E12 Node25/25、OpenSpec strict PASS；C#compile/Edit180/Play51/build/Player仍NOT_RUN，待exact SHA review及同版Unity。
+- 原87 persistent allocations及全部clock/visible/timing/workload/完整遊戲缺口保留。SPEC4/22（18.2%），沒有probe/helper/provider/remote/background工作。
