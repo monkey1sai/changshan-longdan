@@ -233,3 +233,10 @@ releaseOrPaidActionPerformed: false
 - 固定capacity，滿時保留既有列、首次拒收raw/拒收總數/overflow永久狀態；拒收raw不宣稱全保存，沒有無界overflow list。多個failure reasons與原值保留；caller改input或嘗試改reasons不能覆寫保存列。尚未包含完整camera descriptor、輸入/workload快照、來源對齊或runtime讀回；本候選只是M1資料拒絕基礎，不完成2.1–2.3。
 - 新增8個 Edit fixtures 涵蓋正常連續/合法零值與負camera、bad contract、缺樣/不跨缺失、identity/domain/frequency/重複倒退斷號、多個理由、等tick/零wall/整數極值、精確phase邊界/跨界、UTC與tickbounds/倒退、capacity滿/多一列與不可變性。TelemetryEdit4→12，總Edit172→180，Play51保持，其他counts/gates不動。Node runner89/89、E12 Node25/25、OpenSpec strict PASS；C#compile/Edit180/Play51/build/Player仍NOT_RUN，待exact SHA review及同版Unity。
 - 原87 persistent allocations及全部clock/visible/timing/workload/完整遊戲缺口保留。SPEC4/22（18.2%），沒有probe/helper/provider/remote/background工作。
+
+### M1 純 ledger 同版 Unity 結果
+
+- exact `6edf1e0c008a74db02fc541f73b76e45a12c17ba` 經獨立 source review 接受後，validation worktree fresh clean/no lock/no output，ff-only 對齊。run `c3867e43-9b1c-4121-ac1a-e5dda5f37339`，exclusive `release/e02/unit2-ledger-validation-v1`，end `2026-10-08T22:58:40.339Z`；compile/Edit180/Play51/build/Player 全 exit0/verified/timedOut=false，failed/skipped/inconclusive=0，八個新 ledger cases 全 Passed。
+- 完整包319檔／175661980 bytes，build/after 清單同 hash `474e32adfce14824ce8b81815089a120bf5f7aab0ca158529131a8e1d38dc002`，result hash `46e227208b9cc7f32f12f5a3c9e02293a67445318883f39ef30e6d3e60dbbf7c`。主控及独立 reviewer 各自重新讀取實檔，與 build baseline/after/run.playerPayload 逐項一致。source snapshots 相符、checkout clean、project lock不存在。Player readback 6000.6.4f1/D3D11/1920×1080/focused=true/errorCount0。
+- PlayMode Editor.log:1537 仍報79 persistent individual allocations；前次87→本次79不證明leak改善或memory slope。licensing access-token更新訊息未阻擋本輪測試，但不能稱整份log零警告。独立驗證審查無本scope阻擋 findings，僅advisory accept，非formal APPROVED/merge/SPEC complete。
+- Jev本機 governed/before_delivery observation `aac25f6a-8180-41bb-80ec-f0499689afa8` 要求architecture_review/provider_called=false，已回報caller_reported completed，僅review派工完成。未採樣、未provider、未push/merge；沒有背景工作。M1尚無runtime/source join、humanPlay/performanceAcceptance=NOT_RUN；SPEC4/22（18.2%）。
