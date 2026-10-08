@@ -22,6 +22,8 @@ Adopt 現有 Unity 6000.6.4f1／URP17.6／Windows x64 Mono／D3D11、`unity-vali
 
 修復資產與可能 runtime 修正同一整合單元，完整 rendered／自然操作／review gate 前不合併穩定基準。保留 21 骨、17 招式、4 influences、root-motion=false、tip/tipBase、FootPlant、可見 fallback；material count 從鎖定 GLB 實際盤點，不從缺欄位 manifest 推定。
 
+使用者明確接受既有 run `3ecafcf1-eca2-4985-a76e-c6eec0f4c694` 畫面中的衣角拉伸，限 spec「已展示衣角的限定視覺例外」所列 code／GLB／截圖 hashes。狀態為 HUMAN_ACCEPTED_VISUAL_EXCEPTION，不稱修復；該限定現象不再單獨阻擋，但其他部位、未展示姿勢／動作、後續版本及全部技術／自然操作 gates 仍須驗收。美術交付與完整品質單元未因此完成。
+
 ### 3. 補足量測的來源語義
 
 VRAM 保留 raw timestamp／query start-end／PID／processStart／adapter，先證明時鐘基準和 UTC 轉換。沿用 sample lag≤2s、future≤250ms、query≤2s、有效高水位；失敗不回填 0、不降低 freshness。Counter 必須完整 category/name/unit 匹配，無資料為 null。GPU／CPU delayed sample 要定義 frame identity、latency、重複、暖機、收尾；有 gaps 不靜默剔除。

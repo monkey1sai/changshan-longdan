@@ -189,3 +189,9 @@ releaseOrPaidActionPerformed: false
 - 已實際查看 Player scene.png：衣料仍有大片拉伸/尖角，保留資產品質 FAIL，未修改資產。PlayMode Editor.log 有 persistent allocation leak 訊息（79 individual allocations）；log SHA-256 feea3837adf3de26346bbb075d1bc2aa75abc6f611d297b9bf87b50022727107。runner 基礎 gates通過，不代表該 memory 風險解除；後續定位及正式 memory/soak 不可跳過。
 - 獨立審查確認 launcher 所需 validation.playerPayload 未由 runner 產出，完整包追加待人類批准（精確提案見 PLAN）。不補寫 v2 為已取得全包 provenance，也不啟動短 probe。
 - 審查另重現既有 snapshotPayload 一般 {} 容器漏掉根目錄 __proto__ 檔案。原 allowlist 內先加入新增/替換/刪除回歸，RED=1 FAIL，再改 Object.create(null)，全套 E12 Node25/25 PASS。這是 helper 完整性修正，非新增 runner 授權實作；待新 exact SHA 審查。五階段結果只屬 da959b4，不移作之後 helper 候選的 runtime PASS。SPEC 仍4/22（18.2%），2.1與完整遊戲驗收未完成；無背景 Unity/provider/probe。
+
+### 人類接受已展示衣角的限定視覺例外
+
+- 使用者原文「趙雲衣角拉伸透過調整，允許通過」，經釐清明確回覆「接受目前已展示的衣角拉伸，作為限定視覺例外」。此決定修改該限定外觀的接受條件，沒有新增 runtime／資產修復、完整包 runner scope 或遠端授權。
+- HUMAN_ACCEPTED_VISUAL_EXCEPTION 綁定 code da959b40f229f2af66c52fd7bfd82353e422cc95、run 3ecafcf1-eca2-4985-a76e-c6eec0f4c694、GLB SHA-256 7dccbfae4b61280889a7be98370692143898c3eeef8dcd55dfa36ad4b4248a33、scene.png SHA-256 2ef482a1fb32834cd0c9a1059868449cf7f88897a01fda9243fc5b1cf9370dd8（已重新核對）。歷史衣料形變觀察與 raw 保留；最新該畫面已展示衣角現象經人類接受，不再單獨列為阻擋，也不稱已修復。
+- 例外不擴及其他部位、未展示的姿勢／動作或後續版本；骨架、weights、握點／plant／root、tip/tipBase、fallback、自然操作及 review/merge/postmerge 仍按原標準。未取得美術 delivery，3.1–3.5不勾選。SPEC 仍4/22（18.2%）；此文件修訂未重跑 Unity，先前基礎 PASS 僅屬原 SHA。完整包追加問題仍待答覆，無背景工作。

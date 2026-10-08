@@ -21,6 +21,8 @@
 
 ## 3. 美術交付與Unity整合單元
 
+使用者已接受既有畫面衣角拉伸的限定例外，版本界線見 spec「已展示衣角的限定視覺例外」及 STEP_RECORD。同一現象記 HUMAN_ACCEPTED_VISUAL_EXCEPTION；不表示美術修復交付或本單元完成，以下任務與其他品質 gates 保留。
+
 - [ ] 3.1 核對既有修復需求、工程師／workspace／來源blend／packet／傳輸範圍，按協作契約送達才更新PREPARED_NOT_SENT；本次spec不替代送達證據。
 - [ ] 3.2 接收美術新delivery_id、來源／GLB hashes、匯出及QA，保留原資產；來源或契約不符保持BLOCKED，material count以實際GLB盤點。
 - [ ] 3.3 在隔離工作區匯入並驗證21骨／4 influences／17招／tip/tipBase／FootPlant／root-motion／fallback；若確認Unity bridge原因，另scoped commit處理，不接管資產製作。

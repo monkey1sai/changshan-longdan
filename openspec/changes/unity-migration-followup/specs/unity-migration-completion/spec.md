@@ -53,8 +53,12 @@ E12 工程 MUST 重用既有候選與 runner，先提交新定位證據和受審
 資產與相關 runtime 修正 MUST 在同一整合單元完成 tests、雙引擎實際 render、自然操作、使用者視覺確認及 exact-candidate review 後才合併。SHALL 保留21骨命名／層級、17招式、4 influences、root-motion=false、tip/tipBase、FootPlant和可見載入fallback。MUST 在30/60/120Hz沿用握點p95≤3cm、plant≤5cm、扣除設計位移後root≤5cm；握點僅指定握持窗口，plant 排除設計滑步／擊退／空中，不能重訂原門檻。
 
 #### Scenario: 資產技術 QA 通過但有拉伸
-- **WHEN** 匯入正常而實際 idle／動作仍有尖三角、跨部位拉伸或抖動
+- **WHEN** 匯入正常而實際 idle／動作仍有未受限定人類接受的尖三角、跨部位拉伸或抖動
 - **THEN** 品質 FAIL，不合併、不作正式 E12 基線。
+
+#### Scenario: 已展示衣角的限定視覺例外
+- **WHEN** 使用者明確接受 run `3ecafcf1-eca2-4985-a76e-c6eec0f4c694` 已展示的衣角拉伸（code `da959b40f229f2af66c52fd7bfd82353e422cc95`，GLB SHA-256 `7dccbfae4b61280889a7be98370692143898c3eeef8dcd55dfa36ad4b4248a33`，scene.png SHA-256 `2ef482a1fb32834cd0c9a1059868449cf7f88897a01fda9243fc5b1cf9370dd8`）
+- **THEN** 該畫面已展示的衣角現象 SHALL 記為 `HUMAN_ACCEPTED_VISUAL_EXCEPTION`，不再單獨阻擋品質；保留原始形變與歷史 FAIL，不稱已修復。例外 SHALL NOT 自動延伸至不同部位、未展示姿勢／動作或後續版本；其他技術、render、自然操作、review／merge／postmerge及完整遊戲 gate 仍須驗收，不因此標資產整體 ACCEPTED 或 SPEC completed。
 
 #### Scenario: 載入失敗
 - **WHEN** 缺骨、非法weights、hash不符或載入失敗
