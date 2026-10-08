@@ -230,6 +230,8 @@ sample關聯保留整個來源timestamp/query窗口與重疊frame/phase區間，
 - 原 allowlist 的 PerformanceProbe guard/實際呼叫與 report 使用同一驗證 seed，接受7/11/23、拒絕其他；PerformanceTelemetryPlayTests 使用固定相同 spawns 對照獨立 HitTargets/simulation 的 seed 敏感欄位及合法 Tick，驗三 seed、原單參數與顯式7等價，以及 Restart 延續 RNG／重建 targets 才建立新 seed 流。fixtures 關閉自動步進。runner 僅依實際 source 登錄 case 數，已有測試登錄授權，不先填 PASS。
 - 獨立方案審查接受此必要最小追加，但新增 controller 檔案仍待人類明確批准；批准前不修改 controller/guard 或新增此 runtime test。不改 difficulty、Reset RNG、input、資產、門檻、probe quota，沒有額外採樣/provider/remote 授權。此追加不解除 clock/visible/timing/workload 或正式完整遊戲 gates。
 
+2026-10-09 使用者明確「同意按照建議實作」，批准上述新增 controller 精確範圍；前述待批准為歷史提案。獨立實作前審查接受 overload、probe guard/coupled report、相同 spawns 的三 seed reference／合法 Tick／Restart 延續／重建序列及原 API 等價測試。測試使用 owned camera/Effects、OfflineAudio 與停用自動 Update，僅證明 seed 銜接，非音效或自然玩法接受。本輪 boot 仍固定20人/spawn7/AI7，不因 API 支援宣稱 launcher 三 seed 實測已完成，仍不新增 provider/probe 或額度。
+
 Profile、thresholds、combat/AI/animation、正式素材、Web、Packages/Editor、Jev/全域配置、ACL、provider/時區設定及remote mutation均排除。若active來源需額外API/marker、material coverage不符或allowlist不夠，先交出精確scope修訂，不能擴寫其他模块。
 
 unit2修復提案基於新counter/clock定位證據，原兩輪budget仍保持用完。人類需明確批准新unit2方法/檔案/測試與採樣額度（提案最多3次短probe：seed7/11/23、3s暖機+10s量測；成本probe上述12次；各run有界90s/成本run120s，launcher只終止自身handles）。失敗不得自動追加額度或重新計數；新定位如仍不可解除能力缺口即停止並保全。本次不申領或消耗這些額度。必要正式approval/merge/postmerge仍須依task1.4完成，才開始unit2；人類scope同意也不能替代該gate。

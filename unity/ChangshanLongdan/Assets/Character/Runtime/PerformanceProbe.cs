@@ -88,7 +88,8 @@ namespace Changshan.Character
     }
     public static void RequireControllerSeed(uint seed)
     {
-      if (seed != HitTargets.DefaultSeed) throw new ArgumentOutOfRangeException(nameof(seed), "UNSUPPORTED_CONTROLLER_AI_SEED");
+      // This is the probe protocol's allowlist; the general controller API accepts the constructor's uint range.
+      if (seed != 7 && seed != 11 && seed != 23) throw new ArgumentOutOfRangeException(nameof(seed), "UNSUPPORTED_CONTROLLER_AI_SEED");
     }
     public static List<Spawn> ProbeSpawns(int population, uint seed)
     {
@@ -143,8 +144,8 @@ namespace Changshan.Character
       if (controller.Flow != null) controller.Flow.StartRequested();
       controller.StartBattle(Difficulties.Normal);
       if (controller.Dummies != null) controller.Dummies.gameObject.SetActive(false);
-      var crowd = CrowdSpawner.Create("E12 probe capsules", ProbeSpawns(20, 7), controller.Mapping, material);
-      controller.UseDummies(crowd);
+      var crowd = CrowdSpawner.Create("E12 probe capsules", ProbeSpawns(report.population, (uint)report.spawnSeed), controller.Mapping, material);
+      controller.UseDummies(crowd, (uint)report.aiSeed);
       controller.EnsureCastle(); controller.UseCameraRig(true);
       var castle = controller.Castle != null ? controller.Castle.Assets : null;
       deadline = Time.realtimeSinceStartupAsDouble + 30;

@@ -209,3 +209,10 @@ releaseOrPaidActionPerformed: false
 - 完整包319個普通檔案、175654092 bytes；baseline 與 after 都為 SHA-256 ed62502ad5f0338c20bd25c521f5981cb5d388f8c33142a65d97fc33e76dbe57。comparison unchanged=true，added/removed/changed 全空；comparison hash b333f3facef2151504284eb99c692b347f52de4c907c69db37ec1641ccb95060，result hash 996f0cf14e0427acc3fa5067ea8a3f93c2bd94c4480897c84ed3d78f9a6a71de。重新從完整包讀取並與保存 baseline/run.playerPayload/after 比較亦通過；非僅相信 comparison 字串。包前後一致只證明觀察時點一致，不證明期間沒有短暫改寫。
 - validation root source clean/no project lock；原 runner stage/test gates未變。PlayMode Editor.log:1537 仍有 persistent allocation leak，本次87 individual allocations，來源未定位；不以跨run數量差異推定memory slope或已修復。人類衣角例外維持原 artifact 界線，本次沒有新增自然操作或全面視覺接受。
 - 本次完成完整包工程及同版驗證，未啟動短probe/GPU helper/Jev provider、未push/merge或發布。下一個三seed controller最小追加已有獨立方案接受、已向人類提出精確scope問題，尚待答覆；未實作。clock/來源mapping/visible/timing/workload及正式退出仍缺，SPEC4/22（18.2%）。
+
+### 三 seed 的最小 controller 銜接
+
+- 2026-10-09 使用者「同意按照建議實作」，批准新增 ZhaoYunController.cs 至 scope；獨立實作前審查接受同一最小方法與四項 PlayMode cases。保留原 UseDummies(dummies)，新增雙參數 overload，Build 的 default 為 HitTargets.DefaultSeed 並傳既有 constructor；一般初始化/pressure crowd/單參數仍 seed7，沒有修改 Combat、AI、difficulty 或 Restart RNG。
+- Probe guard 允許7/11/23並拒0/8/uintmax；report、spawn與實際 controller AI seed 使用同一欄位。boot 仍20/spawn7/AI7，launcher三 seed及正式短探測未完成，不以 guard/API 成功替代實際樣本。
+- 新 PerformanceTelemetryPlayTests：三個 seed 全用固定相同 ProbeSpawns(20,7)，對照獨立 HitTargets/CombatSimulation；驗實際 HP/cooldown/scale/狀態/座標/速度/engagement/token/事件及合法空输入180frames；11/23與7的實際初始亂數結果不同。Restart 保持 targets identity且延續流；重建 targets才回到初始序列。另核對原單參數與顯式7的完整初始/逐幀等價。所有 fixture 關閉 Update，owned camera/Effects parent在首次Tick前建立、OfflineAudio不改接scene listener，只清理自建root。這不是自然遊玩或音效驗收。
+- 實際 source 為3個 TestCase＋1個 Test；僅新增 inventory PerformanceTelemetryPlayTests=4，Play47→51，Edit172保持，其他class/count及 gates 不變。Unity 新增案例仍 NOT_RUN，先離線/source/strict/diff檢查與 exact SHA review，再一次新exclusive release/e02/unit2-seed-validation-v1 五階段。SPEC4/22（18.2%），不重設原budget，無provider/probe/remote動作。

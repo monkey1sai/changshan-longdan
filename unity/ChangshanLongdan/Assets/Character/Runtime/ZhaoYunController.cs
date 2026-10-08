@@ -90,10 +90,17 @@ namespace Changshan.Character
       Build(dummies);
     }
 
-    void Build(TrainingDummies dummies)
+    // Explicit seed for reproducible capability fixtures; normal calls retain the default stream.
+    public void UseDummies(TrainingDummies dummies, uint seed)
+    {
+      Initialise();
+      Build(dummies, seed);
+    }
+
+    void Build(TrainingDummies dummies, uint seed = HitTargets.DefaultSeed)
     {
       Dummies = dummies;
-      var targets = new HitTargets(dummies != null ? dummies.Dummies.Count : 0);
+      var targets = new HitTargets(dummies != null ? dummies.Dummies.Count : 0, seed);
       var difficulty = Simulation != null ? Simulation.Difficulty : Difficulties.Normal;
       Simulation = new CombatSimulation(targets);
       Simulation.SetDifficulty(difficulty);

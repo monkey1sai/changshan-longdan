@@ -6,10 +6,11 @@ namespace Changshan.Foundation.Tests
 {
   public sealed class PerformanceTelemetryEditTests
   {
-    [Test] public void ControllerSeedSupportMatchesTheExistingControllerInterface()
+    [Test] public void ProbeAcceptsOnlyTheApprovedAiSeeds()
     {
-      Assert.DoesNotThrow(() => PerformanceProbe.RequireControllerSeed(7));
-      foreach (uint seed in new uint[] { 11, 23 })
+      foreach (uint seed in new uint[] { 7, 11, 23 })
+        Assert.DoesNotThrow(() => PerformanceProbe.RequireControllerSeed(seed));
+      foreach (uint seed in new uint[] { 0, 8, uint.MaxValue })
       {
         var error = Assert.Throws<ArgumentOutOfRangeException>(() => PerformanceProbe.RequireControllerSeed(seed));
         StringAssert.Contains("UNSUPPORTED_CONTROLLER_AI_SEED", error.Message);
