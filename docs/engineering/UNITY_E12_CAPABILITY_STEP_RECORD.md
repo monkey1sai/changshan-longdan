@@ -150,3 +150,11 @@ releaseOrPaidActionPerformed: false
 - 修正後独立方法advisory接受；不將此審查當formal GitHub APPROVED。逐tick相容在合法route能否達成仍NOT_RUN，失敗不得放寬或自增重試。確定性檢查：OpenSpec strict、diff check、四份本機JSON解析與原hash核對PASS；沒有新provider/Unity執行。提交後另核對exact candidate與其CI，舊head CI不移作新head結果。
 - Task1.3只完成方案/範圍批准，非能力工程。整體3/22（13.6% task計數）；task1.4仍缺正式獨立APPROVED、獨立merge授權與postmerge，不進unit2。PR45核對基準head7e69e51、base9ab737a、Draft/OPEN、reviews=0、auto-merge=null、unresolved threads=0且pagination無下一頁；舊head CI Ubuntu/Windows PASS。classic main protection API回404 Branch not protected，不能推定其他rulesets或repo正式審查規則取消。
 - 停止於formal gate；最終仍須可見打開Unity，Jev選擇/Unity工具執行、同版完整Player矩陣及使用者體驗確認皆通過才SPEC completed。沒有背景Unity、Player、provider採樣或美術製作。
+
+## U1合併後退出（2026-10-08）
+
+- 使用者當次明確「已經審判合併；依照spec逐步執行，全spec complete才可停下」。GitHub PR45為MERGED，mergedAt=2026-10-08T13:34:17Z（臺北21:34:17），merge SHA=e85840fad45b7704fab994945aee229f886c3b22、base main、已審head=32bf015ddf979694a41977a69881e997256056c4；fetch origin/main同SHA，merge ancestry PASS。
+- 保留制度差異：GitHub reviews仍0，不登錄不存在的GitHub APPROVED。依當次使用者人類外部審查/合併決定，僅接受本U1文件單元退出；獨立reviewer /root/unity_spec_review確認此處理符合指引優先序。此人類決定不延伸為後續單元的審查例外，不降低Unity/runtime/full-game gate。
+- Postmerge同版本e85840f驗證PASS：Web Vitest 35 files/308 tests、npm run build（包含typecheck）、Unity runner工具84 tests；OpenSpec apply/status可讀。既有完整12檔差異與診斷parser/hash已審，merge相對已審head僅main既有LICENSE；Unity runtime/asset未變。本U1不新增Unity實作，這些工具測試不是Editor/Player或視覺驗收。
+- npm ci初次ENVIRONMENT_FAILURE：sandbox無法寫使用者npm-cache（EPERM）；改成本任務ignored release/unity-e12-capability/npm-cache、--ignore-scripts後PASS，不修改ACL/全域cache。安裝提示既有1 high vulnerability，未執行audit fix或擴改依賴。
+- 工作區採新隔離branch codex/unity-e12-capability，自e85840f開始；保留主checkout與舊candidate。Task1.4完成，整體4/22（18.2% task計數）。下一步2.1先精確採用3f45d134來源、跑Node baseline再最小counter/clock/Player修正；不整批cherry-pick、不消耗provider/probe額度。全部Unity新能力及最終完整遊戲驗收仍NOT_RUN。
