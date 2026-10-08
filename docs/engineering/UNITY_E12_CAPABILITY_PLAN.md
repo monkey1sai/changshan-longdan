@@ -2,6 +2,8 @@
 
 2026-10-08（Asia/Taipei）；第一個 eligible 單元 U1，對應 OpenSpec tasks1.1–1.3。規格審查版本 `6c5282bf752e71dd54e69de14819f32b74d0dd5c`；當次使用者指示「你審查spec, 通過之後開始spec」支持本機執行準備，不自動授權push／PR／merge／provider／美術傳送。原E12兩輪修正預算保持用完，本次未修量測器。
 
+**目前狀態（task1.3方案整理）**：task1.1／1.2完成；以下歷史追加段保留當時狀態，不能當目前台帳。完整方法及下一單元範圍見文末「Task1.3完整方法」。方法草案不等於工具可用；runtime新範圍批准、U1正式approval／merge／postmerge仍未取得。
+
 ## Baseline與新證據
 
 本次fetch origin/main確認仍為 `805db86f67ab2be152dea8abe57ca47f4e735fb7`，包含E11 merge `be04336f…`。E12候選 `3f45d134…` 工作樹乾淨；相對main有量測source，也少PR44的 `.codex/jev.json`／orchestrator.json／JEV_REPO_USAGE；不得把反向差異當應刪項目或整批套用候選。
@@ -117,3 +119,106 @@ GPU `Frequency_Sys100NS=10000000`、PerfTime／Frequency_PerfTime皆0；PerfOS S
 6個來源查詢皆≤2s；按明確來源時區規則作local FILETIME解讀全部符合原lag≤2s／future≤250ms數值允收窗口；直接UTC全部為約+8h的FUTURE。部分PDH timestamp早於call start（窗口2約0.4717ms、窗口3約0.6043ms），保留來源取樣與呼叫時間差，不能宣稱全落在嚴格call start/end之內或同步瞬時取樣。本機這個counter來源的local-encoded解讀得到WMI／PDH／獨立原生UTC一致證據，舊helper直接FromFileTimeUtc的假設不適用此觀察來源。這不是所有WMI provider的普遍契約，也不是指定Player身分／VRAMbytes／freshness驗收。
 
 原3筆sandbox失败、3筆host及本次3窗口都保留，各額度用完，不追加第4窗口。獨立reviewer確認可完成task1.2的定位證據與raw保全；定位證據可供後續提出精確的時間轉換修復：來源語義／platform/version限定、來源時區規則、ambiguous/invalid拒絕、原raw保留、100ns／query／PID／有效高水位門檻不變。runtime尚未改；task1.3的完整instrumentation方案及task1.4正式review/merge/postmerge仍缺，不能進第2單元。
+
+## Task1.3完整方法：待批准的能力工程契約
+
+### 來源、重用與界線
+
+方法基準為本機checkpoint `1cd50908ca7fc26b4311b8b69cc69ae3049e4f97`，E12 source限定 `3f45d134da9b6ca997e1de0c8b5b2a2eec60c447`。此段由使用者「按照建議做」授權整理，開始前 `/root/unity_spec_review` advisory接受僅3份文件的scope。沒有新增採樣或runtime工程批准。
+
+| 現有能力／查閱入口 | 採用方式與未滿足項 |
+|---|---|
+| PerformanceProbe.cs／Counter、Sample、Start | Extend catalog身分、幀ledger及輸出；目前LastValue、frustum、每幀Process.Refresh不能滿足完整能力 |
+| e12-performance.mjs／parseProbeCsv、validateGpuSeries、metricSummary | Extend來源／schema／identity與coverage檢查；保留nearest-rank、原數值gate、有效高水位 |
+| e12-probe.mjs、e12-process.mjs | Adopt UUID、exclusive output、full payload hash、own-handle cleanup；Extend有界退出與helper drain |
+| e12-gpu-telemetry.ps1及既有離線時鐘fixtures | Extend精確字串／來源語義和1Hz排程；不盲目減8h、不用query UTC冒充sample timestamp |
+| FoundationBuild.cs、FoundationRenderer.asset、FoundationURP.asset、Character.asmdef | 保留6000.6.4f1／17.6.0／Mono／D3D11；source顯示MSAA=1、renderer無feature，但實際Player模式尚須readback |
+
+採Unity既有RenderGraph／AsyncGPUReadback、FrameTimingManager、ProfilerRecorder，以及既有Win32/.NET來源，不新增套件或native plugin。自建範圍僅必要ID/depth pass與來源ledger：repo沒有camera-specific pixel provider，現成frustum與Renderer可见旗標不足以證明遮擋後可見。官方[RenderGraph renderer list](https://docs.unity3d.com/6000.6/Documentation/Manual/urp/render-graph-draw-objects-in-a-pass.html)提供整合入口；特定17.6.0 API編譯相容性保持NOT_RUN。
+
+### M1：單一真相與幀ledger
+
+新schema版本為提案`e12-capability-v2`；舊schema只作歷史解析，不轉填新欄位。run manifest綁runId、source SHA、profile／asset／完整包hash、Player PID+processStart、Unity revision、URP version、D3D11、開發旗標、解析度與工具模式。所有來源帶status/reason；UNKNOWN使用null，不用0或省略行。
+
+每個呈現候選幀建立唯一 `(runId, frameSequence, cameraId)` ledger，保留Time.frameCount、Update／render begin-end的Stopwatch tick/frequency、UTC前後錨點、gameplay dt、camera/render target descriptor、輸入與workload phase。wall保持既有連續end-of-frame間隔口徑，明示不是外部顯示器scanout；暖機/測量以來源幀monotonic時間決定，跨界間隔單列且不得混入180s。事件／ID／foreground快照與同幀綁定，不以async到達幀替代。
+
+raw source分流為frame ledger、timing arrivals、counter reads、visibility requests/results、window events及memory samples，解析結果另存；不改寫raw。每幀最終狀態為COMPLETE／MISSING／AMBIGUOUS／INVALID。缺樣、buffer overflow或不連續保留行並阻擋必要指標；不得只對成功子集計算正式PASS。
+
+### M2：指定camera的真正可見數
+
+使用專用全解析度ID+depth target與RenderGraph feature，僅鎖定controller.ViewCamera的Game/base camera；禁止Camera.main fallback、其他camera或SceneView污染。鏡頭矩陣、pixel rect、target尺寸、renderScale、culling mask、LOD、renderer enabled、同幀pose與屋頂cutaway全綁快照。ID=run內單調序號，另存entity generation與capture-frame roster；0保留背景，死亡/重用不把舊readback解釋為目前entity。
+
+以實際soldier mesh/submesh和同幀transform/skin/LOD繪製ID，實際城池、趙雲及其他遮擋幾何寫depth；深度方向、ZTest、Cull、ZWrite、排序及alpha coverage必須與主鏡頭可見渲染一致。不可默認override material保留原shader discard、透明或頂點位移。跑前盤點所有shader/material/renderQueue/alpha clip；第一版只接受經fixture證明的opaque、無alpha clip、MSAA=1、無動態解析度/相機stack與無改變幾何coverage的後處理。若實際場景不符，能力BLOCKED；另審覆蓋方法，不能關掉實際材質/特效以迎合工具。
+
+**已知source限制**：候選`Assets/Character/Runtime/FeedbackView.cs:114–119`建立透明spark/dust/ring/pillar/trail，`Assets/Feedback/Resources/ChangshanFeedback.shader:18`使用Transparent queue，Blend/ZWrite按mode設定。因此opaque方法確定不能涵蓋現有完整交戰/無雙workload；不是僅尚未查到的風險。unit2可先驗證opaque fixture及其他量測能力，但完整visible/成本probe保持BLOCKED，禁止為跑12次成本probe關掉VFX。透明blend/alpha/coverage方法必須先另提交精確算法、所需pass/shader/檔案與邊界fixture，取得範圍審查/批准後才擴充；本scope不宣稱可解除全部visible缺口，不以候選opaque結果進formal E12。
+
+全畫面至少1個有效pixel計為visible，frustum另存且不代替visible。R32_UInt格式與async支援須Player readback；不支援就BLOCKED，不降解析度。AsyncGPUReadback綁request ID、capture frame、camera、dimensions、roster/hash與arrival frame；有錯誤或逾期回null。官方[AsyncGPUReadback](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/Rendering.AsyncGPUReadback.html)指出回讀有幀延遲，這不保證本機成本可接受。
+
+提案ring最多16個in-flight request，滿載即記overflow並停止有效取樣，不等GPU阻塞或覆蓋；先驗證full pixel readback正確性再考慮GPU bitset reduction，後者需另scope，不能暗換演算法。alive／engaged／attackers取同capture幀simulation，frustum取該camera bounds，visible取該pixel結果，五數與各自時序分列。
+
+### M3：指定Player視窗與前景
+
+在同幀render begin/end查GetForegroundWindow、GetWindowThreadProcessId、IsIconic、IsWindowVisible與client rect；先由launcher PID+processStart及Player HWND回報鎖定唯一主視窗。不能只因foreground PID相同就接受同process另一視窗；HWND重建、PID重用、rect改變、null HWND、focus與OS狀態不一致均記INVALID並停止該次有效量測。
+
+Application.isFocused、focus callbacks、主視窗HWND/PID、foreground HWND/PID、minimized、client尺寸、UTC/monotonic查詢窗口全部保留。前後狀態相同只能證明兩個觀測端點；不能宣稱期間沒有切換。提案使用WinEvent前景/最小化事件ledger補充端點，事件callback也帶tick；未證明事件完整性、時間映射或發現途中切換則BLOCKED。OS前景不證明整個桌面無遮擋；正式跑需可見窗口與人工觀察，不以背景/runInBackground降載取得成績。
+
+### M4：timing來源、映射、去重與收尾
+
+FrameTimingManager每幀capture，GetLatestTimings批次拉取（提案64槽），每筆保留frameStartTimestamp、CPU frequency、CPU/GPU raw ms、arrival frame與capture調用ledger。以`(runId, frameStartTimestamp)`去重；同key同內容保留duplicate計數，同key不同內容BLOCKED。官方[FrameTimingManager](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/FrameTimingManager.html)明列4幀延遲與可能GPU=0；零GPU為缺值，不是0ms。非timing recorder不套此延遲。
+
+CPU timestamp不能僅因frequency相同就當Stopwatch或UTC。先在能力fixture用獨立編號的render workload pulse、callback ledger及同步Profiler trace核對來源frame，建立CPU clock↔ledger的有界映射；需要唯一frame correspondence，不能用nearest timestamp或固定arrival-4強接。映射校準前來源幀UNKNOWN；校準只界定方法，正式每run也檢查連續identity、頻率、回退、缺失與pulse/trace對照，未建立可追溯關係就保持BLOCKED。
+
+ProfilerRecorderSample公開Value/Count未提供frame ID；每counter保存完整category/name/unit/options及讀取階段/sequence，不能以Count當全局sample ordinal。draw/GC/active CPU來源各自要frame mapping fixture；LastValue重複讀不算多個樣本。缺identity的counter保持UNKNOWN，即使數值看似合理。[ProfilerRecorderSample](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/Unity.Profiling.ProfilerRecorderSample.html)不是天然帶幀ID的來源。
+
+CPU active能力gate採官方[6000.6 counter reference](https://docs.unity3d.com/6000.6/Documentation/Manual/frame-timing-manager-counter-reference.html)已定義的active語義：main排除等render/VSync/targetFPS，render排除Present；counter用ns，FrameTiming欄位用ms，不能混用。先前僅依API短文不足以完整描述語義，這裡明確補齊官方來源。仍須以同幀thread trace驗證實際category/unit/identity與該排wait契約，不能把未知映射當已通過；沿用已扣等待counter且不再扣一次，不自行用total或main-minus-present替換原active gate。若actual source不符，保持BLOCKED並另scope提出修正。CPU/GPU不相加，原max(p95(main),p95(render)) gate不變。
+
+測量結束時凍結eligible來源幀清單，停止新增eligible ID request，繼續正常render收尾；提案最多16呈現幀或2s monotonic（先到即停）。drain幀不進分位數；最後eligible來源幀的delayed timing/visible必須到齊，否則MISSING。不以最後已收到的幀提早截短採樣、不ForceWaitAllRequests、不無限等待。64槽／16帧是提案buffer/drain上限，不是推定latency；queue飽和同樣BLOCKED。
+
+### M5：1Hz記憶體與來源時鐘
+
+RAM與GPU helper採同一run monotonic每秒deadline排程，query start/end各自保留原生UTC和monotonic前後界；不以query時間+sleep1s累積漂移，overrun記missed deadline，不catch-up突發採樣。移除每幀Process.Refresh負擔的方案只在後續批准runtime範圍執行。RAM保留PrivateBytes/WorkingSet、Unity GC used/reserved/total與各自capture幀/來源；每秒集合不是原子快照，最大query span與無法對齊都保留。
+
+PID與processStart在查詢前後核對，adapter實例使用完整PID/LUID/phys key、counter type65792，全部adapter集合每次保存並檢查唯一性；出現duplicate key、集合变化未解釋、PID重用或任一必要adapter缺值不更新有效高水位。dedicated/shared/committed分列，只對同一有效query各adapter聚合，檢查整數overflow，不以shared當VRAM。bytes/FILETIME/QPC序列跨JSON用十進字串，100ns以Int64/BigInt處理，不經JS double或Date.parse丟精度。
+
+local-encoded映射限定已核對OS/provider版本及來源時區規則，用TimeZoneInfo明確拒絕ambiguous/invalid；raw保留。來源/規則變更、UTC錨點倒退或相對monotonic異常保持INVALID並停止，不拿最近query選最接近的假設。沿用query≤2s、sample≥queryStart−2s、sample≤queryEnd+250ms及嚴格遞增有效高水位；無效樣本不降低高水位。Player來源映射及身份尚NOT_RUN。
+
+sample關聯保留整個來源timestamp/query窗口與重疊frame/phase區間，跨warmup/measure或phase界線記AMBIGUOUS，不插值、複製或forward-fill作每幀VRAM。每秒預定槽缺樣就標missing；formal memory gate要求完整指定槽/首尾60s/最後20min coverage，不能僅用有效子集得到PASS。GC不強制collect；原4GiB/2GiB與drift/slope門檻不變，OS budget/paging仍UNKNOWN。
+
+### M6：instrumentation成本及合法workload
+
+同一完整包用三模式：B為最小wall/輸入/事件ledger（無IDpass/recorder）；T加正式timing來源；F在T上加所有counter/IDpass/window等完整量測。三模式共有同一個最小1Hz外部memory observer，使用M5完全相同的PID/start、adapter、時鐘、query-window與bytes來源，也都有最低限度foreground核對；不在B/T缺少memory時捏造對照。observer/helper的固定負擔算入所有模式，不稱B是無工具release。BuildFlags/FrameTimingStats保留一致。B→T比較wall；T→F比較同timing口徑CPU/GPU/wall，無GPU的B不捏造GPU差值。readback processing、helper、輸出與allocation都算成本；正式gate用F原始數據，包含instrumentation額外draw/CPU/GPU/RAM/VRAM，原draw另作來源分列，禁止減常數。
+
+待批准成本probe：20及300人、seed7、normal、每run暖機30s/採樣60s，模式順序B/T/F/F/T/B，共12runs；先鎖定合法輸入route、camera/交戰/無雙/倒地事件及群眾五數coverage。若同phase workload不相容或自然結局太早，保存失敗，不補血/無敵/teleport，也不裁掉受影響幀；須先修路線並重審，不能重設E12舊budget。這12runs僅工具成本，不能代替正式三seed分級或180s成績；尚未批准/執行。
+
+**成本允收提案（新方法界線，待批准，不替代原效能gate）**：每個可比較CPU/GPU p95與wall p99的正向增量同時≤0.5ms且≤5%；對照模式自身兩次重跑的同指標差異也須符合此雙界線，否則NOISE_UNRESOLVED。B/T僅評wall。F相對T增加PrivateBytes及dedicated VRAM各≤256MiB；穩態工具自身per-frame managed allocation=0（startup/payload flush另外列），全部工具結果仍須原效能與memory gate。各phase及完整run都評，任一必要比較缺值/變異/超限BLOCKED，不看結果後調大界線；跨其他seed/正式workload的成本代表性在正式E12跑前另review確認。
+
+比較統計量：同population/phase以兩次較重模式指標的最大值減較輕模式兩次最小值，正向delta=`max(0,差)`，比例以較輕最小值為分母；分母0/未知保持BLOCKED。重跑noise以同mode的max−min及min分母評。memory的每run測量段完整1Hz有效槽取high-water，F兩次最大high-water減T兩次最小high-water（負差以0計），PrivateBytes/dedicated分開；全run及對齊phase皆比較。不能換成首尾平均掩蓋載入/工具buffer峰值，slot缺失或phase不唯一即BLOCKED。共有observer自身CPU/排程負擔在manifest如實列，不能以這份比較證明其零成本。
+
+### M7：必要測試與可執行出口
+
+| 群組 | 正例 | 負例與邊界 | 所需證據／目前狀態 |
+|---|---|---|---|
+| Counter | 唯一category/name/unit、可追溯source frame | UI Toolkit順序互換、duplicate exact、wrong unit、missing、LastValue重複讀 | Node/Edit＋catalog/trace；NOT_RUN |
+| Pixel visible | opaque全露/局部露、同幀pose/cutaway | 全遮擋、視錐外、兩兵互遮、1pixel、另一camera、ID重用/死亡、alpha/MSAA不支援、readback error/overflow | Play/Player全解析度ID/depth raw及可見畫面；NOT_RUN |
+| Window | 唯一HWND+PID/start、前後與事件一致 | 同PID另一HWND、失焦/最小化途中切換、rect0/resize、PID重用、事件漏/倒退 | pure fixtures＋可見Player切換trace；NOT_RUN |
+| Timing | 唯一映射、不同arrival但同source、完整drain | reorder、duplicate conflict、zero/missing、frequency0、timestamp回退、warmup跨界、最後延遲/overflow/timeout、含wait錯作active | Node/Edit fixtures＋Player/同步Profiler trace；NOT_RUN |
+| Memory | 全adapter唯一、精確100ns、完整1Hz槽 | duplicate/LUID變化、PID重用、DST invalid/ambiguous、100ns門檻越界、stale/future、錯type/overflow、invalid不降高水位、UTC跳變/missed槽 | 既有26離線case重用；新增fixtures/指定Player均NOT_RUN |
+| Cost/workload | 三模式同版合法route、完整必要phase | 裁樣/補血/背景降載、噪聲/phase不匹配、positive增量或memory超限 | 12次成本probe提案，NOT_RUN；不是formal benchmark |
+
+所有產品正/負/邊界tests、Unity compile/Edit/Play/build/Player及短CAPABILITY_PROBE由第2單元驗證；本次只交付方法文件。格式驗證/獨立advisory不表示上表能力通過。
+
+### 下一單元精確範圍提案與授權門檻
+
+以下為待人類批准的完整unit2 scope，不授權本次修改。相對repo根；新增檔只允許列名及同名`.meta`，沒有glob授權：
+
+- 重用候選：`scripts/e12-probe.mjs`、`scripts/e12-gpu-telemetry.ps1`、`scripts/lib/e12-performance.mjs`、`scripts/lib/e12-process.mjs`、`scripts/tests/e12-performance.node.mjs`。
+- Runtime：`unity/ChangshanLongdan/Assets/Character/Runtime/PerformanceProbe.cs`，及新增同目錄`PerformanceFrameLedger.cs`、`PerformanceWindowState.cs`、`PerformanceVisibilityFeature.cs`、`PerformanceVisibilityId.shader`。
+- Config：`unity/ChangshanLongdan/Assets/Character/Runtime/Changshan.Character.asmdef`只加所需既有URP/Core reference；`unity/ChangshanLongdan/Assets/Foundation/Settings/FoundationRenderer.asset`只註冊預設inactive且僅probe顯式啟用的feature；`unity/ChangshanLongdan/Assets/Foundation/Editor/FoundationBuild.cs`只核對feature/flags/readback，不改品質/平台。
+- Tests：既有`unity/ChangshanLongdan/Assets/Foundation/Tests/EditMode/PerformanceScopeEditTests.cs`；新增同EditMode目錄`PerformanceTelemetryEditTests.cs`及PlayMode目錄`PerformanceTelemetryPlayTests.cs`；既有`unity/ChangshanLongdan/Assets/Foundation/Tests/EditMode/Changshan.Foundation.EditTests.asmdef`、`unity/ChangshanLongdan/Assets/Foundation/Tests/PlayMode/Changshan.Foundation.PlayTests.asmdef`僅所需URP/Core references；fixture以測試runtime建構，不新增正式game場景/資產。
+- 紀錄：`docs/engineering/UNITY_E12_CAPABILITY_PLAN.md`、`UNITY_E12_CAPABILITY_STEP_RECORD.md`（同docs/engineering目錄）、`openspec/changes/unity-migration-followup/tasks.md`；raw新run在`release/e12/`exclusive leaf，local-only。舊source由精確列檔採用，不整批cherry-pick或刪PR44配置。
+
+Profile、thresholds、combat/AI/animation、正式素材、Web、Packages/Editor、Jev/全域配置、ACL、provider/時區設定及remote mutation均排除。若active來源需額外API/marker、material coverage不符或allowlist不夠，先交出精確scope修訂，不能擴寫其他模块。
+
+unit2修復提案基於新counter/clock定位證據，原兩輪budget仍保持用完。人類需明確批准新unit2方法/檔案/測試與採樣額度（提案最多3次短probe：seed7/11/23、3s暖機+10s量測；成本probe上述12次；各run有界90s/成本run120s，launcher只終止自身handles）。失敗不得自動追加額度或重新計數；新定位如仍不可解除能力缺口即停止並保全。本次不申領或消耗這些額度。必要正式approval/merge/postmerge仍須依task1.4完成，才開始unit2；人類scope同意也不能替代該gate。
+
+**目前出口**：task1.3方法草案已具體化，實際全部新能力仍BLOCKED/NOT_RUN。待獨立exact-candidate方案審查及人類對上述新scope的批准，才能勾task1.3；task1.4正式approval／merge授權／postmerge尚缺。沒有背景Player、美術製作或provider採樣。

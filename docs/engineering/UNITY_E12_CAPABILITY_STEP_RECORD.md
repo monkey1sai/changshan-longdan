@@ -110,3 +110,13 @@ releaseOrPaidActionPerformed: false
 - 3窗口全同instance、API/CStatus/countertype正常，原生UTC前後包住來源查詢；WMI和PDH local解讀6/6符合既有lag/future數值允收窗口，UTC解讀6/6 FUTURE。部分PDH sample早於call start，不宣稱同步瞬時取樣。本機觀察來源的local FILETIME映射有一致證據，普遍WMI契約UNPROVEN，指定Player freshness NOT_RUN。
 - syntax／C# compile／x64 ABI檢查PASS；raw／analysis的SHA及完整查詢時間見PLAN。只執行一次，無第4窗口；原失敗與額度不重設。
 - 獨立reviewer親讀raw／analysis後確認task1.2可完成定位證據與raw保全，不解除task1.3完整方法、task1.4正式review/merge/postmerge gate。U1尚未VERIFIED／DONE；沒有背景Player或美術製作。
+
+## Task1.3方法與新範圍提案
+
+- 本次使用者授權「按照建議做」：整理方法及獨立範圍審查；僅本PLAN、STEP_RECORD及tasks三份文件。開始前reviewer `/root/unity_spec_review` advisory accept該文件scope，2026-10-08。基準`1cd50908ca7fc26b4311b8b69cc69ae3049e4f97`；未取得unit2 runtime、採樣、remote mutation批准。
+- PLAN的M1–M7定義來源ledger、指定camera full-resolution ID/depth、指定HWND前景及事件、timing identity/去重/有界drain、1Hz精確記憶體與成本三模式。所有fixture及實際Player能力NOT_RUN；alpha/MSAA/clock/frame mapping或active wait語義未知維持BLOCKED。
+- 必要runtime缺口：官方6000.6 counter reference已有active及排wait契約；實際同幀identity/單位/trace尚未驗證，不能用總時段假充active或重複扣wait。方案補齊官方來源，原gate不變，尚未修改CPU量測。
+- 草案審查1個MEDIUM缺口已修：B/T/F共有最小1Hz memory observer，memory成本high-water有同口徑T對照；固定observer成本算入全部模式。另明列既有透明VFX是opaque方法的已知限制；完整visible/12次成本probe尚BLOCKED，須另透明coverage方法scope，不能關掉效果或稱本scope可解除全部能力。
+- 新unit2 allowlist、最多3次短probe及12次成本probe、待批准成本界線已整理成具體提案；未執行/消耗新額度，也不重新計數原E12兩輪或三組診斷額度。全部remote、正式benchmark、資產製作仍排除。
+- task1.3保持未勾：待exact-candidate獨立方案審查及人類新scope批准。task1.4正式APPROVED／merge授權／postmerge保持NOT_RUN，runtime第2單元不可開始。當前總進度2/22。
+- 此次格式/diff/路徑檢查與最終advisory結果以交付exact SHA記錄；不能把文件檢查標成量測能力PASS。無背景採樣/Player/美術工作。
