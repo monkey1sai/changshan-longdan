@@ -168,3 +168,9 @@ releaseOrPaidActionPerformed: false
 - 發現驗證scope缺口：scripts/unity-validate.mjs固定testInventory，validateTestInventory要求exact total；新增PerformanceScope/Telemetry必遭拒絕。已提出僅將此runner加入allowlist以登錄新增測試的範圍追加，未收到同意前不改。新增Unity tests仍NOT_RUN，2.1未勾選。後續還需完整counter/clock/identity契約、Unity編譯/測試及unit2完整pipeline，不把Node PASS替代它們。
 - 本候選在隔離feature branch，本機checkpoint用於保全，不代表stable main、已推送、已合併或正式APPROVED。進度4/22（18.2% task計數）；没有新GPU sample、短probe、Unity/Player或Jev provider呼叫。
 - Partial checkpoint14b4e91獨立review發現MEDIUM PRODUCT_FAILURE：CSV parser誤用gcUsedRaw/gcReservedRaw/usedRaw，實際來源為allocated/gcUsed/gcReserved/used，造成四欄大整數被Number截精度。第1輪修正只改為六個真實bytes欄名，既有case24逐欄驗證大整數、負值/小數/前導零/Int64溢位；24/24重跑PASS，未新增provider/Unity執行。舊checkpoint保留失敗，待新exact SHA獨立核對；此修正不重設任何舊預算。
+
+### Unity runner測試登錄範圍追加
+
+- 2026-10-08使用者回覆「同意」，對應精確提案僅追加scripts/unity-validate.mjs testInventory。現有EditMode164案例全部保留，再加PerformanceScopeEditTests4及PerformanceTelemetryEditTests3，預期171；PlayMode47不變。不改exact total邏輯、stage argv/timeout、source safety、Packages、素材、門檻或runtime。
+- 追加後先做Node工具與OpenSpec/差異檢查、獨立exact-candidate審查，保存clean candidate，再用原Unity五階段runner。新Unity執行結果必須綁定新SHA及run ID；先前候選24/84只作歷史，不移作實測。工具pipeline不是E12正式效能或E13完整自然操作驗收。
+- 輸出限定新exclusive leaf release/e02/unit2-counter-validation-v1。此runner不啟用-e12Probe、不呼叫GPU telemetry helper、不消耗3短probe/12成本probe。沒有背景Jev provider或美術製作；SPEC仍4/22（18.2%），2.1待完整條件齊備。
