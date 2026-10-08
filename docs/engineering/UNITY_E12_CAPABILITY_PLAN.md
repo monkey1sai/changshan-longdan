@@ -259,3 +259,25 @@ unit2修復提案基於新counter/clock定位證據，原兩輪budget仍保持�
 新增必測fixtures：dust alpha0/0.5/1、全遮/局部1pixel、兩層半透明不得因累乘underflow誤遮、前後depth、opaque fragment遮擋、各additive mode不抹除背景、alpha形狀空洞、Cull雙面、材質屬性途中變動、未知shader/variant/blend、ID/coverage不同幀/失敗、camera/LOD/pose/cutaway一致及buffer8→9邊界。GPU alpha/coverage與原shader的相同mesh/pixel結果精確比較，無法建立同源parity就保持BLOCKED；自然遊玩與S06可讀性仍另驗收。
 
 **精確scope追加（待批准）**：只在既有unit2 allowlist另加`unity/ChangshanLongdan/Assets/Character/Runtime/PerformanceVisibilityCoverage.shader`及其同名`.meta`；Runtime Feature與既有PerformanceTelemetry Edit/Play tests承接supported-material map/coverage/parity fixtures，沒有新增FeedbackView/Feedback shader修改權。此追加不增加3次短probe/12次成本probe提案額度；先fixture及實際supported-material完整盤點/幀映射全部通過，才可啟動成本probe。新方法仍未編譯/render/Player驗證，尚未正式接受visible語義或取得unit2人類scope批准。
+
+## 2026-10-09 下一個必要決定：指定 Player 的 clock-only 對照（未執行）
+
+目的僅為task2.1的此環境／此Player來源時鐘子gate。現有helper要求TimezoneId但launcher未傳，schema2的mapping標記仍未驗證；不能只把標記翻成VALIDATED。舊native raw只保存timezone/script/samples，沒有當時OS/provider版本，不能用現在版本倒填舊證據。舊sandbox3／host3／native3全部已用完；unit2三seed完整短probe與12成本probe不可移作這項前置診斷。
+
+採用既有 `Capture-E12ClockComparison.ps1` 的 PDH/原生UTC interop、`e12-probe.mjs` 的固定完整包/PID/runId/exclusive output/own-handle收尾，以及e12-process的安全path/payload/watchExit。新增常駐provider、套件或native plugin無必要。新增授權僅為一個明確模式與一組獨立額度，不開放一般provider探索。
+
+| 項目 | 可審查的精確提案 |
+|---|---|
+| 指定baseline | validation worktree exact `6edf1e0c008a74db02fc541f73b76e45a12c17ba`、run `c3867e43-9b1c-4121-ac1a-e5dda5f37339` 的驗證Player；319檔清單hash `474e32adfce14824ce8b81815089a120bf5f7aab0ca158529131a8e1d38dc002`。實作後若code SHA改變須先按原五階段產生新同版validated包，再凍結新的code/full-payload hash，禁止沿用舊版PASS啟動新候選。 |
+| 新增檔案範圍 | 只將既有 `scripts/diagnostics/Capture-E12ClockComparison.ps1` 加入unit2 allowlist，增加明確Player模式，保留歷史raw和原模式。其餘僅原allowlist的e12-probe/e12-performance/e12-process/e12-gpu-telemetry/e12-performance.node及兩份PLAN/STEP_RECORD；不改unity-validate階段/argv/timeout，沒有其他新檔。 |
+| 先做而非先取樣 | ClockContract分開記指定local-encoded方法、timezone、namespace/class/countertype/clock field/frequency、證據hash、本次environment、verification；歷史支持維持UNVERIFIED。先完成純fixtures、PowerShell語法/interop ABI、來源scope/exact-SHA獨立審查；未批准不實作新增診斷模式或取樣。 |
+| 單次啟動 | 本機一個新run/exclusive `release/e12/player-clock-v1`，launch自己凍結的可見Player；argv鎖定 `-screen-fullscreen 0 -screen-width 1920 -screen-height 1080 -force-d3d11 -e09NoFlow -logFile <run>/Player.log`。不帶-e02Output（避免120幀自動退出）、不帶-e12Probe；無合法輸入route或benchmark主張。launcher記runId/驗證run/source/fullpayload/exe、自己child PID/start/imagepath。ready只核對自己的process身分/liveness與主視窗，不查GPU/CIM/PDH；任何為等待GPU instance的provider查詢一律算入3窗口，禁止不計次readiness polling。不得attach別人的PID或使用任意GPU process。 |
+| 前置metadata | 一次有界readonly OS build/version、GPU driver版本及指定CIM class/provider schema/qualifier身分盤點；只讀必要公開系統版本資料，不讀憑證/帳戶/其他process資訊。實作前列明實際來源/固定必要version字段；不能確認provider implementation/version時保存null並BLOCKED，不拿class名稱或OS版本冒充provider版本。此metadata不是效能取樣。 |
+| 取樣額度 | **僅一次執行，最多3個query windows**，每window查全部該Player完整adapter集合，逐instance同名WMI raw clock/frequency與PDH raw clock/API/CStatus/type；不保存、不輸出、不分析Dedicated Usage bytes，PDH API native struct必要回傳的數值欄位不進證據，不列VRAM成績。每來源保留獨立原生UTC FILETIME前後與monotonic tick/frequency/query窗口、timezone/rule/實際offset。每來源query仍≤2s，包含PDH呼叫耗時；實際deadline/收尾在script review驗證，超限拒絕。整run硬上限90s。一個失敗窗口也消耗一次，不補跑第4窗。 |
+| 身分及來源拒絕 | query前後同PID/processStart/image；adapter名稱/key唯一，集合变化、缺instance、PID重用、unknown fingerprint、clock frequency或timezone/rule不符即BLOCKED。metadata/任何window失敗立即停止新增window並保全已取raw。 |
+| 判讀 | 事先固定local-encoded轉換，raw保留；UTC解讀僅反證比較，不依最接近query選方法。100ns整數、DST ambiguous/invalid拒絕、lag≤2s/future≤250ms、query≤2s/UTC倒退與monotonic不符等原門檻維持。全部必要instances/來源同時通過與獨立結果審查才可生成綁定此run/environment/raw的clock mapping驗證結果；任何unknown不改標VALIDATED。不是RAM/VRAM/逐幀alignment或task2.1整項PASS。 |
+| 收尾／預算 | 只停止自己launch handles，前後完整包與source清單核對。禁止終止其他Unity/Hub、刪歷史lock/證據、改時區/品質/門檻、遠端/付費/provider服務。新3窗屬單獨clock-only決定，原各已用額度、3次完整短probe及12次成本probe全保留；失敗後不能重新計數或新增採樣。 |
+
+Authorization Envelope（僅提案）：Destination=上述本機隔離project/凍結Player/自己的clock-only run leaf與Win32/CIM/PDH；Purpose=指定Player來源時鐘對照；Allowed=核對包/source後單次launch、上述版本metadata與最多3window、local-onlyraw/analysis、own-handle收尾；Data=run/PID/start/adapter/時鐘/公開環境版本，沒有source/log外傳；Forbidden=完整probe/benchmark、其他process/secret、remote/provider/付費、時區/ACL/品質修改、追加window；Stop=任一必要未知/身份來源不符/timeout/包source異動。人類需決定此新增取樣scope/額度，尚無採樣或實作。
+
+獨立提案審查advisory accept，足以供人類窄scope決定。批准後先在本PLAN鎖定metadata的固定來源/必要字段/查詢次數與deadline；若無法確認必要provider implementation/version，即metadata階段BLOCKED，不能擴大registry/provider探索。實作與exact-script review須另外驗證精確argv、ready條件、全部provider查詢計次及2s/90s執行控制，不能只靠本文件稱enforcement已存在。這個新增決定不修改SPEC目標或完成條件。
