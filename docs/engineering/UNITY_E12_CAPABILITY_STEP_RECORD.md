@@ -195,3 +195,10 @@ releaseOrPaidActionPerformed: false
 - 使用者原文「趙雲衣角拉伸透過調整，允許通過」，經釐清明確回覆「接受目前已展示的衣角拉伸，作為限定視覺例外」。此決定修改該限定外觀的接受條件，沒有新增 runtime／資產修復、完整包 runner scope 或遠端授權。
 - HUMAN_ACCEPTED_VISUAL_EXCEPTION 綁定 code da959b40f229f2af66c52fd7bfd82353e422cc95、run 3ecafcf1-eca2-4985-a76e-c6eec0f4c694、GLB SHA-256 7dccbfae4b61280889a7be98370692143898c3eeef8dcd55dfa36ad4b4248a33、scene.png SHA-256 2ef482a1fb32834cd0c9a1059868449cf7f88897a01fda9243fc5b1cf9370dd8（已重新核對）。歷史衣料形變觀察與 raw 保留；最新該畫面已展示衣角現象經人類接受，不再單獨列為阻擋，也不稱已修復。
 - 例外不擴及其他部位、未展示的姿勢／動作或後續版本；骨架、weights、握點／plant／root、tip/tipBase、fallback、自然操作及 review/merge/postmerge 仍按原標準。未取得美術 delivery，3.1–3.5不勾選。SPEC 仍4/22（18.2%）；此文件修訂未重跑 Unity，先前基礎 PASS 僅屬原 SHA。完整包追加問題仍待答覆，無背景工作。
+
+### 完整 Player 包 provenance 工程追加
+
+- 2026-10-09 使用者「同意」對應尚待答覆的完整包範圍問題，批准 scripts/unity-validate.mjs 及 scripts/tests/unity-execution.node.mjs 的精確追加；helper 為原 allowlist。獨立預審接受固定 build baseline、Player 退出後先保存完整 after/差異再驗報告、失敗保持 BLOCKED，沒有 provider/probe/remote 或門檻額外授權。
+- 重用已修正 snapshotPayload，新增純 comparePayload 只比較 own keys、bytes、SHA-256，added/removed/changed 排序穩定，不修改輸入。build 的 payload-build.json 與 run.playerPayload 固定；Player 成功退出後寫 payload-after.json/payload-comparison.json，差異觸發 PLAYER_PAYLOAD_CHANGED，catch 保留 baseline/差異/error；快照讀取失敗直接原錯誤 BLOCKED，不填空清單。Player stage 失敗保留原 failure，不冒稱包比對完成。
+- 工具 baseline runner84/84、E12 Node25/25 PASS；新增5項 runner 回歸驗證完整包 JSON/非突變、DLL及GLB新增/刪除/同大小替換、特殊鍵/穩定排序、空包與junction逃逸，runner89/89及E12 Node25/25 PASS。fixtures 僅清理本次建立且已核對根邊界的路徑，junction先 unlink，target保存核對。
+- 原有五階段、Edit172/Play47、argv/timeout、exe/GLB獨立hash gates維持；舊v2沒有 playerPayload，沒有補寫舊run。新版待 exact SHA 終審後在乾淨 validation worktree 執行一次新 exclusive release/e02/unit2-payload-validation-v1。此工程不完成2.1或2.4全部條件；clock/Player來源mapping/三seed與visible/timing/workload仍缺，SPEC4/22（18.2%）。

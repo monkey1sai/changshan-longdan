@@ -22,6 +22,13 @@ export function snapshotPayload(directory) {
   if (!Object.keys(result).length) throw new Error('EMPTY_BUILD_PAYLOAD')
   return result
 }
+export function comparePayload(before, after) {
+  const added = Object.keys(after).filter(name => !Object.hasOwn(before, name)).sort()
+  const removed = Object.keys(before).filter(name => !Object.hasOwn(after, name)).sort()
+  const changed = Object.keys(before).filter(name => Object.hasOwn(after, name) &&
+    (before[name].bytes !== after[name].bytes || before[name].sha256 !== after[name].sha256)).sort()
+  return { unchanged: added.length === 0 && removed.length === 0 && changed.length === 0, added, removed, changed }
+}
 // Install listeners immediately after spawn; error resolves through the controlled evidence/cleanup path.
 export function watchExit(child) {
   return new Promise(resolve => {

@@ -9,6 +9,7 @@ import { requireSafePath, requireSafeEngineWrites, validateExecutionScope, valid
   validateResolvedPackage, validateSettings, validateRuntime, validateTestInventory, validateCharacterReport, glbJointNames,
   sha256, snapshotSource } from './lib/unity-execution.mjs'
 import { readUnityTestResults } from './lib/unity-test-results.mjs'
+import { snapshotPayload, comparePayload } from './lib/e12-process.mjs'
 
 const root = fs.realpathSync(fileURLToPath(new URL('../', import.meta.url)))
 const defaultEditor = 'C:\\Program Files\\Unity\\Hub\\Editor\\6000.6.4f1\\Editor\\Unity.exe'
@@ -232,6 +233,8 @@ try {
         const shipped = requireSafePath(root, path.join(path.dirname(player), characterStreamingCopy))
         if (!fs.existsSync(shipped) || sha256(shipped) !== characterManifest.export.sha256) throw new Error('CHARACTER_STREAMING_COPY_MISMATCH')
         run.characterStreamingCopySha256 = sha256(shipped)
+        run.playerPayload = snapshotPayload(path.dirname(player))
+        writeJson(path.join(output, 'payload-build.json'), run.playerPayload)
       }
       run.stages.at(-1).verified = true
     }
@@ -240,6 +243,11 @@ try {
     await processStage('player', player, ['-screen-fullscreen', '0', '-screen-width', '1920', '-screen-height', '1080',
       '-force-d3d11', '-e09NoFlow', '-logFile', path.join(runtimePath, 'Player.log'), '-e02RunId', runId, '-e02Output', runtimePath],
     path.dirname(player), env, true)
+    const payloadAfter = snapshotPayload(path.dirname(player))
+    writeJson(path.join(output, 'payload-after.json'), payloadAfter)
+    run.playerPayloadComparison = comparePayload(run.playerPayload, payloadAfter)
+    writeJson(path.join(output, 'payload-comparison.json'), run.playerPayloadComparison)
+    if (!run.playerPayloadComparison.unchanged) throw new Error('PLAYER_PAYLOAD_CHANGED')
     validateRuntime(readJson(path.join(runtimePath, 'runtime.json')), runId, path.join(runtimePath, 'scene.png'))
     run.screenshotSha256 = sha256(path.join(runtimePath, 'scene.png'))
     const character = readJson(path.join(runtimePath, 'character.json'))

@@ -6,11 +6,90 @@ import { fileURLToPath } from 'node:url'
 import { createHash } from 'node:crypto'
 import { requireSafeEngineWrites, validateExecutionScope, validatePackagePolicy, validateUnchangedSource, validateCandidateCheckout, validatePackageLock, validateResolvedPackage, validateTestSummary, validateSettings, validateRuntime, validateTestInventory, validateCharacterReport, glbJointNames, fixedDependencies } from '../lib/unity-execution.mjs'
 import { readUnityTestResults } from '../lib/unity-test-results.mjs'
+import { snapshotPayload, comparePayload } from '../lib/e12-process.mjs'
 
 const root = path.resolve(fileURLToPath(new URL('../../', import.meta.url)))
 const contract = JSON.parse(fs.readFileSync(new URL('../../docs/engineering/e02-unity.proposed.json', import.meta.url)))
 const policy = JSON.parse(fs.readFileSync(new URL('../../unity/ChangshanLongdan/e02-package-policy.json', import.meta.url)))
 const copy = value => structuredClone(value)
+
+function withPayloadFixture(check) {
+  const boundary = path.join(root, 'release/e02')
+  fs.mkdirSync(boundary, { recursive: true })
+  const temporary = fs.mkdtempSync(path.join(boundary, 'payload-test-'))
+  try { check(temporary) } finally {
+    const absolute = fs.realpathSync(temporary)
+    const relative = path.relative(fs.realpathSync(boundary), absolute)
+    assert.ok(relative && !relative.startsWith('..') && !path.isAbsolute(relative))
+    fs.rmSync(absolute, { recursive: true, force: true })
+  }
+}
+
+test('complete Player payload survives JSON roundtrip and unchanged comparison without mutation', () => {
+  withPayloadFixture(directory => {
+    const asset = path.join(directory, 'Player_Data/StreamingAssets/Characters/zhaoyun.glb')
+    fs.mkdirSync(path.dirname(asset), { recursive: true })
+    fs.writeFileSync(path.join(directory, 'Player.exe'), 'player')
+    fs.writeFileSync(path.join(directory, 'UnityPlayer.dll'), 'engine')
+    fs.writeFileSync(asset, 'asset')
+    const before = JSON.parse(JSON.stringify(snapshotPayload(directory)))
+    const saved = JSON.stringify(before), after = snapshotPayload(directory), savedAfter = JSON.stringify(after)
+    assert.equal(Object.keys(before).length, 3)
+    assert.equal(before['Player_Data/StreamingAssets/Characters/zhaoyun.glb'].bytes, 5)
+    assert.deepEqual(comparePayload(before, after), { unchanged: true, added: [], removed: [], changed: [] })
+    assert.equal(JSON.stringify(before), saved)
+    assert.equal(JSON.stringify(after), savedAfter)
+  })
+})
+
+for (const name of ['Managed/Changshan.Combat.dll', 'Player_Data/StreamingAssets/Characters/zhaoyun.glb']) {
+  test(`complete Player comparison detects addition deletion and same-size substitution: ${name}`, () => {
+    withPayloadFixture(directory => {
+      const filename = path.join(directory, name), extra = path.join(directory, 'new.bin')
+      fs.mkdirSync(path.dirname(filename), { recursive: true })
+      fs.writeFileSync(path.join(directory, 'Player.exe'), 'player')
+      fs.writeFileSync(filename, 'original')
+      const before = snapshotPayload(directory), saved = JSON.stringify(before)
+      fs.writeFileSync(filename, 'replaced')
+      assert.deepEqual(comparePayload(before, snapshotPayload(directory)), { unchanged: false, added: [], removed: [], changed: [name] })
+      fs.writeFileSync(filename, 'original'); fs.unlinkSync(filename)
+      assert.deepEqual(comparePayload(before, snapshotPayload(directory)), { unchanged: false, added: [], removed: [name], changed: [] })
+      fs.writeFileSync(filename, 'original'); fs.writeFileSync(extra, 'extra')
+      assert.deepEqual(comparePayload(before, snapshotPayload(directory)), { unchanged: false, added: ['new.bin'], removed: [], changed: [] })
+      assert.equal(JSON.stringify(before), saved)
+    })
+  })
+}
+
+test('Player comparison uses own keys including prototype-like filenames with stable ordering', () => {
+  withPayloadFixture(directory => {
+    fs.writeFileSync(path.join(directory, 'Player.exe'), 'player')
+    const before = JSON.parse(JSON.stringify(snapshotPayload(directory)))
+    for (const name of ['z.bin', '__proto__', 'a.bin']) fs.writeFileSync(path.join(directory, name), 'first')
+    const added = snapshotPayload(directory)
+    assert.deepEqual(comparePayload(before, added), { unchanged: false, added: ['__proto__', 'a.bin', 'z.bin'], removed: [], changed: [] })
+    fs.writeFileSync(path.join(directory, '__proto__'), 'other')
+    assert.deepEqual(comparePayload(added, snapshotPayload(directory)), { unchanged: false, added: [], removed: [], changed: ['__proto__'] })
+    fs.unlinkSync(path.join(directory, '__proto__'))
+    assert.deepEqual(comparePayload(added, snapshotPayload(directory)), { unchanged: false, added: [], removed: ['__proto__'], changed: [] })
+    const inherited = Object.create({ missing: { bytes: 1, sha256: 'inherited' } })
+    assert.deepEqual(comparePayload(inherited, {}), { unchanged: true, added: [], removed: [], changed: [] })
+  })
+})
+
+test('Player snapshot blocks empty payload and junction escape without touching its destination', () => {
+  withPayloadFixture(directory => {
+    const payload = path.join(directory, 'payload'), outside = path.join(directory, 'outside')
+    fs.mkdirSync(payload); fs.mkdirSync(outside)
+    assert.throws(() => snapshotPayload(payload), /EMPTY_BUILD_PAYLOAD/)
+    fs.writeFileSync(path.join(outside, 'retain.bin'), 'retain')
+    const link = path.join(payload, 'linked')
+    fs.symlinkSync(outside, link, 'junction')
+    try { assert.throws(() => snapshotPayload(payload), /UNSAFE_PATH/) }
+    finally { fs.unlinkSync(link) }
+    assert.equal(fs.readFileSync(path.join(outside, 'retain.bin'), 'utf8'), 'retain')
+  })
+})
 
 test('real XML parser accepts a synthetic NUnit case and rejects malformed, missing, DTD, zero and skipped results', () => {
   const boundary = path.join(root, 'release/e02')

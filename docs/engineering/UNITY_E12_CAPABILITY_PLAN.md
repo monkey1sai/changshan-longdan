@@ -221,6 +221,8 @@ sample關聯保留整個來源timestamp/query窗口與重疊frame/phase區間，
 
 上述完整包提案的獨立來源審查另發現既有 snapshotPayload 使用一般 {}，根目錄普通檔名 __proto__ 會被當 prototype setter，導致清單/JSON 漏檔；故重用前必須在原 allowlist 的 e12-process.mjs 改用無 prototype 的清單，並在既有 e12-performance.node.mjs 增加該檔新增/替換/刪除回歸。這是完整性修正，不把未修 helper 稱為可靠全包驗證。已查 FoundationSmoke/ZhaoYunCharacter 在 -e02Output 寫出證據，runner -logFile 亦指向獨立 output，未帶 route/probe 旗標不啟動其 recorder；不將 output 移入 build/player，也不排除包內普通檔案來通過比對。
 
+2026-10-09 使用者回覆「同意」，批准上述第二項完整包 runner/test 精確追加；前述「待批准」保留為歷史提案，最新狀態為已批准此範圍。獨立 pre-implementation review 接受重用 snapshotPayload、原 helper 內純 comparePayload 與固定 build 快照；Player 成功退出後先另存快照及排序穩定的 added/removed/changed，再驗 runtime 報告。快照失敗或任何包異動維持 BLOCKED，保存原快照/error，不以空集合、更新基準或排除檔案通過。觀察前後一致不證明期間沒有短暫異動。原精確 stage/argv/timeout、安全控制、素材、採樣額度及 remote 邊界維持。
+
 Profile、thresholds、combat/AI/animation、正式素材、Web、Packages/Editor、Jev/全域配置、ACL、provider/時區設定及remote mutation均排除。若active來源需額外API/marker、material coverage不符或allowlist不夠，先交出精確scope修訂，不能擴寫其他模块。
 
 unit2修復提案基於新counter/clock定位證據，原兩輪budget仍保持用完。人類需明確批准新unit2方法/檔案/測試與採樣額度（提案最多3次短probe：seed7/11/23、3s暖機+10s量測；成本probe上述12次；各run有界90s/成本run120s，launcher只終止自身handles）。失敗不得自動追加額度或重新計數；新定位如仍不可解除能力缺口即停止並保全。本次不申領或消耗這些額度。必要正式approval/merge/postmerge仍須依task1.4完成，才開始unit2；人類scope同意也不能替代該gate。
