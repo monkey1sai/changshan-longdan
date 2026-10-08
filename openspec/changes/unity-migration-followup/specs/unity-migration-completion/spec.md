@@ -83,3 +83,29 @@ E13 MUST 在E12 DONE後凍結單一code/profile/asset/full-build版本，從輸�
 #### Scenario: 工程驗收通過
 - **WHEN** 同版本矩陣、正式審查、已授權合併與postmerge均齊備
 - **THEN** 可登錄工程DONE，仍不自動上傳itch、部署或購買。
+
+### Requirement: 每次交付的SPEC進度與完成判定
+
+每次完成、受阻或交接回覆 MUST 報已完成項目數／22、百分比、本次完成項目、尚缺gate及下一個eligible步驟。百分比 SHALL 僅為task計數，不代表工程品質或工作量。MUST 保留原22項結構及未測狀態；只有全部必要同版測試PASS與全部review/merge/postmerge gate完成、22/22時才能稱SPEC completed。
+
+#### Scenario: 文件或CI通過但遊戲驗收缺失
+- **WHEN** OpenSpec格式、CI、方案或子步驟通過，但必要Player/自然操作/裝置/效能測項未跑
+- **THEN** 不勾未完成task、不稱SPEC completed，回報目前計數與未完成項。
+
+#### Scenario: 任一必要測試缺失或失敗
+- **WHEN** 存在FAIL、UNKNOWN、SKIPPED、NOT_RUN或正式gate尚缺
+- **THEN** 保持未完成，不以刪除測項或改判NOT_APPLICABLE取得22/22。
+
+### Requirement: Unity與Jev最終實際驗收
+
+E13 SHALL 可見打開凍結候選的指定Unity project並記錄Editor版本、project/code/profile/asset/full-build身份與操作證據；MUST 另驗收同版輸出Windows Player的完整S01–S08、四難度自然勝敗/重試/暫停/失焦、音效及實體手把。MUST 核對Jev的實際能力及使用者接受的執行語義，不把Choice advisory回應描述成Jev本身控制Unity。
+
+使用者於2026-10-08確認採Jev支援選擇、Unity/Player工具實際執行的模式。SHALL 記錄去敏且充分的state、可用/合法候選、Choice/confidence、state新鮮度、採用/拒絕、實際executor/命令/版本/操作、結果證據與對應outcome。MUST 不以Jev信心、caller報告、Editor開啟或CI代替實測PASS。缺該executor時，MUST 標UNAVAILABLE並保持最終驗收未完成。
+
+#### Scenario: Jev建議與實際執行分開
+- **WHEN** 使用者已接受Jev支援選擇模式且必要phase gate已齊
+- **THEN** 由核對且獲授權的executor開啟Unity及執行合法操作，分別保存Jev與Editor/Player實測證據；全部必要矩陣同版PASS後才可完成5.2。
+
+#### Scenario: Jev或Editor成功但沒有完整Player證據
+- **WHEN** 只有Jev回應/狀態、Editor開啟或腳本trace，或executor不存在、輸出包版本不一致
+- **THEN** 最終驗收保持BLOCKED/NOT_RUN，不宣稱遊戲已通過或SPEC completed。

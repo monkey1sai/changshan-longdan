@@ -38,6 +38,18 @@ VRAM 保留 raw timestamp／query start-end／PID／processStart／adapter，先
 
 每單元先 scope review、精確允許檔案、V/S、正負邊界測試與raw evidence，再獨立 exact-head review、該單元 merge 授權與 postmerge compatibility；缺門檻不開始下一單元。E13 freeze code/profile/asset/full build hashes，從輸出 Windows 包測全部 S01–S08、四難度、自然勝敗、重試／暫停／失焦、音效、實體手把與效能；不同舊 SHA 的 PASS 不拼接。明列目前城池佔位範圍，未承諾改造不暗加，未驗收不冒稱最終美術完成。
 
+### 使用者補充：Unity／Jev最終驗收與進度
+
+2026-10-08使用者要求依SPEC繼續、每次報完成度、最終打開Unity用Jev執行遊戲且通過所有測試。沿用22個tasks；每次交付報completed/22、百分比、當次完成項目、未完成gate及下一個eligible步驟，比例僅任務計數。原task1.3/1.4與每單元合併gate不跳過，最終測試不提前替代當前前置條件。
+
+Jev現況以workspace `jev_status`回讀為準：enabled=true、threshold0.9、timeout10、advisory_only=true。官方[Choice](https://docs.typesafe.ai/primitives/choice)提供選項/機率/信心；現有repo MCP沒有Unity executor。使用者於2026-10-08確認「Jev選擇，Unity工具執行」：主控盤點可用Unity工具，Jev在充分且可傳送的去敏state中選擇步驟/合法操作，由已授權executor執行並記錄真實遊戲結果。缺executor時記UNAVAILABLE，不改全域配置或冒稱已具備遊戲操作能力，也不標完成。
+
+在E13 eligible階段先記錄指定project絕對路徑與凍結code/profile/asset/full-build hashes，preflight實際Editor版本/專案鎖/執行工具。可見打開Unity6000.6.4f1 Editor及指定project，保存啟動/專案身分/Play或操作證據；另執行同版輸出Windows Player。Editor、輸出包、自然操作、感官/實體手把是分別的證據，不能互代。必要Unit/Node工具、Web相容/parity、Unity compile/Edit/Play/build/Player、正式E12/soak與完整E13 S01–S08矩陣均綁同版本；工具開啟、Jev成功或CI綠不等於全部驗收。
+
+Jev記錄只包含允許傳送的窄state、可用候選/合法操作、capture/執行時間與state版本、Choice/confidence及採用/拒絕原因；不傳私有source、完整log/對話或憑證。選擇後再次檢查state新鮮度、合法性及授權；低信心/錯格式/未知/timeout不執行候選、不填PASS。recorded observation須回報對應outcome，caller metadata與實測證據分列；API/採樣額度依eligible單元先登錄，不重設舊預算、不引入每幀外部AI。Jev只支援驗證流程，不決定combat結果、測試是否通過、審查批准或merge。
+
+最終只有全部22項完成、全部必要同版測試PASS、使用者體驗確認、正式獨立APPROVED、已授權merge及postmerge相容性齊備，才稱SPEC completed。任一FAIL/UNKNOWN/SKIPPED/NOT_RUN或executor缺失均保持未完成；不為完成率移除必要測項或把未測判NOT_APPLICABLE。
+
 ## Risks / Trade-offs
 
 - 既有 E11 formal review 缺口 → 保留歷史限定接受和缺口，實作前明示可接受前置狀態，不自我批准。

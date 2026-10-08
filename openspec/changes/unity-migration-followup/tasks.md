@@ -1,3 +1,9 @@
+## 進度回報與最終完成契約
+
+每次完成／受阻交付都回報已完成項目數／22、百分比、本次完成項目、剩餘gate與下一個eligible步驟。現在2/22（9.1%）只是任務計數，不代表遊戲工程品質或工作量比例。不得因文件、CI、Jev回應或子步驟完成而增加勾選。
+
+使用者要求最終可見打開Unity、用Jev執行遊戲並通過全部必要測試，並於2026-10-08確認「Jev選擇，Unity工具執行」。按現有Jev Choice配置，由Jev支援選擇、已授權Unity/Player executor實際執行；缺executor時記UNAVAILABLE，不自行宣稱滿足。最終5.2/5.3全部證據與gates齊備且22/22後才能稱SPEC completed；必要FAIL/UNKNOWN/SKIPPED/NOT_RUN均阻擋。
+
 ## 1. 第一個 eligible 單元：新證據與能力方案
 
 - [x] 1.1 核對最新base／E11與E12候選diff、歷史限定接受及formal缺口；指定單元負責人、reviewer、V/S、允許檔案與回滾，使用STEP_RECORD，未審查不實作。證據：docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md A/B。
@@ -32,5 +38,5 @@
 ## 5. E13凍結整合與可玩版本
 
 - [ ] 5.1 E12 DONE後凍結單一Windows候選與完整包hash，列明保留Web、場景佔位與所有歷史缺口，禁止拼接不同SHA PASS。
-- [ ] 5.2 從輸出包執行完整S01–S08與四難度自然勝敗／重試／暫停／失焦、音效與實體手把；脚本支持證據另列，缺項NOT_RUN。
+- [ ] 5.2 可見打開凍結候選的指定Unity project，保存Editor/版本/操作證據；按已確認Jev語義記錄狀態/Choice/outcome及實際executor。另從同版輸出Windows包執行完整S01–S08與四難度自然勝敗／重試／暫停／失焦、音效與實體手把；Editor開啟與腳本支持證據不能替代輸出包/自然操作，全部必要測項同版PASS，缺項NOT_RUN並阻擋。
 - [ ] 5.3 取得使用者體驗確認、正式獨立APPROVED、授權merge與postmerge；工程DONE與發布分列，不自動上傳itch／付費／部署。

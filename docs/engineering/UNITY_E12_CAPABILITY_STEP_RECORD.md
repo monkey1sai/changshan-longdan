@@ -134,3 +134,11 @@ releaseOrPaidActionPerformed: false
 - 本次fetch確認`origin/main=9ab737ad0324f6922e116845490dada6d7c55c67`；相對805db86只新增MIT `LICENSE`，與本分支12個新增檔不重疊。保留原805db86來源盤點，不倒填歷史驗證；PR採最新main作base，不移除license或更新遊戲。
 - 修正README的舊「tasks均未執行」描述，使其與2/22台帳一致。必要全分支exact-head advisory及CI結果另於PR交付核對；正式APPROVED仍待取得。
 - Authorization Envelope：Destination=GitHub origin monkey1sai/changshan-longdan、指定feature branch/main PR；Purpose=SPEC/U1送審；Allowed=non-force push該branch、create PR、readback/checks；Data=12個tracked SPEC/紀錄/diagnostic檔及繁中PR本文；Forbidden=raw local-only產物/credentials、force/delete、merge/auto-merge、runtime/deploy/provider；Stop=base/head漂移、既有branch/PR衝突、必要review blocker、auth/network失敗。PR建立前後核對branch SHA；未批准gate保持不變。
+
+## 使用者最終驗收要求補充
+
+- 新指示要求繼續依SPEC、每次完成回報完成度，最終打開Unity用Jev執行遊戲且通過所有必要測試。僅补design/spec/tasks及本紀錄；不改22項結構、runtime/.codex或原gate。
+- 最新PR45核對：Draft/OPEN、head ee526ec、base9ab737a、formal reviews=0、未merge、auto-merge=null；Ubuntu/Windows CI success。當前仍2/22（9.1% task計數），下一eligible為1.3語義/範圍批准與1.4正式gate，不進unit2。
+- 實際workspace jev_status：enabled0.9/10、workspace_override=true、advisory_only=true；沒有可呼叫Unity MCP executor。使用者於2026-10-08明確確認「Jev選擇，Unity工具執行」；Jev不是Unity直接執行器，缺實際執行能力不算完成。此次沒有provider Choice/recorded observation，無需虛構outcome。
+- 既有 `node scripts/unity-preflight.mjs --mode inventory --out release/e02/final-unity-jev-pending` 只讀PE/專案/保留素材，ready=true、Editor=6000.6.4f1_12bfff696524、asset hashes一致；engineExecutionSupported=false、unityProcessStarted=false、compile/Edit/Play/build/Player/visibleScene/license均NOT_RUN。這是precheck，不是Unity啟動或正式最終preflight。
+- 使用者最終要求已列為5.2/5.3的強制完成條件：可見Editor、同版輸出包、Jev/實際executor、所有必要測試及formal/merge/postmerge皆齊才22/22。沒有背景Unity/Player、provider採樣或美術製作；此補充文件不解除PR45與unit2gate。
