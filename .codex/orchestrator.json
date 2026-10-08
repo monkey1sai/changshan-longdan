@@ -1,0 +1,115 @@
+{
+  "capabilities": {
+    "character_runtime": {
+      "allowed_files": [
+        "unity/ChangshanLongdan/Assets/Animation/Runtime/SkinBinding.cs",
+        "unity/ChangshanLongdan/Assets/Character/Runtime/CharacterAnimation.cs",
+        "unity/ChangshanLongdan/Assets/Character/Runtime/ZhaoYunController.cs",
+        "unity/ChangshanLongdan/Assets/Foundation/Tests/EditMode/RigParityEditTests.cs",
+        "unity/ChangshanLongdan/Assets/Foundation/Tests/PlayMode/AnimatedCharacterPlayTests.cs"
+      ],
+      "description": "Bounded Unity skinning/controller diagnosis only after task authorization. Does not authorize model production, asset replacement or cross-repo work. Render/play evidence remains required.",
+      "role": "worker",
+      "validators": [
+        "unity_preflight",
+        "unity_runner"
+      ]
+    },
+    "evidence_inventory": {
+      "allowed_files": [],
+      "description": "Read-only inventory of existing source, tests, handoffs and version-bound evidence. No writes, approvals or gameplay spec initiation.",
+      "role": "researcher",
+      "validators": []
+    },
+    "independent_review": {
+      "allowed_files": [],
+      "description": "Read-only independent review of exact base/head and complete scoped diff. Advisory evidence only; cannot supply counted GitHub approval, permission or merge authority.",
+      "role": "reviewer",
+      "validators": []
+    },
+    "validation_tooling": {
+      "allowed_files": [
+        "scripts/lib/unity-execution.mjs",
+        "scripts/lib/unity-preflight.mjs",
+        "scripts/lib/e11-route-validation.mjs",
+        "scripts/tests/unity-execution.node.mjs",
+        "scripts/tests/unity-preflight.node.mjs",
+        "scripts/tests/e11-route-validation.node.mjs"
+      ],
+      "description": "Bounded existing Unity validator/route guard diagnosis after task authorization; preserve immutable evidence, failures and original retry budgets. No automatic Player or benchmark launch.",
+      "role": "worker",
+      "validators": [
+        "unity_runner"
+      ]
+    },
+    "web_combat": {
+      "allowed_files": [
+        "src/entities/battle.ts",
+        "src/entities/player.ts",
+        "tests/battle.test.ts",
+        "tests/player.test.ts"
+      ],
+      "description": "Bounded Web combat/player diagnosis or implementation only after a separately authorized task and applicable step gates. Preserve deterministic rules.",
+      "role": "worker",
+      "validators": [
+        "web_unit",
+        "web_build",
+        "web_parity"
+      ]
+    }
+  },
+  "guidance": [
+    "AGENTS.md",
+    "docs/engineering/MUSOU_EXECUTION_PLAN.md",
+    "docs/engineering/JEV_REPO_USAGE.md"
+  ],
+  "routing": {
+    "jev_enabled": true,
+    "strategy": "rules_then_jev"
+  },
+  "scheduler": {
+    "max_active": 1
+  },
+  "schema_version": 1,
+  "validators": {
+    "unity_preflight": {
+      "argv": [
+        "npm",
+        "run",
+        "unity:preflight"
+      ],
+      "timeout_seconds": 120
+    },
+    "unity_runner": {
+      "argv": [
+        "npm",
+        "run",
+        "test:unity-runner"
+      ],
+      "timeout_seconds": 120
+    },
+    "web_build": {
+      "argv": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "timeout_seconds": 120
+    },
+    "web_parity": {
+      "argv": [
+        "npm",
+        "run",
+        "parity:check"
+      ],
+      "timeout_seconds": 120
+    },
+    "web_unit": {
+      "argv": [
+        "npm",
+        "test"
+      ],
+      "timeout_seconds": 120
+    }
+  }
+}

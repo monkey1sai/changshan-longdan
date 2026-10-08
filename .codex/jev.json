@@ -1,0 +1,5 @@
+{
+  "confidence_threshold": 0.9,
+  "enabled": true,
+  "timeout_seconds": 10
+}
