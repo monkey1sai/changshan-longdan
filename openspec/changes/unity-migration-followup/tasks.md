@@ -1,7 +1,7 @@
 ## 1. 第一個 eligible 單元：新證據與能力方案
 
 - [x] 1.1 核對最新base／E11與E12候選diff、歷史限定接受及formal缺口；指定單元負責人、reviewer、V/S、允許檔案與回滾，使用STEP_RECORD，未審查不實作。證據：docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md A/B。
-- [ ] 1.2 保存既有601frame／15sample／0valid的raw與hash，記錄已用兩輪；取得新的VRAM時鐘語義／counter身分定位證據，不改validator門檻。
+- [x] 1.2 保存既有601frame／15sample／0valid的raw與hash，記錄已用兩輪；取得新的VRAM時鐘語義／counter身分定位證據，不改validator門檻。證據：UNITY_E12_CAPABILITY_PLAN原生同instance對照及raw索引；只完成本機觀察來源定位，不代表指定Player freshness。
 - [ ] 1.3 提出camera-specific visible、前景、timing alignment／去重／收尾、記憶體對齊及量測成本方案；未知項保持BLOCKED，取得独立方案審查與新範圍批准，不重設原budget。
 - [ ] 1.4 完成本單元必要確定性驗證、raw evidence、exact-head review；需要提交合併時走正式approval／merge授權／postmerge gate後，才開始第2單元。
 

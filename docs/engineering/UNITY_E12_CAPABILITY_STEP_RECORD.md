@@ -6,7 +6,7 @@
 
 ```text
 stepId: E12/U1
-status: IN_PROGRESS_BLOCKED_UTC_MAPPING
+status: IN_PROGRESS_PENDING_CAPABILITY_METHOD_SCOPE
 implementationPr: null
 implementer: Codex root
 independentReviewer: native architecture_reviewer /root/unity_spec_review (advisory)
@@ -64,7 +64,7 @@ formalReviewCommitSha: null
 formalReviewUrlOrId: null
 latestCiHeadShaAndResults: NOT_RUN (not pushed)
 unresolvedReviewThreads: null
-unresolvedBlockingFindings: host clock values available but reliable UTC mapping unproven; method/scope approval incomplete
+unresolvedBlockingFindings: observed-source local FILETIME evidence available; full capability method/scope approval incomplete
 reviewerOpenedArtifacts: final candidate advisory review pending
 baseDriftAssessment: latest origin805db86 same source base
 finalSameVersionVerdict: NOT_VERIFIED
@@ -74,7 +74,7 @@ finalSameVersionVerdict: NOT_VERIFIED
 
 ```text
 stepVerdict: BLOCKED, not VERIFIED/DONE
-remainingFailuresOrEvidenceGaps: reliable clock UTC mapping; approved instrumentation/error method; formal gate
+remainingFailuresOrEvidenceGaps: specified Player freshness NOT_RUN; approved instrumentation/error method; formal gate
 mergeAuthorizedByAndEvidence: null
 mergeSha: null
 postMergeValidationAndCompatibility: NOT_RUN
@@ -103,3 +103,10 @@ releaseOrPaidActionPerformed: false
 - 首輪18 PASS／6 FAIL，TEST_FAILURE，失敗JSON保留。定位為離線JSON解析自動DateTime後隱式字串丟Z/fraction；correct1改DateKind String和explicitZ並加回歸，26 PASS／0 FAIL。被測script及兩次結果SHA見PLAN，未反覆重跑既有E12測試。
 - VERIFIED：離線fixtures與指定fixturezone重播結果；首筆query超限兩種解讀均拒絕。UNCERTAINTY：實際WMI時鐘mapping未證明，原生跨來源對照未執行。
 - 原E12兩輪與host3筆額度保持已用完；沒有新provider sample、Player或美術工作。task1.1保持完成，其餘未勾。U1不標VERIFIED／DONE，不進runtime第2單元。
+
+## 追加原生跨來源診斷
+
+- 使用者同意最多3窗口；scope及精確script hash經native architecture reviewer run前readback接受。允許Capture-E12ClockComparison.ps1、local-only輸出及文件；未改runtime/provider/threshold，未remote mutation。
+- 3窗口全同instance、API/CStatus/countertype正常，原生UTC前後包住來源查詢；WMI和PDH local解讀6/6符合既有lag/future數值允收窗口，UTC解讀6/6 FUTURE。部分PDH sample早於call start，不宣稱同步瞬時取樣。本機觀察來源的local FILETIME映射有一致證據，普遍WMI契約UNPROVEN，指定Player freshness NOT_RUN。
+- syntax／C# compile／x64 ABI檢查PASS；raw／analysis的SHA及完整查詢時間見PLAN。只執行一次，無第4窗口；原失敗與額度不重設。
+- 獨立reviewer親讀raw／analysis後確認task1.2可完成定位證據與raw保全，不解除task1.3完整方法、task1.4正式review/merge/postmerge gate。U1尚未VERIFIED／DONE；沒有背景Player或美術製作。

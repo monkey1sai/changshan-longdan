@@ -92,3 +92,28 @@ GPU `Frequency_Sys100NS=10000000`、PerfTime／Frequency_PerfTime皆0；PerfOS S
 **離線結論**：在明確fixture zone `Taipei Standard Time` 下，local-encoded假設的第2／3筆兩來源符合原query/freshness數值窗口，直接UTC解讀則FUTURE；第1筆兩種假設都QUERY_WINDOW_INVALID。這是指定假設的相容性，不證明host實際時區設定、不證明WMI繼承PDH語義、不證明指定Player有效VRAM。`providerMapping=UNPROVEN`、`playerFreshness=NOT_RUN`、`newProviderSamples=0`保留。
 
 下一個最小實測提案：同一GPU counter instance於單一窗口取WMI raw／PDH raw（只timestamp/frequency／來源status與必要instance識別）、獨立UTC FILETIME及query-window，帶明確時區來源規則；先核對各API契約和精確欄位，必要時預先批准新增最多3個窗口。保留原始值，分別檢驗UTC與local-encoded假設；若兩者都可／都不可或跨來源無法定位即UNKNOWN，不選最接近query的結果冒稱真相。此新增provider實测尚未執行／授權；formal phase gate與tasks1.2–1.4不變。
+
+## 追加：原生同instance對照完成
+
+使用者同意上述下一步後，native reviewer `/root/unity_spec_review` 先審scope、再核對 [Capture-E12ClockComparison.ps1](../../scripts/diagnostics/Capture-E12ClockComparison.ps1) SHA `f7160447f18f8830a427fab83bd359c778d25ce6b2389a7484f847b569b00fc6`，才執行一次host最多3窗口。PowerShell syntax、C# compile、Windows x64 PDH_RAW_COUNTER ABI自檢PASS，沒有先行provider採樣。
+
+來源契約：[PdhAddEnglishCounterW](https://learn.microsoft.com/en-us/windows/win32/api/pdh/nf-pdh-pdhaddenglishcounterw)可用language-neutral路徑；[PdhGetRawCounterValue](https://learn.microsoft.com/en-us/windows/win32/api/pdh/nf-pdh-pdhgetrawcountervalue)須另外檢查CStatus；[GetSystemTimePreciseAsFileTime](https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getsystemtimepreciseasfiletime)提供UTC FILETIME；PDH timestamp local契約仍如上。WMI只取Name/timestamp/frequency，PDH只保存timestamp/status/type，FirstValue／SecondValue不輸出。
+
+新增資料local-only，時間2026-10-08T08:46:55.6833708Z–08:46:57.0925704Z起，共3窗口至08:46:57.1190931Z（Taipei16:46）：
+
+| 產物 | SHA-256 |
+|---|---|
+| native-clock-comparison.json | 8c3659674b4fad1b48e8e85041b513c3b84742f7cae9f3322138a53a93c29c36 |
+| native-clock-analysis.json | 3376ec95502b3edf517cb4020e3fd521e7a5a6e28990e36948b3972d04a30252 |
+
+全程鎖定 `pid_31848_luid_0x00000000_0x0000A44A_phys_0`；3窗均無error，PDH API=0／CStatus=0／CounterType=65792。取得host來源規則 `Taipei Standard Time`，適用offset480分鐘；未更改設定。每來源及combined window均用原生UTC FILETIME前後包住，時間差以Int64/decimal ticks計算，不經double FILETIME。
+
+| 窗口 | combined(ms) | WMI query(ms) | PDH query(ms) | local解讀WMI比來源end落後(ms) | local解讀PDH比來源end落後(ms) |
+|---|---:|---:|---:|---:|---:|
+| 1 | 1406.0285 | 1121.9003 | 258.6139 | 9.9106 | 0.4472 |
+| 2 | 13.2958 | 11.5492 | 0.0910 | 4.7886 | 0.5627 |
+| 3 | 12.2319 | 11.6381 | 0.0916 | 5.2834 | 0.6959 |
+
+6個來源查詢皆≤2s；按明確來源時區規則作local FILETIME解讀全部符合原lag≤2s／future≤250ms數值允收窗口；直接UTC全部為約+8h的FUTURE。部分PDH timestamp早於call start（窗口2約0.4717ms、窗口3約0.6043ms），保留來源取樣與呼叫時間差，不能宣稱全落在嚴格call start/end之內或同步瞬時取樣。本機這個counter來源的local-encoded解讀得到WMI／PDH／獨立原生UTC一致證據，舊helper直接FromFileTimeUtc的假設不適用此觀察來源。這不是所有WMI provider的普遍契約，也不是指定Player身分／VRAMbytes／freshness驗收。
+
+原3筆sandbox失败、3筆host及本次3窗口都保留，各額度用完，不追加第4窗口。獨立reviewer確認可完成task1.2的定位證據與raw保全；定位證據可供後續提出精確的時間轉換修復：來源語義／platform/version限定、來源時區規則、ambiguous/invalid拒絕、原raw保留、100ns／query／PID／有效高水位門檻不變。runtime尚未改；task1.3的完整instrumentation方案及task1.4正式review/merge/postmerge仍缺，不能進第2單元。
