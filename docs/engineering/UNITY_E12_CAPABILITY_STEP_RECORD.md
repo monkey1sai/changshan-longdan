@@ -202,3 +202,10 @@ releaseOrPaidActionPerformed: false
 - 重用已修正 snapshotPayload，新增純 comparePayload 只比較 own keys、bytes、SHA-256，added/removed/changed 排序穩定，不修改輸入。build 的 payload-build.json 與 run.playerPayload 固定；Player 成功退出後寫 payload-after.json/payload-comparison.json，差異觸發 PLAYER_PAYLOAD_CHANGED，catch 保留 baseline/差異/error；快照讀取失敗直接原錯誤 BLOCKED，不填空清單。Player stage 失敗保留原 failure，不冒稱包比對完成。
 - 工具 baseline runner84/84、E12 Node25/25 PASS；新增5項 runner 回歸驗證完整包 JSON/非突變、DLL及GLB新增/刪除/同大小替換、特殊鍵/穩定排序、空包與junction逃逸，runner89/89及E12 Node25/25 PASS。fixtures 僅清理本次建立且已核對根邊界的路徑，junction先 unlink，target保存核對。
 - 原有五階段、Edit172/Play47、argv/timeout、exe/GLB獨立hash gates維持；舊v2沒有 playerPayload，沒有補寫舊run。新版待 exact SHA 終審後在乾淨 validation worktree 執行一次新 exclusive release/e02/unit2-payload-validation-v1。此工程不完成2.1或2.4全部條件；clock/Player來源mapping/三seed與visible/timing/workload仍缺，SPEC4/22（18.2%）。
+
+### 完整包同版五階段結果
+
+- exact candidate 204908457141c6d883af2356a2efe04afe3a3c1b 獨立終審 accept 後，fresh-check validation root clean/no lock/no output 並以 ff-only 從 da959b4 更新；未刪原 worktree lock 或舊 run。run 54772c21-3028-498f-bd1d-20128800588d，於 2026-10-08T22:09:32.669Z（臺北2026-10-09 06:09:32）結束；compile/Edit172/Play47/build/Player 全部 exit0/verified，result PASS_LOCAL_ENGINE_FOUNDATION。輸出為 .worktrees/unity-e12-capability-validate/release/e02/unit2-payload-validation-v1。
+- 完整包319個普通檔案、175654092 bytes；baseline 與 after 都為 SHA-256 ed62502ad5f0338c20bd25c521f5981cb5d388f8c33142a65d97fc33e76dbe57。comparison unchanged=true，added/removed/changed 全空；comparison hash b333f3facef2151504284eb99c692b347f52de4c907c69db37ec1641ccb95060，result hash 996f0cf14e0427acc3fa5067ea8a3f93c2bd94c4480897c84ed3d78f9a6a71de。重新從完整包讀取並與保存 baseline/run.playerPayload/after 比較亦通過；非僅相信 comparison 字串。包前後一致只證明觀察時點一致，不證明期間沒有短暫改寫。
+- validation root source clean/no project lock；原 runner stage/test gates未變。PlayMode Editor.log:1537 仍有 persistent allocation leak，本次87 individual allocations，來源未定位；不以跨run數量差異推定memory slope或已修復。人類衣角例外維持原 artifact 界線，本次沒有新增自然操作或全面視覺接受。
+- 本次完成完整包工程及同版驗證，未啟動短probe/GPU helper/Jev provider、未push/merge或發布。下一個三seed controller最小追加已有獨立方案接受、已向人類提出精確scope問題，尚待答覆；未實作。clock/來源mapping/visible/timing/workload及正式退出仍缺，SPEC4/22（18.2%）。

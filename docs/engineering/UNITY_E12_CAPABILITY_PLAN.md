@@ -223,6 +223,13 @@ sample關聯保留整個來源timestamp/query窗口與重疊frame/phase區間，
 
 2026-10-09 使用者回覆「同意」，批准上述第二項完整包 runner/test 精確追加；前述「待批准」保留為歷史提案，最新狀態為已批准此範圍。獨立 pre-implementation review 接受重用 snapshotPayload、原 helper 內純 comparePayload 與固定 build 快照；Player 成功退出後先另存快照及排序穩定的 added/removed/changed，再驗 runtime 報告。快照失敗或任何包異動維持 BLOCKED，保存原快照/error，不以空集合、更新基準或排除檔案通過。觀察前後一致不證明期間沒有短暫異動。原精確 stage/argv/timeout、安全控制、素材、採樣額度及 remote 邊界維持。
 
+### 下一個待批准追加：三 seed 的 controller 銜接
+
+- 必要性：task2.4／4.2 要求 seed7/11/23；目前 controller 的 UseDummies(dummies) 只以預設7建立 HitTargets，readonly RNG 沒有 reseed 介面。已支援多 seed 的既有 HitTargets constructor 可直接重用，無須修改 Combat／AI 演算法。只改報告或出生 seed 不能證明 AI seed 已使用。
+- 精確新增檔案範圍僅 unity/ChangshanLongdan/Assets/Character/Runtime/ZhaoYunController.cs：保留原單參數 public API，新增 UseDummies(dummies,uint seed) overload；private Build 接受預設 HitTargets.DefaultSeed 的 seed 並傳到既有 constructor。原初始化、單參數與 pressure crowd 都維持預設7。一般 controller API 不新增三 seed 限制；三 seed allowlist 僅屬 probe。
+- 原 allowlist 的 PerformanceProbe guard/實際呼叫與 report 使用同一驗證 seed，接受7/11/23、拒絕其他；PerformanceTelemetryPlayTests 使用固定相同 spawns 對照獨立 HitTargets/simulation 的 seed 敏感欄位及合法 Tick，驗三 seed、原單參數與顯式7等價，以及 Restart 延續 RNG／重建 targets 才建立新 seed 流。fixtures 關閉自動步進。runner 僅依實際 source 登錄 case 數，已有測試登錄授權，不先填 PASS。
+- 獨立方案審查接受此必要最小追加，但新增 controller 檔案仍待人類明確批准；批准前不修改 controller/guard 或新增此 runtime test。不改 difficulty、Reset RNG、input、資產、門檻、probe quota，沒有額外採樣/provider/remote 授權。此追加不解除 clock/visible/timing/workload 或正式完整遊戲 gates。
+
 Profile、thresholds、combat/AI/animation、正式素材、Web、Packages/Editor、Jev/全域配置、ACL、provider/時區設定及remote mutation均排除。若active來源需額外API/marker、material coverage不符或allowlist不夠，先交出精確scope修訂，不能擴寫其他模块。
 
 unit2修復提案基於新counter/clock定位證據，原兩輪budget仍保持用完。人類需明確批准新unit2方法/檔案/測試與採樣額度（提案最多3次短probe：seed7/11/23、3s暖機+10s量測；成本probe上述12次；各run有界90s/成本run120s，launcher只終止自身handles）。失敗不得自動追加額度或重新計數；新定位如仍不可解除能力缺口即停止並保全。本次不申領或消耗這些額度。必要正式approval/merge/postmerge仍須依task1.4完成，才開始unit2；人類scope同意也不能替代該gate。
