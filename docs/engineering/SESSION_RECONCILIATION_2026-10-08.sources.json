@@ -1,0 +1,96 @@
+{
+  "kind": "LOCAL_RECORD_RECONCILIATION_SOURCE_INDEX",
+  "asOf": "2026-10-08 Asia/Taipei",
+  "repositoryRoot": "C:\\Repos\\changshan-longdan",
+  "baseSha": "be04336f108db76bb75da31e8b68e065eb182307",
+  "e12CandidateSha": "3f45d134da9b6ca997e1de0c8b5b2a2eec60c447",
+  "characterRequestSha": "fb7e7cd7ab8f116530ca488bb020bcb12be2f557",
+  "releaseTag": "itch-web-2026-10-02",
+  "releaseSourceSha": "c48ecd9a39abbc42ecf34ed3761248e11af7c29d",
+  "sources": [
+    {
+      "id": "S01",
+      "path": "docs/itch-page.md",
+      "bytes": 12329,
+      "sha256": "04ee5629509c0fef48fd87dafd959aa793d7c6928f26294af19f76f93c4260c4"
+    },
+    {
+      "id": "S02",
+      "path": "docs/engineering/MUSOU_EXECUTION_PLAN.md",
+      "bytes": 36262,
+      "sha256": "96f541844c45823c11e995b17c49196860c6c835b81117f08c70deb961e48205"
+    },
+    {
+      "id": "S03",
+      "path": ".worktrees/_clones/e11-c/release/e02/e11-postmerge/result.json",
+      "bytes": 363060,
+      "sha256": "b37d99f69bfc7606647cc60950dca19fd011908e3fafe8c5982e0cef883fed5b"
+    },
+    {
+      "id": "S04",
+      "path": ".worktrees/e12-performance/docs/engineering/E12_PERFORMANCE.md",
+      "bytes": 6851,
+      "sha256": "92c8f6bbfd21e69919c8212393d590af777273ec47222ed0422a11277f50953e"
+    },
+    {
+      "id": "S05",
+      "path": ".worktrees/e12-performance/docs/engineering/E12_STEP_RECORD.md",
+      "bytes": 5402,
+      "sha256": "afa1e8345354fb7c178f8ddc6589cbc5e61cd70e73456efeb5a7729b14b1f297"
+    },
+    {
+      "id": "S06",
+      "path": ".worktrees/_clones/e12-a/release/e12/probe-c/result.json",
+      "bytes": 1037,
+      "sha256": "4a131c55101247228e59180d01ccfaa8242c652948dd4c6d70f386bca1ae22c4"
+    },
+    {
+      "id": "S07",
+      "path": ".worktrees/e12-performance/release/e12/c-outcome.md",
+      "bytes": 2820,
+      "sha256": "20a7b428d98d4bb6f50b4fc1afae25b726f7ddffc3f1b64f156714941f4236da"
+    },
+    {
+      "id": "S08",
+      "path": ".worktrees/fix-zhaoyun-deformation/docs/art/requests/cl-zhaoyun-deformation-v1.md",
+      "bytes": 6420,
+      "sha256": "8d1afa9e5f9f6bca03b48a32b5a0d01cf46652f673ee785c7241e3603f53a10b"
+    },
+    {
+      "id": "S09",
+      "path": ".worktrees/_clones/e12-a/release/e02/e12-b/player/scene.png",
+      "bytes": 730325,
+      "sha256": "3e13db4647cd0b6f6694621ea8a44fbc0a3328d7cbe8a52227f2385a143f8a50"
+    },
+    {
+      "id": "S10",
+      "path": ".worktrees/fix-zhaoyun-deformation/release/skin-diagnosis/web-vertices.json",
+      "bytes": 34127,
+      "sha256": "26e6e545a4f90486d1a75865075e22f226cc20922f1d6b230aefbcf73aa4b7ee"
+    },
+    {
+      "id": "S11",
+      "path": "docs/engineering/E11_HANDOFF.md",
+      "bytes": 10216,
+      "sha256": "855e80a4b554ea2d15c585a13bae9b8cbed9e0b7e835dbe4f7b8edd7ad826ef3"
+    },
+    {
+      "id": "S12",
+      "path": ".worktrees/_evidence/e11/remote-9036d2f/REMOTE_CLOSEOUT.md",
+      "bytes": 2578,
+      "sha256": "7109e8fe31e80aa9c0db58f3320c5b67c793e979a8c9ad61b2c686f08d2ae92b"
+    },
+    {
+      "id": "S13",
+      "path": ".worktrees/_evidence/e11/remote-9036d2f/CLOUD_REVIEW_RESULT.md",
+      "bytes": 2920,
+      "sha256": "8b2fb82761ae4f9e220b53fb3945a8a8c9a6224f2cda94c0d58919e5dc51fdc5"
+    },
+    {
+      "id": "S14",
+      "path": ".worktrees/_clones/e12-a/release/e02/e12-c/result.json",
+      "bytes": 427986,
+      "sha256": "54aa02415c5fdae7da8e2ab938910b8e1567d60f4944bf3e612aa1388039f59b"
+    }
+  ]
+}
