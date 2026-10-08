@@ -120,3 +120,10 @@ releaseOrPaidActionPerformed: false
 - 新unit2 allowlist、最多3次短probe及12次成本probe、待批准成本界線已整理成具體提案；未執行/消耗新額度，也不重新計數原E12兩輪或三組診斷額度。全部remote、正式benchmark、資產製作仍排除。
 - task1.3保持未勾：待exact-candidate獨立方案審查及人類新scope批准。task1.4正式APPROVED／merge授權／postmerge保持NOT_RUN，runtime第2單元不可開始。當前總進度2/22。
 - 此次格式/diff/路徑檢查與最終advisory結果以交付exact SHA記錄；不能把文件檢查標成量測能力PASS。無背景採樣/Player/美術工作。
+
+### 透明coverage方法準備
+
+- 方法checkpoint `68d1522c…`獨立advisory accept後，沿用同文件授權補M2-T具體算法，核對實際shader/FeedbackView hashes和blend properties。提出camera scene pixel contribution語義，與人眼辨識/後處理最終顏色分開；語義未獨立接受就visible=null，不暗改驗收。
+- 重用鎖定Feedback alpha/depth/geometry：opaque fragment進ID遮擋；additive保留destination，dust alpha1才完全覆蓋，unsupported來源BLOCKED。追加1個measurement coverage shader與精確fixtures、8組雙target buffer提案，額度與原gate不增加。
+- 透明方法所有GPU parity/成本/Player測試NOT_RUN；待獨立方案審查、實作scope批准及task1.4正式gate。task1.3仍未完成，沒有新採樣或runtime修改。
+- M2-T draft審查確認source/blend吻合，要求明列分析性權重不保證framebuffer有限精度/量化/飽和後實際色彩影響；已補齊此限制及人類scope語義批准，parity不能替代語義決策。

@@ -222,3 +222,25 @@ Profile、thresholds、combat/AI/animation、正式素材、Web、Packages/Edito
 unit2修復提案基於新counter/clock定位證據，原兩輪budget仍保持用完。人類需明確批准新unit2方法/檔案/測試與採樣額度（提案最多3次短probe：seed7/11/23、3s暖機+10s量測；成本probe上述12次；各run有界90s/成本run120s，launcher只終止自身handles）。失敗不得自動追加額度或重新計數；新定位如仍不可解除能力缺口即停止並保全。本次不申領或消耗這些額度。必要正式approval/merge/postmerge仍須依task1.4完成，才開始unit2；人類scope同意也不能替代該gate。
 
 **目前出口**：task1.3方法草案已具體化，實際全部新能力仍BLOCKED/NOT_RUN。待獨立exact-candidate方案審查及人類對上述新scope的批准，才能勾task1.3；task1.4正式approval／merge授權／postmerge尚缺。沒有背景Player、美術製作或provider採樣。
+
+### M2-T：既有透明特效的coverage擴充提案
+
+`68d1522c1e8fb5852f67cc795636f89f0be207e4`已由獨立review接受為方法/已知阻礙checkpoint；此追加是同task1.3必要方法準備，不是新增runtime授權。鎖定E12候選實際來源：FeedbackView.cs SHA256 `28683ecbc880ce41c04796b26f14579ff1b5ab8f6f817c3b265468503c58dfe0`、ChangshanFeedback.shader SHA256 `443759b587c2421629c7d9c080ea03c3799d44bf1bc7f3599db1e1d55bb16635`。目前透明alpha模式與blend可定向重用，不能把任意透明shader當相同模型。
+
+**待審語義**：visible取指定Game camera場景target中、至少1pixel有士兵surface通過實際opaque depth且在支持的透明blend後仍保留非零destination contribution；取UI/後處理之前的場景coverage。另存opaqueVisible與transparentSurvivingVisible、method版本，不把「非零contribution」叫人眼可辨識或最終畫面顏色差異。若正式規格所需是後處理/飽和後最終色彩或UI遮蔽的可辨識人數，此方法不等價，保持BLOCKED並另定義方法；不得默認採用較弱語義。只有review明確接受該camera pixel語義後才能把transparentSurvivingVisible寫入正式visible欄位，否則visible=null。
+
+這裡是分析性非零blend係數，不主張排除有限精度/量化/飽和後可能為零的實際色彩影響。語義選擇須納入人類新scope批准及獨立審查，shader parity本身不能批准此語義；未齊備前visible=null、完整成本probe及formal E12保持BLOCKED。
+
+對這份鎖定shader/材質的演算法提案：
+
+1. 在主camera opaque完成的同幀快照，依M2建立scene ID/depth；模式5 fragment使用實際mesh/pose、Cull Off、ZWrite=true及opaque queue，作非士兵遮擋，不因shader tag Transparent而漏掉。所有未知shader/alpha clip/depth位移仍拒絕。
+2. 全解析度coverage target初值1，與ID共用同幀opaque depth。遍歷實際透明renderer/submesh/material清單及mesh頂點色/UV/transform，使用相同ZTest/Cull與排序；只讀原renderers/material，不改原layer/queue/效果或幾何。覆蓋shader重現原模式0–4的fragment alpha/shape與clip行為，build manifest鎖原shader hash與每材質_Mode/_SrcBlend/_DstBlend/_ZWrite/renderQueue；runtime改property也逐幀readback，不僅啟動盤點。
+3. [D3D11 blend因素](https://learn.microsoft.com/en-us/windows/win32/api/d3d11/ne-d3d11-d3d11_blend)定義destination One保留背景、OneMinusSrcAlpha乘上1−alpha。既有spark/ring/pillar/trail使用destination One，不會完全抹除背後surface；dust用OneMinusSrcAlpha、無ZWrite。對finite alpha∈[0,1]，只在實際通過depth的dust fragment alpha=1時清coverage，其餘保留；這是非零destination contribution的布林判斷，不累乘到浮點underflow、不設新的可見度epsilon。未知blend/alpha不合法/transparent ZWrite=true/sort依賴未知則BLOCKED，不能硬clamp或當透明不遮擋。
+4. 提案coverage shader輸出0以最小值blend寫遮擋，其他fragment保留1；覆蓋target須支持該format/blend，否則BLOCKED。以ID及coverage同request group讀回；每個soldier ID至少1pixel coverage=1才計數。若某pixel已有完全opaque dust遮擋，後續additive不恢復士兵contribution。ID與coverage任一讀回失敗、尺寸/幀/roster不一致均null，不單取成功結果。
+5. 不修改原Feedback shader以降低耦合；新增measurement shader必須對原每mode alpha公式做GPU parity fixtures，source hash/property不符即拒絕。透明draw成本與同幀mesh快照成本納入F。第一版只允許上述已核對模式，場景其他透明材質（如城池/旗幟/材質變動）須完整盤點；未列可支持來源或shader variant不進成本/正式跑。
+
+**buffer修訂提案**：透明版每槽保留ID+coverage group，最多8組in-flight（取代opaque第一版16組），drain仍最多16呈現幀或2s；GPU/CPU實際buffer bytes、格式及allocator overhead全readback。8組不是已證明足夠的latency，overflow即BLOCKED，不丟request/降解析度。原成本Private/VRAM各256MiB增量提案不放寬。
+
+新增必測fixtures：dust alpha0/0.5/1、全遮/局部1pixel、兩層半透明不得因累乘underflow誤遮、前後depth、opaque fragment遮擋、各additive mode不抹除背景、alpha形狀空洞、Cull雙面、材質屬性途中變動、未知shader/variant/blend、ID/coverage不同幀/失敗、camera/LOD/pose/cutaway一致及buffer8→9邊界。GPU alpha/coverage與原shader的相同mesh/pixel結果精確比較，無法建立同源parity就保持BLOCKED；自然遊玩與S06可讀性仍另驗收。
+
+**精確scope追加（待批准）**：只在既有unit2 allowlist另加`unity/ChangshanLongdan/Assets/Character/Runtime/PerformanceVisibilityCoverage.shader`及其同名`.meta`；Runtime Feature與既有PerformanceTelemetry Edit/Play tests承接supported-material map/coverage/parity fixtures，沒有新增FeedbackView/Feedback shader修改權。此追加不增加3次短probe/12次成本probe提案額度；先fixture及實際supported-material完整盤點/幀映射全部通過，才可啟動成本probe。新方法仍未編譯/render/Player驗證，尚未正式接受visible語義或取得unit2人類scope批准。
