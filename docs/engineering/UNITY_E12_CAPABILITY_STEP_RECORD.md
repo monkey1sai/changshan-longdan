@@ -174,3 +174,10 @@ releaseOrPaidActionPerformed: false
 - 2026-10-08使用者回覆「同意」，對應精確提案僅追加scripts/unity-validate.mjs testInventory。現有EditMode164案例全部保留，再加PerformanceScopeEditTests4及PerformanceTelemetryEditTests3，預期171；PlayMode47不變。不改exact total邏輯、stage argv/timeout、source safety、Packages、素材、門檻或runtime。
 - 追加後先做Node工具與OpenSpec/差異檢查、獨立exact-candidate審查，保存clean candidate，再用原Unity五階段runner。新Unity執行結果必須綁定新SHA及run ID；先前候選24/84只作歷史，不移作實測。工具pipeline不是E12正式效能或E13完整自然操作驗收。
 - 輸出限定新exclusive leaf release/e02/unit2-counter-validation-v1。此runner不啟用-e12Probe、不呼叫GPU telemetry helper、不消耗3短probe/12成本probe。沒有背景Jev provider或美術製作；SPEC仍4/22（18.2%），2.1待完整條件齊備。
+
+### 首次 Unity 編譯失敗與相容修正
+
+- candidate 933188a9e4b65a6d7f826bb8c60a8f66ea5fdbef，run f5686ca2-f62e-4800-ae08-fa556be8ec97，輸出 release/e02/unit2-counter-validation-v1：compile FAIL（exit 1，非 timeout），PerformanceProbe.cs:140 報 CS1501，UseDummies 無雙參數 overload。EditMode、PlayMode、build、Player NOT_RUN；保留原始 result.json/Editor.log，不覆寫。
+- 分類 PRODUCT_FAILURE。採用來源呼叫依賴未納入 allowlist 的 controller overload；main 僅單參數 API，HitTargets 預設 seed=7、readonly RNG，沒有現成 reseed 介面。獨立審查接受最小修正：呼叫原 API，先用 RequireControllerSeed 驗證 seed；不支援者保存 UNSUPPORTED_CONTROLLER_AI_SEED 並退出，再開始任何戰鬥/crowd 修改。
+- 新增一項 EditMode 測試驗證 7 接受、11/23 拒絕，Telemetry 3→4、預期 EditMode 172、PlayMode 47。沒有修改 controller/combat、預設 RNG 或素材。三 seed AI 能力仍缺；此修正不完成 2.1、不重設原 E12 或既有修正預算。
+- 新 exact SHA 須先審查，才可使用新 exclusive output release/e02/unit2-counter-validation-v2 重跑原五階段。尚未取得新版 Unity 結果，SPEC 仍 4/22（18.2%）。

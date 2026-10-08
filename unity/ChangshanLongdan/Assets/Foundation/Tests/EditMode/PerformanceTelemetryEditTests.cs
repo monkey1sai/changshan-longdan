@@ -6,6 +6,15 @@ namespace Changshan.Foundation.Tests
 {
   public sealed class PerformanceTelemetryEditTests
   {
+    [Test] public void ControllerSeedSupportMatchesTheExistingControllerInterface()
+    {
+      Assert.DoesNotThrow(() => PerformanceProbe.RequireControllerSeed(7));
+      foreach (uint seed in new uint[] { 11, 23 })
+      {
+        var error = Assert.Throws<ArgumentOutOfRangeException>(() => PerformanceProbe.RequireControllerSeed(seed));
+        StringAssert.Contains("UNSUPPORTED_CONTROLLER_AI_SEED", error.Message);
+      }
+    }
     static PerformanceProbe.CounterInfo Descriptor(string category, string unit = "Count") =>
       new PerformanceProbe.CounterInfo { name = "Draw Calls Count", category = category, unit = unit };
 

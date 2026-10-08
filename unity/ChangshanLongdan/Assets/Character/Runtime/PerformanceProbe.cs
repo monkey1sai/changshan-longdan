@@ -86,6 +86,10 @@ namespace Changshan.Character
       }
       public void Dispose() { Info.validAtEnd = recorder.Valid; if (recorder.Valid) recorder.Dispose(); }
     }
+    public static void RequireControllerSeed(uint seed)
+    {
+      if (seed != HitTargets.DefaultSeed) throw new ArgumentOutOfRangeException(nameof(seed), "UNSUPPORTED_CONTROLLER_AI_SEED");
+    }
     public static List<Spawn> ProbeSpawns(int population, uint seed)
     {
       if (population != 20 && population != 50 && population != 100 && population != 200 && population != 300)
@@ -120,6 +124,9 @@ namespace Changshan.Character
         unityVersion = Application.unityVersion, backend = SystemInfo.graphicsDeviceType.ToString(),
         development = Debug.isDebugBuild, frameTimingEnabled = FrameTimingManager.IsFeatureEnabled(), batchMode = Application.isBatchMode };
       if (!Guid.TryParse(runId, out _)) { report.error = "INVALID_RUN_ID"; WriteReport(report); Application.Quit(2); yield break; }
+      try { RequireControllerSeed((uint)report.aiSeed); }
+      catch (ArgumentOutOfRangeException)
+      { report.error = "UNSUPPORTED_CONTROLLER_AI_SEED"; WriteReport(report); Application.Quit(2); yield break; }
       var process = System.Diagnostics.Process.GetCurrentProcess(); report.pid = process.Id;
       report.processStart = process.StartTime.ToUniversalTime().ToString("o", CultureInfo.InvariantCulture);
       var controller = FindObjectsByType<ZhaoYunController>().FirstOrDefault();
@@ -137,7 +144,7 @@ namespace Changshan.Character
       controller.StartBattle(Difficulties.Normal);
       if (controller.Dummies != null) controller.Dummies.gameObject.SetActive(false);
       var crowd = CrowdSpawner.Create("E12 probe capsules", ProbeSpawns(20, 7), controller.Mapping, material);
-      controller.UseDummies(crowd, 7);
+      controller.UseDummies(crowd);
       controller.EnsureCastle(); controller.UseCameraRig(true);
       var castle = controller.Castle != null ? controller.Castle.Assets : null;
       deadline = Time.realtimeSinceStartupAsDouble + 30;
