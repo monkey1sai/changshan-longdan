@@ -167,3 +167,4 @@ releaseOrPaidActionPerformed: false
 - schema2檢查完整adapter name/LUID/phys、canonical duplicate、PID/startAfter，series固定adapter集合、invalid不更新100ns高水位；缺失或未知fail closed。memory CSV保留精確bytes。
 - 發現驗證scope缺口：scripts/unity-validate.mjs固定testInventory，validateTestInventory要求exact total；新增PerformanceScope/Telemetry必遭拒絕。已提出僅將此runner加入allowlist以登錄新增測試的範圍追加，未收到同意前不改。新增Unity tests仍NOT_RUN，2.1未勾選。後續還需完整counter/clock/identity契約、Unity編譯/測試及unit2完整pipeline，不把Node PASS替代它們。
 - 本候選在隔離feature branch，本機checkpoint用於保全，不代表stable main、已推送、已合併或正式APPROVED。進度4/22（18.2% task計數）；没有新GPU sample、短probe、Unity/Player或Jev provider呼叫。
+- Partial checkpoint14b4e91獨立review發現MEDIUM PRODUCT_FAILURE：CSV parser誤用gcUsedRaw/gcReservedRaw/usedRaw，實際來源為allocated/gcUsed/gcReserved/used，造成四欄大整數被Number截精度。第1輪修正只改為六個真實bytes欄名，既有case24逐欄驗證大整數、負值/小數/前導零/Int64溢位；24/24重跑PASS，未新增provider/Unity執行。舊checkpoint保留失敗，待新exact SHA獨立核對；此修正不重設任何舊預算。

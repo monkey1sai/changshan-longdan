@@ -214,7 +214,9 @@ test('schema 2 checks post-query Player identity, complete adapter keys, raw clo
 })
 
 test('memory CSV preserves exact decimal bytes and rejects malformed integers', () => {
-  const parse = value => parseProbeCsv(`frame,focus,minimized,privateBytes\n1,True,False,${value}`, {})[0].privateBytes
-  assert.equal(parse('9007199254740993'), '9007199254740993')
-  for (const value of ['-1', '1.5', '01', '9223372036854775808']) assert.throws(() => parse(value), /INVALID_CSV_BYTES/)
+  for (const field of ['privateBytes', 'workingSet', 'allocated', 'gcUsed', 'gcReserved', 'used']) {
+    const parse = value => parseProbeCsv(`frame,focus,minimized,${field}\n1,True,False,${value}`, {})[0][field]
+    assert.equal(parse('9007199254740993'), '9007199254740993', field)
+    for (const value of ['-1', '1.5', '01', '9223372036854775808']) assert.throws(() => parse(value), /INVALID_CSV_BYTES/, field)
+  }
 })

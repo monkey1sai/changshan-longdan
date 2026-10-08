@@ -34,7 +34,7 @@ export function parseProbeCsv(text, report) {
     const cells = line.split(',')
     if (cells.length !== keys.length) throw new Error('TRUNCATED_CSV_ROW')
     const f = Object.fromEntries(keys.map((key, i) => [key, cells[i] === '' ? null : cells[i]]))
-    const byteFields = ['privateBytes', 'workingSet', 'gcUsedRaw', 'gcReservedRaw', 'usedRaw']
+    const byteFields = ['privateBytes', 'workingSet', 'allocated', 'gcUsed', 'gcReserved', 'used']
     for (const key of keys.filter(k => !['focus', 'minimized', ...byteFields].includes(k))) {
       if (f[key] !== null) { f[key] = Number(f[key]); if (!Number.isFinite(f[key])) throw new Error('INVALID_CSV_NUMBER') }
     }
