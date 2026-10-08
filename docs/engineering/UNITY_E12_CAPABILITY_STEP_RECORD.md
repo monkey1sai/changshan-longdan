@@ -158,3 +158,12 @@ releaseOrPaidActionPerformed: false
 - Postmerge同版本e85840f驗證PASS：Web Vitest 35 files/308 tests、npm run build（包含typecheck）、Unity runner工具84 tests；OpenSpec apply/status可讀。既有完整12檔差異與診斷parser/hash已審，merge相對已審head僅main既有LICENSE；Unity runtime/asset未變。本U1不新增Unity實作，這些工具測試不是Editor/Player或視覺驗收。
 - npm ci初次ENVIRONMENT_FAILURE：sandbox無法寫使用者npm-cache（EPERM）；改成本任務ignored release/unity-e12-capability/npm-cache、--ignore-scripts後PASS，不修改ACL/全域cache。安裝提示既有1 high vulnerability，未執行audit fix或擴改依賴。
 - 工作區採新隔離branch codex/unity-e12-capability，自e85840f開始；保留主checkout與舊candidate。Task1.4完成，整體4/22（18.2% task計數）。下一步2.1先精確採用3f45d134來源、跑Node baseline再最小counter/clock/Player修正；不整批cherry-pick、不消耗provider/probe額度。全部Unity新能力及最終完整遊戲驗收仍NOT_RUN。
+
+## Unit2／Task2.1最小能力修正候選
+
+- Source採用精確候選3f45d134的5份scripts、PerformanceProbe.cs/.meta與PerformanceScopeEditTests.cs/.meta，逐檔copy/hash核對；不採用其他候選內容。Adopt baseline Node15 PASS；新增回歸最初18 tests=15 PASS/3 FAIL（counter metadata、100ns與重複adapter缺口），修正後24/24 PASS。此為預先新增測試重現，不重設原E12兩輪或任何provider額度。
+- Node同時核對Render/name/TimeNanoseconds及唯一性，來源C#按Render/Memory、預期unit及唯一catalog選取並保留同名候選；新增3個EditMode測試驗證來源選取。UTC字串的100ns以BigInt運算，bytes以十進字串/Int64界線，legacy數值aggregate超safe integer拒絕；舊schema只供歷史診斷，沒有正式能力PASS。
+- helper新增離線clock fixture模式（不Get-Process/CIM/PDH），使用同一production decoder驗證明確timezone、100ns、DST ambiguous/invalid及frequency；不硬減8h。capture須明確source timezone並核對host規則，保存raw/frequency、查詢前後PID/start及每秒deadline缺槽；未知Player來源mapping保持OBSERVED_SOURCE_REQUIRES_PLAYER_VALIDATION，schema2 validator拒絕，未取得Player證據不改成已驗證。既有launcher尚未接入明確clock contract，因此新capture尚不可用；不可啟動probe或標2.1完整完成。
+- schema2檢查完整adapter name/LUID/phys、canonical duplicate、PID/startAfter，series固定adapter集合、invalid不更新100ns高水位；缺失或未知fail closed。memory CSV保留精確bytes。
+- 發現驗證scope缺口：scripts/unity-validate.mjs固定testInventory，validateTestInventory要求exact total；新增PerformanceScope/Telemetry必遭拒絕。已提出僅將此runner加入allowlist以登錄新增測試的範圍追加，未收到同意前不改。新增Unity tests仍NOT_RUN，2.1未勾選。後續還需完整counter/clock/identity契約、Unity編譯/測試及unit2完整pipeline，不把Node PASS替代它們。
+- 本候選在隔離feature branch，本機checkpoint用於保全，不代表stable main、已推送、已合併或正式APPROVED。進度4/22（18.2% task計數）；没有新GPU sample、短probe、Unity/Player或Jev provider呼叫。

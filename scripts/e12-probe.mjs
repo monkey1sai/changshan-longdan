@@ -1,0 +1,91 @@
+import { spawn, spawnSync } from 'node:child_process'
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { randomUUID } from 'node:crypto'
+import { requireSafePath, sha256, snapshotSource, validateUnchangedSource, validateCandidateCheckout } from './lib/unity-execution.mjs'
+import { parseProbeCsv, probeVerdict, validateGpuSeries, validateProbeIdentity } from './lib/e12-performance.mjs'
+import { scopedE12Path, snapshotPayload, watchExit } from './lib/e12-process.mjs'
+
+const root = fs.realpathSync(fileURLToPath(new URL('../', import.meta.url)))
+const args = process.argv.slice(2), options = {}
+const write = (filename, data) => fs.writeFileSync(filename, JSON.stringify(data, null, 2) + '\n', { flag: 'wx' })
+const git = argv => {
+  const r = spawnSync('git', argv, { cwd: root, encoding: 'utf8', windowsHide: true, timeout: 30000 })
+  if (r.status !== 0 || r.error) throw new Error('GIT_FAILED')
+  return r.stdout
+}
+let output, child, helper, timer, stdout, stderr, createdOutput = false
+try {
+  if (process.platform !== 'win32' || args.length !== 4) throw new Error('Usage: --build release/e02/<validated-run> --out release/e12/<fresh-probe>')
+  for (let i = 0; i < args.length; i += 2) {
+    const name = args[i].slice(2)
+    if (!['build', 'out'].includes(name) || options[name] || !args[i + 1]) throw new Error('INVALID_ARGUMENTS')
+    options[name] = args[i + 1]
+  }
+  if (!options.build?.startsWith('release/e02/') || !options.out?.startsWith('release/e12/')) throw new Error('INVALID_SCOPE')
+  const build = scopedE12Path(root, options.build, 'release/e02')
+  output = scopedE12Path(root, options.out, 'release/e12')
+  if (fs.existsSync(output)) throw new Error('OUTPUT_EXISTS')
+  const head = validateCandidateCheckout(git(['rev-parse', 'HEAD']).trim(), git(['status', '--porcelain', '--untracked-files=all']))
+  const validation = JSON.parse(fs.readFileSync(path.join(build, 'result.json'), 'utf8'))
+  if (validation.result !== 'PASS_LOCAL_ENGINE_FOUNDATION' || validation.sourceHead !== head) throw new Error('BUILD_NOT_VALIDATED_FOR_HEAD')
+  validateUnchangedSource(validation.sourceAfter, snapshotSource(root))
+  const player = requireSafePath(build, path.join(build, 'build/player/ChangshanLongdan.exe'))
+  if (sha256(player) !== validation.playerSha256) throw new Error('PLAYER_HASH_MISMATCH')
+  const payload = snapshotPayload(path.dirname(player))
+  if (!validation.playerPayload || JSON.stringify(payload) !== JSON.stringify(validation.playerPayload)) throw new Error('PLAYER_PAYLOAD_MISMATCH')
+  fs.mkdirSync(path.dirname(output), { recursive: true })
+  fs.mkdirSync(output) // Exclusive leaf creation: a racing pre-existing directory is never ours.
+  createdOutput = true
+  const data = path.join(output, 'capture'); fs.mkdirSync(data)
+  const runId = randomUUID()
+  const argv = ['-e12Probe', data, '-e12RunId', runId, '-e09NoFlow', '-screen-width', '1920', '-screen-height', '1080', '-logFile', path.join(output, 'Player.log')]
+  const record = { runId, kind: 'CAPABILITY_PROBE', sourceHead: head, validationRunId: validation.runId,
+    playerSha256: validation.playerSha256, player, argv, start: new Date().toISOString(), timeoutMs: 90000,
+    authorization: 'Local E12 measurement/probe only; no remote write, deployment, paid action or process termination outside own launch handles.' }
+  write(path.join(output, 'command.json'), record)
+  stdout = fs.openSync(path.join(output, 'stdout.log'), 'wx'); stderr = fs.openSync(path.join(output, 'stderr.log'), 'wx')
+  child = spawn(player, argv, { cwd: path.dirname(player), windowsHide: false, stdio: ['ignore', stdout, stderr] })
+  const childExit = watchExit(child)
+  record.pid = child.pid
+  helper = spawn('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-File', path.join(root, 'scripts/e12-gpu-telemetry.ps1'),
+    '-TargetPid', String(child.pid), '-Output', path.join(output, 'gpu.jsonl')], { windowsHide: true, stdio: ['ignore', stdout, stderr] })
+  const helperExit = watchExit(helper)
+  let timedOut = false
+  timer = setTimeout(() => { timedOut = true; child.kill() }, record.timeoutMs)
+  const exit = await childExit
+  clearTimeout(timer)
+  let helperDeadline
+  const helperStatus = await Promise.race([helperExit, new Promise(resolve => {
+    helperDeadline = setTimeout(() => { helper.kill(); resolve({ code: null, error: 'HELPER_STOP_TIMEOUT' }) }, 5000)
+  })]); clearTimeout(helperDeadline)
+  Object.assign(record, exit, { helperStatus, timedOut, end: new Date().toISOString() })
+  write(path.join(output, 'exit.json'), record)
+  if (exit.error || exit.code !== 0 || timedOut) throw new Error('PLAYER_PROBE_FAILED')
+  const report = JSON.parse(fs.readFileSync(path.join(data, 'probe.json'), 'utf8'))
+  validateProbeIdentity(report, record)
+  const frames = parseProbeCsv(fs.readFileSync(path.join(data, 'frames.csv'), 'utf8'), report)
+  const gpuFile = path.join(output, 'gpu.jsonl')
+  const rawGpu = fs.existsSync(gpuFile) ? fs.readFileSync(gpuFile, 'utf8').trim().split(/\r?\n/).filter(Boolean).map(line => JSON.parse(line)) : []
+  const gpu = validateGpuSeries(rawGpu, { pid: record.pid, processStart: report.processStart })
+  const verdict = probeVerdict(report, frames, gpu.filter(s => s.usage !== null))
+  verdict.gpu = { samples: gpu.length, valid: gpu.filter(s => s.usage !== null).length, osBudgetBytes: null, budgetOccupancy: null }
+  if (helperStatus.error || helperStatus.code !== 0) verdict.gaps.push('GPU_HELPER_FAILED')
+  verdict.sourceHead = head; verdict.runId = record.runId; verdict.reportSha256 = sha256(path.join(data, 'probe.json'))
+  verdict.framesSha256 = sha256(path.join(data, 'frames.csv'))
+  validateUnchangedSource(validation.sourceAfter, snapshotSource(root))
+  if (JSON.stringify(payload) !== JSON.stringify(snapshotPayload(path.dirname(player)))) throw new Error('PLAYER_PAYLOAD_CHANGED')
+  write(path.join(output, 'payload.json'), payload)
+  write(path.join(output, 'result.json'), verdict)
+  process.stdout.write(JSON.stringify(verdict, null, 2) + '\n')
+  process.exitCode = 2 // A short probe with missing true visibility is explicitly not an E12 completion.
+} catch (error) {
+  if (createdOutput && !fs.existsSync(path.join(output, 'result.json'))) write(path.join(output, 'result.json'), { status: 'TOOL_FAILURE', error: error.message })
+  process.stderr.write(error.message + '\n'); process.exitCode = 2
+} finally {
+  clearTimeout(timer)
+  if (child && child.exitCode === null) child.kill()
+  if (helper && helper.exitCode === null) helper.kill()
+  if (stdout !== undefined) fs.closeSync(stdout); if (stderr !== undefined) fs.closeSync(stderr)
+}
