@@ -30,7 +30,7 @@
 
 固定一份輸入資產及 pose/time，分 A fresh import、B bind-only、C 一次 idle、D 連續 idle／短動作。保存 bind matrices、joint palette、mesh-local/world vertices、bone scale／rotation、索引／influences 與有限值檢查。
 
-Web／Unity 先核對座標與 logic-display mapping，再比較；共享 rig 數值相等不代表 mesh 正確。加入未驅動來源 bind pose、局部已知配重反例及可定位錯接面，避免雙引擎共享同一錯誤而得到假 parity。所有 tolerances、抽樣規則、tiny-edge 排除及動作時間窗在候選測量前經 review 登錄；4 倍邊長及舊 p99 只作診斷，不能直接定為品質門檻。
+Web／Unity 先核對座標與 logic-display mapping，再比較；共享 rig 數值相等不代表 mesh 正確。加入未驅動來源 bind pose、局部已知配重反例及可定位錯接面，避免雙引擎共享同一錯誤而得到假 parity。沿用 MUSOU_VARIABLES §4/§6 與 E06 的 30/60/120 Hz、指定握點 p95≤3 cm、plant 滑移≤5 cm、扣除設計位移後 root 跳變≤5 cm，以及換握／鬆手／空中／刻意滑步排除。只有新增 matrix／vertex 誤差、抽樣規則、tiny-edge 排除與其時間窗在候選測量前經 review 登錄；不放寬已有門檻。4 倍邊長及舊 p99 只作診斷，不能直接定為品質門檻。
 
 ### 3. 按既有美術協作契約交付
 

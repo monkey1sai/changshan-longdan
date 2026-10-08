@@ -28,6 +28,8 @@
 
 修復交付 SHALL 保留既有 PS2 角色辨識度、21 骨命名／層級、SM_ZhaoYun／SM_ZhaoYunSpear、每頂點最多 4 influences、17 招式、rootMotion=false、FootPlant 與權威 weapon tip/tipBase；技術預算 MUST 不超過鎖定 manifest 的 triangles／textures／LOD／clips 上限。manifest 未明列的 material count MUST 在實作前從鎖定 GLB 盤點並登錄為基準上限，不能虛構數值。必要契約差異 MUST 另行審查，不能靜默接入。
 
+S03 回歸 MUST 沿用 30/60/120 Hz 重播、指定握點誤差 p95≤3 cm、指定 plant 窗口滑移≤5 cm、扣除設計位移後非預期 root 跳變≤5 cm。SHALL 依既有規則分列換握／鬆手窗口、空中姿態、設計滑步／擊退，不將其混入支撐或握點統計，也不藉排除隱藏異常。
+
 #### Scenario: Compatible candidate
 - **WHEN** 候選符合骨架／預算與既有姿勢、握點、腳接觸、tip/tipBase、命中回歸
 - **THEN** 工程結果可記錄為該候選的測試證據，但仍須實際畫面與自然操作驗收

@@ -2,7 +2,7 @@
 
 - [ ] 1.1 完成提案獨立審查，登錄插入 E12 正式長測前的品質工作範圍、負責人、來源 SHA、精確檔案、回滾與既有重試預算；未批准不實作。
 - [ ] 1.2 核對現有 GLB／manifest／來源 .blend 身分與可取得性，指定診斷 evidence 的保管位置與存取範圍；不能取得來源時登錄 BLOCKED。
-- [ ] 1.3 在候選取樣前，由獨立 reviewer 登錄 matrix／vertex／握點／FootPlant 誤差、tiny-edge 規則、pose/time、樣本與負例；不得從結果反推較寬門檻。
+- [ ] 1.3 沿用 30/60/120 Hz、握點 p95≤3 cm、plant 滑移≤5 cm、扣除設計位移後 root 跳變≤5 cm 與換握／鬆手／空中／刻意滑步排除；由獨立 reviewer 在取樣前登錄新增 matrix／vertex 誤差、tiny-edge、pose/time、樣本與負例，不得放寬既有門檻。
 
 ## 2. 第一個 eligible 實作單位：原因隔離
 
