@@ -1,12 +1,129 @@
 param([string]$OutputPath = 'release/unity-followup-u1/native-clock-comparison.json',
-  [switch]$PlayerMetadataOnly, [string]$SourceHead, [string]$RunId)
+  [switch]$PlayerMetadataOnly, [string]$SourceHead, [string]$RunId, [switch]$CounterSetRegistrationOnly)
 $ErrorActionPreference = 'Stop'
+if ($PlayerMetadataOnly -and $CounterSetRegistrationOnly) { throw 'DIAGNOSTIC_MODES_MUTUALLY_EXCLUSIVE' }
 $repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
-$evidenceRoot = [IO.Path]::GetFullPath((Join-Path $repoRoot $(if ($PlayerMetadataOnly) { 'release/e12' } else { 'release/unity-followup-u1' })))
+$evidenceRoot = [IO.Path]::GetFullPath((Join-Path $repoRoot $(if ($PlayerMetadataOnly -or $CounterSetRegistrationOnly) { 'release/e12' } else { 'release/unity-followup-u1' })))
 $destination = [IO.Path]::GetFullPath((Join-Path $repoRoot $OutputPath))
 if (-not $destination.StartsWith($evidenceRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) { throw 'Output outside diagnostic evidence root' }
 if (Test-Path -LiteralPath $destination) { throw 'Refusing existing evidence' }
 if (-not (Test-Path -LiteralPath ([IO.Path]::GetDirectoryName($destination)))) { throw 'Missing evidence directory' }
+if ($CounterSetRegistrationOnly) {
+  if ($SourceHead -cnotmatch '^[a-f0-9]{40}$' -or $RunId -cnotmatch '^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$') { throw 'REGISTRATION_IDENTITY_REQUIRED' }
+  if (@(Get-ChildItem -LiteralPath ([IO.Path]::GetDirectoryName($destination)) -Force).Count -ne 0) { throw 'REGISTRATION_DIRECTORY_NOT_EMPTY' }
+  $cursor = [IO.Path]::GetDirectoryName($destination)
+  while ($cursor.Length -ge $repoRoot.Length) {
+    if ((Get-Item -LiteralPath $cursor -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'UNSAFE_REGISTRATION_PATH' }
+    if ($cursor -ceq $repoRoot) { break }
+    $cursor = [IO.Path]::GetDirectoryName($cursor)
+  }
+  $counterSetId = '5c3b2414-fd1d-44fb-8b00-e3194209dd1a'
+  $inputHash = '474e781f8430d234e007ee69dacc5f7dedb67adad5d5508f46a1ddd116553a00'
+  $record = [ordered]@{schemaVersion=1;kind='COUNTERSET_REGISTRATION_ONLY';runId=$RunId;sourceHead=$SourceHead;
+    scriptSha256=(Get-FileHash -LiteralPath $PSCommandPath -Algorithm SHA256).Hash.ToLowerInvariant();inputStepSha256=$inputHash;
+    counterSetIdHypothesis=$counterSetId;maximumRegistrationCalls=2;counterWindows=0;playerLaunched=$false;
+    startUtc=[DateTime]::UtcNow.ToString('o');endUtc=$null;calls=@();registeredProviderGuid=$null;
+    producerImplementation=$null;clockMapping='UNVERIFIED';status='RUNNING';error=$null}
+  function Save-RegistrationJson([string]$Path, $Value) {
+    $stream=[IO.File]::Open($Path,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None)
+    try { $bytes=[Text.UTF8Encoding]::new($false).GetBytes(($Value | ConvertTo-Json -Depth 12));$stream.Write($bytes,0,$bytes.Length) }
+    finally { $stream.Dispose() }
+  }
+  try {
+    if (-not [Environment]::Is64BitProcess) { throw 'REGISTRATION_REQUIRES_64BIT' }
+    $inputPath=Join-Path $repoRoot 'release/e12/player-clock-v2/metadata/metadata-step-03.json'
+    if ((Get-Item -LiteralPath $inputPath -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'UNSAFE_INPUT_STEP' }
+    if ((Get-FileHash -LiteralPath $inputPath -Algorithm SHA256).Hash.ToLowerInvariant() -cne $inputHash) { throw 'INPUT_STEP_HASH_MISMATCH' }
+    $inputStep=Get-Content -LiteralPath $inputPath -Raw | ConvertFrom-Json
+    $keys=@($inputStep.result[0].qualifiers | Where-Object { $_.name -ceq 'RegistryKey' })
+    if ($inputStep.name -cne 'GPU_COUNTER_CLASS' -or $keys.Count -ne 1 -or $keys[0].value -cne ('{'+$counterSetId+'}')) { throw 'INPUT_GUID_HYPOTHESIS_MISMATCH' }
+    $registrationInterop = @'
+using System;
+using System.IO;
+using System.Diagnostics;
+using System.Globalization;
+using System.Runtime.InteropServices;
+using System.Text;
+namespace E12CounterRegistration {
+  public sealed class Raw {
+    public uint Status; public uint? ActualSize, RequiredSize; public byte[] Bytes;
+    public string StartTick, EndTick, Frequency;
+  }
+  public static class Native {
+    [DllImport("advapi32.dll", ExactSpelling=true, CharSet=CharSet.Unicode)]
+    static extern uint PerfQueryCounterSetRegistrationInfo(string machine, ref Guid counterSetId,
+      uint requestCode, uint language, [Out] byte[] buffer, uint capacity, out uint actualSize);
+    public static void CheckLayout() {
+      if (IntPtr.Size != 8 || Marshal.SizeOf(typeof(Guid)) != 16 || Marshal.SizeOf(typeof(uint)) != 4)
+        throw new InvalidOperationException("REGISTRATION_ABI_MISMATCH");
+    }
+    public static Raw Read(Guid id, uint code) {
+      if (code != 9 && code != 8) throw new ArgumentOutOfRangeException("code");
+      uint capacity = code == 9 ? 4096u : 16u, actual;
+      byte[] buffer = new byte[capacity];
+      Raw raw = new Raw(); raw.Frequency = Stopwatch.Frequency.ToString(CultureInfo.InvariantCulture);
+      raw.StartTick = Stopwatch.GetTimestamp().ToString(CultureInfo.InvariantCulture);
+      raw.Status = PerfQueryCounterSetRegistrationInfo(null, ref id, code, 0, buffer, capacity, out actual);
+      raw.EndTick = Stopwatch.GetTimestamp().ToString(CultureInfo.InvariantCulture);
+      CaptureResult(raw, buffer, actual);
+      return raw;
+    }
+    public static void CaptureResult(Raw raw, byte[] buffer, uint actual) {
+      if (raw.Status == 0) {
+        raw.ActualSize = actual;
+        if (actual <= buffer.Length) { raw.Bytes = new byte[actual]; Array.Copy(buffer, raw.Bytes, (int)actual); }
+      } else if (raw.Status == 8) { raw.RequiredSize = actual; }
+    }
+    static void CheckSuccess(byte[] bytes, uint status, uint? actual, int capacity) {
+      if (status != 0 || !actual.HasValue || bytes == null || actual.Value > capacity || bytes.Length != actual.Value)
+        throw new InvalidDataException("REGISTRATION_STATUS_OR_SIZE");
+    }
+    public static string DecodeName(byte[] bytes, uint status, uint? actual) {
+      CheckSuccess(bytes, status, actual, 4096);
+      if (bytes.Length < 2 || bytes.Length % 2 != 0) throw new InvalidDataException("REGISTRATION_UTF16_SIZE");
+      string text = new UnicodeEncoding(false, false, true).GetString(bytes);
+      if (text[text.Length-1] != '\0' || text.IndexOf('\0') != text.Length-1) throw new InvalidDataException("REGISTRATION_UTF16_TERMINATOR");
+      string name = text.Substring(0, text.Length-1);
+      if (name != "GPU Process Memory") throw new InvalidDataException("REGISTRATION_COUNTERSET_NAME_MISMATCH");
+      return name;
+    }
+    public static string DecodeGuid(byte[] bytes, uint status, uint? actual) {
+      CheckSuccess(bytes, status, actual, 16);
+      if (bytes.Length != 16) throw new InvalidDataException("REGISTRATION_GUID_SIZE");
+      Guid guid = new Guid(bytes);
+      if (guid == Guid.Empty) throw new InvalidDataException("REGISTRATION_GUID_EMPTY");
+      return guid.ToString("D");
+    }
+  }
+}
+'@
+    Add-Type -TypeDefinition $registrationInterop
+    [E12CounterRegistration.Native]::CheckLayout()
+    foreach ($code in @(9,8)) {
+      $entry=[ordered]@{requestCode=$code;bufferCapacity=$(if($code -eq 9){4096}else{16});machine=$null;language=0;
+        sourceStartTick=[Diagnostics.Stopwatch]::GetTimestamp().ToString();sourceEndTick=$null;elapsedMs=$null;deadlineExceeded=$false;raw=$null;decoded=$null;error=$null}
+      try {
+        $entry.raw=[E12CounterRegistration.Native]::Read([Guid]$counterSetId,[uint32]$code)
+        if ($code -eq 9) { $entry.decoded=[E12CounterRegistration.Native]::DecodeName($entry.raw.Bytes,$entry.raw.Status,$entry.raw.ActualSize) }
+        else { $entry.decoded=[E12CounterRegistration.Native]::DecodeGuid($entry.raw.Bytes,$entry.raw.Status,$entry.raw.ActualSize) }
+      } catch { $entry.error=$_.Exception.Message }
+      $entry.sourceEndTick=[Diagnostics.Stopwatch]::GetTimestamp().ToString()
+      $entry.elapsedMs=([long]$entry.sourceEndTick-[long]$entry.sourceStartTick)*1000.0/[Diagnostics.Stopwatch]::Frequency
+      $entry.deadlineExceeded=$entry.elapsedMs -gt 2000
+      if ($entry.deadlineExceeded -and -not $entry.error) { $entry.error='REGISTRATION_SOURCE_DEADLINE' }
+      $record.calls += ,$entry
+      Save-RegistrationJson (Join-Path ([IO.Path]::GetDirectoryName($destination)) ('registration-step-{0:d2}.json' -f $record.calls.Count)) $entry
+      if ($entry.error) { throw $entry.error }
+    }
+    $record.registeredProviderGuid=$record.calls[1].decoded
+    $record.status='REGISTERED_COUNTERSET_PROVIDER_OBSERVED_CLOCK_BLOCKED'
+    $record.error='PRODUCER_IMPLEMENTATION_AND_CLOCK_UNPROVEN'
+  } catch { $record.status='BLOCKED_REGISTRATION';$record.error=$_.Exception.Message }
+  $record.endUtc=[DateTime]::UtcNow.ToString('o')
+  Save-RegistrationJson $destination $record
+  Write-Output ('Saved registration only; status='+$record.status+'; calls='+$record.calls.Count+'; counter windows=0')
+  exit 2
+}
 if ($PlayerMetadataOnly) {
   # A separate metadata gate: no Player, GPU instances, PDH, UTC interop, or retry occurs here.
   if ($SourceHead -cnotmatch '^[a-f0-9]{40}$' -or $RunId -cnotmatch '^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$') { throw 'METADATA_IDENTITY_REQUIRED' }

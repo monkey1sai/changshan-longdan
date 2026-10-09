@@ -2,6 +2,8 @@
 
 ## 目前執行順序（2026-10-09；以此段及最新 STEP_RECORD 為準）
 
+2026-10-10 來源定位方法續行：使用者「同意」承接上一則指定counter registration方法。獨立實作前審查接受一次最多兩次本機 `PerfQueryCounterSetRegistrationInfo`，不重跑CIM metadata。新增明確 `-CounterSetRegistrationOnly`，與 `-PlayerMetadataOnly` 互斥，在任何native呼叫前核對已保存v2第三step SHA256 `474e781f8430d234e007ee69dacc5f7dedb67adad5d5508f46a1ddd116553a00`及固定RegistryKey GUID。該GUID僅counterSetId假設；先request9/lang0/local-null、固定4096byte，成功且嚴格UTF16LE名稱完全等於GPU Process Memory，才request8/lang0、固定16byte且非Empty GUID。每來源包含呼叫與解碼的實際時間≤2s，外controller總20s；同步API不宣稱2s即時取消。一次fresh `release/e12/counter-registration-v1`，逐call先CreateNew raw再判是否續行；任何錯誤/超時即停，不sizeprobe/resize/retry。成功的actualSize才是有效資料長度；錯誤8只存requiredSize，其他錯誤兩size及bytes均null。最多2次registration calls是此新方法的單獨上限，不消耗或增加Player時鐘0/3窗口、不重設任何舊額度；沒有CIM/registry/PDH instance/Player/remote/付費。兩call成功也只為REGISTERED_COUNTERSET_PROVIDER_OBSERVED_CLOCK_BLOCKED，implementation/version/clock仍未證明。先完成離線ABI/decoder/順序與fail-stop fixtures及exact-SHA審查，再執行；不是完整A1出口或SPEC完成。
+
 使用 change：`unity-migration-followup`（spec-driven）。正式完成度只讀 tasks.md：4/22（18.2%）；本表將剩餘任務拆成可執行動作，不新增完成率或改變驗收條件。下方歷史「待批准／NOT_RUN」須連同各段日期、版本及最新紀錄閱讀，不能當目前狀態。每步由主控實作／保存證據、獨立 reviewer 審精確候選；美術製作歸工程師、視覺／感官確認歸使用者。可獨立的準備在既有scope內續作，不能以準備完成跨越受阻gate。
 
 | 步驟 | 對應SPEC／前置 | 執行動作 | 驗證與可交付出口 | 現況／停止條件 |

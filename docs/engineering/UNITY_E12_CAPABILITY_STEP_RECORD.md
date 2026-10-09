@@ -1,5 +1,12 @@
 # U1 新證據與能力方案紀錄
 
+## 2026-10-10 registration 方法實作準備（尚未呼叫API）
+
+- 使用者「同意」續行來源方法；獨立pre-implementation接受最多2次固定registration metadata calls，先英文名後providerGUID，互斥switch、固定v2第三step hash/GUID、local-null、4096/16byte、lang0、每來源2s/外20s、錯誤不resize/retry、逐步CreateNew。原metadata批次與三Player窗口不挪用；不呼叫CIM/registry/PDH或Player，source implementation/version/clock仍UNKNOWN。
+- 重用既有診斷script與Node離線測試，只新增此明確mode及原生ABI/strict decoder；沒有native plugin或依賴。離線fixture直接抽取production C#並驗GUID16/uint32、exact英文名、嚴格UTF16/NUL/長度、非Empty GUID、錯誤required/undefined size及oversized success；用stub替代唯一native Read，執行production PS循環，驗成功2call、錯名/API8/notfound/2100ms超時各只1call並先保存再停止。stub不呼叫native/provider；原API本機存在性仍NOT_RUN。
+- 測試期間發現fixture C# using位置錯誤，以及PowerShell nonterminating編譯錯誤可能被最後的PASS字串掩蓋，分類TEST_FAILURE。已將fixture封裝namespace、兩個離線harness明確ErrorActionPreference=Stop並要求stderr空；先前表面PASS不能作證據。修正後單一新fixture雙runtime1/1 PASS，尚待完整30項重跑及exact-SHA review。沒有實際registration採樣或新Unity runtime主張；SPEC仍4/22（18.2%）。
+- 修正後完整E12Node30/30與OpenSpec strict PASS；追加互斥switch在入口拒絕的雙runtime負例後重跑新fixture，確認任何metadata/native呼叫前停止。仍等待精確候選獨立source review，沒有實際API呼叫。
+
 ## 最新交付：執行步驟與 A1-v2（2026-10-09）
 
 - 使用者要求依任務清單轉為執行步驟並逐一實作／驗證；承接上一則已具體化一次v2修訂。PLAN開頭A1–D1共12步覆蓋18個未完成task，列前置、動作、驗證、停止條件與責任；原tasks維持4/22（18.2%），未以文件新增完成項。獨立review exact `2771abd64a7b1cec3286cd9852ce62e62edf5fd1` 全diff無阻擋，只接受一次A1metadata執行，不解除後續gate。

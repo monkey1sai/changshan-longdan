@@ -284,7 +284,7 @@ test('registered bridge and environment cannot silently omit required version fi
 })
 test('diagnostic syntax and existing native ABI compile offline without metadata or counter calls', () => {
   const script = fileURLToPath(new URL('../diagnostics/Capture-E12ClockComparison.ps1', import.meta.url))
-  const command = `$errors=$null; $tokens=$null; [void][System.Management.Automation.Language.Parser]::ParseFile($env:CHANGSHAN_CLOCK_SCRIPT,[ref]$tokens,[ref]$errors); if($errors.Count){throw ($errors | Out-String)}; $source=Get-Content -LiteralPath $env:CHANGSHAN_CLOCK_SCRIPT -Raw; $match=[regex]::Match($source,"(?s)Add-Type -TypeDefinition @'\\r?\\n(.*?)\\r?\\n'@"); if(-not $match.Success){throw "INTEROP_NOT_FOUND"}; Add-Type -TypeDefinition $match.Groups[1].Value; [E12ClockComparison.Native]::CheckLayout(); "OFFLINE_SYNTAX_ABI_PASS"`
+  const command = `$ErrorActionPreference='Stop'; $errors=$null; $tokens=$null; [void][System.Management.Automation.Language.Parser]::ParseFile($env:CHANGSHAN_CLOCK_SCRIPT,[ref]$tokens,[ref]$errors); if($errors.Count){throw ($errors | Out-String)}; $source=Get-Content -LiteralPath $env:CHANGSHAN_CLOCK_SCRIPT -Raw; $match=[regex]::Match($source,"(?s)Add-Type -TypeDefinition @'\\r?\\n(.*?)\\r?\\n'@"); if(-not $match.Success){throw "INTEROP_NOT_FOUND"}; Add-Type -TypeDefinition $match.Groups[1].Value; [E12ClockComparison.Native]::CheckLayout(); "OFFLINE_SYNTAX_ABI_PASS"`
   for (const executable of ['pwsh.exe', 'powershell.exe']) {
     const env = { ...process.env, CHANGSHAN_CLOCK_SCRIPT: script }
     // PowerShell 7 paths inherited through Node can break Windows PowerShell 5.1 module autoload.
@@ -295,5 +295,75 @@ test('diagnostic syntax and existing native ABI compile offline without metadata
       encoding: 'utf8', windowsHide: true, timeout: 10000, env })
     assert.equal(result.status, 0, `${executable}: ${result.error?.message ?? result.stderr}`)
     assert.match(result.stdout, /OFFLINE_SYNTAX_ABI_PASS/)
+    assert.equal(result.stderr, '')
+  }
+})
+
+test('counter registration ABI and production decoders reject malformed or undefined API output offline', () => {
+  const script = fileURLToPath(new URL('../diagnostics/Capture-E12ClockComparison.ps1', import.meta.url))
+  const fixture = `namespace RegistrationOffline {
+using System;
+using System.Text;
+using E12CounterRegistration;
+public static class RegistrationFixture {
+  public static string Mode; public static int Calls;
+  public static Raw Read(Guid id, uint code) {
+    Calls++; if(Mode=="late")System.Threading.Thread.Sleep(2100);
+    Raw raw=new Raw{Status=Mode=="insufficient"?8u:Mode=="notfound"?1168u:0u};
+    byte[] bytes=code==9?Encoding.Unicode.GetBytes((Mode=="wrong"?"Other Counter":"GPU Process Memory")+"\\0"):
+      new Guid("11111111-2222-3333-4444-555555555555").ToByteArray();
+    Native.CaptureResult(raw,bytes,raw.Status==8?5000u:(uint)bytes.Length); return raw;
+  }
+  static void Reject(Action action) { bool rejected=false; try { action(); } catch { rejected=true; } if(!rejected)throw new Exception("BAD_OUTPUT_ACCEPTED"); }
+  public static void Run() {
+    Native.CheckLayout();
+    byte[] good=Encoding.Unicode.GetBytes("GPU Process Memory\\0");
+    if(Native.DecodeName(good,0,(uint)good.Length)!="GPU Process Memory")throw new Exception("NAME");
+    foreach(string bad in new[]{"gpu Process Memory\\0"," GPU Process Memory\\0","GPU Process Memory \\0","GPU Process Memory","GPU\\0 Process Memory\\0","\\0"}) {
+      byte[] bytes=Encoding.Unicode.GetBytes(bad); Reject(()=>Native.DecodeName(bytes,0,(uint)bytes.Length));
+    }
+    Reject(()=>Native.DecodeName(new byte[]{0,216,0,0},0,4));
+    Reject(()=>Native.DecodeName(new byte[3],0,3));
+    Reject(()=>Native.DecodeName(new byte[4098],0,4098));
+    Reject(()=>Native.DecodeName(good,0,2)); Reject(()=>Native.DecodeName(good,0,null));
+    foreach(uint code in new uint[]{8,234,1168,uint.MaxValue}) Reject(()=>Native.DecodeName(good,code,(uint)good.Length));
+    Guid guid=new Guid("11111111-2222-3333-4444-555555555555"); byte[] bytesGuid=guid.ToByteArray();
+    if(Native.DecodeGuid(bytesGuid,0,16)!=guid.ToString("D"))throw new Exception("GUID");
+    Reject(()=>Native.DecodeGuid(new byte[16],0,16)); Reject(()=>Native.DecodeGuid(new byte[15],0,15));
+    Reject(()=>Native.DecodeGuid(new byte[17],0,17)); Reject(()=>Native.DecodeGuid(bytesGuid,8,16));
+    Reject(()=>Native.DecodeGuid(bytesGuid,0,null));
+    Raw required=new Raw{Status=8}; Native.CaptureResult(required,good,5000);
+    if(required.RequiredSize!=5000 || required.ActualSize!=null || required.Bytes!=null)throw new Exception("REQUIRED_SIZE");
+    Raw failed=new Raw{Status=1168}; Native.CaptureResult(failed,good,uint.MaxValue);
+    if(failed.RequiredSize!=null || failed.ActualSize!=null || failed.Bytes!=null)throw new Exception("UNDEFINED_ERROR_SIZE");
+    Raw oversized=new Raw{Status=0}; Native.CaptureResult(oversized,new byte[16],17);
+    if(oversized.ActualSize!=17 || oversized.Bytes!=null)throw new Exception("OVERSIZED_SUCCESS");
+    Reject(()=>Native.DecodeGuid(oversized.Bytes,oversized.Status,oversized.ActualSize));
+    Reject(()=>Native.Read(guid,99)); // Unsupported request rejected before P/Invoke.
+  }
+}}`
+  const command = `$ErrorActionPreference='Stop'; $source=Get-Content -LiteralPath $env:CHANGSHAN_CLOCK_SCRIPT -Raw; $match=[regex]::Match($source,"(?s)registrationInterop = @'\\r?\\n(.*?)\\r?\\n'@"); if(-not $match.Success){throw 'REGISTRATION_INTEROP_NOT_FOUND'}; Add-Type -TypeDefinition ($match.Groups[1].Value + $env:CHANGSHAN_REGISTRATION_FIXTURE); [RegistrationOffline.RegistrationFixture]::Run();
+    $start=$source.IndexOf('    foreach ($code in @(9,8)) {'); $end=$source.IndexOf('    $record.registeredProviderGuid=', $start); if($start -lt 0 -or $end -le $start){throw 'QUERY_LOOP_NOT_FOUND'};
+    $loop=$source.Substring($start,$end-$start).Replace('[E12CounterRegistration.Native]::Read','[RegistrationOffline.RegistrationFixture]::Read');
+    function Save-RegistrationJson($Path,$Value){$script:saved+=,$Value}; $destination='fixture/registration.json'; $counterSetId='5c3b2414-fd1d-44fb-8b00-e3194209dd1a';
+    foreach($mode in @('ok','wrong','insufficient','notfound','late')) {
+      [RegistrationOffline.RegistrationFixture]::Mode=$mode; [RegistrationOffline.RegistrationFixture]::Calls=0; $record=[ordered]@{calls=@()}; $script:saved=@(); $failed=$false;
+      try { & ([scriptblock]::Create($loop)) } catch {$failed=$true};
+      $expected=if($mode -eq 'ok'){2}else{1};
+      if([RegistrationOffline.RegistrationFixture]::Calls -ne $expected -or $record.calls.Count -ne $expected -or $script:saved.Count -ne $expected -or $failed -ne ($mode -ne 'ok')){throw ('FAILURE_STOP_OR_BUDGET_'+$mode)};
+      if($mode -eq 'late' -and -not $record.calls[0].deadlineExceeded){throw 'DEADLINE_NOT_ENFORCED'}
+    }; 'REGISTRATION_OFFLINE_PASS'`
+  for (const executable of ['pwsh.exe', 'powershell.exe']) {
+    const env = { ...process.env, CHANGSHAN_CLOCK_SCRIPT: script, CHANGSHAN_REGISTRATION_FIXTURE: fixture }
+    if (executable === 'powershell.exe') delete env.PSModulePath
+    const result = spawnSync(executable, ['-NoProfile', '-NonInteractive', '-Command', command], {
+      encoding: 'utf8', windowsHide: true, timeout: 10000, env })
+    assert.equal(result.status, 0, `${executable}: ${result.error?.message ?? result.stderr}`)
+    assert.equal(result.stderr, '')
+    assert.match(result.stdout, /REGISTRATION_OFFLINE_PASS/)
+    const conflicting = spawnSync(executable, ['-NoProfile', '-NonInteractive', '-File', script,
+      '-PlayerMetadataOnly', '-CounterSetRegistrationOnly'], { encoding: 'utf8', windowsHide: true, timeout: 10000, env })
+    assert.notEqual(conflicting.status, 0)
+    assert.match(conflicting.stderr, /DIAGNOSTIC_MODES_MUTUALLY_EXCLUSIVE/)
   }
 })
