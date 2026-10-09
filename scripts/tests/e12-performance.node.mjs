@@ -7,7 +7,7 @@ import { spawnSync } from 'node:child_process'
 import os from 'node:os'
 import { EventEmitter } from 'node:events'
 import { scopedE12Path, snapshotPayload, watchExit } from '../lib/e12-process.mjs'
-import { nearestRank, timeMs, metricSummary, gpuInstances, probeVerdict, parseProbeCsv, validateGpuSeries, validateProbeIdentity } from '../lib/e12-performance.mjs'
+import { nearestRank, timeMs, metricSummary, gpuInstances, probeVerdict, parseProbeCsv, validateGpuSeries, validateProbeIdentity, clockMetadataVerdict } from '../lib/e12-performance.mjs'
 
 test('nearest-rank boundary uses ceil and never interpolation', () => {
   assert.equal(nearestRank([5, 1, 4, 3, 2], 0.95), 5)
@@ -238,4 +238,55 @@ test('memory CSV preserves exact decimal bytes and rejects malformed integers', 
     assert.equal(parse('9007199254740993'), '9007199254740993', field)
     for (const value of ['-1', '1.5', '01', '9223372036854775808']) assert.throws(() => parse(value), /INVALID_CSV_BYTES/, field)
   }
+})
+
+const metadataExpected = { runId: 'metadata-run', sourceHead: 'a'.repeat(40), scriptSha256: 'b'.repeat(64) }
+const metadataFixture = () => {
+  const file = { path: 'C:/Windows/System32/fixture.dll', fileVersion: '1.0', sha256: 'c'.repeat(64) }
+  return { ...metadataExpected, schemaVersion: 1, kind: 'PLAYER_CLOCK_METADATA_ONLY', maximumCimQueries: 4,
+    counterWindows: 0, clockMapping: 'UNVERIFIED', gpuCounterProducerBinding: null,
+    status: 'METADATA_OBSERVED_CLOCK_MAPPING_BLOCKED', error: 'GPU_COUNTER_PRODUCER_BINDING_UNPROVEN',
+    queries: ['OS', 'GPU_DRIVERS', 'GPU_COUNTER_CLASS', 'WMI_BRIDGE_REGISTRATION', 'WMI_BRIDGE_INPROC_REGISTRY64', 'FIXED_SYSTEM_FILES']
+      .map((name, i) => ({ name, elapsedMs: 1, startTick: String(i * 10), endTick: String(i * 10 + 1), frequency: '1000', error: null })),
+    wmiBridgeIdentity: { name: 'WmiPerfInst', registeredDll: file, loadedModuleProven: false }, counterSchemaIdentity: {},
+    environmentVersions: { os: { Version: '1', BuildNumber: '1' }, timezoneId: 'fixture', pdh: file, graphicsKernel: file,
+      gpuDrivers: [{ Name: 'fixture', DriverVersion: '1', PNPDeviceID: 'fixture' }] } }
+}
+test('clock metadata cannot authorize Player, producer binding or a validated clock label', () => {
+  const raw = metadataFixture()
+  assert.deepEqual(clockMetadataVerdict(raw, metadataExpected), { status: 'BLOCKED_CLOCK_MAPPING', metadataObserved: true,
+    clockMapping: 'UNVERIFIED', playerAllowed: false, counterWindows: 0, reasons: ['GPU_COUNTER_PRODUCER_BINDING_UNPROVEN'] })
+  for (const override of [{ runId: 'other' }, { sourceHead: 'other' }, { scriptSha256: 'other' }, { counterWindows: 1 },
+    { maximumCimQueries: 5 }, { status: 'PASS' }, { clockMapping: 'LOCAL_ENCODED_VALIDATED_SOURCE' }, { gpuCounterProducerBinding: { validated: true } }])
+    assert.equal(clockMetadataVerdict({ ...raw, ...override }, metadataExpected).status, 'BLOCKED_INVALID_CLOCK_METADATA')
+})
+test('clock metadata enforces query ordering, failure stop and exact monotonic values', () => {
+  const raw = metadataFixture()
+  for (const queries of [[...raw.queries, raw.queries[0]], [raw.queries[1], ...raw.queries.slice(1)],
+    raw.queries.map((q, i) => i === 0 ? { ...q, error: 'failed' } : q),
+    raw.queries.map((q, i) => i === 0 ? { ...q, elapsedMs: 2000.0001 } : q),
+    raw.queries.map((q, i) => i === 0 ? { ...q, frequency: '0' } : q),
+    raw.queries.map((q, i) => i === 0 ? { ...q, endTick: '2001' } : q),
+    raw.queries.map((q, i) => i === 0 ? { ...q, startTick: '9007199254740993', endTick: '9007199254740992' } : q)])
+    assert.equal(clockMetadataVerdict({ ...raw, queries }, metadataExpected).status, 'BLOCKED_INVALID_CLOCK_METADATA')
+  const partial = { ...raw, status: 'BLOCKED_METADATA', error: 'METADATA_SOURCE_DEADLINE',
+    queries: [{ ...raw.queries[0], elapsedMs: 2001, error: 'METADATA_SOURCE_DEADLINE' }] }
+  assert.equal(clockMetadataVerdict(partial, metadataExpected).metadataObserved, false)
+  assert.equal(clockMetadataVerdict(partial, metadataExpected).playerAllowed, false)
+})
+test('registered bridge and environment cannot silently omit required version fields', () => {
+  for (const change of [r => { r.wmiBridgeIdentity.registeredDll.fileVersion = '' }, r => { r.wmiBridgeIdentity.loadedModuleProven = true },
+    r => { r.environmentVersions.gpuDrivers = [] }, r => { r.environmentVersions.os.BuildNumber = null },
+    r => { r.environmentVersions.graphicsKernel = null }]) {
+    const raw = metadataFixture(); change(raw)
+    assert.equal(clockMetadataVerdict(raw, metadataExpected).status, 'BLOCKED_INVALID_CLOCK_METADATA')
+  }
+})
+test('diagnostic syntax and existing native ABI compile offline without metadata or counter calls', () => {
+  const script = fileURLToPath(new URL('../diagnostics/Capture-E12ClockComparison.ps1', import.meta.url))
+  const command = `$errors=$null; $tokens=$null; [void][System.Management.Automation.Language.Parser]::ParseFile($env:CHANGSHAN_CLOCK_SCRIPT,[ref]$tokens,[ref]$errors); if($errors.Count){throw ($errors | Out-String)}; $source=Get-Content -LiteralPath $env:CHANGSHAN_CLOCK_SCRIPT -Raw; $match=[regex]::Match($source,"(?s)Add-Type -TypeDefinition @'\\r?\\n(.*?)\\r?\\n'@"); if(-not $match.Success){throw "INTEROP_NOT_FOUND"}; Add-Type -TypeDefinition $match.Groups[1].Value; [E12ClockComparison.Native]::CheckLayout(); "OFFLINE_SYNTAX_ABI_PASS"`
+  const result = spawnSync('pwsh.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', command], {
+    encoding: 'utf8', windowsHide: true, timeout: 10000, env: { ...process.env, CHANGSHAN_CLOCK_SCRIPT: script } })
+  assert.equal(result.status, 0, result.error?.message ?? result.stderr)
+  assert.match(result.stdout, /OFFLINE_SYNTAX_ABI_PASS/)
 })

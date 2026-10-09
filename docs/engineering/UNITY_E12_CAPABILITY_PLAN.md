@@ -281,3 +281,11 @@ unit2修復提案基於新counter/clock定位證據，原兩輪budget仍保持�
 Authorization Envelope（僅提案）：Destination=上述本機隔離project/凍結Player/自己的clock-only run leaf與Win32/CIM/PDH；Purpose=指定Player來源時鐘對照；Allowed=核對包/source後單次launch、上述版本metadata與最多3window、local-onlyraw/analysis、own-handle收尾；Data=run/PID/start/adapter/時鐘/公開環境版本，沒有source/log外傳；Forbidden=完整probe/benchmark、其他process/secret、remote/provider/付費、時區/ACL/品質修改、追加window；Stop=任一必要未知/身份來源不符/timeout/包source異動。人類需決定此新增取樣scope/額度，尚無採樣或實作。
 
 獨立提案審查advisory accept，足以供人類窄scope決定。批准後先在本PLAN鎖定metadata的固定來源/必要字段/查詢次數與deadline；若無法確認必要provider implementation/version，即metadata階段BLOCKED，不能擴大registry/provider探索。實作與exact-script review須另外驗證精確argv、ready條件、全部provider查詢計次及2s/90s執行控制，不能只靠本文件稱enforcement已存在。這個新增決定不修改SPEC目標或完成條件。
+
+### 已批准的 metadata-first 實作契約
+
+2026-10-09 使用者明確：「同意依 b361d76 提案，新增一次 Player 時鐘對照，最多三個窗口」。上述待決定文字保留為歷史提案；此授權只新增這一組上限，不重設舊額度。獨立 pre-implementation review 接受先做一次 metadata-only，沒有 Player／PDH／GPU instance 查詢，counterWindows=0；若必要來源綁定未知就在這一關停止。正式 Player 啟動前才須新程式同SHA五階段，不把 metadata-only 當 Player runtime。
+
+固定依序、不得重試：CIM root/cimv2 的 Win32_OperatingSystem（Version/BuildNumber，1結果）、Win32_VideoController（Name/DriverVersion/PNPDeviceID，全列表且必要字段齊）、精確 Get-CimClass Win32_PerfRawData_GPUPerformanceCounters_GPUProcessMemory（class/property qualifiers/schema，1結果）、__Win32Provider filter Name='WmiPerfInst'（Name/CLSID，1結果），合計最多4次CIM。後接一次64-bit HKLM SOFTWARE/Classes/CLSID/<單一合法GUID>/InprocServer32 default read；只接受解析後System32/wbem/WmiPerfInst.dll，不執行registry值、不載入DLL、不搜尋替代。最後一次固定檔案群讀取WmiPerfInst.dll、System32/pdh.dll、System32/drivers/dxgkrnl.sys的FileVersion/SHA256。各來源實際≤2s，metadata程序由controller spawnSync timeout20000ms硬停止；完成step各自CreateNew保存，kill/失敗保留既有step，不啟動後續查詢。必要結果/欄位缺失立即停止，總共只執行這一批metadata。
+
+註冊DLL只形成wmiBridgeIdentity，counter schema與environmentVersions分列；loadedModuleProven=false，gpuCounterProducerBinding=null，clockMapping=UNVERIFIED。即使四次CIM及registry/files成功，也只記METADATA_OBSERVED_CLOCK_MAPPING_BLOCKED；不能用三個系統DLL或driver版本代替精確GPU counter producer綁定。Microsoft官方[WmiPerfInst](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmiperfinst-provider)明確說明它是PDH與WMI的bridge；[GPU資料來源](https://devblogs.microsoft.com/directx/gpus-in-the-task-manager/)只說明Task Manager與VidSch/VidMm，不單憑該文將特定CIM class綁定dxgkrnl檔案。後續判定只能分析這次既有metadata/官方source；禁止自行新增metadata查詢或counter windows。

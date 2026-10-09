@@ -1,11 +1,93 @@
-param([string]$OutputPath = 'release/unity-followup-u1/native-clock-comparison.json')
+param([string]$OutputPath = 'release/unity-followup-u1/native-clock-comparison.json',
+  [switch]$PlayerMetadataOnly, [string]$SourceHead, [string]$RunId)
 $ErrorActionPreference = 'Stop'
 $repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
-$evidenceRoot = [IO.Path]::GetFullPath((Join-Path $repoRoot 'release/unity-followup-u1'))
+$evidenceRoot = [IO.Path]::GetFullPath((Join-Path $repoRoot $(if ($PlayerMetadataOnly) { 'release/e12' } else { 'release/unity-followup-u1' })))
 $destination = [IO.Path]::GetFullPath((Join-Path $repoRoot $OutputPath))
 if (-not $destination.StartsWith($evidenceRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) { throw 'Output outside diagnostic evidence root' }
 if (Test-Path -LiteralPath $destination) { throw 'Refusing existing evidence' }
 if (-not (Test-Path -LiteralPath ([IO.Path]::GetDirectoryName($destination)))) { throw 'Missing evidence directory' }
+if ($PlayerMetadataOnly) {
+  # A separate metadata gate: no Player, GPU instances, PDH, UTC interop, or retry occurs here.
+  if ($SourceHead -cnotmatch '^[a-f0-9]{40}$' -or $RunId -cnotmatch '^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$') { throw 'METADATA_IDENTITY_REQUIRED' }
+  if (@(Get-ChildItem -LiteralPath ([IO.Path]::GetDirectoryName($destination)) -Force).Count -ne 0) { throw 'METADATA_DIRECTORY_NOT_EMPTY' }
+  $cursor = [IO.Path]::GetDirectoryName($destination)
+  while ($cursor.Length -ge $repoRoot.Length) {
+    if ((Get-Item -LiteralPath $cursor -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'UNSAFE_METADATA_PATH' }
+    if ($cursor -ceq $repoRoot) { break }
+    $cursor = [IO.Path]::GetDirectoryName($cursor)
+  }
+  $record = [ordered]@{ schemaVersion=1; kind='PLAYER_CLOCK_METADATA_ONLY'; runId=$RunId; sourceHead=$SourceHead;
+    scriptSha256=(Get-FileHash -LiteralPath $PSCommandPath -Algorithm SHA256).Hash.ToLowerInvariant();
+    startUtc=[DateTime]::UtcNow.ToString('o'); endUtc=$null; maximumCimQueries=4; counterWindows=0;
+    queries=@(); wmiBridgeIdentity=$null; counterSchemaIdentity=$null; environmentVersions=$null;
+    gpuCounterProducerBinding=$null; clockMapping='UNVERIFIED'; status='RUNNING'; error=$null }
+  $overall = [Diagnostics.Stopwatch]::StartNew()
+  function Save-MetadataJson([string]$Path, $Value) {
+    $stream = [IO.File]::Open($Path, [IO.FileMode]::CreateNew, [IO.FileAccess]::Write, [IO.FileShare]::None)
+    try { $bytes=[Text.UTF8Encoding]::new($false).GetBytes(($Value | ConvertTo-Json -Depth 16)); $stream.Write($bytes,0,$bytes.Length) }
+    finally { $stream.Dispose() }
+  }
+  function Read-Metadata([string]$Name, [scriptblock]$Read) {
+    if ($overall.Elapsed.TotalSeconds -ge 20) { throw 'METADATA_TOTAL_DEADLINE' }
+    $watch = [Diagnostics.Stopwatch]::StartNew()
+    $entry = [ordered]@{name=$Name;startTick=$overall.ElapsedTicks.ToString();frequency=[Diagnostics.Stopwatch]::Frequency.ToString();endTick=$null;elapsedMs=$null;result=$null;error=$null}
+    try { $entry.result = @(& $Read) } catch { $entry.error=$_.Exception.Message }
+    $entry.endTick=$overall.ElapsedTicks.ToString(); $entry.elapsedMs=$watch.Elapsed.TotalMilliseconds
+    if ($entry.elapsedMs -gt 2000 -and -not $entry.error) { $entry.error='METADATA_SOURCE_DEADLINE' }
+    $record.queries += ,$entry
+    Save-MetadataJson (Join-Path ([IO.Path]::GetDirectoryName($destination)) ('metadata-step-{0:d2}.json' -f $record.queries.Count)) $entry
+    if ($entry.error) { throw $entry.error }
+    return ,$entry.result
+  }
+  function File-Identity([string]$Path) {
+    $item = Get-Item -LiteralPath $Path -Force
+    if ($item.PSIsContainer -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -or -not $item.VersionInfo.FileVersion) { throw 'INVALID_SYSTEM_MODULE_IDENTITY' }
+    return [ordered]@{path=$item.FullName;fileVersion=$item.VersionInfo.FileVersion;sha256=(Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()}
+  }
+  try {
+    if (-not [Environment]::Is64BitProcess) { throw 'METADATA_REQUIRES_64BIT' }
+    $os = Read-Metadata 'OS' { Get-CimInstance -Namespace root/cimv2 -ClassName Win32_OperatingSystem -Property Version,BuildNumber -OperationTimeoutSec 2 | Select-Object Version,BuildNumber }
+    if ($os.Count -ne 1 -or -not $os[0].Version -or -not $os[0].BuildNumber) { throw 'OS_IDENTITY_UNKNOWN' }
+    $drivers = Read-Metadata 'GPU_DRIVERS' { Get-CimInstance -Namespace root/cimv2 -ClassName Win32_VideoController -Property Name,DriverVersion,PNPDeviceID -OperationTimeoutSec 2 | Select-Object Name,DriverVersion,PNPDeviceID }
+    if ($drivers.Count -eq 0 -or @($drivers | Where-Object { -not $_.Name -or -not $_.DriverVersion -or -not $_.PNPDeviceID }).Count) { throw 'GPU_DRIVER_IDENTITY_UNKNOWN' }
+    $schema = Read-Metadata 'GPU_COUNTER_CLASS' {
+      $class = Get-CimClass -Namespace root/cimv2 -ClassName Win32_PerfRawData_GPUPerformanceCounters_GPUProcessMemory -OperationTimeoutSec 2
+      [ordered]@{name=$class.CimClassName;qualifiers=@($class.CimClassQualifiers | ForEach-Object { [ordered]@{name=$_.Name;value=$_.Value} });
+        properties=@($class.CimClassProperties | ForEach-Object { [ordered]@{name=$_.Name;type=$_.CimType.ToString();qualifiers=@($_.Qualifiers | ForEach-Object { [ordered]@{name=$_.Name;value=$_.Value} })} })}
+    }
+    if ($schema.Count -ne 1) { throw 'COUNTER_SCHEMA_UNKNOWN' }
+    $record.counterSchemaIdentity=$schema[0]
+    $providerQualifier=@($schema[0].qualifiers | Where-Object { $_.name -ieq 'provider' })
+    if ($providerQualifier.Count -ne 1 -or $providerQualifier[0].value -cne 'WmiPerfInst') { throw 'UNSUPPORTED_WMI_BRIDGE' }
+    $provider = Read-Metadata 'WMI_BRIDGE_REGISTRATION' { Get-CimInstance -Namespace root/cimv2 -ClassName __Win32Provider -Filter "Name='WmiPerfInst'" -Property Name,CLSID -OperationTimeoutSec 2 | Select-Object Name,CLSID }
+    [Guid]$clsid=[Guid]::Empty
+    if ($provider.Count -ne 1 -or $provider[0].Name -cne 'WmiPerfInst' -or -not [Guid]::TryParse($provider[0].CLSID,[ref]$clsid) -or $clsid -eq [Guid]::Empty) { throw 'WMI_BRIDGE_REGISTRATION_UNKNOWN' }
+    $registration = Read-Metadata 'WMI_BRIDGE_INPROC_REGISTRY64' {
+      $hive=[Microsoft.Win32.RegistryKey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::LocalMachine,[Microsoft.Win32.RegistryView]::Registry64)
+      try {
+        $key=$hive.OpenSubKey(('SOFTWARE\Classes\CLSID\'+$clsid.ToString('B')+'\InprocServer32'),$false)
+        if ($null -eq $key) { throw 'WMI_BRIDGE_INPROC_UNKNOWN' }
+        try { [string]$value=$key.GetValue('', $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames); $value }
+        finally { $key.Dispose() }
+      } finally { $hive.Dispose() }
+    }
+    $system=[Environment]::GetFolderPath([Environment+SpecialFolder]::System)
+    $bridgePath=Join-Path $system 'wbem\WmiPerfInst.dll'
+    if ($registration.Count -ne 1 -or [IO.Path]::GetFullPath([Environment]::ExpandEnvironmentVariables($registration[0])) -ine [IO.Path]::GetFullPath($bridgePath)) { throw 'UNSUPPORTED_WMI_BRIDGE_PATH' }
+    $files = Read-Metadata 'FIXED_SYSTEM_FILES' { File-Identity $bridgePath; File-Identity (Join-Path $system 'pdh.dll'); File-Identity (Join-Path $system 'drivers\dxgkrnl.sys') }
+    if ($files.Count -ne 3) { throw 'SYSTEM_MODULE_IDENTITY_UNKNOWN' }
+    $record.wmiBridgeIdentity=[ordered]@{name=$provider[0].Name;clsid=$clsid.ToString('B');registeredDll=$files[0];loadedModuleProven=$false}
+    $record.environmentVersions=[ordered]@{os=$os[0];gpuDrivers=$drivers;pdh=$files[1];graphicsKernel=$files[2];timezoneId=[TimeZoneInfo]::Local.Id}
+    # Registration is not loaded-module proof, and generic bridge identity is not the GPU producer binding.
+    $record.status='METADATA_OBSERVED_CLOCK_MAPPING_BLOCKED'
+    $record.error='GPU_COUNTER_PRODUCER_BINDING_UNPROVEN'
+  } catch { $record.status='BLOCKED_METADATA'; $record.error=$_.Exception.Message }
+  $record.endUtc=[DateTime]::UtcNow.ToString('o')
+  Save-MetadataJson $destination $record
+  Write-Output ('Saved metadata only; status='+$record.status+'; counter windows=0')
+  exit 2
+}
 # Diagnostic interop only; values of Dedicated Usage are never returned or saved.
 Add-Type -TypeDefinition @'
 using System;

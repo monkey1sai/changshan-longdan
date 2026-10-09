@@ -135,3 +135,38 @@ export function validateGpuSeries(samples, expected) {
 export function validateProbeIdentity(report, command) {
   if (report.pid !== command.pid || report.runId !== command.runId || report.kind !== 'CAPABILITY_PROBE') throw new Error('PROBE_IDENTITY_MISMATCH')
 }
+
+// Metadata is an observed registration/environment inventory, never a validated clock mapping.
+export function clockMetadataVerdict(raw, expected) {
+  const invalid = reason => ({ status: 'BLOCKED_INVALID_CLOCK_METADATA', metadataObserved: false,
+    clockMapping: 'UNVERIFIED', playerAllowed: false, counterWindows: 0, reasons: [reason] })
+  if (raw?.schemaVersion !== 1 || raw.kind !== 'PLAYER_CLOCK_METADATA_ONLY' ||
+    raw.runId !== expected.runId || raw.sourceHead !== expected.sourceHead || raw.scriptSha256 !== expected.scriptSha256 ||
+    raw.maximumCimQueries !== 4 || raw.counterWindows !== 0 || raw.clockMapping !== 'UNVERIFIED' ||
+    raw.gpuCounterProducerBinding !== null || !['BLOCKED_METADATA', 'METADATA_OBSERVED_CLOCK_MAPPING_BLOCKED'].includes(raw.status))
+    return invalid('METADATA_IDENTITY_OR_UNSUPPORTED_CLAIM')
+  const names = ['OS', 'GPU_DRIVERS', 'GPU_COUNTER_CLASS', 'WMI_BRIDGE_REGISTRATION', 'WMI_BRIDGE_INPROC_REGISTRY64', 'FIXED_SYSTEM_FILES']
+  if (!Array.isArray(raw.queries) || raw.queries.length > names.length) return invalid('METADATA_QUERY_BUDGET')
+  let previousEnd = null
+  for (const [i, query] of raw.queries.entries()) {
+    if (query.name !== names[i] || !Number.isFinite(query.elapsedMs) || query.elapsedMs < 0 ||
+      byteValue(query.startTick) === null || byteValue(query.endTick) === null || byteValue(query.frequency) === null ||
+      BigInt(query.frequency) <= 0n || BigInt(query.endTick) < BigInt(query.startTick) ||
+      (previousEnd !== null && BigInt(query.startTick) < previousEnd)) return invalid('METADATA_QUERY_ORDER_OR_CLOCK')
+    previousEnd = BigInt(query.endTick)
+    if ((query.error || query.elapsedMs > 2000 || BigInt(query.endTick) - BigInt(query.startTick) > 2n * BigInt(query.frequency)) &&
+      (i !== raw.queries.length - 1 || raw.status !== 'BLOCKED_METADATA'))
+      return invalid('METADATA_CONTINUED_AFTER_FAILURE')
+  }
+  const observed = raw.status === 'METADATA_OBSERVED_CLOCK_MAPPING_BLOCKED'
+  const file = value => value && typeof value.path === 'string' && value.path.length > 0 &&
+    typeof value.fileVersion === 'string' && value.fileVersion.length > 0 && /^[a-f0-9]{64}$/.test(value.sha256)
+  if (observed && (raw.queries.length !== names.length || raw.wmiBridgeIdentity?.name !== 'WmiPerfInst' ||
+    raw.wmiBridgeIdentity.loadedModuleProven !== false || !file(raw.wmiBridgeIdentity.registeredDll) ||
+    !raw.counterSchemaIdentity || !raw.environmentVersions?.os?.Version || !raw.environmentVersions.os.BuildNumber ||
+    !raw.environmentVersions.timezoneId || !file(raw.environmentVersions.pdh) || !file(raw.environmentVersions.graphicsKernel) ||
+    !Array.isArray(raw.environmentVersions.gpuDrivers) || raw.environmentVersions.gpuDrivers.length === 0 ||
+    raw.environmentVersions.gpuDrivers.some(d => !d.Name || !d.DriverVersion || !d.PNPDeviceID))) return invalid('METADATA_REQUIRED_FIELD_MISSING')
+  return { status: 'BLOCKED_CLOCK_MAPPING', metadataObserved: observed, clockMapping: 'UNVERIFIED',
+    playerAllowed: false, counterWindows: 0, reasons: [raw.error ?? 'GPU_COUNTER_PRODUCER_BINDING_UNPROVEN'] }
+}

@@ -234,6 +234,12 @@ releaseOrPaidActionPerformed: false
 - 新增8個 Edit fixtures 涵蓋正常連續/合法零值與負camera、bad contract、缺樣/不跨缺失、identity/domain/frequency/重複倒退斷號、多個理由、等tick/零wall/整數極值、精確phase邊界/跨界、UTC與tickbounds/倒退、capacity滿/多一列與不可變性。TelemetryEdit4→12，總Edit172→180，Play51保持，其他counts/gates不動。Node runner89/89、E12 Node25/25、OpenSpec strict PASS；C#compile/Edit180/Play51/build/Player仍NOT_RUN，待exact SHA review及同版Unity。
 - 原87 persistent allocations及全部clock/visible/timing/workload/完整遊戲缺口保留。SPEC4/22（18.2%），沒有probe/helper/provider/remote/background工作。
 
+### Player clock metadata-only 實作準備（尚未執行）
+
+- 使用者明確批准 b361d76 的一次 Player 時鐘對照、最多三窗口；先依獨立 pre-implementation review 鎖定一次 metadata-only 批次。四次指定 CIM、一次 Registry64 bridge 註冊讀取、一次三個固定系統檔版本/hash群組，各來源實際2s、controller總20s。不得 retry、補查或執行 registry 值；完成每步 CreateNew 保存。
+- 保留原診斷模式；新明確 switch 在所有 PDH/native/counter code 前退出。只分列 bridge/schema/environment；producer binding=null、loadedModuleProven=false、clockMapping=UNVERIFIED，全部 metadata 成功也只記 CLOCK_MAPPING_BLOCKED，不能啟動 Player。純 verdict 拒絕來源順序/身分/時限/偽造VALIDATED或PASS；缺證據不升級。
+- E12 Node29/29（含 PowerShell AST 與原生struct離線ABI）、OpenSpec strict PASS；metadata/Player/counter windows NOT_RUN、0/3。沒有本候選 Unity runtime PASS 主張。先 exact-SHA 獨立審查，接受後僅執行此單次前置批次。SPEC仍4/22（18.2%）；舊診斷額度、三seed短probe與12成本probe不變，沒有remote/background工作。
+
 ### M1 純 ledger 同版 Unity 結果
 
 - exact `6edf1e0c008a74db02fc541f73b76e45a12c17ba` 經獨立 source review 接受後，validation worktree fresh clean/no lock/no output，ff-only 對齊。run `c3867e43-9b1c-4121-ac1a-e5dda5f37339`，exclusive `release/e02/unit2-ledger-validation-v1`，end `2026-10-08T22:58:40.339Z`；compile/Edit180/Play51/build/Player 全 exit0/verified/timedOut=false，failed/skipped/inconclusive=0，八個新 ledger cases 全 Passed。
