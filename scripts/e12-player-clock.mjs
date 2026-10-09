@@ -126,7 +126,7 @@ export async function main(argv = process.argv.slice(2)) {
     fs.mkdirSync(path.join(output,name))
     const filename = path.join(output,name,'fingerprint.json')
     await runPowerShell('scripts/diagnostics/Capture-E12ClockFingerprint.ps1',
-      ['-OutputPath',filename,'-SourceHead',head,'-RunId',runId],name,20000,name==='environment-before'?60000:5000)
+      ['-OutputPath',path.relative(root,filename),'-SourceHead',head,'-RunId',runId],name,20000,name==='environment-before'?60000:5000)
     const record = read(filename)
     if (JSON.stringify(fingerprintContents(record)) !== JSON.stringify(baseline)) throw new Error('CLOCK_ENVIRONMENT_CHANGED_'+name)
     return filename

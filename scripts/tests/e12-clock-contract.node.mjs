@@ -8,6 +8,58 @@ import { spawnSync } from 'node:child_process'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+test('fingerprint caller and both PowerShell path preflights agree without provider calls', async () => {
+  const root = fileURLToPath(new URL('../../', import.meta.url))
+  const controller = fs.readFileSync(new URL('../e12-player-clock.mjs', import.meta.url), 'utf8')
+  const helper = fs.readFileSync(new URL('../diagnostics/Capture-E12ClockFingerprint.ps1', import.meta.url), 'utf8')
+  const start = controller.indexOf('  async function environment(name) {')
+  const end = controller.indexOf('\n  try {', start)
+  assert.ok(start > 0 && end > start)
+  const preflight = helper.slice(helper.indexOf("$ErrorActionPreference='Stop'"), helper.indexOf('function Save-Json'))
+  assert.ok(preflight.includes('FINGERPRINT_OUTPUT_OUTSIDE_ROOT'))
+  assert.doesNotMatch(preflight, /Get-Cim|Pdh|Add-Type/)
+  const leaf = fs.mkdtempSync(path.join(root, 'release/e12/clock-path-fixture-'))
+  for (const executable of ['powershell.exe', 'pwsh.exe']) {
+    const output = path.join(leaf, executable); fs.mkdirSync(output)
+    const directory = path.join(output, 'environment-before')
+    const filename = path.join(directory, 'fingerprint.json')
+    const env = { ...process.env, E12_PREFLIGHT: preflight,
+      E12_SCRIPT_DIR: path.join(root, 'scripts/diagnostics'), E12_EXPECTED: filename,
+      E12_HEAD: 'a'.repeat(40), E12_RUN: '00000000-0000-4000-8000-000000000001' }
+    if (executable === 'powershell.exe') delete env.PSModulePath
+    function resolveWithHelper(argument) {
+      const command = "$SourceHead=$env:E12_HEAD;$RunId=$env:E12_RUN;$OutputPath=$env:E12_OUTPUT;. ([scriptblock]::Create('$PSScriptRoot=$env:E12_SCRIPT_DIR;' + $env:E12_PREFLIGHT));if($destination -cne $env:E12_EXPECTED){throw 'WRONG_RESOLVED_DESTINATION'}"
+      return spawnSync(executable, ['-NoProfile', '-NonInteractive', '-Command', command], {
+        env: { ...env, E12_OUTPUT: argument }, encoding: 'utf8', windowsHide: true, timeout: 10000,
+      })
+    }
+    let calls = 0
+    const runPowerShell = async (script, args, name, maximum, reserve) => {
+      calls++
+      assert.equal(script, 'scripts/diagnostics/Capture-E12ClockFingerprint.ps1')
+      assert.deepEqual(args.slice(2), ['-SourceHead', env.E12_HEAD, '-RunId', env.E12_RUN])
+      assert.equal(args[0], '-OutputPath'); assert.equal(name, 'environment-before')
+      assert.equal(maximum, 20000); assert.equal(reserve, 60000)
+      const resolved = resolveWithHelper(args[1])
+      assert.equal(resolved.status, 0, `${executable}: ${resolved.error?.message ?? resolved.stderr}`)
+      assert.equal(resolved.stderr, '')
+    }
+    // Execute the actual environment() caller; only its source-query executor and returned data are stubbed.
+    const environment = new Function('fs', 'path', 'root', 'output', 'head', 'runId', 'runPowerShell', 'read', 'fingerprintContents', 'baseline',
+      controller.slice(start, end) + '\nreturn environment;')(
+      fs, path, root, output, env.E12_HEAD, env.E12_RUN, runPowerShell, () => ({}), value => value, {})
+    assert.equal(await environment('environment-before'), filename)
+    assert.equal(calls, 1)
+    for (const rejected of [filename, '../outside-fingerprint.json']) {
+      assert.notEqual(resolveWithHelper(rejected).status, 0, `${executable}: unsafe path accepted`)
+    }
+    fs.writeFileSync(path.join(directory, 'existing.json'), '{}', { flag: 'wx' })
+    assert.notEqual(resolveWithHelper(path.relative(root, filename)).status, 0)
+    await assert.rejects(environment('environment-before'), /EEXIST/)
+    assert.equal(calls, 1)
+  }
+})
+
 test('new READY source/meta pairs have valid unique GUIDs, rejecting malformed fixtures', () => {
   function checkPairs(pairs, files) {
     for (const source of pairs) {
