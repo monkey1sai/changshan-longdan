@@ -394,3 +394,11 @@ Authorization Envelope（僅提案）：Destination=上述本機隔離project/�
 最小可審修正（尚未實作／未批准）：只改 `scripts/e12-player-clock.mjs` environment() 的fingerprint呼叫參數，由 `['-OutputPath',filename,...]` 改為 `['-OutputPath',path.relative(root,filename),...]`，沿用既有scoped output檢查；helper契約保持repo-relative，不擴大支援任意absolute輸入。只在既有 `scripts/tests/e12-clock-contract.node.mjs` 補實際caller參數與helper路徑前置處理的雙PowerShell離線整合fixture，核對正確resolve到預期leaf、原absolute反例、root外/重複輸出拒絕；不呼叫任何CIM/PDH或環境取樣。兩份PLAN/STEP_RECORD記實際授權及證據，其他source/runtime/門檻不改。
 
 人類需決定的額外額度：上述一次窄scope修正；離線/strict/diff及獨立exact-SHA審查通過後，最多一次新的同SHA五階段 `release/e02/clock-path-validation-v1`（仍184/51）；全PASS並經獨立證據審查後，最多一次clock-only重試 `release/e12/player-clock-owned-v2`，仍最多3窗口/每來源2s/整run90s/前後最多4CIM/不保存Usage/只收尾ownhandles。v1與全部舊額度保留；任一步失敗立即停止，不補跑或重設計數。這是修正已定位的呼叫契約，不授權provider探索、正式benchmark或遠端變更。未獲此新明確批准前只保存與審查提案，不修改工具或再執行engine/clock。
+
+### 此授權的實際出口：五階段通過，clock 第一窗逾時
+
+2329b48同版五階段已全PASS並獨立核對；隨後依授權執行唯一clock v2。路徑及前置fingerprint成功，自有Player完成READY120frames；第一個GPUProcessMemory CIM查詢在2098.2696ms逾時，raw缺失，PDH尚未執行。attempted1/accepted0，已依失敗即停收尾Player並確認退出。窗口2/3與後置環境核對NOT_RUN；批次額度已使用，不得另用剩餘窗口。完整證據/hash及不確定性見STEP_RECORD。
+
+已確認的是本次查詢超過既定2s門檻，尚不能定位driver、權限、WQL filter或provider原因。離線source盤點：新window固定LIKE PID filter並收完整集合/OperationTimeoutSec2；歷史helper先全類取First1、後用精確Name且無相同2s控制，不能用其舊結果證明新方法或直接退回First1。當前catch只保留Exception.Message，缺FullyQualifiedErrorId/CategoryInfo/HResult等例外定位資訊；這是可準備的離線診斷設計缺口，不是已證明的逾時修復。
+
+目前沒有具備新根因證據的重試方案。下一步只能基於現有source/checkpoint整理有界定位方法及必要離線fixtures，再接受獨立審查；不能改2s、增加預熱、補跑同query或開新provider探索。任何新的實測仍須具體方法、scope、額度及明確人類授權。SPEC4/22（18.2%）；clock mapping/task2.1/正式E12/完整Unity遊戲均未完成。
