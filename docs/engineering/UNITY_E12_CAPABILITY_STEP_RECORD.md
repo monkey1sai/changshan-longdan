@@ -247,6 +247,7 @@ releaseOrPaidActionPerformed: false
 - 非provider的命令可用性對照：相同 Node→powershell.exe 5.1.26100.6899，繼承PSModulePath包含PowerShell7時 Get-Command Get-FileHash exit1；只刪除該child env的PSModulePath後exit0，命令來自Microsoft.PowerShell.Utility。這是環境隔離修訂的實測證據，不是provider來源資料。既有offline測試改為pwsh與powershell雙runtime、先解析五個必要cmdlet、各自AST/ABI；29/29 PASS，沒有執行metadata script或任何CIM/PDH。
 - PLAN已記精確v2提案：只額外一次相同metadata批次，child自建module path，fresh exclusive leaf，其他來源/時限/停止條件不變；尚待人類決定，未執行。SPEC仍4/22（18.2%），task2.1/正式E12/完整Unity遊戲未完成，沒有background/remote工作。
 - v1 SHA256：command `5756a6b0b11cbccb9f41c406100d8e36d49205d5326bc853b69c3bf79271783d`；controller-result `43b5cf4ad39ef5b18b377a9134370b43e3b0d13125a1dca70bff2ca5de97f982`；stderr `68d2283b1646eebd8c82330c3d07402a11009ced4b0072100a53764da3f4956c`；空stdout `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`。raw為ignored本地證據，tracked記錄保存定位/hash，未外傳。Jev deterministic architecture_review observation `803032f1-5fcb-423b-a531-b2d6d83e8977` 已回報 caller_reported completed，僅review派工完成，非clock/SPEC完成。
+- 獨立 reviewer 對 exact `1f7b600df1153267e02f6368a2563583082173c4` 三檔完整差異無阻擋 findings，親自重跑雙runtime離線測試1/1 PASS、四份v1 evidence hash全相符、v2尚不存在。advisory accept只接受此失敗交付／具體重試提案，沒有新增執行授權或正式APPROVED；已提出一次metadata重試的人類決定，回答前保持NOT_RUN。
 
 ### M1 純 ledger 同版 Unity 結果
 
