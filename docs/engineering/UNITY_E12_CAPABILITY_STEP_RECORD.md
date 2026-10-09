@@ -1,5 +1,13 @@
 # U1 新證據與能力方案紀錄
 
+## 2026-10-10 指定Player clock-only 實作（尚未執行Player）
+
+- `1b47092`兩doc結果checkpoint已經獨立完整核對，無阻擋；下一scope方法審查接受READY/controller/逐窗診斷及前後兩次環境verification最多4CIM的新範圍，非重跑原fingerprint或重設任何失敗預算。精確檔案、V10/V12／S05、90s／每來源2s／最多3窗／16instances／最多80PDHcalls每窗及禁止usage輸出見PLAN。採Compose既有interop、counter decoder、payload/source snapshots與runner，無新依賴。
+- READY獨立development Player旗標、30s／自入口120frames／character Ready／errors0、exclusive partial flush-close-rename、同run/process/graphics等回報、90s fail-safe；不啟動戰鬥，不改正常flow。新增4個Unity Edit tests並登錄runner inventory，尚未跑引擎，不假報C#或Player PASS。
+- 第一輪draft review提出三項：最後source/payload核對可能超過90s仍PASS、cleanup無期限等待；來源晚回或child timeout遺失前序raw；launch缺既有windowed/noFlow flags。已補最後deadline/elapsed判定、有界owned退出確認及UNKNOWN清理狀態，逐來源exclusive checkpoint保存後才判2s、API失敗未定義fields=null，恢復固定argv。controller錯誤路徑不再呼叫下一窗；來源WMI/PDH各自UTC/mono窗、跨來源/跨窗timeline不重設、高水位與完整raw集合皆驗。
+- 完整Node工具/runner離線135/135 PASS（失敗/跳過0）、OpenSpec strict PASS、diff check PASS。雙PowerShell production-loop stub涵蓋空/超額/錯名/重複集合、錯Player、WMI/API錯誤、來源晚回、第二PDH晚回保全前序、usage不輸出。測試中fixture截取位置因新增checkpoint函式改變而失敗，分類TEST_FAILURE；修正定位後回歸通過，沒有真CIM/PDH/Player查詢。PS參數局部命名整理後新fixture15/15再驗PASS，不新增採樣。
+- 新同SHA Unity compile/Edit/Play/build/Player五階段、完整payload、實際clock-only run均NOT_RUN；先凍結exact-source審查再進五階段，實際run另做執行前review。窗口仍0/3，SPEC4/22（18.2%），正式VRAM與完整遊戲未完成，無remote／背景Player。
+
 ## 2026-10-10 fingerprint-v1 實際結果（最新）
 
 - exact `bdd3e0e30a0b066c1d8809156eedcbb73901a041` 六檔及一次controller經獨立全diff review，第一輪三findings關閉；reviewer重跑新fixture7/7 PASS（雙PowerShell）；主控完整38/38／strict／diff PASS。這不是正式SPEC APPROVED。

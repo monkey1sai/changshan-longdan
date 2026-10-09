@@ -20,9 +20,11 @@ let run, lease, lockPath, output
 const archiveManifests = {}
 const testPrefix = 'Changshan.Foundation.Tests.'
 const testInventory = {
+  // Required diagnostic readiness coverage; a missing suite cannot be hidden by a green aggregate.
   editmode: { FoundationEditTests: 11, CharacterSourceEditTests: 5, CombatParityEditTests: 11, CombatRuleEditTests: 8, LogicDisplayMappingEditTests: 4, HitParityEditTests: 18, RigParityEditTests: 13, ReactionParityEditTests: 13, PresentationParityEditTests: 10, FeedbackAudioEditTests: 14, CrowdParityEditTests: 15, CameraParityEditTests: 24, EnvironmentAssetEditTests: 4, DirectorEventsEditTests: 8, DirectorParityEditTests: 2, LayoutReachabilityEditTests: 4, PerformanceScopeEditTests: 4, PerformanceTelemetryEditTests: 12 },
   playmode: { FoundationPlayTests: 1, CharacterImportPlayTests: 16, ZhaoYunControllerPlayTests: 5, ZhaoYunHitPlayTests: 3, AnimatedCharacterPlayTests: 2, ReactionPlayTests: 3, FeedbackPlayTests: 4, CrowdPlayTests: 2, CameraPlayTests: 3, EnvironmentAssetPlayTests: 4, DirectorFlowPlayTests: 4, PerformanceTelemetryPlayTests: 4 },
 }
+testInventory.editmode.E12ClockReadyEditTests = 4
 const characterSource = 'public/models/zhaoyun.glb'
 const characterStreamingCopy = 'ChangshanLongdan_Data/StreamingAssets/Characters/zhaoyun.glb'
 const readJson = filename => JSON.parse(fs.readFileSync(requireSafePath(root, filename), 'utf8'))

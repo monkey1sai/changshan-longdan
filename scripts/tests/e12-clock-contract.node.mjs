@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { clockWindowVerdict } from '../lib/e12-clock-contract.mjs'
+import { clockWindowVerdict, fingerprintContents, validateClockReady, extendClockTimeline } from '../lib/e12-clock-contract.mjs'
+import { nextClockWindow, stopOwned, timeoutWithin, confirmOwnedExit, collectClockWindows } from '../e12-player-clock.mjs'
 import { utcTicks } from '../lib/e12-performance.mjs'
 import fs from 'node:fs'
 import { spawnSync } from 'node:child_process'
@@ -64,6 +65,67 @@ test('PDH valid/new data statuses pass while no-instance fails', () => {
     assert.equal(clockWindowVerdict(window, expected).status === 'PASS_CLOCK_WINDOW_ONLY', pass)
   }
 })
+test('each source must fit its own query window and an error cannot pass', () => {
+  const window = fixture(); window.schemaVersion = 2
+  window.wmiRaw=window.instances.map(i=>({name:i.name,timestampSys100NS:i.wmi.rawTimestamp,frequencySys100NS:i.wmi.frequency}))
+  for (const source of ['wmi', 'pdh']) window.instances[0][source].query = structuredClone(window)
+  assert.equal(clockWindowVerdict(window, expected).status, 'PASS_CLOCK_WINDOW_ONLY')
+  window.instances[0].pdh.query.queryStartUtc = '2026-10-10T00:00:20Z'
+  window.instances[0].pdh.query.queryEndUtc = '2026-10-10T00:00:20.2Z'
+  assert.equal(clockWindowVerdict(window, expected).reason, 'SOURCE_NOT_FRESH_AGAINST_UTC')
+  window.error = 'failed'; assert.equal(clockWindowVerdict(window, expected).reason, 'SOURCE_ERROR')
+})
+test('bracket comparison retains environment semantics but removes observation identity', () => {
+  const record = {status:'PASS_ENVIRONMENT_FINGERPRINT_ONLY',error:null,runId:'one',steps:[
+    {name:'os',raw:[{Version:'10',BuildNumber:'1'}]}, {name:'gpu',raw:[{PNPDeviceID:'a',DriverVersion:'1'}]},
+    {name:'apiFiles',raw:[{sha256:'api'}]}, {name:'timezone',raw:[{id:'Taipei',baseUtcOffsetTicks:'288000000000',adjustmentRules:[],stopwatchFrequency:'10000000'}]}]}
+  const other = structuredClone(record); other.runId='two';other.steps[0].elapsedMs=100
+  assert.deepEqual(fingerprintContents(record),fingerprintContents(other))
+  for (const mutate of [r=>{r.steps[1].raw[0].DriverVersion='2'},r=>{r.steps[2].raw[0].sha256='changed'},r=>{r.steps[3].raw[0].adjustmentRules=[{rule:'changed'}]}]) {
+    const changed = structuredClone(record); mutate(changed)
+    assert.notDeepEqual(fingerprintContents(record),fingerprintContents(changed))
+  }
+  assert.throws(()=>fingerprintContents({...record,status:'BLOCKED_FINGERPRINT'}))
+})
+test('readiness rejects partial JSON, wrong Player generation, graphics, frames and errors', () => {
+  const identity={...expected}, report={...identity,status:'READY_CLOCK_ONLY',graphicsApi:'Direct3D11',width:1920,height:1080,
+    assetStatus:'Ready',framesSinceEntry:120,errorCount:0,development:true,batchMode:false,focused:true,utc:'2026-10-10T00:00:10Z',monotonicTick:'100',frequency:'10000000'}
+  assert.equal(validateClockReady(report,identity),report)
+  assert.throws(()=>JSON.parse('{"status":'))
+  for (const change of [{pid:43},{processStartUtc:'2026-10-10T00:00:01Z'},{runId:'other'},{framesSinceEntry:119},
+    {graphicsApi:'Null'},{errorCount:1},{focused:false},{frequency:'0'},{assetStatus:'Loading'}])
+    assert.throws(()=>validateClockReady({...report,...change},identity))
+})
+test('deadline reserves post evidence, stops fourth window and protects non-owned processes', () => {
+  assert.equal(timeoutWithin(90000000000n,20000,25000,0n),20000)
+  assert.equal(timeoutWithin(90000000000n,20000,25000,60000000000n),5000)
+  assert.throws(()=>timeoutWithin(90000000000n,20000,25000,65000000000n))
+  assert.deepEqual([0,1,2].map(n=>nextClockWindow(n)),[1,2,3])
+  assert.throws(()=>nextClockWindow(3));assert.throws(()=>nextClockWindow(1,true))
+  let killed=0;const child={exitCode:null,signalCode:null,kill(){killed++}}
+  assert.throws(()=>stopOwned(child,new Set()));assert.equal(killed,0)
+  stopOwned(child,new Set([child]));assert.equal(killed,1)
+  child.exitCode=0;stopOwned(child,new Set([child]));assert.equal(killed,1)
+})
+test('controller collection stops after first rejection and never launches another window', async () => {
+  let captures=0, pauses=0, accepted=0
+  await assert.rejects(collectClockWindows(async()=>{captures++;return {...fixture(),schemaVersion:2,error:'source failed',pdhSequences:0,maximumInstances:16}},
+    expected,async()=>{pauses++},()=>{accepted++}),/CLOCK_WINDOW_REJECTED/)
+  assert.equal(captures,1);assert.equal(pauses,0);assert.equal(accepted,0)
+})
+test('cross-query UTC jumps and monotonic reversal fail without rebasing the accepted timeline', () => {
+  const first=fixture(), state=extendClockTimeline([first])
+  const next={...first,queryStartUtc:'2026-10-10T00:00:11Z',queryEndUtc:'2026-10-10T00:00:11.2Z',startTick:'1000',endTick:'1200'}
+  assert.ok(extendClockTimeline([next],state))
+  assert.throws(()=>extendClockTimeline([{...next,queryStartUtc:'2026-10-10T00:00:12Z',queryEndUtc:'2026-10-10T00:00:12.2Z'}],state),/DISCONTINUITY/)
+  assert.throws(()=>extendClockTimeline([{...next,startTick:'1'}],state),/REVERSED/)
+  assert.equal(state.lastTick,200n)
+})
+test('owned cleanup returns unconfirmed rather than waiting forever', async () => {
+  let killed=0;const child={exitCode:null,signalCode:null,kill(){killed++}}
+  assert.equal(await confirmOwnedExit(child,new Set([child]),new Promise(()=>{}),1),null)
+  assert.equal(killed,1)
+})
 test('fingerprint schema and fail-stop use production code with offline sources in both PowerShell runtimes', () => {
   const source = fs.readFileSync(new URL('../diagnostics/Capture-E12ClockFingerprint.ps1', import.meta.url), 'utf8')
   const validator = source.slice(source.indexOf('function Validate-FingerprintSource'), source.indexOf('$record=[ordered]'))
@@ -109,5 +171,57 @@ test('fingerprint schema and fail-stop use production code with offline sources 
     assert.equal(result.status, 0, `${executable}: ${result.error?.message ?? result.stderr}`)
     assert.equal(result.stderr, '')
     assert.match(result.stdout, /FINGERPRINT_OFFLINE_PASS/)
+  }
+})
+test('Player window production loop rejects empty, excessive, malformed and failed sources without native queries', () => {
+  const source = fs.readFileSync(new URL('../diagnostics/Capture-E12PlayerClockWindow.ps1', import.meta.url), 'utf8')
+  const functions = source.slice(source.indexOf('function Assert-Identity'), source.indexOf('$record=[ordered]'))
+    .replaceAll('[E12ClockComparison.Native]::UtcFileTime()', '([DateTime]::UtcNow.ToFileTimeUtc().ToString())')
+  const loop = source.slice(source.indexOf('$record=[ordered]'),source.indexOf('$stream=[IO.File]',source.indexOf('$record=[ordered]')))
+    .replaceAll('[E12ClockComparison.Native]::Read(', '(Read-Stub ')
+  assert.ok(functions.includes('Decode-Clock') && loop.includes('CLOCK_INSTANCE_COUNT'))
+  const command = `$ErrorActionPreference='Stop';${functions}
+    $TargetPid=42;$identity=@{pid=42;processStartUtc='2026-10-10T00:00:00Z';imagePath='fixture';imageSha256='hash';runId='run'}
+    $zone=[TimeZoneInfo]::FindSystemTimeZoneById('Taipei Standard Time');$fingerprintHash='fixture';$PSCommandPath=$env:E12_WINDOW_SCRIPT
+    function Save-SourceCheckpoint($Name,$Query,$Raw,$Error){$script:checkpoints+=,(@{source=$Name;query=$Query;raw=$Raw;error=$Error}|ConvertTo-Json -Depth 15|ConvertFrom-Json)}
+    function Get-Identity { $copy=$identity.Clone();if($mode -eq 'identity'){$copy.pid=43};$copy }
+    function Get-CimInstance($ClassName,$Filter,$Property,$OperationTimeoutSec) {
+      $script:wmiCalls++
+      if($Filter -cne 'Name LIKE ''pid[_]42[_]%''' -or ($Property -join ',') -cne 'Name,Timestamp_Sys100NS,Frequency_Sys100NS'){throw 'QUERY_ALLOWLIST'}
+      if($mode -eq 'wmiError'){throw 'STUB_WMI_ERROR'}
+      $rows=@();$count=switch($mode){'empty'{0} 'excess'{17} 'duplicate'{2} 'laterPdh'{2} default{1}}
+      for($i=0;$i -lt $count;$i++){
+        $name=if($mode -eq 'duplicate'){'pid_42_luid_0x0_0xa_phys_0'}elseif($mode -eq 'malformed'){'pid_43_bad'}else{'pid_42_luid_0x0_0xa_phys_'+$i}
+        $rows+=[pscustomobject]@{Name=$name;Timestamp_Sys100NS=([DateTime]::UtcNow.ToFileTimeUtc()+288000000000L);Frequency_Sys100NS=10000000L}
+      }
+      if($mode -eq 'late'){Start-Sleep -Milliseconds 2100};$rows
+    }
+    function Read-Stub($Path) {
+      $script:pdhCalls++
+      if($mode -eq 'latePdh' -or ($mode -eq 'laterPdh' -and $script:pdhCalls -eq 2)){Start-Sleep -Milliseconds 2100}
+      [pscustomobject]@{Stage='Raw';ApiStatus=$(if($mode -eq 'pdhError'){5}else{0});CStatus=$(if($mode -eq 'noInstance'){2147485649}else{1});CounterType=65792;
+        TimeStamp=([DateTime]::UtcNow.ToFileTimeUtc()+288000000000L).ToString()}
+    }
+    foreach($mode in @('ok','identity','empty','excess','duplicate','malformed','wmiError','late','pdhError','noInstance','latePdh','laterPdh')) {
+      $script:wmiCalls=0;$script:pdhCalls=0;$script:checkpoints=@()
+      ${loop}
+      if($mode -eq 'ok') {if($record.error -or -not $record.completeCollection -or $record.pdhSequences -ne 1){throw 'VALID_WINDOW_REJECTED'}}
+      elseif(-not $record.error -or $record.completeCollection){throw ('INVALID_WINDOW_ACCEPTED_'+$mode)}
+      $expectedWmi=if($mode -eq 'identity'){0}else{1};$expectedPdh=if($mode -eq 'laterPdh'){2}elseif($mode -in @('ok','pdhError','noInstance','latePdh')){1}else{0}
+      if($script:wmiCalls -ne $expectedWmi -or $script:pdhCalls -ne $expectedPdh){throw ('QUERY_AFTER_FAILURE_'+$mode)}
+      if($script:checkpoints.Count -ne $expectedWmi+$expectedPdh){throw ('CHECKPOINT_MISSING_'+$mode)}
+      if($mode -in @('latePdh','laterPdh') -and -not $script:checkpoints[-1].raw.rawTimestamp){throw 'LATE_PDH_RAW_LOST'}
+      if($mode -eq 'laterPdh' -and -not $script:checkpoints[1].raw.rawTimestamp){throw 'PREVIOUS_PDH_RAW_LOST'}
+      if(($record|ConvertTo-Json -Depth 15) -match 'FirstValue|SecondValue|DedicatedUsage|dedicatedBytes'){throw 'USAGE_PERSISTED'}
+    };'WINDOW_OFFLINE_PASS'`
+  for (const executable of ['pwsh.exe','powershell.exe']) {
+    const env={...process.env,E12_WINDOW_SCRIPT:new URL('../diagnostics/Capture-E12PlayerClockWindow.ps1',import.meta.url).pathname.replace(/^\/([A-Z]:)/,'$1')}
+    if(executable==='powershell.exe')delete env.PSModulePath
+    const parse = "$ErrorActionPreference='Stop';$tokens=$null;$errors=$null;[void][System.Management.Automation.Language.Parser]::ParseFile($env:E12_WINDOW_SCRIPT,[ref]$tokens,[ref]$errors);if($errors.Count){throw ($errors|Out-String)}"
+    const parsed=spawnSync(executable,['-NoProfile','-NonInteractive','-Command',parse],{env,encoding:'utf8',windowsHide:true,timeout:10000})
+    assert.equal(parsed.status,0,parsed.stderr)
+    const result=spawnSync(executable,['-NoProfile','-NonInteractive','-Command',command],{env,encoding:'utf8',windowsHide:true,timeout:20000})
+    assert.equal(result.status,0,`${executable}: ${result.error?.message??result.stderr}`);assert.equal(result.stderr,'')
+    assert.match(result.stdout,/WINDOW_OFFLINE_PASS/)
   }
 })

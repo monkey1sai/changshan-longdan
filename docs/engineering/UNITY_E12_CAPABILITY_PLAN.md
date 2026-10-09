@@ -2,6 +2,12 @@
 
 ## 目前執行順序（2026-10-09；以此段及最新 STEP_RECORD 為準）
 
+新clock-only helper的WMI只取Name／Timestamp_Sys100NS／Frequency_Sys100NS，不重查耗盡批次的class schema；WMI counterType明記null／UNKNOWN，不偽造65792。PDH固定path與實際type仍驗65792。此項只限時鐘方法，不解除正式VRAM的counter語義／unit／type gate。每來源exclusive checkpoint保全後才判deadline；controller跨來源及跨窗UTC/mono timeline不重設，整run最後驗證及cleanup也受90s與退出確認約束。
+
+2026-10-10 下一scope已獨立接受開始實作（不等於實際Player放行）：精確允許新增 `unity/ChangshanLongdan/Assets/Character/Runtime/E12ClockReady.cs`及meta、`Assets/Foundation/Tests/EditMode/E12ClockReadyEditTests.cs`及meta（同Unity project內）、`scripts/e12-player-clock.mjs`、`scripts/diagnostics/Capture-E12PlayerClockWindow.ps1`；延伸 `scripts/lib/e12-clock-contract.mjs`、`scripts/tests/e12-clock-contract.node.mjs`、`scripts/unity-validate.mjs`的test inventory與本PLAN／STEP_RECORD。V10/V12、S05診斷，不改戰鬥/資產。READY需exclusive partial完成flush/close後不覆寫rename；自入口起120frames、character Ready／errors0、30sdeadline，拒絕與e12Probe/e02Output並用。只由debug Player旗標啟動，Editor/正常遊玩不啟動；保存run/PID/start/UTC/mono/graphics/尺寸等，assetReady不當視覺驗收。
+
+controller用單一monotonic90s截止並將所有子程序timeout壓在剩餘內；先預留post snapshot與owned cleanup時間，未知/失敗不再呼叫來源。新run前後兩次verification snapshot最多4次CIM（每次固定四來源同fingerprint、各2s/總20s），比較全部OS/GPU身分與driver集合、三API版本hash、timezone/rules/frequency，排除run/times；這是新scope的兩端核對，不重跑原fingerprint-v1或重設舊批次，不宣稱期間絕無瞬間變動/loadedproducer。每窗一次WMI filtered完整集合（上限16，不截取）；合法集合才對各instance一次PDH Open/Add/Collect/GetRaw/Close，finally Close，最高16×5=80個PDH calls/窗（失敗路徑不超額），三窗最高240。每來源獨立nativeUTC/mono≤2s；WMI/PDH各自lag/future、高水位/集合/前後PID-start-image。PDH接收usage欄位但不保存/輸出/分析。每窗先保存再驗，最多原一次3窗，無第四窗或retry。完整三窗、READY/end、環境兩端、source/fullpayload前後及review皆過才可產限定mapping結論；新同SHA五階段與exact-source/controller審查前不啟動Player。
+
 2026-10-10 fresh fingerprint已執行一次：source `bdd3e0e30a0b066c1d8809156eedcbb73901a041`、run `4d3853c5-5778-4387-b93e-15bd963ef3d1`，四來源306.38／119.7516／83.5295／25.3616ms，controller916.0004ms／exit0／sourceUnchanged=true；狀態PASS_ENVIRONMENT_FINGERPRINT_ONLY。OS10.0.26100、RTX4060Ti driver32.0.15.8097、固定API檔hash與Taipei Standard Time（BaseUtcOffset+8h／SupportsDST=false／rules空／Stopwatch10MHz）均保存。producer implementation／loaded module仍UNKNOWN，clock UNVERIFIED，沒有counter／Player／新窗口。本批完整read額度已使用，不重跑。下一eligible為指定Player controller／READY的具體scope審查，再新同SHA Unity五階段與fullpayload，不能直接使用舊Player。完整索引見STEP_RECORD。
 
 2026-10-10 方法修訂已獨立接受並開始實作：使用者「請執行」續行本SPEC。`/root/unity_spec_review`接受clock-only改以版本化公開API契約、fresh環境fingerprint、同一自有Player及原生UTC/monotonic參照檢驗預先固定local-encoded假設。producer implementation／loaded module保留UNKNOWN，不再是clock-only先決條件；不改正式counter單位與來源門檻，不宣稱通用WMI／VRAM。以下「待審／未決」段落保留歷史，這一段優先。
