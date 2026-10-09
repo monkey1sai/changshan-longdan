@@ -367,3 +367,90 @@ public static class RegistrationFixture {
     assert.match(conflicting.stderr, /DIAGNOSTIC_MODES_MUTUALLY_EXCLUSIVE/)
   }
 })
+
+test('V2 inventory preserves bounded GUID order and fails closed with only one offline stub call', () => {
+  const script = fileURLToPath(new URL('../diagnostics/Capture-E12CounterSetInventory.ps1', import.meta.url))
+  const fixture = `namespace InventoryOffline {
+using System;
+using E12CounterInventory;
+public static class Fixture {
+  public static string Mode; public static int Calls;
+  public static Guid Candidate=new Guid("5c3b2414-fd1d-44fb-8b00-e3194209dd1a");
+  static Guid[] Ids(int count) {
+    Guid[] ids=new Guid[count];
+    for(int i=0;i<count;i++){byte[] bytes=new byte[16];Array.Copy(BitConverter.GetBytes(i+1),bytes,4);ids[i]=new Guid(bytes);}
+    return ids;
+  }
+  static void Reject(Action action) {bool rejected=false;try{action();}catch{rejected=true;}if(!rejected)throw new Exception("BAD_INVENTORY_ACCEPTED");}
+  public static Raw Read() {
+    Calls++; if(Mode=="late")System.Threading.Thread.Sleep(2100);
+    Raw raw=new Raw{Status=Mode=="error8"?8u:Mode=="error4200"?4200u:0u};
+    Guid[] ids=Ids(512); ids[1]=Candidate;
+    uint actual=Mode=="zero"?0u:Mode=="full"?512u:Mode=="oversize"?513u:Mode=="error8"?600u:2u;
+    if(Mode=="absent")ids[1]=Ids(2)[1];
+    if(Mode=="duplicate")ids[1]=ids[0];
+    if(Mode=="empty")ids[1]=Guid.Empty;
+    if(Mode=="short")ids=new Guid[1];
+    Native.CaptureResult(raw,ids,actual);return raw;
+  }
+  public static void Run() {
+    Native.CheckLayout();
+    foreach(int count in new[]{0,1,512}) {
+      Guid[] ids=Ids(512);Raw raw=new Raw{Status=0};Native.CaptureResult(raw,ids,(uint)count);Native.Validate(raw);
+      if(raw.Ids.Length!=count)throw new Exception("COUNT");
+      for(int i=0;i<count;i++)if(raw.Ids[i]!=ids[i].ToString("D"))throw new Exception("ORDER");
+    }
+    foreach(uint count in new uint[]{513,uint.MaxValue}) {
+      Raw raw=new Raw{Status=0};Native.CaptureResult(raw,Ids(512),count);
+      if(raw.ActualCount!=count || raw.Ids!=null)throw new Exception("OVERSIZE_CAPTURE");Reject(()=>Native.Validate(raw));
+    }
+    Raw shortRaw=new Raw{Status=0};Native.CaptureResult(shortRaw,Ids(1),2);Reject(()=>Native.Validate(shortRaw));
+    foreach(uint status in new uint[]{8,4200,uint.MaxValue}) {
+      Raw raw=new Raw{Status=status};Native.CaptureResult(raw,Ids(512),uint.MaxValue);
+      if(raw.ActualCount!=null || raw.Ids!=null || (status==8?raw.RequiredCount!=uint.MaxValue:raw.RequiredCount!=null))throw new Exception("UNDEFINED_ERROR_OUTPUT");
+      Reject(()=>Native.Validate(raw));
+    }
+    Reject(()=>Native.Validate(null));
+    Reject(()=>Native.Validate(new Raw{Status=0,ActualCount=1,Ids=new[]{"bad"}}));
+    Reject(()=>Native.Validate(new Raw{Status=0,ActualCount=1,Ids=new[]{Candidate.ToString("D").ToUpperInvariant()}}));
+    Reject(()=>Native.Validate(new Raw{Status=0,ActualCount=2,Ids=new[]{Candidate.ToString("D")}}));
+    if(Native.DurationMs(0,20000000,10000000)!=2000m || Native.DurationMs(0,20000001,10000000)<=2000m)throw new Exception("DEADLINE_BOUNDARY");
+    Reject(()=>Native.DurationMs(-1,0,1));Reject(()=>Native.DurationMs(2,1,1));Reject(()=>Native.DurationMs(0,1,0));
+    if(Native.DurationMs(0,long.MaxValue,1)!=(decimal)long.MaxValue*1000m)throw new Exception("TICK_OVERFLOW");
+  }
+}}`
+  const command = `$ErrorActionPreference='Stop'; $errors=$null;$tokens=$null;[void][System.Management.Automation.Language.Parser]::ParseFile($env:CHANGSHAN_INVENTORY_SCRIPT,[ref]$tokens,[ref]$errors);if($errors.Count){throw ($errors|Out-String)};
+    $source=Get-Content -LiteralPath $env:CHANGSHAN_INVENTORY_SCRIPT -Raw;
+    $match=[regex]::Match($source,"(?s)inventoryInterop = @'\\r?\\n(.*?)\\r?\\n'@");if(-not $match.Success){throw 'INVENTORY_INTEROP_NOT_FOUND'};
+    Add-Type -TypeDefinition ($match.Groups[1].Value+$env:CHANGSHAN_INVENTORY_FIXTURE);[InventoryOffline.Fixture]::Run();
+    $start=$source.IndexOf('  # INVENTORY_CALL_BEGIN:');$end=$source.IndexOf('  # INVENTORY_CALL_END:', $start);if($start -lt 0 -or $end -le $start){throw 'INVENTORY_BLOCK_NOT_FOUND'};
+    $block=$source.Substring($start,$end-$start).Replace('[E12CounterInventory.Native]::Read()','[InventoryOffline.Fixture]::Read()');
+    function Save-InventoryJson($Path,$Value){$script:saved+=,($Value|ConvertTo-Json -Depth 12|ConvertFrom-Json)};$directory='fixture';
+    foreach($mode in @('ok','zero','full','absent','duplicate','empty','short','oversize','error8','error4200','late')) {
+      [InventoryOffline.Fixture]::Mode=$mode;[InventoryOffline.Fixture]::Calls=0;$script:saved=@();
+      $record=[ordered]@{frequency=$null;sourceStartTick=$null;sourceEndTick=$null;raw=$null;candidatePresent=$null;candidateGuid='5c3b2414-fd1d-44fb-8b00-e3194209dd1a';elapsedMs=$null;deadlineExceeded=$null;error=$null};
+      $failed=$false;try{& ([scriptblock]::Create($block))}catch{$failed=$true};
+      $good=$mode -in @('ok','zero','full','absent');
+      if([InventoryOffline.Fixture]::Calls -ne 1 -or $script:saved.Count -ne 1 -or $failed -eq $good){throw ('INVENTORY_FAIL_STOP_'+$mode)};
+      if($good -and $record.candidatePresent -ne ($mode -in @('ok','full'))){throw ('INVENTORY_MEMBERSHIP_'+$mode)};
+      if(-not $good -and $null -ne $record.candidatePresent){throw 'INVALID_MEMBERSHIP'};
+      if($mode -eq 'late' -and -not $record.deadlineExceeded){throw 'INVENTORY_DEADLINE'}
+    };'INVENTORY_OFFLINE_PASS'`
+  for (const executable of ['pwsh.exe', 'powershell.exe']) {
+    const env = { ...process.env, CHANGSHAN_INVENTORY_SCRIPT: script, CHANGSHAN_INVENTORY_FIXTURE: fixture }
+    if (executable === 'powershell.exe') delete env.PSModulePath
+    const result = spawnSync(executable, ['-NoProfile', '-NonInteractive', '-Command', command], {
+      encoding: 'utf8', windowsHide: true, timeout: 15000, env })
+    assert.equal(result.status, 0, `${executable}: ${result.error?.message ?? result.stderr}`)
+    assert.equal(result.stderr, '')
+    assert.match(result.stdout, /INVENTORY_OFFLINE_PASS/)
+    for (const extra of [['-PlayerMetadataOnly'], ['-CounterSetRegistrationOnly'], ['-PlayerMetadataOnly', '-CounterSetRegistrationOnly'], ['extra']]) {
+      const rejected = spawnSync(executable, ['-NoProfile', '-NonInteractive', '-File', script,
+        '-OutputPath', 'release/e12/never-created/inventory.json', '-SourceHead', '1'.repeat(40),
+        '-RunId', '11111111-2222-3333-4444-555555555555', ...extra], {encoding:'utf8',windowsHide:true,timeout:10000,env})
+      assert.notEqual(rejected.status, 0)
+      assert.match(rejected.stderr, /NamedParameterNotFound|PositionalParameterNotFound|A parameter cannot be found|A positional parameter cannot be found/)
+      assert.doesNotMatch(rejected.stderr, /INVENTORY_REQUIRES_EMPTY_DIRECTORY/)
+    }
+  }
+})

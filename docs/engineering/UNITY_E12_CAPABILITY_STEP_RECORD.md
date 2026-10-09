@@ -1,5 +1,11 @@
 # U1 新證據與能力方案紀錄
 
+## 2026-10-10 單次V2 inventory 準備（尚未查詢）
+
+- 使用者明確授權續行，獨立reviewer `/root/unity_spec_review` 審方法後拒絕擴成514calls名稱掃描，接受一次fixed512GUID inventory／合法count0..512／max1call／2s來源與20s外層／保存raw／沒有其他查詢。獨立advanced script入口須拒絕未知參數；exact允許新檔及fixtures見PLAN，先離線驗證再審精確候選。舊失敗與額度保留，Player0/3、SPEC4/22（18.2%），未執行native。
+- 同時審查發現producer DLL/loaded-module非正式spec明訂條件，屬後加PLAN方法gate；先記可驗證PDH/WMI替代證據方案及限制，不直接取消gate或啟動採樣。這項文件分析不放行clock、Player、正式E12或完整遊戲。
+- 重用既有PowerShell保存／路徑／子程序契約與Node雙runtime harness，無新增依賴；只有新API的小型interop及count／GUID／時間驗證需自建。離線fixtures直接編譯production C#、stub唯一Read後跑production保存／停止區塊，涵蓋0/1/512、越界／短buffer、空／重複／原序、有無舊GUID、錯誤8與其他錯誤null、2s精確邊界／超時、兩runtime拒絕舊flags／多餘參數。初次TEST_FAILURE是pwsh顯示友善參數錯誤而非error ID，修正fixture匹配兩種輸出後31/31 PASS／OpenSpec strict PASS；不是native或遊戲失敗。仍待exact-source審查與一次實際查詢。
+
 ## 2026-10-10 registration-v1 實際結果（以此段為最新）
 
 - 精確source `343b433daf2dfd72ff660650e643778d38aead85` 已通過獨立全diff審查，只接受一次固定controller執行；不是正式SPEC APPROVED。完整E12離線30/30、OpenSpec strict PASS，新fixture另於兩PowerShell runtime驗證；沒有新Unity五階段或遊戲PASS。
