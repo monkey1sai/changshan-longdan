@@ -2,6 +2,8 @@
 
 ## 目前執行順序（2026-10-09；以此段及最新 STEP_RECORD 為準）
 
+2026-10-10 fresh fingerprint已執行一次：source `bdd3e0e30a0b066c1d8809156eedcbb73901a041`、run `4d3853c5-5778-4387-b93e-15bd963ef3d1`，四來源306.38／119.7516／83.5295／25.3616ms，controller916.0004ms／exit0／sourceUnchanged=true；狀態PASS_ENVIRONMENT_FINGERPRINT_ONLY。OS10.0.26100、RTX4060Ti driver32.0.15.8097、固定API檔hash與Taipei Standard Time（BaseUtcOffset+8h／SupportsDST=false／rules空／Stopwatch10MHz）均保存。producer implementation／loaded module仍UNKNOWN，clock UNVERIFIED，沒有counter／Player／新窗口。本批完整read額度已使用，不重跑。下一eligible為指定Player controller／READY的具體scope審查，再新同SHA Unity五階段與fullpayload，不能直接使用舊Player。完整索引見STEP_RECORD。
+
 2026-10-10 方法修訂已獨立接受並開始實作：使用者「請執行」續行本SPEC。`/root/unity_spec_review`接受clock-only改以版本化公開API契約、fresh環境fingerprint、同一自有Player及原生UTC/monotonic參照檢驗預先固定local-encoded假設。producer implementation／loaded module保留UNKNOWN，不再是clock-only先決條件；不改正式counter單位與來源門檻，不宣稱通用WMI／VRAM。以下「待審／未決」段落保留歷史，這一段優先。
 
 本輪範圍為新獨立 `Capture-E12ClockFingerprint.ps1`、純 `e12-clock-contract.mjs`、必要fixtures及本PLAN／STEP_RECORD（V10/V12、S05診斷）。fingerprint新方法只有一次四來源：CIM OS一次、GPU全列表一次、固定三API檔版本/hash一組、timezone ID/BaseUtcOffset/SupportsDST/完整可用AdjustmentRules與Stopwatch frequency一組；每來源含解析≤2s，外controller≤20s，逐來源CreateNew保存，任何缺值／錯誤／超時即停，不重試。這不是重跑metadata-v1/v2，不讀schema／registry／counter，不啟動Player。fingerprint只識別環境與磁碟API檔，不能證明loaded producer。先離線production-loop stub與exact-source/controller審查，再執行fresh `release/e12/clock-fingerprint-v1`；未滿足前不呼叫真來源。

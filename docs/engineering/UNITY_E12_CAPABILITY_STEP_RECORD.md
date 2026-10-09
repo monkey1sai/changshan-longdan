@@ -1,5 +1,13 @@
 # U1 新證據與能力方案紀錄
 
+## 2026-10-10 fingerprint-v1 實際結果（最新）
+
+- exact `bdd3e0e30a0b066c1d8809156eedcbb73901a041` 六檔及一次controller經獨立全diff review，第一輪三findings關閉；reviewer重跑新fixture7/7 PASS（雙PowerShell）；主控完整38/38／strict／diff PASS。這不是正式SPEC APPROVED。
+- 一次run `4d3853c5-5778-4387-b93e-15bd963ef3d1`，script SHA `6c4b5e86adf255f0a80d53aa9cae8bfd282af5f7e3c61d82542be50ff9ec4d9c`、controller SHA `f7672855dafc4ec140015def3067d1eeb7690e8431378064345104df39b04be9`。endUtc `2026-10-09T17:04:17.029Z`，exit0／916.0004ms／sourceUnchanged=true／stderr空；四來源306.38／119.7516／83.5295／25.3616ms均≤2s。PASS_ENVIRONMENT_FINGERPRINT_ONLY，沒有counter／Player，窗口0/3。
+- OS10.0.26100 build26100、RTX4060Ti driver32.0.15.8097；pdh.dll產品10.0.26100.1、WmiPerfInst.dll10.0.26100.1150、dxgkrnl.sys10.0.26100.6899的路徑/version/hash全部保留。Taipei Standard Time／BaseUtcOffset288000000000ticks／SupportsDST=false／rules空／Stopwatch10000000Hz。這只記當時環境與磁碟API版本，loaded producer仍UNKNOWN，clock UNVERIFIED，bytes語義未解除。
+- ignored `release/e12/clock-fingerprint-v1/analysis.json` SHA `1206997151153cf72abad8b6e107bb1c73d4b2adb51fb4b968ad6b49a2787244`列九檔bytes/hash；raw SHA `221ea4df218d26dddb574d9e40b7a29419463ae2c8ee9f1c47c21ac4e8009213`。主控離線重算所有ticks／step-final相同／identity／status，未重查環境；獨立reviewer親讀九檔、重算bytes/hash與ticks，接受限定結果，無阻擋finding。本新方法四來源額度全用完，原批次不重設。
+- A1尚未完成；SPEC4/22（18.2%）。下一步具體審Player controller／READY、環境變動失效、全adapter/instance與各來源原生UTC/monotonic契約，並完成新同SHA Unity五階段/fullpayload後才用原一次最多3窗。沒有push／merge／背景Player。
+
 ## 2026-10-10 clock-only 方法實作（尚未真實capture）
 
 - 獨立方法審查接受上述有限環境替代契約；producer implementation／loaded module仍UNKNOWN，不再阻擋clock-only方法實作，不解除正式VRAM來源／單位門檻。使用者「請執行」授權續行，無remote或美術範圍新增。重用既有utcTicks、診斷路徑／CreateNew保存與雙PowerShell stub方法，無新增依賴。
