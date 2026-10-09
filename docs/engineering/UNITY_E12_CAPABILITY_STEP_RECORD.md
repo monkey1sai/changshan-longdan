@@ -323,3 +323,11 @@ releaseOrPaidActionPerformed: false
 - 完整包319檔／175661980 bytes，build/after 清單同 hash `474e32adfce14824ce8b81815089a120bf5f7aab0ca158529131a8e1d38dc002`，result hash `46e227208b9cc7f32f12f5a3c9e02293a67445318883f39ef30e6d3e60dbbf7c`。主控及独立 reviewer 各自重新讀取實檔，與 build baseline/after/run.playerPayload 逐項一致。source snapshots 相符、checkout clean、project lock不存在。Player readback 6000.6.4f1/D3D11/1920×1080/focused=true/errorCount0。
 - PlayMode Editor.log:1537 仍報79 persistent individual allocations；前次87→本次79不證明leak改善或memory slope。licensing access-token更新訊息未阻擋本輪測試，但不能稱整份log零警告。独立驗證審查無本scope阻擋 findings，僅advisory accept，非formal APPROVED/merge/SPEC complete。
 - Jev本機 governed/before_delivery observation `aac25f6a-8180-41bb-80ec-f0499689afa8` 要求architecture_review/provider_called=false，已回報caller_reported completed，僅review派工完成。未採樣、未provider、未push/merge；沒有背景工作。M1尚無runtime/source join、humanPlay/performanceAcceptance=NOT_RUN；SPEC4/22（18.2%）。
+
+### 2026-10-10 READY 同版驗證失敗，修正上限已達
+
+- candidate `5b829965bafaf783438e5be0bbfcf12d56e2ce34`；validation worktree `unity-e12-capability-validate`，run `d00c92ad-146d-4c32-ae98-2c281fa9f476`，`release/e02/clock-ready-validation-v1`，end `2026-10-09T17:35:52.265Z`。Compile exit0/verified；Edit engine exit0，舊180案例Passed/failed0/skipped0，但必要184未齊，runner exit1，`TEST_SET_INCOMPLETE: total`。Play/build/Player及clock-only均NOT_RUN；此結果不算五階段PASS。
+- Compile `Editor.log:202–203` 指出新測試meta無合法GUID並忽略對應asset；實際GUID33碼，四個新READY cases為0。分類TEST_FAILURE（測試資產匯入），不是PRODUCT_FAILURE。主控及獨立review先前source檢查漏掉GUID長度；如實保留，不降低testInventory。
+- result.json SHA256 `debb95eb761d7dcc7495efb5a1b8f32c74d6e9a3a62147fd606b565864702937`；editmode/tests.xml `ee9bffd9c02d7c920493ee554b56f58c7912a6a8f092713184c1b66946f57b0c`。原始command/exit/log/XML/result保留在上述ignored目錄。2026-10-10補核對project UnityLockfile不存在；沒有移除lock。
+- 獨立review確認兩輪修正額度已用完；source advisory接受不重設額度。停止第三次修復及任何新engine/provider執行。PLAN已給額外一次GUID/靜態fixture修正、exact-SHA審查及最多一次同版五階段的具體提案，尚待人類批准，未實作。
+- SPEC仍4/22（18.2%），clock windows0/3；正式E12/E13、自然遊玩與完整Unity驗收未完成。沒有push/merge/deploy或新背景工作。

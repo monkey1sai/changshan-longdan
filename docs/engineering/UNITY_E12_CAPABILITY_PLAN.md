@@ -370,3 +370,15 @@ Authorization Envelope（僅提案）：Destination=上述本機隔離project/�
 新的非 provider 環境對照已定位：pwsh→Node→powershell.exe 繼承 PowerShell7 的 PSModulePath 時，Windows PowerShell5.1.26100.6899 無法解析 Get-FileHash；只從該 child 的 env 移除 PSModulePath，讓5.1自行建立 WindowsPowerShell 模組路徑，同一 Get-Command 成功。沒有修改 user/machine env、模組、ACL、全域配置或執行任何 CIM。既有離線 AST/ABI fixture 已延伸到 pwsh.exe 與 powershell.exe；5.1 child 使用此隔離 env，並先 Get-Command 核對 Get-FileHash/Get-CimInstance/Get-CimClass/Select-Object/ConvertTo-Json，僅命令解析、不取系統/provider資料；兩者均 PASS。
 
 **待人類決定的最小重試**：只重做一次相同 metadata-only 批次，fresh exclusive `release/e12/player-clock-v2/metadata`；controller 只修改 child env 刪除繼承 PSModulePath，其餘固定來源/最多4CIM/各來源2s/總20s/失敗停止/CreateNew/來源核對維持。原v1全部保留；此次若再失敗不補跑。這不新增 Player/counter窗口，原一次Player對照上限仍0/3，其他已用額度/三seed/12成本probe不變。必要producer binding未知仍停，不以環境修復宣稱來源或SPEC通過。批准與exact-candidate review之前不執行v2。
+
+## 2026-10-10 READY 測試資產匯入失敗：有界恢復提案，尚未實作
+
+目前有效候選為 `5b829965bafaf783438e5be0bbfcf12d56e2ce34`。ordinary Unity 五階段 run `d00c92ad-146d-4c32-ae98-2c281fa9f476` 在 Edit 停止：compile verified，Edit 只有180個舊案例，必要184個未齊；Play/build/Player未執行。新 `E12ClockReadyEditTests.cs.meta` GUID `a08e19558b4a44e5bec064ef0360aa2aa` 長33碼，Unity明確忽略資產，四個新案例為0。分類 TEST_FAILURE，不是玩法失敗。先前source review漏掉此缺陷，不能用source接受或舊版PASS抵銷。
+
+本scope兩輪修正已用完（e291754→5b829965）；依 MUSOU_EXECUTION_PLAN 的兩輪上限，停止第三次修改及engine重跑。以下是供人類批准的額外一次窄scope修正，不重設任何既有預算：
+
+1. 僅將上述meta的GUID改為32碼 `a08e19558b4a44e5bec064ef0360aa2a`。本機定向搜尋只有原33碼命中；實作時再以精確GUID比對全Assets確認唯一，不依substring判定。
+2. 僅在既有 `scripts/tests/e12-clock-contract.node.mjs` 增加靜態fixture：核對這次新增的兩組cs/meta存在、GUID為32碼hex且非全零，並在既有Assets metadata中精確唯一；正例、33碼/全零/缺配對/重複反例均須通過。無新依賴、wrapper或runtime改動。
+3. 離線fixtures、strict/diff及獨立exact-SHA審查通過後，最多一次新exclusive `release/e02/clock-ready-validation-v2` 的同SHA五階段。Edit必須184、Play必須51；不得降低inventory、跳過或把舊結果套到新版本。任何階段失敗即停，不補跑。
+
+不修其他warning、不探索provider、不查CIM/PDH、不啟動clock-only Player。既有一次Player clock對照仍0/3，待同版五階段通過及必要審查才按原契約執行。正式E12/E13與完整Unity遊戲驗收未完成；SPEC維持4/22（18.2%）。本提案與失敗紀錄準備不等於取得額外修正授權。
