@@ -371,7 +371,9 @@ Authorization Envelope（僅提案）：Destination=上述本機隔離project/�
 
 **待人類決定的最小重試**：只重做一次相同 metadata-only 批次，fresh exclusive `release/e12/player-clock-v2/metadata`；controller 只修改 child env 刪除繼承 PSModulePath，其餘固定來源/最多4CIM/各來源2s/總20s/失敗停止/CreateNew/來源核對維持。原v1全部保留；此次若再失敗不補跑。這不新增 Player/counter窗口，原一次Player對照上限仍0/3，其他已用額度/三seed/12成本probe不變。必要producer binding未知仍停，不以環境修復宣稱來源或SPEC通過。批准與exact-candidate review之前不執行v2。
 
-## 2026-10-10 READY 測試資產匯入失敗：有界恢復提案，尚未實作
+## 2026-10-10 READY 測試資產匯入失敗：有界恢復提案
+
+使用者於此提案交付後明確回覆「同意授權，快點」：批准下列額外一次窄scope修正及最多一次同版五階段驗證。先修GUID與既有離線fixture，再獨立exact-SHA審查；這不是全面重設修正或採樣預算。下列「尚待批准」文字保留為提案當時狀態，以本段為目前授權。
 
 目前有效候選為 `5b829965bafaf783438e5be0bbfcf12d56e2ce34`。ordinary Unity 五階段 run `d00c92ad-146d-4c32-ae98-2c281fa9f476` 在 Edit 停止：compile verified，Edit 只有180個舊案例，必要184個未齊；Play/build/Player未執行。新 `E12ClockReadyEditTests.cs.meta` GUID `a08e19558b4a44e5bec064ef0360aa2aa` 長33碼，Unity明確忽略資產，四個新案例為0。分類 TEST_FAILURE，不是玩法失敗。先前source review漏掉此缺陷，不能用source接受或舊版PASS抵銷。
 

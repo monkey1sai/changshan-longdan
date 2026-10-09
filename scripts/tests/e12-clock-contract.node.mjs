@@ -5,6 +5,50 @@ import { nextClockWindow, stopOwned, timeoutWithin, confirmOwnedExit, collectClo
 import { utcTicks } from '../lib/e12-performance.mjs'
 import fs from 'node:fs'
 import { spawnSync } from 'node:child_process'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+test('new READY source/meta pairs have valid unique GUIDs, rejecting malformed fixtures', () => {
+  function checkPairs(pairs, files) {
+    for (const source of pairs) {
+      assert.ok(files.has(source), `missing source: ${source}`)
+      assert.ok(files.has(`${source}.meta`), `missing meta: ${source}`)
+      const guid = /^guid: (\S+)\s*$/m.exec(files.get(`${source}.meta`))?.[1]
+      assert.match(guid ?? '', /^[0-9a-f]{32}$/i)
+      assert.notEqual(guid, '0'.repeat(32))
+      const matches = [...files].filter(([name, contents]) => name.endsWith('.meta') &&
+        /^guid: (\S+)\s*$/m.exec(contents)?.[1]?.toLowerCase() === guid.toLowerCase())
+      assert.equal(matches.length, 1, `duplicate GUID: ${source}`)
+    }
+  }
+  const source = 'fixture.cs', valid = 'a08e19558b4a44e5bec064ef0360aa2a'
+  const fixture = () => new Map([[source, ''], [`${source}.meta`, `guid: ${valid}\n`]])
+  checkPairs([source], fixture())
+  for (const invalid of [`${valid}a`, '0'.repeat(32)]) {
+    const files = fixture(); files.set(`${source}.meta`, `guid: ${invalid}\n`)
+    assert.throws(() => checkPairs([source], files))
+  }
+  for (const missing of [source, `${source}.meta`]) {
+    const files = fixture(); files.delete(missing)
+    assert.throws(() => checkPairs([source], files))
+  }
+  const duplicate = fixture(); duplicate.set('other.meta', `guid: ${valid.toUpperCase()}\n`)
+  assert.throws(() => checkPairs([source], duplicate))
+  const root = fileURLToPath(new URL('../../unity/ChangshanLongdan/Assets/', import.meta.url))
+  const files = new Map()
+  function scan(directory) {
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      const full = path.join(directory, entry.name)
+      if (entry.isDirectory()) scan(full)
+      else if (entry.name.endsWith('.meta')) files.set(full, fs.readFileSync(full, 'utf8'))
+    }
+  }
+  scan(root)
+  const pairs = ['Character/Runtime/E12ClockReady.cs', 'Foundation/Tests/EditMode/E12ClockReadyEditTests.cs']
+    .map(relative => path.join(root, relative))
+  for (const file of pairs) if (fs.existsSync(file)) files.set(file, '')
+  checkPairs(pairs, files)
+})
 
 const expected = { pid: 42, processStartUtc: '2026-10-10T00:00:00Z', imageSha256: 'a'.repeat(64),
   runId: 'run', fingerprintSha256: 'b'.repeat(64), timezoneId: 'Taipei Standard Time' }
