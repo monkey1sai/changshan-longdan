@@ -50,7 +50,7 @@ export function parseProbeCsv(text, report) {
   })
 }
 // Parse the whole-second calendar independently; fraction arithmetic never goes through Date/Number.
-function utcTicks(value) {
+export function utcTicks(value) {
   if (typeof value !== 'string') return null
   const match = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.(\d{1,7}))?Z$/.exec(value)
   if (!match) return null

@@ -1,5 +1,12 @@
 # U1 新證據與能力方案紀錄
 
+## 2026-10-10 clock-only 方法實作（尚未真實capture）
+
+- 獨立方法審查接受上述有限環境替代契約；producer implementation／loaded module仍UNKNOWN，不再阻擋clock-only方法實作，不解除正式VRAM來源／單位門檻。使用者「請執行」授權續行，無remote或美術範圍新增。重用既有utcTicks、診斷路徑／CreateNew保存與雙PowerShell stub方法，無新增依賴。
+- 新增四來源fingerprint script及純clock window validator／fixtures。初稿離線測出PowerShell decimal suffix誤用，分類TEST_FAILURE，已改decimal suffix d；沒有真來源查詢。draft獨立review指出跨窗集合替換falsePASS、合法PDH CStatus1遭拒及fingerprint缺欄位falsePASS，已加入集合一致性、有效0/1、逐來源schema與保存後停止回歸。這是第一輪review修正，仍待凍結精確候選終審。
+- 純fixture驗stable value/fresh timestamp、兩來源相符但UTC窗外拒絕、100ns邊界、高水位、身分／DST旗標拒絕、raw/offset一致與跨窗集合；雙PowerShell production-loop stub驗四來源成功、空rules固定時區合法，以及必要欄位／UNKNOWN／多OS／重複GPU／API路徑hash／missingDST或rules／錯誤／超時均保存後停止。這些只驗邏輯，不證明decode來源權威或mapping。
+- 修正後 `node --test scripts/tests/e12-clock-contract.node.mjs scripts/tests/e12-performance.node.mjs` 38/38 PASS、失敗／跳過0，OpenSpec strict PASS，Git diff check PASS。真fingerprint NOT_RUN，Player0/3；原metadata／registration／inventory額度不重設。SPEC仍4/22（18.2%），沒有Unity完整遊戲驗收PASS。下一步：exact-source/controller獨立review，再一次fresh fingerprint；Player controller／READY另審並以新同SHA五階段綁定。
+
 ## 2026-10-10 單次V2 inventory 結果（最新）
 
 - 結果checkpoint `c2d46589fa285a479138da45173371ddb02f969a` 已獨立核對exact diff與clean狀態；後續僅用既有schema分析出DedicatedUsage未有Units。PLAN追加clock-only替代方法的8步候選，明列環境read預算、WMI語義與sample timestamp freshness三項未解前置；不刪正式VRAM單位／sample freshness gate、不默默取消producer方法gate、不啟動Player。初稿將producer last-update誤稱原spec要求，獨立審查指出後已改正：它是不能推論的限制，不額外新增gate，也不因值穩定判樣本過期。另沿用b361對PDH raw API必要接收值但不持久化／輸出／分析／判定的契約，不稱API沒收到值。此候選待方法審查，非已放行執行計畫。
