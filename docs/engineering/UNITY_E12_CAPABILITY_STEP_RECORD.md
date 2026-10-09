@@ -2,6 +2,10 @@
 
 ## 2026-10-10 單次V2 inventory 結果（最新）
 
+- 結果checkpoint `c2d46589fa285a479138da45173371ddb02f969a` 已獨立核對exact diff與clean狀態；後續僅用既有schema分析出DedicatedUsage未有Units。PLAN追加clock-only替代方法的8步候選，明列環境read預算、WMI語義與sample timestamp freshness三項未解前置；不刪正式VRAM單位／sample freshness gate、不默默取消producer方法gate、不啟動Player。初稿將producer last-update誤稱原spec要求，獨立審查指出後已改正：它是不能推論的限制，不額外新增gate，也不因值穩定判樣本過期。另沿用b361對PDH raw API必要接收值但不持久化／輸出／分析／判定的契約，不稱API沒收到值。此候選待方法審查，非已放行執行計畫。
+- 方法獨立審查接受上述候選文件，仍不放行Player；按建議補field/官方語義/raw/可接受主張/缺口矩陣。主控重讀原spec worktree的舊native raw/analysis，核SHA並以BigInt重算六來源duration/lag/高水位及固定offset的local／UTC兩假設，與舊analysis一致；新replay SHA `3791aa1a4831e39a2aa1dbe5aaf3175feb3b3ac08a278ad80f0d819e5cabebdf`。只有離線重播，新增native/window均0，不回填舊環境版本。PLAN列fresh fingerprint最小read候選與兩個後續辨識fixture，尚待審必要性/充分性/額度，不直接執行。
+- 獨立reviewer已親讀最新矩陣／候選及三份raw/analysis/replay，三hash相符，BigInt重算六筆與replay逐列相同，接受HISTORICAL_OBSERVATION_ONLY分析checkpoint，無阻擋；不解除A1/A2或放行fingerprint/Player。最終source完整E12離線31/31再次PASS，strict/diffcheck PASS，沒有新採樣或Unity驗收。
+
 - exact `bbc0f6df9cecf5337a0a968cca7f366ae6d3d77f`、parent `1b2356fc0d08567308e11cb92f284996fb7f3484`，4檔217新增行及ignored controller已由 `/root/unity_spec_review` 親讀接受，無阻擋；reviewer獨立重跑新fixture雙runtime1/1 PASS。主控完整E12 31/31／OpenSpec strict PASS，新script純metadata不接Unity runtime，本次不需五階段；不延用到後續Player。
 - run `6cb4854c-2e01-402a-b942-ef06f247a0a8`、script SHA256 `d1b9be3573797d4e8a7ff09f08b5a3eb18c0307d415f631f78ca94bacd74d5d2`。fresh `release/e12/counterset-inventory-v1`，controller endUtc `2026-10-09T16:36:52.835Z`（Taipei 2026-10-10），exit2、547.7504ms、signal/error=null、sourceUnchanged=true、stderr空。
 - API唯一call status0，ActualCount176／RequiredCount=null，原序176合法非空且互異GUID；step與final raw相符。ticks重算source19.975ms、native6.689ms，deadlineExceeded=false；candidatePresent=false。V2_COUNTERSET_INVENTORY_OBSERVED_CLOCK_BLOCKED：舊GUID不在當次V2集合，不證明GPU counter不存在、driver故障或它是providerGUID；沒有查名稱/provider或任何counter value。
