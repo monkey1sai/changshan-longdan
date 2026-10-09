@@ -1,5 +1,13 @@
 # U1 新證據與能力方案紀錄
 
+## 2026-10-10 單次V2 inventory 結果（最新）
+
+- exact `bbc0f6df9cecf5337a0a968cca7f366ae6d3d77f`、parent `1b2356fc0d08567308e11cb92f284996fb7f3484`，4檔217新增行及ignored controller已由 `/root/unity_spec_review` 親讀接受，無阻擋；reviewer獨立重跑新fixture雙runtime1/1 PASS。主控完整E12 31/31／OpenSpec strict PASS，新script純metadata不接Unity runtime，本次不需五階段；不延用到後續Player。
+- run `6cb4854c-2e01-402a-b942-ef06f247a0a8`、script SHA256 `d1b9be3573797d4e8a7ff09f08b5a3eb18c0307d415f631f78ca94bacd74d5d2`。fresh `release/e12/counterset-inventory-v1`，controller endUtc `2026-10-09T16:36:52.835Z`（Taipei 2026-10-10），exit2、547.7504ms、signal/error=null、sourceUnchanged=true、stderr空。
+- API唯一call status0，ActualCount176／RequiredCount=null，原序176合法非空且互異GUID；step與final raw相符。ticks重算source19.975ms、native6.689ms，deadlineExceeded=false；candidatePresent=false。V2_COUNTERSET_INVENTORY_OBSERVED_CLOCK_BLOCKED：舊GUID不在當次V2集合，不證明GPU counter不存在、driver故障或它是providerGUID；沒有查名稱/provider或任何counter value。
+- analysis `release/e12/counterset-inventory-v1/analysis.json` SHA256 `c82af4236f52e98f247b38f771e2dc937ba1d6dbc2533bcf700bb127cd399d48`，含6檔bytes/hash；raw `0a11576ca2c1f625bcc5a8533b8617dbb2f02df64cb7b595abc8f28278ed8974`，step `52505bbf212573c99aa09df419e1496a7791e0b408d0c24d9a9ba4c86b6d33f7`。ignored本地保留、未外傳或覆寫。獨立reviewer親讀重算6檔／analysis／script hash與兩時間，確認原序／membership及step收尾差異正確，接受限定結果，無阻擋；不是clock或正式SPEC APPROVED。
+- 本新方法1call已使用，不挪舊registration第二call／不重跑inventory／不展開176名稱掃描。A1仍BLOCKED，Player未啟動、窗口0/3，SPEC4/22（18.2%）；後續先具體化PDH/WMI方法修訂與離線fixtures，不直接取消producer方法gate或啟動新採樣。無push／merge／背景Player。
+
 ## 2026-10-10 單次V2 inventory 準備（尚未查詢）
 
 - 使用者明確授權續行，獨立reviewer `/root/unity_spec_review` 審方法後拒絕擴成514calls名稱掃描，接受一次fixed512GUID inventory／合法count0..512／max1call／2s來源與20s外層／保存raw／沒有其他查詢。獨立advanced script入口須拒絕未知參數；exact允許新檔及fixtures見PLAN，先離線驗證再審精確候選。舊失敗與額度保留，Player0/3、SPEC4/22（18.2%），未執行native。
