@@ -1,5 +1,15 @@
 # U1 新證據與能力方案紀錄
 
+## 最新交付：執行步驟與 A1-v2（2026-10-09）
+
+- 使用者要求依任務清單轉為執行步驟並逐一實作／驗證；承接上一則已具體化一次v2修訂。PLAN開頭A1–D1共12步覆蓋18個未完成task，列前置、動作、驗證、停止條件與責任；原tasks維持4/22（18.2%），未以文件新增完成項。獨立review exact `2771abd64a7b1cec3286cd9852ce62e62edf5fd1` 全diff無阻擋，只接受一次A1metadata執行，不解除後續gate。
+- A1-v2 run `e6656535-3a39-43ab-a093-31400787db8f`，source上述2771abd，script SHA256 `66227003856abd592c33f564a4bae0e023a4bbb07d6fb9a706eed38b7bc9e7eb`。fresh `release/e12/player-clock-v2`，只刪child env.PSModulePath，未改parent/user/machine；controller總20s，實際3084.5699ms／exit2／end `2026-10-09T07:19:43.398Z`，sourceUnchanged=true。
+- raw按序OS140.522ms、GPU_DRIVERS172.1903ms、GPU_COUNTER_CLASS2021.6998ms。第三來源超過固定2000ms，保存第三份step與raw後即停。CIM3/4，第四CIM、registry、固定檔案群組均未開始；Player未啟動、PDH/GPU instance/counter windows0/3。v2一次已使用，不補第四CIM、不重跑／降門檻。v1完整保留。
+- 環境修訂已實際解除Get-FileHash啟動問題；來源必要deadline仍FAIL/BLOCKED，並非遊戲PRODUCT_FAILURE。raw為BLOCKED_METADATA/METADATA_SOURCE_DEADLINE，identity/binding/environment最終欄位null、clockMapping=UNVERIFIED；純verdict為BLOCKED_CLOCK_MAPPING/metadataObserved=false/playerAllowed=false。未取得完整metadata，不能把晚回schema提升為來源或clock PASS。
+- 獨立reviewer親讀command/controller/raw/三step/analysis，重算8檔bytes/hash全一致，step與raw逐項相符，純verdict一致。monotonic ticks獨立重算第三筆2021.6819ms仍超2000ms，不是浮點邊界誤差。source clean/script hash不變；接受此失敗證據與停止判讀，非正式APPROVED。
+- 證據索引：`release/e12/player-clock-v2/analysis.json` SHA256 `d82f389343a40ca49a7b5935db417dc486e5dd58dc53dae6fb841b3601b17888`，包含全部8檔清單；metadata SHA256 `91f2d13bf0ff4a57ba3883b8887c830b35f023b69ac961ea44bc69186197050a`，第三step `474e781f8430d234e007ee69dacc5f7dedb67adad5d5508f46a1ddd116553a00`。raw為ignored本地檔，不外傳；tracked記錄保留定位/hash。
+- 未進A2或後續正式驗證，沒有新Unity五階段／正式E12／完整自然遊玩PASS。本輪OpenSpec strict PASS；既有29/89離線測試沒有source變更故未重跑，不攜作本輪runtime證據。下一個方法準備只分析既有schema/官方資料；PLAN記GUID／RegistryKey／V2／資源binary與producer綁定尚未證明，不自行猜registry分支、追加本機查詢或產生v3。沒有背景Player/provider、美術製作、remote動作。
+
 沿用MUSOU_STEP_RECORD.template A–E；U1是E12前置單元，不重新定義E步或重設兩輪預算。
 
 ## A. 開始前範圍審查

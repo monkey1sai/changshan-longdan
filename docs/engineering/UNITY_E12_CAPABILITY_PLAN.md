@@ -6,7 +6,7 @@
 
 | 步驟 | 對應SPEC／前置 | 執行動作 | 驗證與可交付出口 | 現況／停止條件 |
 |---|---|---|---|---|
-| A1 環境及來源前置 | 2.1；v1已失敗、v2修訂已審 | 按上一則具體提案，只讓Windows PowerShell child重建PSModulePath；一次fresh v2 metadata批次，固定4CIM＋1registry＋3檔群組，總20s | 保存command/逐步raw/exit/source與script hash；親讀來源版本、schema及deadline，再獨立審查 | 進行中；必要未知／超時即停，不補跑；不能宣稱clock PASS |
+| A1 環境及來源前置 | 2.1；v1已失敗、v2修訂已審 | 按上一則具體提案，只讓Windows PowerShell child重建PSModulePath；一次fresh v2 metadata批次，固定4CIM＋1registry＋3檔群組，總20s | 保存command/逐步raw/exit/source與script hash；親讀來源版本、schema及deadline，再獨立審查 | BLOCKED：v2第三來源2021.6998ms超過2000ms；環境修訂生效但來源gate未通過，停止新增查詢／重跑 |
 | A2 指定Player時鐘 | 2.1；A1必要來源綁定已證明，精確script審查及新同版五階段通過 | 凍結code/fullpayload，自有可見Player、固定argv，最多3窗口、整run90s；不得以其他process代替 | 全adapter集合／PID-start-image／WMI-PDH原生clock／UTC-monotonic窗口；固定解碼及freshness負例，全部來源同時通過及獨立審查 | NOT_RUN；未知binding不得啟動；失敗窗口算一次，不補第4窗 |
 | A3 counter與記憶體來源 | 2.1；A2通過且在已批准allowlist | 接入受證據綁定的clock contract、counter category/name/unit與Player identity，保留null及高水位 | 正常、錯counter/unit、stale/future、PID重用、倒退／重複／缺樣；工具tests及同版Unity驗證 | NOT_RUN；禁止只改VALIDATED標記或降門檻 |
 | A4 前景與真正可見數 | 2.2；已審M2/M2-T範圍 | foreground/focus/minimized、alive/engaged/attackers/frustum/visible分列；指定camera同幀ID/depth/透明coverage | 遮擋、畫面外、其他camera、失焦及透明材質parity；完整材質盤點，unsupported拒絕 | NOT_RUN；未知shader/幀映射維持visible=null，不新增資產或修改原效果 |
@@ -20,6 +20,10 @@
 | D1 完整遊戲完成 | 5.1–5.3；E12 DONE | 凍結單版；可見打開指定Unity；Jev選擇、授權工具執行；同版Windows包完整遊玩 | 全S01–S08、四難度自然勝敗/重試/暫停/失焦、音效、實體手把；使用者體驗確認、正式APPROVED/授權merge/postmerge | NOT_RUN；所有必要測項同版PASS且22/22才SPEC completed，發布另授權 |
 
 本次使用者要求「依據任務清單變成執行步驟，再逐一實作、驗證、完成目標」，承接上一則已具體化並審查的一次v2修訂，續行A1；不解讀為無限重試、補查provider、額外窗口、remote mutation或跳過正式審查。v1證據保留，A1若再失敗立即停止新查詢，先交付確切阻礙及最小修訂，不能為完成表格改變SPEC。
+
+A1最新結果：run `e6656535-3a39-43ab-a093-31400787db8f`，source `2771abd64a7b1cec3286cd9852ce62e62edf5fd1`；CIM3/4，第四CIM及registry/files未開始，Player未啟動、counter0/3。raw、三份step及analysis已保存並獨立核對；晚回schema不能轉成來源PASS。此v2一次已使用，A2–A3/A6出口仍受阻，沒有自動第三批metadata。
+
+下一個方法準備僅分析既有raw及官方來源，不採樣：raw中的`RegistryKey={5c3b2414-fd1d-44fb-8b00-e3194209dd1a}`是定位線索。Microsoft [class qualifier文件](https://learn.microsoft.com/en-us/windows/win32/wmisdk/class-qualifiers-for-performance-counter-classes)將RegistryKey描述為服務performance key；[V2文件](https://learn.microsoft.com/en-us/windows/win32/wmisdk/performance-libraries-and-wmi)另列_V2Providers的provider GUID。這兩份文字不足以將本raw GUID直接當V2 providerGuid或GPU producer。官方[CTRPP](https://learn.microsoft.com/en-us/windows/win32/perfctrs/ctrpp)的ApplicationIdentity是counter字串資源binary定位，也不等於實際資料producer載入證明。因此不直接猜registry分支/DLL、不把資源檔hash當producer證據。下一個可執行來源定位方案必須先解決此綁定與deadline方法、列清必要read/fields/deadline/次數，再受審及具體授權；目前不是可直接重跑的v3方案。A4/A5的獨立scope準備不解除此gate；正式單元依原次序退出。
 
 2026-10-08（Asia/Taipei）；第一個 eligible 單元 U1，對應 OpenSpec tasks1.1–1.3。規格審查版本 `6c5282bf752e71dd54e69de14819f32b74d0dd5c`；當次使用者指示「你審查spec, 通過之後開始spec」支持本機執行準備，不自動授權push／PR／merge／provider／美術傳送。原E12兩輪修正預算保持用完，本次未修量測器。
 
