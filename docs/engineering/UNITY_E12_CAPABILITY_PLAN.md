@@ -1,5 +1,26 @@
 # Unity E12 能力恢復：定位證據與方案
 
+## 目前執行順序（2026-10-09；以此段及最新 STEP_RECORD 為準）
+
+使用 change：`unity-migration-followup`（spec-driven）。正式完成度只讀 tasks.md：4/22（18.2%）；本表將剩餘任務拆成可執行動作，不新增完成率或改變驗收條件。下方歷史「待批准／NOT_RUN」須連同各段日期、版本及最新紀錄閱讀，不能當目前狀態。每步由主控實作／保存證據、獨立 reviewer 審精確候選；美術製作歸工程師、視覺／感官確認歸使用者。可獨立的準備在既有scope內續作，不能以準備完成跨越受阻gate。
+
+| 步驟 | 對應SPEC／前置 | 執行動作 | 驗證與可交付出口 | 現況／停止條件 |
+|---|---|---|---|---|
+| A1 環境及來源前置 | 2.1；v1已失敗、v2修訂已審 | 按上一則具體提案，只讓Windows PowerShell child重建PSModulePath；一次fresh v2 metadata批次，固定4CIM＋1registry＋3檔群組，總20s | 保存command/逐步raw/exit/source與script hash；親讀來源版本、schema及deadline，再獨立審查 | 進行中；必要未知／超時即停，不補跑；不能宣稱clock PASS |
+| A2 指定Player時鐘 | 2.1；A1必要來源綁定已證明，精確script審查及新同版五階段通過 | 凍結code/fullpayload，自有可見Player、固定argv，最多3窗口、整run90s；不得以其他process代替 | 全adapter集合／PID-start-image／WMI-PDH原生clock／UTC-monotonic窗口；固定解碼及freshness負例，全部來源同時通過及獨立審查 | NOT_RUN；未知binding不得啟動；失敗窗口算一次，不補第4窗 |
+| A3 counter與記憶體來源 | 2.1；A2通過且在已批准allowlist | 接入受證據綁定的clock contract、counter category/name/unit與Player identity，保留null及高水位 | 正常、錯counter/unit、stale/future、PID重用、倒退／重複／缺樣；工具tests及同版Unity驗證 | NOT_RUN；禁止只改VALIDATED標記或降門檻 |
+| A4 前景與真正可見數 | 2.2；已審M2/M2-T範圍 | foreground/focus/minimized、alive/engaged/attackers/frustum/visible分列；指定camera同幀ID/depth/透明coverage | 遮擋、畫面外、其他camera、失焦及透明材質parity；完整材質盤點，unsupported拒絕 | NOT_RUN；未知shader/幀映射維持visible=null，不新增資產或修改原效果 |
+| A5 timing與逐幀接線 | 2.3；純ledger已驗，但runtime未接 | 接CPU/GPU delayed frame identity、latency/去重/收尾及1Hz記憶體對齊，保存原始缺口 | 缺樣／重複／不連續／warmup邊界／最終延遲樣本；不跨失敗列補接 | NOT_RUN；錯幀或缺來源不出正式summary |
+| A6 能力與成本驗證 | 2.4；A3–A5 fixtures完整及候選審查通過 | Node/Web相容、Unity compile/Edit/Play/build/Player，凍結完整包後執行已批准三seed短probe及B/T/F成本對照 | 同SHA raw/readback、完整包前後一致、量測成本；短probe僅CAPABILITY_PROBE | NOT_RUN；保留原3短probe／12成本probe額度，不挪用或追加 |
+| A7 能力單元退出 | 2.5；A3–A6必要證據齊 | 精確候選正式獨立review；具體授權PR/merge後核CI及postmerge | 工具能力與版本相容證據完整才勾2.x | NOT_RUN；advisory、commit或CI不能替代正式gate；不自動push/merge |
+| B1 美術交付 | 3.1–3.2；核對工程師/來源/packet/傳輸授權 | 核實需求送達與接單；接收新delivery_id/GLB/來源hash及QA，保留舊資產 | 實際送達/交付證據，material count由GLB盤點 | PREPARED_NOT_SENT；無送達不稱製作中；不接管資產製作 |
+| B2 Unity整合品質 | 3.3–3.5；B1有效交付 | 核21骨/4influences/17招/tip/FootPlant/root/fallback；同版雙引擎render及自然操作 | S01/S03/S07、S02/S06/S08；30/60/120Hz原門檻；使用者視覺、正式review/授權merge/postmerge | NOT_RUN；衣角例外只限既有code/GLB/截圖，不延伸新版本 |
+| C1 正式效能基線 | 4.1；A7及B2完成 | 鎖code/profile/asset/fullpayload、硬體driver/readback、合法workload/峰值、成本與跑前budget | 必要來源、品質與版本同時齊備且review通過 | NOT_RUN；任何必要UNKNOWN禁止正式benchmark |
+| C2 分級與長測 | 4.2–4.5；C1通過 | 20→50→100→200→300，每級seed7/11/23各30s暖機＋180s；再30min soak/回歸 | 原wall/CPU/GPU/draw/GC/RAM/VRAM、drift/slope；正式review/授權merge/CI/postmerge | NOT_RUN；任一級/seed失敗或未知停止升級，不能跳級 |
+| D1 完整遊戲完成 | 5.1–5.3；E12 DONE | 凍結單版；可見打開指定Unity；Jev選擇、授權工具執行；同版Windows包完整遊玩 | 全S01–S08、四難度自然勝敗/重試/暫停/失焦、音效、實體手把；使用者體驗確認、正式APPROVED/授權merge/postmerge | NOT_RUN；所有必要測項同版PASS且22/22才SPEC completed，發布另授權 |
+
+本次使用者要求「依據任務清單變成執行步驟，再逐一實作、驗證、完成目標」，承接上一則已具體化並審查的一次v2修訂，續行A1；不解讀為無限重試、補查provider、額外窗口、remote mutation或跳過正式審查。v1證據保留，A1若再失敗立即停止新查詢，先交付確切阻礙及最小修訂，不能為完成表格改變SPEC。
+
 2026-10-08（Asia/Taipei）；第一個 eligible 單元 U1，對應 OpenSpec tasks1.1–1.3。規格審查版本 `6c5282bf752e71dd54e69de14819f32b74d0dd5c`；當次使用者指示「你審查spec, 通過之後開始spec」支持本機執行準備，不自動授權push／PR／merge／provider／美術傳送。原E12兩輪修正預算保持用完，本次未修量測器。
 
 **目前狀態（task1.3方案退出）**：task1.1／1.2／1.3完成；以下歷史追加段保留當時狀態，不能當目前台帳。2026-10-08使用者同意下一步並明確接受M2-T工程量測定義，獨立方法審查接受M1–M7/M2-T與B/T/F成本對照修正；新範圍限本方案精確allowlist/fixtures與最多3短probe/12成本probe，不重設原budget。方法接受不等於工具可用，全部新runtime能力NOT_RUN；task1.4正式approval／獨立merge授權／postmerge仍未齊，不開始unit2。
