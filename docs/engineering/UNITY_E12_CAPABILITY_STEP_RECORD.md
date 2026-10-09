@@ -7,6 +7,7 @@
 - 第一輪draft review提出三項：最後source/payload核對可能超過90s仍PASS、cleanup無期限等待；來源晚回或child timeout遺失前序raw；launch缺既有windowed/noFlow flags。已補最後deadline/elapsed判定、有界owned退出確認及UNKNOWN清理狀態，逐來源exclusive checkpoint保存後才判2s、API失敗未定義fields=null，恢復固定argv。controller錯誤路徑不再呼叫下一窗；來源WMI/PDH各自UTC/mono窗、跨來源/跨窗timeline不重設、高水位與完整raw集合皆驗。
 - 完整Node工具/runner離線135/135 PASS（失敗/跳過0）、OpenSpec strict PASS、diff check PASS。雙PowerShell production-loop stub涵蓋空/超額/錯名/重複集合、錯Player、WMI/API錯誤、來源晚回、第二PDH晚回保全前序、usage不輸出。測試中fixture截取位置因新增checkpoint函式改變而失敗，分類TEST_FAILURE；修正定位後回歸通過，沒有真CIM/PDH/Player查詢。PS參數局部命名整理後新fixture15/15再驗PASS，不新增採樣。
 - 新同SHA Unity compile/Edit/Play/build/Player五階段、完整payload、實際clock-only run均NOT_RUN；先凍結exact-source審查再進五階段，實際run另做執行前review。窗口仍0/3，SPEC4/22（18.2%），正式VRAM與完整遊戲未完成，無remote／背景Player。
+- exact `e291754`審查指出child completion可為非null但exitConfirmed=false，finally原本會將cleanupConfirmed誤記true。修正為只接受明確exitConfirmed=true、列未確認child PID並對全體child匯總；增加非null未確認report負例。這不是實際Player失敗或新採樣；尚待修正候選精確終審，原額度不變。
 
 ## 2026-10-10 fingerprint-v1 實際結果（最新）
 

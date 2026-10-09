@@ -28,7 +28,7 @@ export async function confirmOwnedExit(child, owned, completion, maximumMs) {
   let timer
   const ended = await Promise.race([completion,new Promise(resolve=>{timer=setTimeout(()=>resolve(null),maximumMs)})])
   clearTimeout(timer)
-  return ended
+  return ended?.exitConfirmed === true ? ended : null
 }
 export async function collectClockWindows(capture, expected, pause, accepted = () => {}) {
   let highWater=new Map(), timeline=null
@@ -103,7 +103,7 @@ export async function main(argv = process.argv.slice(2)) {
         if(finished)return;finished=true;clearTimeout(timer);clearTimeout(confirmationTimer)
         fs.writeFileSync(path.join(output,name+'.stdout.txt'),stdout,{flag:'wx'})
         fs.writeFileSync(path.join(output,name+'.stderr.txt'),stderr,{flag:'wx'})
-        const report={name,executable,args,code,signal,error:spawnError,timedOut,timeoutMs:timeout,exitConfirmed}
+        const report={name,pid:processChild.pid??null,executable,args,code,signal,error:spawnError,timedOut,timeoutMs:timeout,exitConfirmed}
         result.childResults.push(report);resolve(report)
       }
       const timer = setTimeout(()=>{
@@ -182,6 +182,8 @@ export async function main(argv = process.argv.slice(2)) {
         player.stdout.destroy();player.stderr.destroy();player.unref()
       }
     }
+    result.unconfirmedChildPids=result.childResults.filter(report=>!report.exitConfirmed).map(report=>report.pid)
+    result.cleanupConfirmed=result.childResults.every(report=>report.exitConfirmed===true) && result.cleanupConfirmed!==false
     result.elapsedMs=90000-Number((deadline-process.hrtime.bigint())/1000000n)
     if(result.elapsedMs>90000 && result.status==='PASS_THREE_CLOCK_WINDOWS_ONLY') {
       result.status='BLOCKED_PLAYER_CLOCK';result.clockMapping='UNVERIFIED';result.error='CLOCK_RUN_DEADLINE'

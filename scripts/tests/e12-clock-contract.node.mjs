@@ -125,6 +125,9 @@ test('owned cleanup returns unconfirmed rather than waiting forever', async () =
   let killed=0;const child={exitCode:null,signalCode:null,kill(){killed++}}
   assert.equal(await confirmOwnedExit(child,new Set([child]),new Promise(()=>{}),1),null)
   assert.equal(killed,1)
+  assert.equal(await confirmOwnedExit(child,new Set([child]),Promise.resolve({exitConfirmed:false,code:null}),1),null)
+  const closed={exitConfirmed:true,code:0};child.exitCode=0
+  assert.equal(await confirmOwnedExit(child,new Set([child]),Promise.resolve(closed),1),closed)
 })
 test('fingerprint schema and fail-stop use production code with offline sources in both PowerShell runtimes', () => {
   const source = fs.readFileSync(new URL('../diagnostics/Capture-E12ClockFingerprint.ps1', import.meta.url), 'utf8')
