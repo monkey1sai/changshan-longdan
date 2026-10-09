@@ -289,3 +289,11 @@ Authorization Envelope（僅提案）：Destination=上述本機隔離project/�
 固定依序、不得重試：CIM root/cimv2 的 Win32_OperatingSystem（Version/BuildNumber，1結果）、Win32_VideoController（Name/DriverVersion/PNPDeviceID，全列表且必要字段齊）、精確 Get-CimClass Win32_PerfRawData_GPUPerformanceCounters_GPUProcessMemory（class/property qualifiers/schema，1結果）、__Win32Provider filter Name='WmiPerfInst'（Name/CLSID，1結果），合計最多4次CIM。後接一次64-bit HKLM SOFTWARE/Classes/CLSID/<單一合法GUID>/InprocServer32 default read；只接受解析後System32/wbem/WmiPerfInst.dll，不執行registry值、不載入DLL、不搜尋替代。最後一次固定檔案群讀取WmiPerfInst.dll、System32/pdh.dll、System32/drivers/dxgkrnl.sys的FileVersion/SHA256。各來源實際≤2s，metadata程序由controller spawnSync timeout20000ms硬停止；完成step各自CreateNew保存，kill/失敗保留既有step，不啟動後續查詢。必要結果/欄位缺失立即停止，總共只執行這一批metadata。
 
 註冊DLL只形成wmiBridgeIdentity，counter schema與environmentVersions分列；loadedModuleProven=false，gpuCounterProducerBinding=null，clockMapping=UNVERIFIED。即使四次CIM及registry/files成功，也只記METADATA_OBSERVED_CLOCK_MAPPING_BLOCKED；不能用三個系統DLL或driver版本代替精確GPU counter producer綁定。Microsoft官方[WmiPerfInst](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmiperfinst-provider)明確說明它是PDH與WMI的bridge；[GPU資料來源](https://devblogs.microsoft.com/directx/gpus-in-the-task-manager/)只說明Task Manager與VidSch/VidMm，不單憑該文將特定CIM class綁定dxgkrnl檔案。後續判定只能分析這次既有metadata/官方source；禁止自行新增metadata查詢或counter windows。
+
+### metadata 啟動失敗與精確修訂提案（未重跑）
+
+單次 run `1d9c7775-cf31-481a-a52e-56129db70cac` 在建立 record 的 Get-FileHash 即 exit1；沒有進入任何 CIM／registry／固定檔案群組，也沒有 Player／counter。此嘗試已使用，保留 `release/e12/player-clock-v1`；不得因窗口0/3而自動重跑一次性批次。
+
+新的非 provider 環境對照已定位：pwsh→Node→powershell.exe 繼承 PowerShell7 的 PSModulePath 時，Windows PowerShell5.1.26100.6899 無法解析 Get-FileHash；只從該 child 的 env 移除 PSModulePath，讓5.1自行建立 WindowsPowerShell 模組路徑，同一 Get-Command 成功。沒有修改 user/machine env、模組、ACL、全域配置或執行任何 CIM。既有離線 AST/ABI fixture 已延伸到 pwsh.exe 與 powershell.exe；5.1 child 使用此隔離 env，並先 Get-Command 核對 Get-FileHash/Get-CimInstance/Get-CimClass/Select-Object/ConvertTo-Json，僅命令解析、不取系統/provider資料；兩者均 PASS。
+
+**待人類決定的最小重試**：只重做一次相同 metadata-only 批次，fresh exclusive `release/e12/player-clock-v2/metadata`；controller 只修改 child env 刪除繼承 PSModulePath，其餘固定來源/最多4CIM/各來源2s/總20s/失敗停止/CreateNew/來源核對維持。原v1全部保留；此次若再失敗不補跑。這不新增 Player/counter窗口，原一次Player對照上限仍0/3，其他已用額度/三seed/12成本probe不變。必要producer binding未知仍停，不以環境修復宣稱來源或SPEC通過。批准與exact-candidate review之前不執行v2。

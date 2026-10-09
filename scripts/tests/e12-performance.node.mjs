@@ -285,8 +285,15 @@ test('registered bridge and environment cannot silently omit required version fi
 test('diagnostic syntax and existing native ABI compile offline without metadata or counter calls', () => {
   const script = fileURLToPath(new URL('../diagnostics/Capture-E12ClockComparison.ps1', import.meta.url))
   const command = `$errors=$null; $tokens=$null; [void][System.Management.Automation.Language.Parser]::ParseFile($env:CHANGSHAN_CLOCK_SCRIPT,[ref]$tokens,[ref]$errors); if($errors.Count){throw ($errors | Out-String)}; $source=Get-Content -LiteralPath $env:CHANGSHAN_CLOCK_SCRIPT -Raw; $match=[regex]::Match($source,"(?s)Add-Type -TypeDefinition @'\\r?\\n(.*?)\\r?\\n'@"); if(-not $match.Success){throw "INTEROP_NOT_FOUND"}; Add-Type -TypeDefinition $match.Groups[1].Value; [E12ClockComparison.Native]::CheckLayout(); "OFFLINE_SYNTAX_ABI_PASS"`
-  const result = spawnSync('pwsh.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', command], {
-    encoding: 'utf8', windowsHide: true, timeout: 10000, env: { ...process.env, CHANGSHAN_CLOCK_SCRIPT: script } })
-  assert.equal(result.status, 0, result.error?.message ?? result.stderr)
-  assert.match(result.stdout, /OFFLINE_SYNTAX_ABI_PASS/)
+  for (const executable of ['pwsh.exe', 'powershell.exe']) {
+    const env = { ...process.env, CHANGSHAN_CLOCK_SCRIPT: script }
+    // PowerShell 7 paths inherited through Node can break Windows PowerShell 5.1 module autoload.
+    // Let only this child construct its own module search path; no global/user setting is changed.
+    if (executable === 'powershell.exe') delete env.PSModulePath
+    const readiness = 'Get-Command Get-FileHash,Get-CimInstance,Get-CimClass,Select-Object,ConvertTo-Json -ErrorAction Stop | Out-Null; '
+    const result = spawnSync(executable, ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', readiness + command], {
+      encoding: 'utf8', windowsHide: true, timeout: 10000, env })
+    assert.equal(result.status, 0, `${executable}: ${result.error?.message ?? result.stderr}`)
+    assert.match(result.stdout, /OFFLINE_SYNTAX_ABI_PASS/)
+  }
 })

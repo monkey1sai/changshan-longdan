@@ -240,6 +240,14 @@ releaseOrPaidActionPerformed: false
 - 保留原診斷模式；新明確 switch 在所有 PDH/native/counter code 前退出。只分列 bridge/schema/environment；producer binding=null、loadedModuleProven=false、clockMapping=UNVERIFIED，全部 metadata 成功也只記 CLOCK_MAPPING_BLOCKED，不能啟動 Player。純 verdict 拒絕來源順序/身分/時限/偽造VALIDATED或PASS；缺證據不升級。
 - E12 Node29/29（含 PowerShell AST 與原生struct離線ABI）、OpenSpec strict PASS；metadata/Player/counter windows NOT_RUN、0/3。沒有本候選 Unity runtime PASS 主張。先 exact-SHA 獨立審查，接受後僅執行此單次前置批次。SPEC仍4/22（18.2%）；舊診斷額度、三seed短probe與12成本probe不變，沒有remote/background工作。
 
+### Player clock 單次 metadata 執行：ENVIRONMENT_FAILURE／BLOCKED
+
+- exact source `ef2a5b7b47885e731ea816bf3d24ffbeae3440b9`、script SHA256 `66227003856abd592c33f564a4bae0e023a4bbb07d6fb9a706eed38b7bc9e7eb` 的五檔完整 diff 經獨立 reviewer 審查無阻擋 findings，僅接受一次 metadata-only。runner89/89、E12Node29/29、strict PASS；不是正式APPROVED或Unity runtime驗收。
+- run `1d9c7775-cf31-481a-a52e-56129db70cac`，exclusive `release/e12/player-clock-v1`；controller20s上限，實際460.3457ms，child exit1，end `2026-10-09T07:04:26.487Z`。command/controller-result/stdout/stderr保存；stderr在script:21的record初始化回報 Get-FileHash CommandNotFoundException，metadata子目錄空。source HEAD/status/script前後一致。獨立 reviewer 親讀上述證據及控制流程，接受 ENVIRONMENT_FAILURE/BLOCKED 分類：CIM0/4、registry0、固定檔案群組0、Player未啟動、counter0/3。這次批次嘗試已發生，無重試；缺失metadata不能補成成功。
+- 非provider的命令可用性對照：相同 Node→powershell.exe 5.1.26100.6899，繼承PSModulePath包含PowerShell7時 Get-Command Get-FileHash exit1；只刪除該child env的PSModulePath後exit0，命令來自Microsoft.PowerShell.Utility。這是環境隔離修訂的實測證據，不是provider來源資料。既有offline測試改為pwsh與powershell雙runtime、先解析五個必要cmdlet、各自AST/ABI；29/29 PASS，沒有執行metadata script或任何CIM/PDH。
+- PLAN已記精確v2提案：只額外一次相同metadata批次，child自建module path，fresh exclusive leaf，其他來源/時限/停止條件不變；尚待人類決定，未執行。SPEC仍4/22（18.2%），task2.1/正式E12/完整Unity遊戲未完成，沒有background/remote工作。
+- v1 SHA256：command `5756a6b0b11cbccb9f41c406100d8e36d49205d5326bc853b69c3bf79271783d`；controller-result `43b5cf4ad39ef5b18b377a9134370b43e3b0d13125a1dca70bff2ca5de97f982`；stderr `68d2283b1646eebd8c82330c3d07402a11009ced4b0072100a53764da3f4956c`；空stdout `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`。raw為ignored本地證據，tracked記錄保存定位/hash，未外傳。Jev deterministic architecture_review observation `803032f1-5fcb-423b-a531-b2d6d83e8977` 已回報 caller_reported completed，僅review派工完成，非clock/SPEC完成。
+
 ### M1 純 ledger 同版 Unity 結果
 
 - exact `6edf1e0c008a74db02fc541f73b76e45a12c17ba` 經獨立 source review 接受後，validation worktree fresh clean/no lock/no output，ff-only 對齊。run `c3867e43-9b1c-4121-ac1a-e5dda5f37339`，exclusive `release/e02/unit2-ledger-validation-v1`，end `2026-10-08T22:58:40.339Z`；compile/Edit180/Play51/build/Player 全 exit0/verified/timedOut=false，failed/skipped/inconclusive=0，八個新 ledger cases 全 Passed。
