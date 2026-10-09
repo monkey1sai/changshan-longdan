@@ -1,5 +1,14 @@
 # U1 新證據與能力方案紀錄
 
+## 2026-10-10 registration-v1 實際結果（以此段為最新）
+
+- 精確source `343b433daf2dfd72ff660650e643778d38aead85` 已通過獨立全diff審查，只接受一次固定controller執行；不是正式SPEC APPROVED。完整E12離線30/30、OpenSpec strict PASS，新fixture另於兩PowerShell runtime驗證；沒有新Unity五階段或遊戲PASS。
+- run `618be81c-ae82-48a4-affa-22b6503cbc0a`，script SHA256 `e36c386bf07867c9c36f56171cac7d69de2d5bde35e55268b0ae94e5d1c4fd23`。fresh `release/e12/counter-registration-v1`；controller endUtc `2026-10-09T16:21:41.614Z`（Taipei 2026-10-10），exit2、662.9141ms、sourceUnchanged=true。child-only環境處理，未改全域配置。
+- 唯一call為request9/local-null/lang0/4096bytes；Status4200，ActualSize/RequiredSize/Bytes/decoded全部null。native ticks重算6.426ms，來源含解碼23.8519ms，deadlineExceeded=false。未取得必須完全等於GPU Process Memory的名稱，因此request8未執行；不是timeout，也沒有讀provider GUID。
+- Microsoft [error codes](https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes--4000-5999-) 將4200列為ERROR_WMI_GUID_NOT_FOUND。當次API未識別候選GUID；此結果不能證明GPU counter不存在、driver故障或遊戲PRODUCT_FAILURE。GUID是counterSetId的假設未成立，來源身分／producer／clock維持BLOCKED或UNVERIFIED。
+- 依fail-stop本批已停止；1call不表示仍可挪用另一call重試、猜GUID、列舉或改查registry/CIM/PDH。沒有Player／counter samples，Player時鐘窗口0/3，原額度未重設；A1–A3/A6出口仍受阻，SPEC4/22（18.2%）。下一步僅分析既有raw與官方身分定位方法，具體化新scope並審查；沒有可直接執行的新批次。
+- 本地ignored證據：`release/e12/counter-registration-v1/analysis.json` SHA256 `d7f33686febed2ea5defb8f71db0f97b606bdf91f739b466153f3b9871668161`，列出6份command/controller/stdout/stderr/raw/step的bytes與hash；registration raw SHA256 `46a5cbed4d542f9ac01fd94184d33c07480a4f764e07af295ec5534f86da78c6`。資料未外傳，原檔未搬移或覆寫。獨立reviewer `/root/unity_spec_review` 親讀並重算6檔hash、analysis hash及兩時間，確認唯一step與raw一致、script/input符合批准值、source未變；接受BLOCKED_REGISTRATION證據與停止判讀，無阻擋發現，不是正式SPEC APPROVED。無remote動作或背景Player。
+
 ## 2026-10-10 registration 方法實作準備（尚未呼叫API）
 
 - 使用者「同意」續行來源方法；獨立pre-implementation接受最多2次固定registration metadata calls，先英文名後providerGUID，互斥switch、固定v2第三step hash/GUID、local-null、4096/16byte、lang0、每來源2s/外20s、錯誤不resize/retry、逐步CreateNew。原metadata批次與三Player窗口不挪用；不呼叫CIM/registry/PDH或Player，source implementation/version/clock仍UNKNOWN。

@@ -2,13 +2,15 @@
 
 ## 目前執行順序（2026-10-09；以此段及最新 STEP_RECORD 為準）
 
+2026-10-10 最新實際結果：已執行一次 registration-v1，source `343b433daf2dfd72ff660650e643778d38aead85`、run `618be81c-ae82-48a4-affa-22b6503cbc0a`。第一個 request9 回傳4200，未取得英文名稱，第二個 request8 NOT_RUN；BLOCKED_REGISTRATION，provider/producer/clock 未證明。此批即停止，不能將未執行的第二call改為猜GUID、重試或其他查詢。來源含解碼23.8519ms、native6.426ms、controller662.9141ms／exit2；未超時不代表來源綁定或clock通過。Player未啟動，窗口仍0/3。A1仍BLOCKED，以下方法準備段保留歷史時序；原v2不重跑。證據與hash見最新STEP_RECORD。
+
 2026-10-10 來源定位方法續行：使用者「同意」承接上一則指定counter registration方法。獨立實作前審查接受一次最多兩次本機 `PerfQueryCounterSetRegistrationInfo`，不重跑CIM metadata。新增明確 `-CounterSetRegistrationOnly`，與 `-PlayerMetadataOnly` 互斥，在任何native呼叫前核對已保存v2第三step SHA256 `474e781f8430d234e007ee69dacc5f7dedb67adad5d5508f46a1ddd116553a00`及固定RegistryKey GUID。該GUID僅counterSetId假設；先request9/lang0/local-null、固定4096byte，成功且嚴格UTF16LE名稱完全等於GPU Process Memory，才request8/lang0、固定16byte且非Empty GUID。每來源包含呼叫與解碼的實際時間≤2s，外controller總20s；同步API不宣稱2s即時取消。一次fresh `release/e12/counter-registration-v1`，逐call先CreateNew raw再判是否續行；任何錯誤/超時即停，不sizeprobe/resize/retry。成功的actualSize才是有效資料長度；錯誤8只存requiredSize，其他錯誤兩size及bytes均null。最多2次registration calls是此新方法的單獨上限，不消耗或增加Player時鐘0/3窗口、不重設任何舊額度；沒有CIM/registry/PDH instance/Player/remote/付費。兩call成功也只為REGISTERED_COUNTERSET_PROVIDER_OBSERVED_CLOCK_BLOCKED，implementation/version/clock仍未證明。先完成離線ABI/decoder/順序與fail-stop fixtures及exact-SHA審查，再執行；不是完整A1出口或SPEC完成。
 
 使用 change：`unity-migration-followup`（spec-driven）。正式完成度只讀 tasks.md：4/22（18.2%）；本表將剩餘任務拆成可執行動作，不新增完成率或改變驗收條件。下方歷史「待批准／NOT_RUN」須連同各段日期、版本及最新紀錄閱讀，不能當目前狀態。每步由主控實作／保存證據、獨立 reviewer 審精確候選；美術製作歸工程師、視覺／感官確認歸使用者。可獨立的準備在既有scope內續作，不能以準備完成跨越受阻gate。
 
 | 步驟 | 對應SPEC／前置 | 執行動作 | 驗證與可交付出口 | 現況／停止條件 |
 |---|---|---|---|---|
-| A1 環境及來源前置 | 2.1；v1已失敗、v2修訂已審 | 按上一則具體提案，只讓Windows PowerShell child重建PSModulePath；一次fresh v2 metadata批次，固定4CIM＋1registry＋3檔群組，總20s | 保存command/逐步raw/exit/source與script hash；親讀來源版本、schema及deadline，再獨立審查 | BLOCKED：v2第三來源2021.6998ms超過2000ms；環境修訂生效但來源gate未通過，停止新增查詢／重跑 |
+| A1 環境及來源前置 | 2.1；v2 deadline失敗、registration-v1已執行 | 保存兩方法的raw及停止證據；僅分析既有資料與官方方法，先提出下一個來源身分定位方案 | source/producer/version/clock須有可核對綁定；新方法先審scope、calls與deadline，不重設舊額度 | BLOCKED：registration request9回4200，request8未執行；本批停止，不猜GUID／重跑，不能進A2 |
 | A2 指定Player時鐘 | 2.1；A1必要來源綁定已證明，精確script審查及新同版五階段通過 | 凍結code/fullpayload，自有可見Player、固定argv，最多3窗口、整run90s；不得以其他process代替 | 全adapter集合／PID-start-image／WMI-PDH原生clock／UTC-monotonic窗口；固定解碼及freshness負例，全部來源同時通過及獨立審查 | NOT_RUN；未知binding不得啟動；失敗窗口算一次，不補第4窗 |
 | A3 counter與記憶體來源 | 2.1；A2通過且在已批准allowlist | 接入受證據綁定的clock contract、counter category/name/unit與Player identity，保留null及高水位 | 正常、錯counter/unit、stale/future、PID重用、倒退／重複／缺樣；工具tests及同版Unity驗證 | NOT_RUN；禁止只改VALIDATED標記或降門檻 |
 | A4 前景與真正可見數 | 2.2；已審M2/M2-T範圍 | foreground/focus/minimized、alive/engaged/attackers/frustum/visible分列；指定camera同幀ID/depth/透明coverage | 遮擋、畫面外、其他camera、失焦及透明材質parity；完整材質盤點，unsupported拒絕 | NOT_RUN；未知shader/幀映射維持visible=null，不新增資產或修改原效果 |
