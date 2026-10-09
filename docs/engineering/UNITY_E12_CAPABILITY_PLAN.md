@@ -384,3 +384,11 @@ Authorization Envelope（僅提案）：Destination=上述本機隔離project/�
 3. 離線fixtures、strict/diff及獨立exact-SHA審查通過後，最多一次新exclusive `release/e02/clock-ready-validation-v2` 的同SHA五階段。Edit必須184、Play必須51；不得降低inventory、跳過或把舊結果套到新版本。任何階段失敗即停，不補跑。
 
 不修其他warning、不探索provider、不查CIM/PDH、不啟動clock-only Player。既有一次Player clock對照仍0/3，待同版五階段通過及必要審查才按原契約執行。正式E12/E13與完整Unity遊戲驗收未完成；SPEC維持4/22（18.2%）。本提案與失敗紀錄準備不等於取得額外修正授權。
+
+## 2026-10-10 clock-only 實際呼叫路徑失敗：新的有界恢復決策
+
+上述GUID恢復已獲明確批准並完成：85adfbe五階段同版PASS，詳STEP_RECORD。獨立核對後使用既有一次clock授權，run6b1b0f74在environment-before的路徑解析失敗，Player未啟動/CIM0/PDH0/窗口0/3；此單次執行已發生，不因0窗口而恢復額度。
+
+最小可審修正（尚未實作／未批准）：只改 `scripts/e12-player-clock.mjs` environment() 的fingerprint呼叫參數，由 `['-OutputPath',filename,...]` 改為 `['-OutputPath',path.relative(root,filename),...]`，沿用既有scoped output檢查；helper契約保持repo-relative，不擴大支援任意absolute輸入。只在既有 `scripts/tests/e12-clock-contract.node.mjs` 補實際caller參數與helper路徑前置處理的雙PowerShell離線整合fixture，核對正確resolve到預期leaf、原absolute反例、root外/重複輸出拒絕；不呼叫任何CIM/PDH或環境取樣。兩份PLAN/STEP_RECORD記實際授權及證據，其他source/runtime/門檻不改。
+
+人類需決定的額外額度：上述一次窄scope修正；離線/strict/diff及獨立exact-SHA審查通過後，最多一次新的同SHA五階段 `release/e02/clock-path-validation-v1`（仍184/51）；全PASS並經獨立證據審查後，最多一次clock-only重試 `release/e12/player-clock-owned-v2`，仍最多3窗口/每來源2s/整run90s/前後最多4CIM/不保存Usage/只收尾ownhandles。v1與全部舊額度保留；任一步失敗立即停止，不補跑或重設計數。這是修正已定位的呼叫契約，不授權provider探索、正式benchmark或遠端變更。未獲此新明確批准前只保存與審查提案，不修改工具或再執行engine/clock。

@@ -326,8 +326,26 @@ releaseOrPaidActionPerformed: false
 
 ### 2026-10-10 READY 同版驗證失敗，修正上限已達
 
+此段為v1歷史失敗；使用者隨後明確批准額外一次修正與最多一次驗證。v2結果及clock執行見本文末，不將v1改寫為成功。
+
 - candidate `5b829965bafaf783438e5be0bbfcf12d56e2ce34`；validation worktree `unity-e12-capability-validate`，run `d00c92ad-146d-4c32-ae98-2c281fa9f476`，`release/e02/clock-ready-validation-v1`，end `2026-10-09T17:35:52.265Z`。Compile exit0/verified；Edit engine exit0，舊180案例Passed/failed0/skipped0，但必要184未齊，runner exit1，`TEST_SET_INCOMPLETE: total`。Play/build/Player及clock-only均NOT_RUN；此結果不算五階段PASS。
 - Compile `Editor.log:202–203` 指出新測試meta無合法GUID並忽略對應asset；實際GUID33碼，四個新READY cases為0。分類TEST_FAILURE（測試資產匯入），不是PRODUCT_FAILURE。主控及獨立review先前source檢查漏掉GUID長度；如實保留，不降低testInventory。
 - result.json SHA256 `debb95eb761d7dcc7495efb5a1b8f32c74d6e9a3a62147fd606b565864702937`；editmode/tests.xml `ee9bffd9c02d7c920493ee554b56f58c7912a6a8f092713184c1b66946f57b0c`。原始command/exit/log/XML/result保留在上述ignored目錄。2026-10-10補核對project UnityLockfile不存在；沒有移除lock。
 - 獨立review確認兩輪修正額度已用完；source advisory接受不重設額度。停止第三次修復及任何新engine/provider執行。PLAN已給額外一次GUID/靜態fixture修正、exact-SHA審查及最多一次同版五階段的具體提案，尚待人類批准，未實作。
 - SPEC仍4/22（18.2%），clock windows0/3；正式E12/E13、自然遊玩與完整Unity驗收未完成。沒有push/merge/deploy或新背景工作。
+
+### 2026-10-10 授權恢復：GUID 修正與同版五階段 PASS
+
+- 使用者於a6eed9e提案後明確回覆「同意授權，快點」。候選 `85adfbe68aa3da36214a2b6e0a26e2d8a4c3e48d` 僅修正GUID、既有Node靜態fixture與授權紀錄；完整離線16/16、OpenSpec strict、diff check PASS。獨立exact-SHA審查接受；Jev deterministic architecture_review observation `db30ce7d-57d3-40c4-8c5c-159df6d61781` 已回報caller_reported completed，provider_called=false，僅指review完成。
+- validation `release/e02/clock-ready-validation-v2`，run `cd509f9d-829f-48fa-b361-e011e9640d21`，end `2026-10-09T17:53:33.266Z`。compile/Edit184/Play51/build/Player全exit0/verified/timedOut=false；failed/skipped0，新READY四案例全部實際Passed，GUID匯入缺口關閉。這次額外五階段額度已使用，不自動追加。
+- result SHA256 `e45494004e36eec353c430d8717ffd82bdb9595345aea096eac2ebce5ee74bfd`；payload-build/after hash均 `33bd19a9015a931a189b035dab92b4bf812eb577107cdc4b332085b8c61f2358`。主控及獨立reviewer各自fresh掃描319檔/175666333bytes，與baseline/after/run.playerPayload一致，added/removed/changed皆空。source一致、Git clean/head正確、project lock不存在。
+- Player6000.6.4f1/D3D11/URP/Linear/1920x1080/scale1/vSync1/cap60/focused=true/batch=false/errorCount0/pending0，exit0。主控已看scene.png，衣料形變仍存在，不擴充限定例外或宣稱修復/完整遊戲驗收。PlayMode Editor.log:1551仍報79 persistent allocations；保留負例訊息及引擎cleanup記錄，不宣稱零warning或memory slope合格。
+- 獨立結果審查接受既有一次clock-only執行gate，非formal APPROVED/merge/單元完成。SPEC仍4/22（18.2%），正式E12/E13未開始。
+
+### 同次續行的 clock-only：路徑整合缺陷，未啟動 Player
+
+- 在上述凍結候選及完整包執行既有授權的一次clock-only，run `6b1b0f74-3d7b-44df-90f9-47eea514a8d9`，`release/e12/player-clock-owned-v1`，end `2026-10-09T17:55:41.661Z`，controller elapsed373ms。`BLOCKED_PLAYER_CLOCK / CLOCK_CHILD_FAILED_environment-before`；PowerShell child exit1/exitConfirmed=true/timedOut=false，cleanupConfirmed=true/unconfirmedChildPids空。Player未啟動，CIM/PDH窗口0，mapping仍UNVERIFIED。
+- stderr指出GetFullPath path format unsupported。controller傳absolute OutputPath，而fingerprint腳本第7行把它Join-Path到repoRoot，組成 `repoRoot\C:\...`。離線、無provider的相對/絕對路徑對照已重現：Windows PowerShell5.1相對路徑可解析、絕對路徑同樣NotSupportedException；pwsh7也組出錯誤含雙磁碟前綴的路徑。空environment-before目錄及source順序證實未到任何CIM。獨立review確認分類TOOL_FAILURE（診斷啟動器整合缺陷），不是Unity玩法失敗；source review及現有離線fixture未覆蓋這個實際caller/helper路徑組合。
+- result hash `06ab7bc5348835267997c0d5464eb25240136ca12166481348f4c5b2b8b8dcae`；command `5d53445889ff951ce00fe45a23b6337f9e8e2a323f5285b7acf2868050dc5c42`；stderr `33bb65fdb980fd29ea773d1d0afb32a272b7cdafa4f9c17732328d60181dcec4`。原始證據全部保留，source仍85adfbe且clean。沒有重跑、修正source或追加provider讀取。
+- 一次clock執行已發生，即使窗口0/3也不能自動補跑。PLAN新增窄scope恢復提案供人類決定；SPEC仍4/22（18.2%），完整Unity遊戲驗收未完成，無push/merge/deploy或新背景工作。
+- 原clock result的sourceUnchanged/payloadUnchanged為null，保留原值、不倒填。另做失敗後唯讀核對：fresh source與同版五階段sourceAfter相符，fresh完整payload與validated清單相同/差異皆空，Git clean/head85adfbe且project lock不存在；這是外部補充核對，不表示clock controller已完成原成功流程。
