@@ -1,0 +1,15 @@
+{
+  "name": "changshan-rea-spec-support",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Optional static build inspection for the Unity migration SPEC",
+  "engines": {
+    "node": "^22.19.0 || ^24.11.0 || >=26.0.0"
+  },
+  "scripts": {
+    "rea": "node node_modules/rea-agents/scripts/rea.mjs"
+  },
+  "dependencies": {
+    "rea-agents": "6.4.0"
+  }
+}

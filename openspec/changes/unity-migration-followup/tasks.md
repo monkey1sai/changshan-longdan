@@ -13,6 +13,8 @@
 
 ## 2. 量測能力工程（可於美術等待期間進行）
 
+2.1／2.4 可重用 [REA 靜態支持工具](../../../docs/engineering/REA_SPEC_SUPPORT.md) 核對指定 DLL 身分與 CIL。2026-10-11 已完成工具支持驗證，歷史 Library artifact 的 code／build 對應仍 UNKNOWN；不代表以下任務完成，不新增實測額度或放寬 gates。
+
 - [ ] 2.1 按已審查精確範圍重用E12候選，修正timestamp／Player身分／counter語義；加正常、錯category、錯unit、stale/future、PID重用、倒退／重复／missing負例。
 - [ ] 2.2 補足foreground／focus／minimized、四種敵數與真正visible來源；驗證遮擋、螢幕外、其他camera與失焦負例，明列instrumentation成本。
 - [ ] 2.3 完成delayed CPU/GPU逐幀identity、latency／去重／收尾與每秒記憶體對齊；測缺樣、重複、不連續、warmup邊界及最終延遲樣本。

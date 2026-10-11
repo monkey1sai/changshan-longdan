@@ -52,6 +52,12 @@ Jev記錄只包含允許傳送的窄state、可用候選/合法操作、capture/
 
 最終只有全部22項完成、全部必要同版測試PASS、使用者體驗確認、正式獨立APPROVED、已授權merge及postmerge相容性齊備，才稱SPEC completed。任一FAIL/UNKNOWN/SKIPPED/NOT_RUN或executor缺失均保持未完成；不為完成率移除必要測項或把未測判NOT_APPLICABLE。
 
+## REA 靜態支持方法（2026-10-11）
+
+依使用者要求，Adopt 獨立鎖版 `tools/rea` 的 `rea-agents@6.4.0`，以官方 managed CLI 支持 2.1／2.4 的 DLL 身分與 CIL 調查。實際用法、五項正負邊界檢查與版本限制見 [REA_SPEC_SUPPORT](../../../docs/engineering/REA_SPEC_SUPPORT.md) 及其 STEP_RECORD。這是靜態支持方法，原 22 項、Unity／Player／美術／效能／自然操作與 formal gates 保持不變。
+
+既有 Library DLL 的 code／完整 build 對應 UNKNOWN，不當作同版 Player；沒有 Character DLL 就保留缺口。REA 不證明 producer 時鐘、freshness 或 runtime 行為，不新增任何 Unity／CIM／PDH／Player 窗口，不重設舊預算。完整分析輸出保持本機；不作全域配置、skill 安裝或 native／runtime capture。
+
 ## Risks / Trade-offs
 
 - 既有 E11 formal review 缺口 → 保留歷史限定接受和缺口，實作前明示可接受前置狀態，不自我批准。
