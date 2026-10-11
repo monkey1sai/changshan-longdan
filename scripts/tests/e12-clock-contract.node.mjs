@@ -272,6 +272,91 @@ test('fingerprint schema and fail-stop use production code with offline sources 
     assert.match(result.stdout, /FINGERPRINT_OFFLINE_PASS/)
   }
 })
+test('bounded ErrorRecord projection preserves identity without provider queries in both PowerShell runtimes', () => {
+  const source = fs.readFileSync(new URL('../diagnostics/Capture-E12PlayerClockWindow.ps1', import.meta.url), 'utf8')
+  const start = source.indexOf('function New-ErrorDetailsFailure')
+  assert.ok(start > 0, 'production error projection is missing')
+  const functions = source.slice(start, source.indexOf('function Save-SourceCheckpoint', start))
+  const command = `$ErrorActionPreference='Stop';${functions}
+    function Check($Condition,$Label){if(-not $Condition){throw $Label}}
+    function Error-Fixture($Exception,$Id='fixture.timeout') {
+      [Management.Automation.ErrorRecord]::new($Exception,$Id,[Management.Automation.ErrorCategory]::OperationTimeout,'PRIVATE_TARGET')
+    }
+    $a=ConvertTo-ErrorDetails (Error-Fixture ([TimeoutException]::new('same message')))
+    $b=ConvertTo-ErrorDetails (Error-Fixture ([UnauthorizedAccessException]::new('same message')) 'fixture.access')
+    Check ($a.captureStatus -ceq 'COMPLETE' -and $b.captureStatus -ceq 'COMPLETE') 'BASE_CAPTURE'
+    Check ($a.fullyQualifiedErrorId -cne $b.fullyQualifiedErrorId -and $a.category -eq 15) 'RECORD_IDENTITY'
+    Check ($a.exceptionChain[0].exceptionType -cne $b.exceptionChain[0].exceptionType -and $a.exceptionChain[0].hResult -ne $b.exceptionChain[0].hResult) 'EXCEPTION_IDENTITY'
+    Check ($null -eq $a.exceptionChain[0].nativeErrorCode -and -not $a.exceptionChain[0].cimException) 'NON_CIM_FIELDS'
+    Check ((ConvertTo-ErrorDetails $null).captureStatus -ceq 'FAILED') 'MISSING_RECORD'
+    $missing=Error-Fixture ([Exception]::new('secret'));$missing|Add-Member ScriptProperty FullyQualifiedErrorId {$null} -Force
+    Check ((ConvertTo-ErrorDetails $missing).captureStatus -ceq 'PARTIAL') 'MISSING_ID'
+    $bad=Error-Fixture ([Exception]::new('secret'));$bad|Add-Member ScriptProperty FullyQualifiedErrorId {throw 'getter failed'} -Force
+    Check ((ConvertTo-ErrorDetails $bad).captureStatus -ceq 'PARTIAL') 'GETTER_FAILURE'
+    $edge=ConvertTo-ErrorDetails (Error-Fixture ([Exception]::new('secret')) ('x'*256))
+    Check ($edge.captureStatus -ceq 'COMPLETE' -and -not $edge.fullyQualifiedErrorIdTruncated) 'STRING_EXACT'
+    $badException=[Exception]::new('secret');$badException|Add-Member ScriptProperty HResult {throw 'getter failed'} -Force
+    Check ((ConvertTo-ErrorDetails (Error-Fixture $badException)).captureStatus -ceq 'PARTIAL') 'HRESULT_GETTER_FAILURE'
+    $badException|Add-Member ScriptProperty HResult {'0'} -Force
+    Check ($null -eq (ConvertTo-ErrorDetails (Error-Fixture $badException)).exceptionChain[0].hResult) 'NUMERIC_STRING_REJECTED'
+    $badException|Add-Member ScriptProperty HResult {0} -Force
+    $badException|Add-Member ScriptProperty InnerException {throw 'getter failed'} -Force
+    Check ((ConvertTo-ErrorDetails (Error-Fixture $badException)).captureStatus -ceq 'PARTIAL') 'CHAIN_GETTER_FAILURE'
+    $long=ConvertTo-ErrorDetails (Error-Fixture ([Exception]::new('secret')) ('界'*257))
+    Check ($long.captureStatus -ceq 'PARTIAL' -and $long.fullyQualifiedErrorId.Length -eq 256 -and $long.fullyQualifiedErrorIdTruncated) 'STRING_TRUNCATION'
+    $three=[Exception]::new('outer',[Exception]::new('middle',[Exception]::new('inner')))
+    $chain=ConvertTo-ErrorDetails (Error-Fixture $three)
+    Check ($chain.captureStatus -ceq 'COMPLETE' -and $chain.exceptionChain.Count -eq 3 -and -not $chain.exceptionChainTruncated) 'THREE_NODES'
+    $chain=ConvertTo-ErrorDetails (Error-Fixture ([Exception]::new('fourth',$three)))
+    Check ($chain.captureStatus -ceq 'PARTIAL' -and $chain.exceptionChain.Count -eq 3 -and $chain.exceptionChainTruncated) 'CHAIN_TRUNCATION'
+    # Construct actual local exception objects only; never create a CIM session or run a provider query.
+    $cim=[Microsoft.Management.Infrastructure.CimException]::new('same message')
+    $native=ConvertTo-ErrorDetails (Error-Fixture $cim)
+    Check ($native.exceptionChain[0].cimException) 'CIM_TYPE'
+    $cim|Add-Member ScriptProperty NativeErrorCode {0} -Force
+    $cim|Add-Member ScriptProperty StatusCode {0} -Force
+    $cim|Add-Member ScriptProperty MessageId {'fixture.message'} -Force
+    $zero=ConvertTo-ErrorDetails (Error-Fixture $cim)
+    Check ($zero.captureStatus -ceq 'COMPLETE' -and $zero.exceptionChain[0].nativeErrorCode -eq 0 -and $zero.exceptionChain[0].statusCode -eq 0) 'ZERO_IS_PRESENT'
+    $cim|Add-Member ScriptProperty StatusCode {[DayOfWeek]::Monday} -Force
+    Check ((ConvertTo-ErrorDetails (Error-Fixture $cim)).exceptionChain[0].statusCode -eq 1) 'ENUM_IS_INTEGER'
+    $cim|Add-Member ScriptProperty StatusCode {$false} -Force
+    Check ($null -eq (ConvertTo-ErrorDetails (Error-Fixture $cim)).exceptionChain[0].statusCode) 'BOOLEAN_REJECTED'
+    $cim|Add-Member ScriptProperty StatusCode {0} -Force
+    $wrapper=ConvertTo-ErrorDetails (Error-Fixture ([Exception]::new('outer',$cim)))
+    Check (-not $wrapper.exceptionChain[0].cimException -and $wrapper.exceptionChain[1].cimException) 'WRAPPED_CIM'
+    $cim|Add-Member ScriptProperty NativeErrorCode {$null} -Force
+    $cim|Add-Member ScriptProperty StatusCode {1.5} -Force
+    $cim|Add-Member ScriptProperty MessageId {throw 'getter failed'} -Force
+    $partial=ConvertTo-ErrorDetails (Error-Fixture $cim)
+    Check ($partial.captureStatus -ceq 'PARTIAL' -and $null -eq $partial.exceptionChain[0].nativeErrorCode -and $null -eq $partial.exceptionChain[0].statusCode -and $null -eq $partial.exceptionChain[0].messageId) 'MISSING_INVALID_NATIVE'
+    $cim|Add-Member ScriptProperty NativeErrorCode {0} -Force
+    $cim|Add-Member ScriptProperty StatusCode {0} -Force
+    $cim|Add-Member ScriptProperty MessageId { 'x'*257 } -Force
+    $longNative=ConvertTo-ErrorDetails (Error-Fixture $cim)
+    Check ($longNative.captureStatus -ceq 'PARTIAL' -and $longNative.exceptionChain[0].messageIdTruncated) 'NATIVE_STRING_TRUNCATION'
+    $wire=$long|ConvertTo-Json -Depth 8 -Compress
+    Check ([Text.Encoding]::UTF8.GetByteCount($wire) -le 8192) 'REAL_SIZE_BOUND'
+    Check ($wire -notmatch 'PRIVATE_TARGET|secret|same message|TargetObject|InvocationInfo|ScriptStackTrace|ErrorData') 'FORBIDDEN_FIELDS'
+    # Inject serializer output to verify bytes (not characters), exact boundary, and failure fallback.
+    function ConvertTo-Json {param([Parameter(ValueFromPipeline=$true)]$InputObject,$Depth,[switch]$Compress)
+      if($Depth -ne 8 -or -not $Compress){throw 'SERIALIZER_CONTRACT'};$script:encoded
+    }
+    $script:encoded='x'*8192;Check ((ConvertTo-ErrorDetails (Error-Fixture ([Exception]::new('x')))).captureStatus -ceq 'COMPLETE') 'SIZE_EXACT'
+    $script:encoded='界'*3000;$size=ConvertTo-ErrorDetails (Error-Fixture ([Exception]::new('x')))
+    Check ($size.captureStatus -ceq 'FAILED' -and $size.reason -ceq 'ERROR_DETAILS_TOO_LARGE') 'UTF8_NOT_LENGTH'
+    function ConvertTo-Json {throw 'serializer failure'}
+    Check ((ConvertTo-ErrorDetails (Error-Fixture ([Exception]::new('x')))).reason -ceq 'ERROR_DETAILS_PROJECTION_FAILED') 'SERIALIZER_FAILURE'
+    'ERROR_DETAILS_OFFLINE_PASS'`
+  for (const executable of ['powershell.exe', 'pwsh.exe']) {
+    const env = { ...process.env }; if (executable === 'powershell.exe') delete env.PSModulePath
+    const result = spawnSync(executable, ['-NoProfile', '-NonInteractive', '-Command', command],
+      { env, encoding: 'utf8', windowsHide: true, timeout: 20000 })
+    assert.equal(result.status, 0, `${executable}: ${result.error?.message ?? result.stderr}`)
+    assert.equal(result.stderr, ''); assert.match(result.stdout, /ERROR_DETAILS_OFFLINE_PASS/)
+  }
+})
+
 test('Player window production loop rejects empty, excessive, malformed and failed sources without native queries', () => {
   const source = fs.readFileSync(new URL('../diagnostics/Capture-E12PlayerClockWindow.ps1', import.meta.url), 'utf8')
   const functions = source.slice(source.indexOf('function Assert-Identity'), source.indexOf('$record=[ordered]'))
@@ -279,15 +364,26 @@ test('Player window production loop rejects empty, excessive, malformed and fail
   const loop = source.slice(source.indexOf('$record=[ordered]'),source.indexOf('$stream=[IO.File]',source.indexOf('$record=[ordered]')))
     .replaceAll('[E12ClockComparison.Native]::Read(', '(Read-Stub ')
   assert.ok(functions.includes('Decode-Clock') && loop.includes('CLOCK_INSTANCE_COUNT'))
+  const root = fileURLToPath(new URL('../../', import.meta.url))
+  const output = fs.mkdtempSync(path.join(root, 'release/e12/clock-error-integration-'))
   const command = `$ErrorActionPreference='Stop';${functions}
     $TargetPid=42;$identity=@{pid=42;processStartUtc='2026-10-10T00:00:00Z';imagePath='fixture';imageSha256='hash';runId='run'}
     $zone=[TimeZoneInfo]::FindSystemTimeZoneById('Taipei Standard Time');$fingerprintHash='fixture';$PSCommandPath=$env:E12_WINDOW_SCRIPT
-    function Save-SourceCheckpoint($Name,$Query,$Raw,$Error){$script:checkpoints+=,(@{source=$Name;query=$Query;raw=$Raw;error=$Error}|ConvertTo-Json -Depth 15|ConvertFrom-Json)}
+    $projection=(Get-Item Function:ConvertTo-ErrorDetails).ScriptBlock
+    function ConvertTo-ErrorDetails($SourceRecord) {
+      if($null -eq $record.wmiQuery.endTick -or $null -eq $record.wmiQuery.queryEndUtc){throw 'PROJECTED_BEFORE_END_SOURCE'}
+      if($mode -eq 'projectionFailure'){throw 'STUB_PROJECTION_FAILURE'}
+      & $projection $SourceRecord
+    }
     function Get-Identity { $copy=$identity.Clone();if($mode -eq 'identity'){$copy.pid=43};$copy }
     function Get-CimInstance($ClassName,$Filter,$Property,$OperationTimeoutSec) {
       $script:wmiCalls++
-      if($Filter -cne 'Name LIKE ''pid[_]42[_]%''' -or ($Property -join ',') -cne 'Name,Timestamp_Sys100NS,Frequency_Sys100NS'){throw 'QUERY_ALLOWLIST'}
+      if($ClassName -cne 'Win32_PerfRawData_GPUPerformanceCounters_GPUProcessMemory' -or $Filter -cne 'Name LIKE ''pid[_]42[_]%''' -or ($Property -join ',') -cne 'Name,Timestamp_Sys100NS,Frequency_Sys100NS' -or $OperationTimeoutSec -ne 2){throw 'QUERY_ALLOWLIST'}
       if($mode -eq 'wmiError'){throw 'STUB_WMI_ERROR'}
+      if($mode -in @('timeoutError','accessError','projectionFailure')) {
+        $exception=if($mode -eq 'accessError'){[UnauthorizedAccessException]::new('same message')}else{[TimeoutException]::new('same message')}
+        throw [Management.Automation.ErrorRecord]::new($exception,('fixture.'+$mode),[Management.Automation.ErrorCategory]::OperationTimeout,'PRIVATE_TARGET')
+      }
       $rows=@();$count=switch($mode){'empty'{0} 'excess'{17} 'duplicate'{2} 'laterPdh'{2} default{1}}
       for($i=0;$i -lt $count;$i++){
         $name=if($mode -eq 'duplicate'){'pid_42_luid_0x0_0xa_phys_0'}elseif($mode -eq 'malformed'){'pid_43_bad'}else{'pid_42_luid_0x0_0xa_phys_'+$i}
@@ -301,20 +397,38 @@ test('Player window production loop rejects empty, excessive, malformed and fail
       [pscustomobject]@{Stage='Raw';ApiStatus=$(if($mode -eq 'pdhError'){5}else{0});CStatus=$(if($mode -eq 'noInstance'){2147485649}else{1});CounterType=65792;
         TimeStamp=([DateTime]::UtcNow.ToFileTimeUtc()+288000000000L).ToString()}
     }
-    foreach($mode in @('ok','identity','empty','excess','duplicate','malformed','wmiError','late','pdhError','noInstance','latePdh','laterPdh')) {
+    foreach($mode in @('ok','identity','empty','excess','duplicate','malformed','wmiError','timeoutError','accessError','projectionFailure','late','pdhError','noInstance','latePdh','laterPdh')) {
       $script:wmiCalls=0;$script:pdhCalls=0;$script:checkpoints=@()
+      $OutputPath=Join-Path $env:E12_FIXTURE_OUTPUT ($mode+'.json')
       ${loop}
       if($mode -eq 'ok') {if($record.error -or -not $record.completeCollection -or $record.pdhSequences -ne 1){throw 'VALID_WINDOW_REJECTED'}}
       elseif(-not $record.error -or $record.completeCollection){throw ('INVALID_WINDOW_ACCEPTED_'+$mode)}
       $expectedWmi=if($mode -eq 'identity'){0}else{1};$expectedPdh=if($mode -eq 'laterPdh'){2}elseif($mode -in @('ok','pdhError','noInstance','latePdh')){1}else{0}
       if($script:wmiCalls -ne $expectedWmi -or $script:pdhCalls -ne $expectedPdh){throw ('QUERY_AFTER_FAILURE_'+$mode)}
+      $script:checkpoints=@(Get-ChildItem -LiteralPath $env:E12_FIXTURE_OUTPUT -Filter ($mode+'.json.*.json')|ForEach-Object {Get-Content -LiteralPath $_.FullName -Raw|ConvertFrom-Json}|Sort-Object @{Expression={if($_.source -ceq 'wmi'){0}else{[int]$_.source.Substring(4)}}})
       if($script:checkpoints.Count -ne $expectedWmi+$expectedPdh){throw ('CHECKPOINT_MISSING_'+$mode)}
+      if($expectedWmi -eq 1) {
+        $checkpoint=@($script:checkpoints|Where-Object source -CEQ 'wmi')[0]
+        if(($checkpoint.errorDetails|ConvertTo-Json -Depth 8 -Compress) -cne ($record.wmiErrorDetails|ConvertTo-Json -Depth 8 -Compress)){throw 'ERROR_DETAILS_DIFFER'}
+        if(-not $checkpoint.query.endTick -or -not $checkpoint.query.queryEndUtc){throw 'CHECKPOINT_QUERY_NOT_ENDED'}
+        if($mode -in @('timeoutError','accessError','projectionFailure')) {
+          if($record.error -cne 'same message' -or $checkpoint.error -cne 'same message' -or $null -ne $checkpoint.raw){throw 'ORIGINAL_ERROR_LOST'}
+          if($mode -eq 'projectionFailure') {if($record.wmiErrorDetails.captureStatus -cne 'FAILED' -or $record.wmiErrorDetails.reason -cne 'ERROR_DETAILS_PROJECTION_FAILED'){throw 'PROJECTION_FAILURE_NOT_CONTAINED'}}
+          elseif($record.wmiErrorDetails.captureStatus -cne 'COMPLETE' -or $record.wmiErrorDetails.fullyQualifiedErrorId -notlike ('fixture.'+$mode+'*')){throw 'WMI_EXCEPTION_IDENTITY_LOST'}
+        } elseif($mode -ne 'wmiError' -and $null -ne $record.wmiErrorDetails){throw 'SUCCESS_ERROR_DETAILS_NOT_NULL'}
+        $existing=[IO.File]::ReadAllText($OutputPath+'.wmi.json');$rejected=$false
+        try {Save-SourceCheckpoint 'wmi' $record.wmiQuery $null 'overwrite' $null} catch {$rejected=$true}
+        if(-not $rejected -or [IO.File]::ReadAllText($OutputPath+'.wmi.json') -cne $existing){throw 'CHECKPOINT_OVERWRITTEN'}
+      }
       if($mode -in @('latePdh','laterPdh') -and -not $script:checkpoints[-1].raw.rawTimestamp){throw 'LATE_PDH_RAW_LOST'}
       if($mode -eq 'laterPdh' -and -not $script:checkpoints[1].raw.rawTimestamp){throw 'PREVIOUS_PDH_RAW_LOST'}
-      if(($record|ConvertTo-Json -Depth 15) -match 'FirstValue|SecondValue|DedicatedUsage|dedicatedBytes'){throw 'USAGE_PERSISTED'}
+      $windowJson=$record|ConvertTo-Json -Depth 15
+      if($windowJson -match 'FirstValue|SecondValue|DedicatedUsage|dedicatedBytes|PRIVATE_TARGET|TargetObject|InvocationInfo|ScriptStackTrace|ErrorData'){throw 'FORBIDDEN_DATA_PERSISTED'}
+      [IO.File]::WriteAllText($OutputPath,$windowJson)
     };'WINDOW_OFFLINE_PASS'`
   for (const executable of ['pwsh.exe','powershell.exe']) {
-    const env={...process.env,E12_WINDOW_SCRIPT:new URL('../diagnostics/Capture-E12PlayerClockWindow.ps1',import.meta.url).pathname.replace(/^\/([A-Z]:)/,'$1')}
+    const directory = path.join(output, executable); fs.mkdirSync(directory)
+    const env={...process.env,E12_FIXTURE_OUTPUT:directory,E12_WINDOW_SCRIPT:new URL('../diagnostics/Capture-E12PlayerClockWindow.ps1',import.meta.url).pathname.replace(/^\/([A-Z]:)/,'$1')}
     if(executable==='powershell.exe')delete env.PSModulePath
     const parse = "$ErrorActionPreference='Stop';$tokens=$null;$errors=$null;[void][System.Management.Automation.Language.Parser]::ParseFile($env:E12_WINDOW_SCRIPT,[ref]$tokens,[ref]$errors);if($errors.Count){throw ($errors|Out-String)}"
     const parsed=spawnSync(executable,['-NoProfile','-NonInteractive','-Command',parse],{env,encoding:'utf8',windowsHide:true,timeout:10000})
@@ -322,5 +436,11 @@ test('Player window production loop rejects empty, excessive, malformed and fail
     const result=spawnSync(executable,['-NoProfile','-NonInteractive','-Command',command],{env,encoding:'utf8',windowsHide:true,timeout:20000})
     assert.equal(result.status,0,`${executable}: ${result.error?.message??result.stderr}`);assert.equal(result.stderr,'')
     assert.match(result.stdout,/WINDOW_OFFLINE_PASS/)
+    const timeout = JSON.parse(fs.readFileSync(path.join(directory, 'timeoutError.json'), 'utf8'))
+    const access = JSON.parse(fs.readFileSync(path.join(directory, 'accessError.json'), 'utf8'))
+    assert.equal(timeout.error, access.error)
+    assert.notEqual(timeout.wmiErrorDetails.exceptionChain[0].exceptionType, access.wmiErrorDetails.exceptionChain[0].exceptionType)
+    assert.notEqual(timeout.wmiErrorDetails.exceptionChain[0].hResult, access.wmiErrorDetails.exceptionChain[0].hResult)
+    assert.equal(timeout.schemaVersion, 2); assert.equal(timeout.pdhSequences, 0)
   }
 })

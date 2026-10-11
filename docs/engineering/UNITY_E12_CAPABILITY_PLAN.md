@@ -423,3 +423,13 @@ Authorization Envelope（僅提案）：Destination=上述本機隔離project/�
 此提案新增實測額度為**0**：無Unity、Player、CIM、PDH、provider/schema/registration查詢；無預熱、重啟服務或時區/品質/ACL修改。若日後需要收集真實例外，須另提出具體same-SHA五階段與有界診斷方法/額度，再獨立審查及取得人類授權。不能把這個離線補強當成重跑clock v3的批准。
 
 獨立方案審查接受，並具體鎖定：第四節例外鏈及任何字串截斷皆保存可見truncated標記，captureStatus不可仍為COMPLETE；8KiB按 `ConvertTo-Json -Depth 8 -Compress` 的UTF8實際bytes計算，不使用字串Length代替。尚無人類新增實作授權。
+
+### 2026-10-11 離線診斷實作授權與結果
+
+前段「待批准／尚未套用」是d6ff9985提案時點；使用者現已明確回覆「同意依 d6ff9985 執行離線診斷修正與測試，不新增實測」。本輪只實作上述四檔範圍。WMI catch保存當下ErrorRecord，End-Source之後才投影；window的wmiErrorDetails與exclusive WMI checkpoint的errorDetails一致，成功為null，投影失敗降級固定FAILED理由且保留原error。PDH checkpoint未新增欄位；查詢、filter、properties、2s門檻、窗口、schemaVersion2及所有實測額度不變。
+
+新增純投影函式只讀allowlist，最多三節例外鏈、256chars字串、8KiB compact JSON實際UTF8 bytes；缺值/無法讀取/截斷標PARTIAL，合法零碼保留，非CimException不讀CIM專屬欄位。不保存TargetObject/InvocationInfo/ScriptStackTrace/ErrorData/新增Message副本。本輪發現PowerShell適配的property.Value可吞掉getter錯誤，已改用get_Value()，避免將InnerException讀取失敗誤判為正常鏈尾；雙runtime負例驗證通過。
+
+離線驗證採既有fixture擴充：直接執行生產投影、生產WMI catch/finally與真正CreateNew checkpoint寫入；來源及native UTC/PDH由stub取代。建構本機CimException物件並以fixture屬性覆寫測零碼/missing，不查provider，不以合成值宣稱實際query錯誤碼可得。完整E12 Node49/49 PASS（含Windows PowerShell/pwsh AST、clock18與performance31），failed/skipped0；OpenSpec strict與diff check PASS。證據保留於local_only `release/e12/error-details-offline-v2`，前次48/49的getter負例失敗保留於v1。候選須獨立exact-SHA終審；此結果只接受離線診斷保存能力，不完成task2.1，不沿用2329b48的Unity五階段為本候選背書。
+
+SPEC仍4/22（18.2%）。本次Unity/Player/CIM/PDH/provider/schema/registration實測新增0、remote mutation0。真實逾時根因UNKNOWN，clock mapping UNVERIFIED，正式E12與完整Unity遊戲驗收NOT_RUN。後續真實例外採集仍需另行具體方法、same-SHA驗證、獨立審查及新有界授權；本次不自動啟動clock v3。

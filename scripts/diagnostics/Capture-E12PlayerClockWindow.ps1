@@ -55,8 +55,83 @@ function End-Source($Source) {
   $Source.queryEndUtc=[DateTime]::FromFileTimeUtc([long][E12ClockComparison.Native]::UtcFileTime()).ToString('o')
   $Source.elapsedMs=([decimal]$Source.endTick-[decimal]$Source.startTick)*1000d/[Diagnostics.Stopwatch]::Frequency
 }
-function Save-SourceCheckpoint([string]$Name,$Query,$Raw,$SourceError) {
+function New-ErrorDetailsFailure([string]$Reason) {
+  [ordered]@{schemaVersion=1;captureStatus='FAILED';reason=$Reason}
+}
+function ConvertTo-ErrorDetails($SourceRecord) {
+  # Project an allowlist only. Never enumerate arbitrary ErrorRecord/exception properties.
+  function Read-Detail($Object,[string]$Name) {
+    try {
+      $property=$Object.PSObject.Properties[$Name]
+      if($null -eq $property){return @{value=$null;valid=$false;readable=$false}}
+      # Invoke the CLR getter explicitly: adapted .Value can suppress a throwing ScriptProperty as null.
+      $value=$property.get_Value()
+      @{value=$value;valid=($null -ne $value);readable=$true}
+    } catch {@{value=$null;valid=$false;readable=$false}}
+  }
+  function Detail-String($Read) {
+    if(-not $Read.valid -or $Read.value -isnot [string]){return @{value=$null;valid=$false;truncated=$false}}
+    $truncated=$Read.value.Length -gt 256
+    $value=if($truncated){$Read.value.Substring(0,256)}else{$Read.value}
+    @{value=$value;valid=$true;truncated=$truncated}
+  }
+  function Detail-Integer($Read) {
+    if(-not $Read.valid){return @{value=$null;valid=$false}}
+    $value=$Read.value
+    if($value -isnot [enum] -and $value -isnot [byte] -and $value -isnot [sbyte] -and
+      $value -isnot [int16] -and $value -isnot [uint16] -and $value -isnot [int32] -and
+      $value -isnot [uint32] -and $value -isnot [int64] -and $value -isnot [uint64]){return @{value=$null;valid=$false}}
+    try {@{value=[long]$value;valid=$true}} catch {@{value=$null;valid=$false}}
+  }
+  try {
+    if($SourceRecord -isnot [Management.Automation.ErrorRecord]){return (New-ErrorDetailsFailure 'ERROR_DETAILS_RECORD_MISSING')}
+    $id=Detail-String (Read-Detail $SourceRecord 'FullyQualifiedErrorId')
+    $categoryInfo=Read-Detail $SourceRecord 'CategoryInfo'
+    $category=Detail-Integer (Read-Detail $categoryInfo.value 'Category')
+    $result=[ordered]@{schemaVersion=1;captureStatus='COMPLETE';reason=$null;
+      fullyQualifiedErrorId=$id.value;fullyQualifiedErrorIdTruncated=$id.truncated;category=$category.value;
+      exceptionChain=@();exceptionChainTruncated=$false}
+    if(-not $id.valid -or $id.truncated -or -not $category.valid){$result.captureStatus='PARTIAL'}
+    $read=Read-Detail $SourceRecord 'Exception';$node=$read.value
+    if(-not $read.valid -or $node -isnot [Exception]){$result.captureStatus='PARTIAL';$node=$null}
+    while($null -ne $node -and $result.exceptionChain.Count -lt 3) {
+      $type=Detail-String @{value=$node.GetType().FullName;valid=$true}
+      $hresult=Detail-Integer (Read-Detail $node 'HResult')
+      $item=[ordered]@{exceptionType=$type.value;exceptionTypeTruncated=$type.truncated;hResult=$hresult.value;
+        cimException=$false;nativeErrorCode=$null;statusCode=$null;messageId=$null;messageIdTruncated=$false}
+      if(-not $type.valid -or $type.truncated -or -not $hresult.valid){$result.captureStatus='PARTIAL'}
+      # Full CLR type identity, including derived exceptions, without loading a provider or creating a session.
+      $clrType=$node.GetType()
+      while($null -ne $clrType) {
+        if($clrType.FullName -ceq 'Microsoft.Management.Infrastructure.CimException'){$item.cimException=$true;break}
+        $clrType=$clrType.BaseType
+      }
+      if($item.cimException) {
+        $native=Detail-Integer (Read-Detail $node 'NativeErrorCode')
+        $status=Detail-Integer (Read-Detail $node 'StatusCode')
+        $messageId=Detail-String (Read-Detail $node 'MessageId')
+        $item.nativeErrorCode=$native.value;$item.statusCode=$status.value
+        $item.messageId=$messageId.value;$item.messageIdTruncated=$messageId.truncated
+        if(-not $native.valid -or -not $status.valid -or -not $messageId.valid -or $messageId.truncated){$result.captureStatus='PARTIAL'}
+      }
+      $result.exceptionChain+=,$item
+      $inner=Read-Detail $node 'InnerException'
+      # A null InnerException is the normal end; absent/throwing/wrong-type getters are partial captures.
+      if(-not $inner.valid) {
+        if(-not $inner.readable){$result.captureStatus='PARTIAL'}
+        $node=$null
+      } elseif($inner.value -is [Exception]) {$node=$inner.value}
+      else {$result.captureStatus='PARTIAL';$node=$null}
+    }
+    if($null -ne $node){$result.exceptionChainTruncated=$true;$result.captureStatus='PARTIAL'}
+    $json=$result|ConvertTo-Json -Depth 8 -Compress
+    if([Text.Encoding]::UTF8.GetByteCount($json) -gt 8192){return (New-ErrorDetailsFailure 'ERROR_DETAILS_TOO_LARGE')}
+    $result
+  } catch {New-ErrorDetailsFailure 'ERROR_DETAILS_PROJECTION_FAILED'}
+}
+function Save-SourceCheckpoint([string]$Name,$Query,$Raw,$SourceError,$ErrorDetails=$null) {
   $snapshot=[ordered]@{runId=$identity.runId;pid=$TargetPid;source=$Name;query=$Query;raw=$Raw;error=$SourceError}
+  if($Name -ceq 'wmi'){$snapshot.errorDetails=$ErrorDetails}
   $stream=[IO.File]::Open(($OutputPath+'.'+$Name+'.json'),[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None)
   try {$bytes=[Text.UTF8Encoding]::new($false).GetBytes(($snapshot|ConvertTo-Json -Depth 15));$stream.Write($bytes,0,$bytes.Length)} finally {$stream.Dispose()}
 }
@@ -70,16 +145,24 @@ function Decode-Clock([string]$Raw,[string]$Frequency) {
 }
 $record=[ordered]@{schemaVersion=2;kind='OWNED_PLAYER_CLOCK_WINDOW';before=$null;after=$null;fingerprintSha256=$fingerprintHash;
   timezoneId=$zone.Id;mappingHypothesis='LOCAL_ENCODED_PREDECLARED';completeCollection=$false;instances=@();wmiQuery=$null;
-  maximumInstances=16;pdhSequences=0;maximumPdhCalls=80;wmiRaw=$null;error=$null;scriptSha256=(Get-FileHash -LiteralPath $PSCommandPath -Algorithm SHA256).Hash.ToLowerInvariant()}
+  maximumInstances=16;pdhSequences=0;maximumPdhCalls=80;wmiRaw=$null;wmiErrorDetails=$null;error=$null;scriptSha256=(Get-FileHash -LiteralPath $PSCommandPath -Algorithm SHA256).Hash.ToLowerInvariant()}
 try {
   $record.before=Get-Identity;Assert-Identity $record.before
   $record.wmiQuery=Start-Source
   $sourceError=$null
+  $sourceRecord=$null
   try {
     $rows=@(Get-CimInstance -ClassName Win32_PerfRawData_GPUPerformanceCounters_GPUProcessMemory -Filter "Name LIKE 'pid[_]${TargetPid}[_]%'" -Property Name,Timestamp_Sys100NS,Frequency_Sys100NS -OperationTimeoutSec 2)
     $record.wmiRaw=@($rows|ForEach-Object {[ordered]@{name=$_.Name;timestampSys100NS=$_.Timestamp_Sys100NS.ToString();frequencySys100NS=$_.Frequency_Sys100NS.ToString()}})
-  } catch {$sourceError=$_.Exception.Message}
-  finally {End-Source $record.wmiQuery;Save-SourceCheckpoint 'wmi' $record.wmiQuery $record.wmiRaw $sourceError}
+  } catch {$sourceRecord=$_;$sourceError=$_.Exception.Message}
+  finally {
+    End-Source $record.wmiQuery
+    if($null -ne $sourceRecord) {
+      try {$record.wmiErrorDetails=ConvertTo-ErrorDetails $sourceRecord}
+      catch {$record.wmiErrorDetails=New-ErrorDetailsFailure 'ERROR_DETAILS_PROJECTION_FAILED'}
+    }
+    Save-SourceCheckpoint 'wmi' $record.wmiQuery $record.wmiRaw $sourceError $record.wmiErrorDetails
+  }
   if($sourceError){throw $sourceError};if($record.wmiQuery.elapsedMs -gt 2000){throw 'CLOCK_SOURCE_DEADLINE'}
   if($rows.Count -eq 0 -or $rows.Count -gt 16){throw 'CLOCK_INSTANCE_COUNT'}
   $names=@{}
