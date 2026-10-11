@@ -30,15 +30,18 @@
 | 負例：缺檔、非 managed | 同一 artifact CLI，指定 missing path／tools manifest | PASS，均 exit 1／target_unavailable |
 | 邊界：截斷 | 同一 CLI，指定僅 2 bytes `MZ` 的新 fixture | PASS，exit 1／target_unavailable |
 | 結果／身分核對 | JSON error、provider、subject／artifact SHA、coverage／limitations、輸入前後 hash、lock integrity | PASS；初次 PS lock 解析錯誤修正後通過 |
+| 指定歷史 Player DLL | `clock-path-validation-v1` 的兩個原 CLI；payload 指定項目／archive 索引／輸入前後 SHA、ClockReady sourceBefore／After hash | 身分核對 PASS；artifact complete、members PARTIAL（34 unsupported signatures），不能算完整分析或 runtime PASS |
 | OpenSpec strict／diff／22 計數 | `openspec validate unity-migration-followup --strict`、`git diff --check`、tasks checkbox 計數 | PASS，4 completed／18 remaining，原 22 項未改 |
 | Unity compile／Edit／Play／build／Player、真實時鐘 | 本次沒有執行，也無新增預算 | NOT_RUN |
 | render／自然操作／音效／實體手把／正式 E12／soak／E13 | 本次不是該單元驗收 | NOT_RUN，原必要 gates 保留 |
 
 raw：`release/rea-spec-support-v1/`，local_only，summary 記各 raw hashes；完整分析輸出與 DLL 不公開提交。
 
+指定歷史 Player 的 raw 另在 `release/rea-player-static-v1/`；只觀察 `2329b486` DLL 內的 E12ClockReady 方法與 Boot 啟動屬性，完整版本界線與 hashes 見 REA_SPEC_SUPPORT。沒有執行該歷史 Player，沒有對歷史 build 沿用整體 PASS；members PARTIAL 如實保留。
+
 ## D. Commit 與審查閉環
 
-- exact-candidate review：待獨立核對最終 commit，結論保存 local_only evidence；不把 draft／scope review 當正式批准。
+- exact-candidate review：獨立 reviewer 已接受 `42f80e894e6304b884297fd9132c02b644486dcb` 的支持工具整合，重核13個raw hashes與full diff，無 blocking issues。追加歷史 Player 靜態觀察的文件 commit 仍需另核最終 SHA；不把前版 review 當新版批准。結論保存 local_only evidence，不當正式 GitHub APPROVED。
 - formalIndependentReview／GitHub CI／merge／postmerge：NOT_RUN。
 - 回復：以普通 revert 本次 scoped commit 回復工具／文件；原程式 checkpoint、Git 歷史與失敗 raw 保留，不 reset／clean。
 
@@ -46,5 +49,5 @@ raw：`release/rea-spec-support-v1/`，local_only，summary 記各 raw hashes；
 
 - stepVerdict：STATIC_SUPPORT_IMPLEMENTED；不標 E12 VERIFIED／DONE。
 - SPEC：4/22（18.2%），本次沒有完成任何原 task checkbox。
-- 缺口：當前 code／完整 Player build 對應、Character DLL、WMI producer 根因／時鐘、原必要 runtime 與 formal gates。
+- 缺口：當前 code／完整 Player build 對應、member 分析 PARTIAL、WMI producer 根因／時鐘、原必要 runtime 與 formal gates。Character DLL 已在指定歷史 Player 定位，不代表當前 Library 或候選 build 齊備。
 - 下一步仍為 2.1 版本可追溯產物與新定位證據；不得進正式 E12／E13。REA 不控制 Unity、不替代 Jev Choice 或完整遊戲驗收。

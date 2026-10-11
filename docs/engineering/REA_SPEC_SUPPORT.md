@@ -54,9 +54,20 @@ base `b5354382662ffe8cfaaf005601c00f442c793401`。在其隔離工作目錄分析
 
 最初本機結果核對的 PowerShell `ConvertFrom-Json` 無法讀 lock 中的空名稱 root key；改用其支援的 `-AsHashtable` 後核對通過。這是證據核對命令錯誤，不是 REA 或遊戲失敗；沒有重跑任何遊戲或 provider 實測。
 
+## 套用到既有 Player：新的靜態定位證據
+
+從先前封存的逐檔索引定位到 validation worktree 的 `release/e02/clock-path-validation-v1/build/player/ChangshanLongdan_Data/Managed/Changshan.Character.dll`。只讀核對及分析，沒有執行該 Player，也沒有修改 validation worktree。
+
+- 歷史 `result.json` 記 sourceHead `2329b486c6dd1942acab4d415792e51a5aa45d25`、run `49aeac95-0c82-44a9-b939-9e7b48adef71`。本次沒有重跑其五階段或沿用其結果當新版本 PASS。
+- DLL 為 120,320 bytes，SHA-256 `631a9338d00ff898e6ce51592322cd394f2c69933b754414f935deef0d978579`；與封存索引、歷史 `payload-build.json` 的指定檔案項目及本次輸入前後 hash 一致。這不是重新核對整個 Player payload 的結論。
+- 兩個原 CLI 均 exit 0、provider `rea-dotnet-static`。artifact coverage complete；**members coverage partial**：70 types／463 methods，其中429個方法簽章 decoded、34個 unsupported，不能把 exit 0 當完整分析 PASS。
+- 觀察到 `Changshan.Character.E12ClockReady` 的11個方法（含 constructor）及 body status present。`Boot` token `0x06000074` 上有 `UnityEngine.RuntimeInitializeOnLoadMethodAttribute`；Boot raw IL SHA-256 `436e862fc7011d43eb3353a2a53b1bf726c35c3f3fc2d803d341a7a072cb6e8d`。這只證明指定 DLL 有這些宣告／位元組，不保證 Unity 執行過 Boot 或 producer 回傳正確資料。
+- `E12ClockReady.cs` 當前 hash 與歷史 sourceBefore／sourceAfter 均為 `e4064f200696849664eb971277f730c07802d08544a40aa75a194edc2c561b5d`。單一來源檔一致不代表目前所有 code／完整 build／runtime 同版。
+- local_only raw／summary 在 `release/rea-player-static-v1/`；artifact JSON SHA-256 `dd95fcbce5acec962a8295357b9cda0a47b35b3eb754c8468c1a18b5cd983155`；members JSON SHA-256 `4367085293183eb4d51fe8d28f1153de3be43282953ce5d8931ba4c9e0e175b3`。狀態 `PARTIAL_HISTORICAL_PLAYER_STATIC_OBSERVATION`，不是當前版本 E12 能力 PASS。
+
 ## 下一個最小步驟
 
-仍從 2.1 開始。先定位既有、版本可追溯的完整 Player build；若存在，對其中 `Changshan.Character.dll` 做同樣靜態核對，再對照 readiness／probe source 與 build manifest。若沒有可追溯產物，保持 UNKNOWN，提出具體有界 build／量測方案並按原 gates 審查，不用 Library cache、重新命名或 REA 成功來重設實測預算。WMI 真實例外與時鐘語義缺口仍需另外解除。
+仍從 2.1 開始。本次已找到歷史 Player 的診斷程式存在證據，缺口仍在 WMI 真實例外、producer 時鐘語義及 freshness。下一步用保存的失敗 checkpoint 與已修正的離線錯誤欄位提出可區分根因的具體方法；涉及任何新 build／Player／CIM／PDH 時依原 gates 與明確有界授權進行。不能以靜態 Boot 宣告、舊 build PASS、重新命名或 REA 成功來重設實測預算。現階段無工程缺陷由本分析獨立重現，因此沒有為此改寫 runtime。
 
 本次只完成支持工具整合；SPEC **4/22（18.2%）**。完整 Unity 遊戲驗收才可完成 SPEC。所有 raw／DLL 保持本機，不因本文件取得公開上傳授權；先前清理封存是整合前快照，不能涵蓋本次新增資料。
 
