@@ -364,3 +364,11 @@ releaseOrPaidActionPerformed: false
 - result hash `4e318aa839a0a67ff483ec34ee95577d4630b4a95659149a0de6614704c0f72d`；command `6f67a7a7668df29b3d3ad9cb58012115bf7528fb7ca6c46b95818c63c89f4e7e`；window `93c471538525accdadfd7b3bbb4f1e60c4dc9d9b99357aea53bcabd8ed4677e4`；WMI checkpoint `6f5948e9c2c8ace5a1d54009378b62828e69863fbe2adf493fc06ef706a98987`；READY `1aa36df6d337c1a6a62cabfef9eae0329b2f2b5868dcdf2a6b0e35b0cfe99119`；fingerprint `26bf34e2ec68261a18f02ff25ee2b2eab36796bdc676f3b6814fc644d78ca19d`。原始raw/child/log均保留；原result兩個unchanged欄仍null，不倒填。
 - 主控及獨立reviewer另做失敗後唯讀核對：fresh source與validated sourceAfter一致、完整包無新增/移除/變更、Git clean/head2329b48、lock不存在。前後fingerprint完整bracket、WMI/PDH時鐘對照、正常Player end皆未通過。這次額外五階段與clock批次已使用，剩餘兩窗不可續用，不重跑或放寬門檻。
 - SPEC維持4/22（18.2%），task2.1未完成，正式E12/E13/完整Unity遊戲驗收NOT_RUN。無push/merge/deploy、新背景工作或新待批准實測方案；按使用者「失敗即停」停止實測，下一步僅能基於現有證據形成離線定位方案。
+
+### 2026-10-11 goal 續行：離線診斷缺口與最小提案
+
+- 前goal turn建立active goal，為目標狀態進展；本輪fresh核對implementation HEAD832bc04 clean，tasks仍4/22。只讀既有WMI checkpoint/source及官方資料；無Unity/CIM/PDH/Player/remote操作。保留前次整體2s/窗口1失敗即停與已用額度。
+- 採context-debugging/diagnose流程；本輪不宣稱具備可重新執行的真實provider重現loop。只驗證message-only的資訊損失：合成TimeoutException與UnauthorizedAccessException同Message、不同FQID/category/type/HResult，兩種PowerShell均exit0。artifact `release/e12/wmi-offline-error-evidence-v1`；script SHA256 `099e0e3bcdaa32ed12fdcdcfce439b25a1493604c4d4ce1f836b9c238be1e3b2`；5.1 stdout `8781f97d8d3c41772dec2aac84ebda500b3c81257dc25d95e621094efd78fd21`、pwsh stdout `00830ef6e32c06f4efb362b8c836c5da19b13896b5206a4371daf094c889b8f9`。兩份stderr空；summary列source及actualCimRootCause UNKNOWN/queryCount0。這不是CimException實採、不是原query重現或修復PASS。
+- PLAN已提出僅既有PS/Node測試及兩份文件的有界ErrorRecord診斷保存方案；query/門檻不改，CIM專屬欄位missing=null，限制鏈/長度/輸出，投影失敗不得覆蓋原錯誤或阻止checkpoint。只提案未實作，新增實測額度0，待獨立方案審查及人類新增scope決定。
+- SPEC4/22（18.2%），clock mapping/task2.1/正式E12/E13/完整Unity遊戲驗收未完成；無新增背景工作，goal維持active。下一步為審查本離線實作提案，不能將它當成新clock批次授權。
+- 獨立方案審查親讀兩份完整diff及offline proof/artifacts，核對script/兩stdout/summary四hash與空stderr後accept，無阻擋finding；未重跑proof。summary hash `f8e8a0e808c1edb210c54bca65e5d052a560d5346caac304be3dbd6d97d69d0a`。PLAN納入truncation可見/PARTIAL與指定compact JSON實際UTF8 bytes計算要求；這不擴大scope。Jev deterministic architecture_review observation `f5144634-5c62-4308-a40f-4bcbd6363a44` 只指路由/審查，provider_called=false；OpenSpec strict/diff PASS。提案足以供人類決定離線實作，並未批准source修改或實測。

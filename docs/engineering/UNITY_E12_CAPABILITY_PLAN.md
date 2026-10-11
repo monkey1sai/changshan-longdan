@@ -402,3 +402,24 @@ Authorization Envelope（僅提案）：Destination=上述本機隔離project/�
 已確認的是本次查詢超過既定2s門檻，尚不能定位driver、權限、WQL filter或provider原因。離線source盤點：新window固定LIKE PID filter並收完整集合/OperationTimeoutSec2；歷史helper先全類取First1、後用精確Name且無相同2s控制，不能用其舊結果證明新方法或直接退回First1。當前catch只保留Exception.Message，缺FullyQualifiedErrorId/CategoryInfo/HResult等例外定位資訊；這是可準備的離線診斷設計缺口，不是已證明的逾時修復。
 
 目前沒有具備新根因證據的重試方案。下一步只能基於現有source/checkpoint整理有界定位方法及必要離線fixtures，再接受獨立審查；不能改2s、增加預熱、補跑同query或開新provider探索。任何新的實測仍須具體方法、scope、額度及明確人類授權。SPEC4/22（18.2%）；clock mapping/task2.1/正式E12/完整Unity遊戲均未完成。
+
+## 2026-10-11 最小離線診斷提案：保全原始例外身分，不重試
+
+目的為task2.1逾時定位前置，不是逾時修復。先核對832bc04 clean及既有window/WMI checkpoint；前次真實CIM例外物件已丟棄，不能由「已逾時」反推native code或補寫歷史raw。診斷流程本輪只做到現有證據重算與合成ErrorRecord對照；真實根因重現/修復回歸受已耗盡實測額度限制，未執行。
+
+新增離線證據 `release/e12/wmi-offline-error-evidence-v1`：兩個同Message的合成ErrorRecord，timeout/access各自具有不同FQID、category、exceptionType及HResult。Windows PowerShell與pwsh均exit0/PASS_SYNTHETIC_ONLY。這只證明目前message-only格式會遺失可分類資訊，不證明真實CimException已有那些值，亦不支持任何特定GPU/provider/filter根因。script hash `099e0e3bcdaa32ed12fdcdcfce439b25a1493604c4d4ce1f836b9c238be1e3b2`；stdout hashes `8781f97d8d3c41772dec2aac84ebda500b3c81257dc25d95e621094efd78fd21`／`00830ef6e32c06f4efb362b8c836c5da19b13896b5206a4371daf094c889b8f9`，summary保存source/限制。沒有CIM/PDH/Player或環境資料讀取。
+
+官方依據：[Windows PowerShell Get-CimInstance](https://learn.microsoft.com/en-us/powershell/module/cimcmdlets/get-ciminstance?view=powershell-5.1)說明未指定ComputerName/CimSession使用本機COM，OperationTimeoutSec為操作timeout；不能拿它代替本專案Stopwatch/原生UTC實測2s gate，亦不能由本次錯誤假定WSMan/網路問題。[CimException API](https://learn.microsoft.com/en-us/dotnet/api/microsoft.management.infrastructure.cimexception?view=powershellsdk-7.4.0)及[Microsoft MI sample](https://github.com/microsoft/Windows-classic-samples/blob/main/Samples/ManagementInfrastructure/cpp/Process/ManagedClient/SampleCimOperation.cs)列出NativeErrorCode/StatusCode/MessageId。API版本不是本機5.1欄位實存證明，實作採可用時保存、missing為null，不反推舊run。
+
+### 精確實作範圍（待人類批准，尚未套用）
+
+僅四檔：`scripts/diagnostics/Capture-E12PlayerClockWindow.ps1`、`scripts/tests/e12-clock-contract.node.mjs`、本PLAN及STEP_RECORD。不改controller、C#、assets、query/filter/properties/OperationTimeoutSec、instance上限、任何clock validator/門檻/時限/額度、Jev配置或全域狀態。
+
+1. 在同一既有PS檔加入小型純ErrorRecord投影函式。新增診斷schemaVersion1、captureStatus(COMPLETE/PARTIAL/FAILED)、FullyQualifiedErrorId、CategoryInfo.Category數值、例外鏈最多3節的exceptionType/HResult；僅對實際CimException節點保存可讀取的NativeErrorCode/StatusCode/MessageId，缺失null且標captureStatus=PARTIAL。零碼合法，不能當missing；數值只接受整數/enum轉整數。字串最多256chars並明記truncated欄位，超長/未知型別/讀取失敗不偽造值；整份診斷UTF8上限8KiB，超限退回FAILED及固定理由碼。不得保存TargetObject、InvocationInfo、ScriptStackTrace、ErrorData、任意property dump或新增Message副本。這是新增診斷欄位，不用來批准sample或宣稱根因。
+2. 只在WMI catch暫存當下ErrorRecord與原sourceError文字。finally先照既有順序End-Source，才投影及CreateNew checkpoint；投影自身異常必須降級為FAILED診斷，不覆蓋原sourceError、不跳過checkpoint或延後/補執行query。window新增nullable wmiErrorDetails、WMI checkpoint新增nullable errorDetails，兩者必須一致；原error/raw/query欄位及window schemaVersion2保持，不補寫歷史證據。不觸及PDH查詢/結果語義。
+3. 只擴充既有offline fixture，執行生產投影及生產WMI catch/finally路徑，所有來源使用stub。正例為同Message不同ErrorRecord仍可區分、正常成功保持errorDetails=null；負例/邊界包含missing/native零碼、wrapper鏈/第四節截斷、長字串、getter/投影失敗、8KiB上限、timeout或權限錯誤後只一次WMI/零PDH、checkpoint/window同值、原error不被覆寫、既有2s與identity拒絕維持。5.1/pwsh各自執行，明示未重現真實provider逾時。
+4. 純fixture、既有clock Node tests、PowerShell AST、OpenSpec strict/diff及獨立exact-SHA審查通過後建立本機checkpoint，只接受「診斷保存能力／離線fixture」。不勾task2.1、不把此新SHA當已完成Unity五階段，不push/merge。
+
+此提案新增實測額度為**0**：無Unity、Player、CIM、PDH、provider/schema/registration查詢；無預熱、重啟服務或時區/品質/ACL修改。若日後需要收集真實例外，須另提出具體same-SHA五階段與有界診斷方法/額度，再獨立審查及取得人類授權。不能把這個離線補強當成重跑clock v3的批准。
+
+獨立方案審查接受，並具體鎖定：第四節例外鏈及任何字串截斷皆保存可見truncated標記，captureStatus不可仍為COMPLETE；8KiB按 `ConvertTo-Json -Depth 8 -Compress` 的UTF8實際bytes計算，不使用字串Length代替。尚無人類新增實作授權。
