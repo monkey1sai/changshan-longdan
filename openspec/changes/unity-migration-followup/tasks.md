@@ -1,8 +1,10 @@
 ## 進度回報與最終完成契約
 
+SPEC v2（2026-10-12）依 [決策紀錄](../../../docs/engineering/UNITY_SPEC_V2_DECISION_RECORD.md) 執行；保留 v1 全部 22 IDs 與既有四項歷史限定完成。本次沒有新增完成項目或實測額度。
+
 每次完成／受阻交付都回報已完成項目數／22、百分比、本次完成項目、剩餘gate與下一個eligible步驟。現在4/22（18.2%）只是任務計數，不代表遊戲工程品質或工作量比例。只有task本身約定的條件完成才勾選，不因文件格式、CI或Jev回應通過而勾選未驗收工程。
 
-使用者要求最終可見打開Unity、用Jev執行遊戲並通過全部必要測試，並於2026-10-08確認「Jev選擇，Unity工具執行」。按現有Jev Choice配置，由Jev支援選擇、已授權Unity/Player executor實際執行；缺executor時記UNAVAILABLE，不自行宣稱滿足。最終5.2/5.3全部證據與gates齊備且22/22後才能稱SPEC completed；必要FAIL/UNKNOWN/SKIPPED/NOT_RUN均阻擋。
+使用者要求最終可見打開Unity、用Jev支援選擇並通過全部必要測試。v2 明定 agent 執行工程測試與支援工具，使用者可作為人工 executor 開啟指定 Unity project、操作同版 Windows Player，完成自然遊玩、聲音與實體手把驗收；Jev Choice 與實際操作、證據、outcome 分列。沒有工具或人類實際執行證據時保持 UNAVAILABLE／NOT_RUN。使用者體驗確認與 qualified independent formal approval 分列。最終5.2/5.3全部證據與gates齊備且22/22後才能稱SPEC completed；必要FAIL/UNKNOWN/SKIPPED/NOT_RUN均阻擋。
 
 ## 1. 第一個 eligible 單元：新證據與能力方案
 
@@ -15,18 +17,18 @@
 
 2.1／2.4 可重用 [REA 靜態支持工具](../../../docs/engineering/REA_SPEC_SUPPORT.md) 核對指定 DLL 身分與 CIL。2026-10-11 已完成工具支持驗證，歷史 Library artifact 的 code／build 對應仍 UNKNOWN；不代表以下任務完成，不新增實測額度或放寬 gates。
 
-- [ ] 2.1 按已審查精確範圍重用E12候選，修正timestamp／Player身分／counter語義；加正常、錯category、錯unit、stale/future、PID重用、倒退／重复／missing負例。
+- [ ] 2.1 按已審查精確範圍重用E12候選，修正timestamp／Player身分／counter語義；允許先證明等價性的替代 provider，不限 WMI。保留 adapter 全集、原 counter／unit、UTC／query window／高水位與 lag≤2s、future≤250ms、query≤2s；加正常、錯category、錯unit、stale/future、PID重用、倒退／重复／missing負例。新方法不自帶實測額度。
 - [ ] 2.2 補足foreground／focus／minimized、四種敵數與真正visible來源；驗證遮擋、螢幕外、其他camera與失焦負例，明列instrumentation成本。
 - [ ] 2.3 完成delayed CPU/GPU逐幀identity、latency／去重／收尾與每秒記憶體對齊；測缺樣、重複、不連續、warmup邊界及最終延遲樣本。
 - [ ] 2.4 執行工具tests、Unity compile/Edit/Play/build/Player及短CAPABILITY_PROBE，保存完整build payload、raw和actual readback；不用短probe宣稱正式成績。
 - [ ] 2.5 完成獨立exact-head正式review、該單元授權merge與postmerge確認；能力或必要證據不齊停止，禁止進正式E12。
 
-## 3. 美術交付與Unity整合單元
+## 3. 資產基線與Unity整合單元
 
 使用者已接受既有畫面衣角拉伸的限定例外，版本界線見 spec「已展示衣角的限定視覺例外」及 STEP_RECORD。同一現象記 HUMAN_ACCEPTED_VISUAL_EXCEPTION；不表示美術修復交付或本單元完成，以下任務與其他品質 gates 保留。
 
-- [ ] 3.1 核對既有修復需求、工程師／workspace／來源blend／packet／傳輸範圍，按協作契約送達才更新PREPARED_NOT_SENT；本次spec不替代送達證據。
-- [ ] 3.2 接收美術新delivery_id、來源／GLB hashes、匯出及QA，保留原資產；來源或契約不符保持BLOCKED，material count以實際GLB盤點。
+- [ ] 3.1 明確選擇並鎖定現有資產基線，記錄 GLB／manifest hashes、來源、選用理由及既有修復需求。若品質缺陷需要製作／修改，核對工程師／workspace／來源blend／packet／傳輸範圍，按協作契約實際送達才更新PREPARED_NOT_SENT；選用資產不等於 ACCEPTED。
+- [ ] 3.2 核對所選現有資產的來源、授權、匯出資料與實際技術 QA，缺失保持 UNKNOWN／BLOCKED，material count以實際GLB盤點；需要新製作／修改時才接收新delivery_id、來源／GLB hashes與QA。保留原資產，不虛構現有資產的新 delivery_id；3.3–3.5 品質驗收仍必要。
 - [ ] 3.3 在隔離工作區匯入並驗證21骨／4 influences／17招／tip/tipBase／FootPlant／root-motion／fallback；若確認Unity bridge原因，另scoped commit處理，不接管資產製作。
 - [ ] 3.4 在同code/profile/asset/build版本跑S01/S03/S07與S02/S06/S08，雙引擎正式貼圖render、固定角度、連續動作及自然操作；沿用30/60/120Hz與既有grip/plant/root門檻。
 - [ ] 3.5 取得使用者視覺確認、正式exact-head review、授權merge與postmerge；資產和runtime完整品質gate之前不合併穩定基準，不標ACCEPTED。
@@ -42,5 +44,5 @@
 ## 5. E13凍結整合與可玩版本
 
 - [ ] 5.1 E12 DONE後凍結單一Windows候選與完整包hash，列明保留Web、場景佔位與所有歷史缺口，禁止拼接不同SHA PASS。
-- [ ] 5.2 可見打開凍結候選的指定Unity project，保存Editor/版本/操作證據；按已確認Jev語義記錄狀態/Choice/outcome及實際executor。另從同版輸出Windows包執行完整S01–S08與四難度自然勝敗／重試／暫停／失焦、音效與實體手把；Editor開啟與腳本支持證據不能替代輸出包/自然操作，全部必要測項同版PASS，缺項NOT_RUN並阻擋。
-- [ ] 5.3 取得使用者體驗確認、正式獨立APPROVED、授權merge與postmerge；工程DONE與發布分列，不自動上傳itch／付費／部署。
+- [ ] 5.2 由核對且獲授權的工具或使用者人工 executor 可見打開凍結候選的指定Unity project，保存操作者、時間、Editor/project/版本/操作證據；記錄Jev狀態/Choice/outcome及採用／拒絕。使用者從同版輸出Windows包執行完整S01–S08與四難度自然勝敗／重試／暫停／失焦、音效與實體手把，逐項保存原始畫面／操作與結果，依v2人工清單核對；Editor開啟、口頭「玩過」與腳本支持證據不能替代完整矩陣，全部必要測項同版PASS，缺項NOT_RUN並阻擋。
+- [ ] 5.3 分別取得使用者產品體驗確認、具資格獨立審查者的正式exact-head APPROVED、授權merge與postmerge；技術advisory與產品確認不冒充GitHub counted approval，不繞過branch protection。工程DONE與發布分列，不自動上傳itch／付費／部署。
