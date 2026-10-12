@@ -1,5 +1,33 @@
 # U1 新證據與能力方案紀錄
 
+## 2026-10-12 PDH 純資料契約實作
+
+### A. 範圍與責任
+
+使用者「Follow up」續行前份提案，base `bc4c70658c5bb37703e8e71ebd6ad7f2bbdb456e` clean。開始前獨立scope review accept；主控實作、`/root/unity_spec_review`唯讀審查。精確四檔為 `scripts/lib/e12-pdh-source-contract.mjs`、`scripts/tests/e12-pdh-source-contract.node.mjs`、UNITY_E12_PDH_SOURCE_PROPOSAL.md及本STEP_RECORD。V10／V12、S05量測前置，無玩法／profile／資產改動，原S01–S08及正式E12 gate保留。live scope=0，無DLL／provider／Unity／Player接線。
+
+### B. 候選及證據
+
+Adopt既有utcTicks／BigInt與extendClockTimeline模式；原clockWindowVerdict綁WMI＋PDH，因此另建最小純資料PDH-only契約，不改既有正式validator。JSON形狀快照拒getter／循環／共享參照及不安全數值；核對身分／localization／集合／buffer描述／handle生命週期／精確API順序／query與高水位。輸出固定executionVerified=false、formalVram=false；checkpoint、時區、pointer span等都是輸入claims，不是I/O／ABI／來源證明。native回傳碼轉換尚未實作。
+
+profile／asset／hardware：本輪不變更、不做新readback，實際Unity／Player／感官／裝置及效能測試均NOT_RUN。candidate SHA、四檔hash、log hash與exact-SHA終審另存本機evidence，避免在自身commit循環填SHA。
+
+### C. 實跑驗證與失敗
+
+- 最小baseline：`node --test scripts/tests/e12-pdh-source-contract.node.mjs`，exit1／ERR_MODULE_NOT_FOUND；當時module尚未建立，非provider或遊戲失敗。
+- 初版targeted40/40及既有E12離線回歸89/89 PASS，失敗／跳過0。原始完整log保留 `release/e12/pdh-contract-offline-v1/tests.log`；此為review修正前版本，不能冒充最終版。
+- draft獨立審查重現兩個MEDIUM身分缺口：sample早於processStart仍在lag2s內、PID超DWORD。第一輪修正補timestamp下界與PID1..0xffffffff，附等於邊界／早100ns／超界且所有mock身分一致的負例；拒絕時不推高水位。新targeted42/42 PASS，log `release/e12/pdh-contract-offline-v1/review-round1-final.log`。
+- 正負／邊界涵蓋：兩adapter及16項正例、CStatus0/1、PID重用／前綴碰撞、錯run/build/fingerprint、空／17項／canonical重複／parent／#index／前後及跨窗集合變動、每API階段首錯後只有自有cleanup、Open失敗不Close、buffer bytes／UTF16／上限／越界／終止／擴容、整窗及每API／跨窗timeline、lag2s／future250ms／query2s／duration差250ms的100ns邊界、raw／offset／DST未知、失敗後只保留有效前綴，以及輸入不變／getter不執行／NaN等非法形狀。
+- 最終完整離線回歸91/91 PASS、exit0／failed0／skipped0；log位於 `release/e12/pdh-contract-offline-v2/tests.log`，source／log hashes見同目錄summary.json。OpenSpec strict、Node syntax、22／4／18計數、提案local links及新module無I/O／native呼叫檢查PASS；Git範圍／diff及精確SHA終審另核對。
+
+### D. 審查閉環與限制
+
+第一輪draft needs-follow-up，已依可重現證據最小修正；精確候選終審以後續實際review紀錄為準，沒有借舊SHA批准。技術advisory不是正式GitHub APPROVED，無PR／merge授權或遠端變更。舊live失敗與額度保留，不因離線正例／三窗mock取得採樣權；本scope若連續兩輪修正仍不通過即停。
+
+### E. 退出與下一步
+
+SPEC仍4/22（18.2%），2.1／正式VRAM／E12／完整Unity遊戲驗收未完成。本輪只完成純資料契約子工作；下一步在受審範圍內準備native ABI與mock接線的具體方案，不能直接執行真PDH／CIM或Player。回復用普通revert本scope checkpoint，保留歷史與本輪logs；沒有背景遊戲或provider工作。
+
 ## 2026-10-12 SPEC v2／2.1 替代來源離線提案
 
 ### A. 範圍與審查

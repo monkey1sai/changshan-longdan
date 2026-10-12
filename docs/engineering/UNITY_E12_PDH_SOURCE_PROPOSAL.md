@@ -34,7 +34,7 @@ VERIFIED：`Capture-E12PlayerClockWindow.ps1` 先依WMI取得instance集合，�
 
 ## PDH-only clock候選契約
 
-此候選先驗clock／集合，不收集或保存usage，不直接提供正式VRAM。固定本機英文path `\GPU Process Memory(pid_<TargetPid>_*)\Dedicated Usage`；TargetPid須正整數且綁自有Player的runId／processStart／image／full-build。拒絕遠端machine、任意counter／path輸入及非目標PID。不得用`pid_12`前綴誤收`pid_123`。
+此候選先驗clock／集合，不分析或持久化usage，不直接提供正式VRAM；未來native raw API會回傳包含value的結構，須丟棄usage欄位，不宣稱API從未取得該欄位。固定本機英文path `\GPU Process Memory(pid_<TargetPid>_*)\Dedicated Usage`；TargetPid須正整數且綁自有Player的runId／processStart／image／full-build。拒絕遠端machine、任意counter／path輸入及非目標PID。不得用`pid_12`前綴誤收`pid_123`。
 
 1. 保存前置Player身分，開一query、加一英文wildcard counter。依官方流程取得本地化完整path，展開全部匹配項；移除wildcard handle，個別加入counter。
 2. GetCounterInfo與Expand各限size query一次＋data read一次，不resize/retry。metadata每份上限64KiB，path list上限32768 UTF-16 code units；大小改變／超限／截斷／未終止／指標越界即拒絕。這是新解析上限，不挪用舊registration額度。每counter核對完整path／type，不只看exit0。
@@ -56,7 +56,17 @@ VERIFIED：`Capture-E12PlayerClockWindow.ps1` 先依WMI取得instance集合，�
 | A4–A7、B、C、D | 不變；按SPEC v2條件式資產／人工executor | visible／timing／成本／品質／正式E12／完整E13及review／merge gates不變 |
 | 舊三窗口批次 | 不續用，不將75calls當舊80calls剩餘 | 新live scope=0；fingerprint／五階段／controller未提出可執行額度 |
 
-## 下一個最小實作：僅離線契約，尚未執行
+## 純資料離線契約實作（2026-10-12）
+
+使用者「Follow up」後，獨立開始前範圍審查接受四檔：本提案、STEP_RECORD、新module及tests。已建立 `validatePdhSourceSeries(windows, expected)`，只檢查JSON形狀的資料自洽性；無檔案I/O、子程序、DLL或provider呼叫，不接現有正式validator。缺模組baseline曾以ERR_MODULE_NOT_FOUND失敗；實作後驗證及exact-candidate結果見STEP_RECORD與本機review紀錄，不以本段預填正式批准。
+
+輸入schemaVersion=1：expected綁PID／processStartUtc／imageSha256／runId／fullBuildSha256／fingerprintSha256／timezoneId／utcOffsetTicks；每窗包含before／after、整窗query、localized object／counter、normalized trace與checkpointSaved。trace status使用SUCCESS／MORE_DATA／ERROR，屬純資料協定，未實作native回傳碼映射。size-query MORE_DATA是正常協定步驟，data再次MORE_DATA則拒絕。Info buffer以bytes與字串offset／終止描述，Expand buffer以UTF-16 code units／MULTI_SZ描述；均非真實ABI或pointer解參照證明。Expand項目的handle是wildcard來源關聯標記，不代表再次操作已Remove的native counter；其實際API依path查詢，native接線尚未實作。
+
+輸入先做有界、無accessor呼叫的資料快照，拒絕循環／共享物件參照、不安全數值、超深／超大資料。時間使用既有utcTicks／BigInt及extendClockTimeline；整窗、各API、跨窗timeline與高水位均核對，整窗自洽後才提交狀態。輸出OFFLINE_CONTRACT_ACCEPTED僅指資料協定符合，或BLOCKED_PDH_CONTRACT及原因／有效前綴／failedIndex；固定executionVerified=false、formalVram=false，不產正式clock mapping PASS。前後集合、localization／DST／fingerprint／saved／cleanup仍是caller claims。
+
+第一輪draft獨立審查用純fixture重現程序出生前樣本與超DWORD PID的false acceptance；已補sample timestamp≥processStart、PID範圍1..4294967295，並驗證等於邊界、超界／早100ns與拒絕時不推高水位。這是新離線契約的身分防護，不修改舊validator、freshness／效能數值或已用live預算。新targeted42/42 PASS；最終必要回歸與exact-SHA結果見STEP_RECORD及本機review紀錄。
+
+## 原最小實作範圍與驗證矩陣
 
 建議先新增純資料契約 `scripts/lib/e12-pdh-source-contract.mjs`、`scripts/tests/e12-pdh-source-contract.node.mjs`，另更新本提案與STEP_RECORD。重用`utcTicks`與clock測試模式；不改正式validator放行、不建native helper、不載DLL、不呼叫Get-Process／CIM／PDH、不改Unity／profile／資產。此為待審實作allowlist，不是本次新增完成項目。
 
@@ -73,4 +83,4 @@ VERIFIED：`Capture-E12PlayerClockWindow.ps1` 先依WMI取得instance集合，�
 
 ## 當前退出
 
-本輪只交付離線方法文件。PDH clock映射、全集完整性、deadline可行性及三memory欄位等價性仍UNKNOWN；不勾2.1，不進正式E12／E13。無新實測額度、背景Player、push／merge／deploy或新付費服務。回復使用本機文件checkpoint普通revert，保留歷史raw。
+本輪交付純資料離線契約及測試，正式批准與後續native接線仍未完成。PDH clock映射、全集完整性、deadline可行性及三memory欄位等價性仍UNKNOWN；不勾2.1，不進正式E12／E13。無新實測額度、背景Player、push／merge／deploy或新付費服務。回復使用本機checkpoint普通revert，保留歷史raw。
