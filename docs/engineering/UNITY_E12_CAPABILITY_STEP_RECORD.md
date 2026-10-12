@@ -1,5 +1,31 @@
 # U1 新證據與能力方案紀錄
 
+## 2026-10-12 SPEC v2／2.1 替代來源離線提案
+
+### A. 範圍與審查
+
+- sourceBaseSha：`9f1ffdc140618cac2316afce8e3709dfb54768de`，開始時clean；主控實作，獨立reviewer `/root/unity_spec_review`。
+- 授權：使用者對SPEC v2交付回答「同意」；僅定位／具體方法文件，不新增實測或helper實作。V10／V12、S05量測前置；S01–S08產品契約不變。
+- allowedPaths：本STEP_RECORD、UNITY_E12_CAPABILITY_PLAN.md、UNITY_E12_PDH_SOURCE_PROPOSAL.md。pre-implementation scope review：accept（三檔docs-only）；禁止runtime／資產／工具配置／remote變更。
+
+### B. 候選與來源
+
+- [PDH-only提案](UNITY_E12_PDH_SOURCE_PROPOSAL.md) 記錄舊run三檔raw路徑／hash與本輪唯讀核對；舊窗口WMI2098.2696ms、PDH0、accepted0，不證PDH失敗或可行。
+- 候選採既有PDH／clock契約延伸，DXGI外部helper不等於指定Player；官方來源與未知項逐項列明。實際candidate SHA與終審結果以本機提交／review紀錄為準，不預填。
+- profile／asset／hardware：本輪文件未變更、不做新readback；不把歷史機器資料當新實測。live scope NOT_AUTHORIZED。
+
+### C. 驗證矩陣
+
+文件驗證須執行OpenSpec strict、22項／4 checked／18 unchecked、三檔範圍／diff check、本次新增連結、歷史raw三hash與JSON結果核對；實際結果另以終審紀錄及交付回覆保存。本提案列正／負／邊界案例，尚未實作或執行，不稱fixtures PASS。Unity五階段／Player／CIM／PDH／DXGI／自然遊玩／裝置／正式效能均NOT_RUN，沒有增加其額度。
+
+### D. 審查閉環
+
+Jev observation `971a1ab6-1489-418c-80d8-eca88a543196` 回LOW_CONFIDENCE（0.7），provider_called=true；不採用為操作指令，repo必要獨立scope／exact-candidate review照常。recorded observation須回報caller outcome；這不是測試或formal APPROVED。終審待精確本機SHA後執行；不推送、不建立PR，不冒充GitHub counted approval。
+
+### E. 退出與下一步
+
+SPEC仍4/22（18.2%）；2.1 clock／unit／集合／deadline缺口保留，正式E12／E13未完成。下一個最小步驟為提案列明的純資料離線契約與測試，native／live方案須另審與精確授權。回復普通revert此文件checkpoint，保留原raw及已用預算；無背景遊戲或provider工作。
+
 ## 2026-10-10 指定Player clock-only 實作（尚未執行Player）
 
 - `1b47092`兩doc結果checkpoint已經獨立完整核對，無阻擋；下一scope方法審查接受READY/controller/逐窗診斷及前後兩次環境verification最多4CIM的新範圍，非重跑原fingerprint或重設任何失敗預算。精確檔案、V10/V12／S05、90s／每來源2s／最多3窗／16instances／最多80PDHcalls每窗及禁止usage輸出見PLAN。採Compose既有interop、counter decoder、payload/source snapshots與runner，無新依賴。

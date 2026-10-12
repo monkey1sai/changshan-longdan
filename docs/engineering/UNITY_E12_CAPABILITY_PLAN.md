@@ -1,6 +1,10 @@
 # Unity E12 能力恢復：定位證據與方案
 
-## 目前執行順序（2026-10-09；以此段及最新 STEP_RECORD 為準）
+## SPEC v2 當前導航（2026-10-12）
+
+依使用者對SPEC v2交付的「同意」，本輪僅完成2.1離線定位與 [PDH-only來源提案](UNITY_E12_PDH_SOURCE_PROPOSAL.md)；沒有helper實作、CIM／PDH／DXGI／Unity／Player執行或新增實測額度。新提案列明WMI枚舉依賴的取代、保留契約、未知項、離線測試矩陣及未授權live範圍。歷史批次與下表原方法保留，不作即時執行授權；條件式資產與人工executor以 [SPEC v2決策](UNITY_SPEC_V2_DECISION_RECORD.md) 及當前OpenSpec為準。SPEC仍4/22（18.2%）；原window1逾時／0 accepted與已耗盡額度不變，下一步是受審的純資料離線契約，不直接重跑Player或provider。
+
+## 歷史執行順序（2026-10-09；須連同後續結果閱讀）
 
 新clock-only helper的WMI只取Name／Timestamp_Sys100NS／Frequency_Sys100NS，不重查耗盡批次的class schema；WMI counterType明記null／UNKNOWN，不偽造65792。PDH固定path與實際type仍驗65792。此項只限時鐘方法，不解除正式VRAM的counter語義／unit／type gate。每來源exclusive checkpoint保全後才判deadline；controller跨來源及跨窗UTC/mono timeline不重設，整run最後驗證及cleanup也受90s與退出確認約束。
 
