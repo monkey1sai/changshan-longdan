@@ -1,0 +1,206 @@
+[
+  {
+    "repo": ".worktrees/_clones/e10-a",
+    "source": "HEAD",
+    "sha": "572ae5c228e32719c96c6551a8c656bb3492cba9",
+    "target": "refs/heads/archive/workspace-20261013/_clones-e10-a"
+  },
+  {
+    "repo": ".worktrees/_clones/e10-b",
+    "source": "HEAD",
+    "sha": "9f8e3856d78e94455e6e439917f628bd2c908fa0",
+    "target": "refs/heads/archive/workspace-20261013/_clones-e10-b"
+  },
+  {
+    "repo": ".worktrees/_clones/e10-c",
+    "source": "HEAD",
+    "sha": "f8d4879b4d4dbd25ca5572c4b27ab08d398cf1ef",
+    "target": "refs/heads/archive/workspace-20261013/_clones-e10-c"
+  },
+  {
+    "repo": ".worktrees/_clones/e10-d",
+    "source": "HEAD",
+    "sha": "3d725df6392c6a55120ae8872c7bc25f278dcaab",
+    "target": "refs/heads/archive/workspace-20261013/_clones-e10-d"
+  },
+  {
+    "repo": ".worktrees/_clones/e10-m",
+    "source": "HEAD",
+    "sha": "d554e253ad3be00a8a6fb27471d433baf40b52b9",
+    "target": "refs/heads/archive/workspace-20261013/_clones-e10-m"
+  },
+  {
+    "repo": ".worktrees/_clones/e10-m",
+    "source": "refs/heads/main",
+    "sha": "f8448b800167fc8f550f35904a976da940ca5c9d",
+    "target": "refs/heads/archive/workspace-20261013/_clones-e10-m-ref-1"
+  },
+  {
+    "repo": ".worktrees/_clones/e11-a",
+    "source": "HEAD",
+    "sha": "231437a3cda5b2d8e6e89ac0d20e52d2fdc94872",
+    "target": "refs/heads/archive/workspace-20261013/_clones-e11-a"
+  },
+  {
+    "repo": ".worktrees/_clones/e11-a",
+    "source": "refs/heads/claude/e11-director",
+    "sha": "30bdbac8a549a3b6b27f062f1343f77c5021a7bf",
+    "target": "refs/heads/archive/workspace-20261013/_clones-e11-a-ref-1"
+  },
+  {
+    "repo": ".worktrees/_clones/e11-b",
+    "source": "HEAD",
+    "sha": "916116d8a42fe7dcfbbd4f93f903fb8d34463856",
+    "target": "refs/heads/archive/workspace-20261013/_clones-e11-b"
+  },
+  {
+    "repo": ".worktrees/_clones/e11-c",
+    "source": "HEAD",
+    "sha": "be04336f108db76bb75da31e8b68e065eb182307",
+    "target": "refs/heads/archive/workspace-20261013/_clones-e11-c"
+  },
+  {
+    "repo": ".worktrees/_clones/e11-c",
+    "source": "refs/heads/claude/e11-director",
+    "sha": "9036d2f6178941e94826ed11886e6489b4165428",
+    "target": "refs/heads/archive/workspace-20261013/_clones-e11-c-ref-1"
+  },
+  {
+    "repo": ".worktrees/_clones/e12-a",
+    "source": "HEAD",
+    "sha": "3f45d134da9b6ca997e1de0c8b5b2a2eec60c447",
+    "target": "refs/heads/archive/workspace-20261013/_clones-e12-a"
+  },
+  {
+    "repo": ".worktrees/_clones/e12-a",
+    "source": "refs/heads/codex/e12-performance",
+    "sha": "2ae7db3bdd9de82a6a46c2c16be6a9b2805eaa36",
+    "target": "refs/heads/archive/workspace-20261013/_clones-e12-a-ref-1"
+  },
+  {
+    "repo": ".worktrees/e03-r2-clone",
+    "source": "HEAD",
+    "sha": "462d3a62c43834d0292fbc8bc2b3f632a5d9aa66",
+    "target": "refs/heads/archive/workspace-20261013/e03-r2-clone"
+  },
+  {
+    "repo": ".worktrees/e04-r1",
+    "source": "HEAD",
+    "sha": "8dd2eadb34172d5194afe65f839e46e02d49492a",
+    "target": "refs/heads/archive/workspace-20261013/e04-r1"
+  },
+  {
+    "repo": ".worktrees/e04-r5",
+    "source": "HEAD",
+    "sha": "ff20810e631be7b879cb4c49b11613c4dca55071",
+    "target": "refs/heads/archive/workspace-20261013/e04-r5"
+  },
+  {
+    "repo": ".worktrees/e05-b",
+    "source": "HEAD",
+    "sha": "fbd2f868a9dac650cb5927a2bd7ba30773fbae11",
+    "target": "refs/heads/archive/workspace-20261013/e05-b"
+  },
+  {
+    "repo": ".worktrees/e06-b",
+    "source": "HEAD",
+    "sha": "3abec71ae34c9c2a9774246caee16f84c5581d01",
+    "target": "refs/heads/archive/workspace-20261013/e06-b"
+  },
+  {
+    "repo": ".worktrees/e07-b",
+    "source": "HEAD",
+    "sha": "c3c8698b55d734b7ca47af687040d798901e91a9",
+    "target": "refs/heads/archive/workspace-20261013/e07-b"
+  },
+  {
+    "repo": ".worktrees/e08-b",
+    "source": "HEAD",
+    "sha": "def285fa4a7f398168edabd2c4b9b860f23e9fe4",
+    "target": "refs/heads/archive/workspace-20261013/e08-b"
+  },
+  {
+    "repo": ".worktrees/e08-pm",
+    "source": "HEAD",
+    "sha": "02a4a7f960568d2f13fab212488da43ab30baa1d",
+    "target": "refs/heads/archive/workspace-20261013/e08-pm"
+  },
+  {
+    "repo": ".worktrees/e08-r1",
+    "source": "HEAD",
+    "sha": "3d0849b9b86f23fb24a80315f87cb769bbd0dce3",
+    "target": "refs/heads/archive/workspace-20261013/e08-r1"
+  },
+  {
+    "repo": ".worktrees/e08-r2",
+    "source": "HEAD",
+    "sha": "6000f299ad77876e9cd3107a7a7af16ddace805f",
+    "target": "refs/heads/archive/workspace-20261013/e08-r2"
+  },
+  {
+    "repo": ".worktrees/e08-r3",
+    "source": "HEAD",
+    "sha": "853e5f414d492c9587a4ce66ca3d665b85cf7f42",
+    "target": "refs/heads/archive/workspace-20261013/e08-r3"
+  },
+  {
+    "repo": ".worktrees/e08-r4",
+    "source": "HEAD",
+    "sha": "127dc72de5b405a074623a46150a14bbbeebe27f",
+    "target": "refs/heads/archive/workspace-20261013/e08-r4"
+  },
+  {
+    "repo": ".worktrees/e08-r5",
+    "source": "HEAD",
+    "sha": "45308db0a7b489d6935d7cc8697f9aed2c643c45",
+    "target": "refs/heads/archive/workspace-20261013/e08-r5"
+  },
+  {
+    "repo": ".worktrees/e09-pm",
+    "source": "HEAD",
+    "sha": "bcbf5df1b8f4ec47499bf6131ecbf6a2ded65db3",
+    "target": "refs/heads/archive/workspace-20261013/e09-pm"
+  },
+  {
+    "repo": ".worktrees/e09-r1",
+    "source": "HEAD",
+    "sha": "baefe629f8d3eb02d96444c87fcbd4d1fb3d7ec2",
+    "target": "refs/heads/archive/workspace-20261013/e09-r1"
+  },
+  {
+    "repo": ".worktrees/e09-r2",
+    "source": "HEAD",
+    "sha": "2286795bbb2e2aeb6227a9002f464df25489f284",
+    "target": "refs/heads/archive/workspace-20261013/e09-r2"
+  },
+  {
+    "repo": ".worktrees/e09-r3",
+    "source": "HEAD",
+    "sha": "5f4c98e14bb2901cb6938fd2e2a5062cfa817f16",
+    "target": "refs/heads/archive/workspace-20261013/e09-r3"
+  },
+  {
+    "repo": ".worktrees/e09-r4",
+    "source": "HEAD",
+    "sha": "2219f972bb17f6dde910e9af676c58aaef077793",
+    "target": "refs/heads/archive/workspace-20261013/e09-r4"
+  },
+  {
+    "repo": ".worktrees/e09-r5",
+    "source": "HEAD",
+    "sha": "cf6d6756ef015fee3908313391cc446a19834085",
+    "target": "refs/heads/archive/workspace-20261013/e09-r5"
+  },
+  {
+    "repo": ".worktrees/e09-r6",
+    "source": "HEAD",
+    "sha": "a6d15f791d0222a66d433d07deb5a6c7611268fd",
+    "target": "refs/heads/archive/workspace-20261013/e09-r6"
+  },
+  {
+    "repo": ".worktrees/e09-r7",
+    "source": "HEAD",
+    "sha": "298ae300f27a663bb5b9039ccf0abc1614caefe4",
+    "target": "refs/heads/archive/workspace-20261013/e09-r7"
+  }
+]

@@ -1,0 +1,13 @@
+{
+  "status": "PASS_FILE_RESTORE_SHA256",
+  "files": 38546,
+  "exitCode": 0,
+  "destination": "release/handoff-20261013/restore-check",
+  "command": "python docs/workspace-delivery/20261013/restore-files.py C:/Repos/changshan-longdan/release/handoff-20261013/restore-check",
+  "method": "new empty directory; verify each chunk, restore each file with SHA256 and size check; no payload execution",
+  "limits": [
+    "file snapshot only; no Git metadata/index restoration",
+    "Unity/Player/provider/gameplay NOT_RUN",
+    "not a remote-delivery receipt"
+  ]
+}

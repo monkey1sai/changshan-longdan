@@ -1,0 +1,14 @@
+diff --git a/unity/ChangshanLongdan/Assets/Foundation/Tests/PlayMode/CrowdPlayTests.cs b/unity/ChangshanLongdan/Assets/Foundation/Tests/PlayMode/CrowdPlayTests.cs
+index ad67dbd..4398441 100644
+--- a/unity/ChangshanLongdan/Assets/Foundation/Tests/PlayMode/CrowdPlayTests.cs
++++ b/unity/ChangshanLongdan/Assets/Foundation/Tests/PlayMode/CrowdPlayTests.cs
+@@ -70,6 +70,9 @@ namespace Changshan.Foundation.Tests
+       int engaged = Enumerable.Range(0, 300).First(i => targets.Engaged(i));
+       var shown = controller.Dummies.Dummies[engaged].position;
+       var logic = controller.Mapping.ToDisplayPosition(targets.X(engaged), 0, targets.Z(engaged));
++      var tr = controller.Dummies.Dummies[engaged];
++      TestContext.WriteLine($"DIAG engaged={engaged} alive={targets.Alive(engaged)} state={targets.State(engaged)} shown={shown:F4} logic={logic:F4} localPos={tr.localPosition:F4} parent={(tr.parent ? tr.parent.name : "-")} parentPos={(tr.parent ? tr.parent.position : Vector3.zero):F4} parentScale={(tr.parent ? tr.parent.lossyScale : Vector3.one):F4} active={tr.gameObject.activeSelf} sameSim={ReferenceEquals(targets, controller.Simulation.Targets)} dummiesIsCrowd={controller.Dummies.name}");
++      for (int i = 0; i < 3; i++) { var d = controller.Dummies.Dummies[i]; TestContext.WriteLine($"DIAG i={i} shown={d.position:F4} logic={controller.Mapping.ToDisplayPosition(targets.X(i), 0, targets.Z(i)):F4} state={targets.State(i)}"); }
+       Assert.That(Vector3.Distance(new Vector3(shown.x, 0, shown.z), logic), Is.LessThan(0.01f));
+       controller.UsePressureCrowd(false);
+       Assert.That(controller.Simulation.Targets.Count, Is.EqualTo(20));

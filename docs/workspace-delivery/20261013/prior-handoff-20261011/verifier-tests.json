@@ -1,0 +1,22 @@
+[
+  {
+    "case": "hardlink-match",
+    "status": "PASS",
+    "reason": null
+  },
+  {
+    "case": "hardlink-escape",
+    "status": "PASS",
+    "reason": "UNVERIFIED_HARDLINK_TARGET: .worktrees/b"
+  },
+  {
+    "case": "content-mismatch",
+    "status": "PASS",
+    "reason": "ARCHIVE_SOURCE_MISMATCH: .worktrees/a"
+  },
+  {
+    "case": "symlink-rejected",
+    "status": "PASS",
+    "reason": "SYMLINK_REQUIRES_SEPARATE_RESTORE_REVIEW: .worktrees/b"
+  }
+]

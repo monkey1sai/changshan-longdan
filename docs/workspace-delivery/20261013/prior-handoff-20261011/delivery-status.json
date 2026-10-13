@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-11",
+  "overallStatus": "INCOMPLETE_PENDING_APPROVALS",
+  "spec": {"completed": 4, "total": 22, "percent": 18.2, "status": "INCOMPLETE", "newRuntimeTests": 0},
+  "localHandoffCommit": "b5354382662ffe8cfaaf005601c00f442c793401",
+  "remote": "git@github.com:monkey1sai/changshan-longdan.git",
+  "publishedTag": {
+    "name": "itch-web-2026-10-02",
+    "tagObject": "220463bcc90b5b8f776e6b489db4e6f618148706",
+    "commit": "c48ecd9a39abbc42ecf34ed3761248e11af7c29d",
+    "status": "PASS_REMOTE_SHA_READBACK",
+    "ci": "NOT_RUN_TAG_DOES_NOT_TRIGGER_WORKFLOW"
+  },
+  "unpublishedBranches": {"count": 8, "status": "PENDING_EXPLICIT_LOCAL_SECRET_PATTERN_SCAN_APPROVAL", "scanExecuted": false},
+  "finalGitBundle": {
+    "path": "all-refs-final.bundle",
+    "status": "PASS_GIT_BUNDLE_VERIFY",
+    "bytes": 148332782,
+    "sha256": "7079ef0b2816c7203f2d142124c7a6f7e1ea63d455ee31595850203c2e2871a0"
+  },
+  "archive": {
+    "path": "worktrees-with-evidence.tar.gz",
+    "bytes": 4695144267,
+    "sha256": "d67df3ffa3eea1243b89b5f416d10c1b15738633bd40d3821e124fca2213f549",
+    "status": "PASS_SOURCE_ARCHIVE_BYTE_MATCH",
+    "manifest": "archive-manifest.json",
+    "verifiedFiles": 99845,
+    "sourceBytes": 11968480584,
+    "verifiedHardlinks": 7099,
+    "excludedCacheDirectories": 40,
+    "restoreExecution": "NOT_RUN"
+  },
+  "cleanup": {
+    "plan": "cleanup-plan.json",
+    "planSha256": "90f46e937675e5696f2ddabe82c360ce3509573d640e4eea40f7aa77b20c137e",
+    "fixedTargets": 37,
+    "deletedWorkDirectories": 0,
+    "status": "PENDING_FIXED_LIST_APPROVAL_AND_GIT_DELIVERY",
+    "freshPredeleteChecks": "NOT_RUN"
+  },
+  "backgroundJobsStartedByThisHandoff": 0,
+  "note": "Archive and bundle commands have completed. Backups remain local and ignored by Git. No history rewrite, main merge, Unity test, or game deployment was performed. Automatic approval review rejected the unpublished-blob secret-pattern scan; it was not executed or bypassed."
+}

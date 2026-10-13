@@ -1,0 +1,1828 @@
+{
+  "status": "PASS_PATTERN_SCAN",
+  "scanned": 227,
+  "commits": 60,
+  "findings": [],
+  "objects": [
+    {
+      "object": "003de88e37ad30a9c93eb2d1e61685e5b75e8ec0",
+      "sha256": "f0be91fcfbb8be87ac69619ce7c4d736d1dc5be1937423d99e61f86600a7d55d",
+      "bytes": 1543,
+      "paths": [
+        "scripts/lib/e12-process.mjs"
+      ]
+    },
+    {
+      "object": "00db84551bf371279254644300768e93082dfd86",
+      "sha256": "f53ea44112a1c30be2ca628c85bfa5b1c0ab762790c8c3a23d3a390d074366ac",
+      "bytes": 4924,
+      "paths": [
+        "openspec/changes/fix-zhaoyun-deformation/specs/zhaoyun-deformation-quality/spec.md"
+      ]
+    },
+    {
+      "object": "0179f058aa8cd11676b4c421e52737d261d28af9",
+      "sha256": "d15b775394504e3ee0d4fed65323a937247d4ad7140ee7035976de88367c2dcc",
+      "bytes": 6046,
+      "paths": [
+        "openspec/changes/unity-migration-followup/tasks.md"
+      ]
+    },
+    {
+      "object": "0369732b3d8fc9dc10f837ed4b2881b90269f729",
+      "sha256": "7039ec09e54bf5d4904efc2f77b3b340bf936f955b3edbabd5f76b95f9701a27",
+      "bytes": 36946,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "043efe1b417fa26498168f1e7881a046d35da300",
+      "sha256": "ac242dcfeeb93b96fe8bd0013b0c758ff2893ccb0952a8a36049e7ed890753a3",
+      "bytes": 17282,
+      "paths": [
+        "unity/ChangshanLongdan/Assets/Character/Runtime/ZhaoYunController.cs"
+      ]
+    },
+    {
+      "object": "04d0334499e508fc2f6f370562ae110ea05d4075",
+      "sha256": "c389e9e1e976a0194c664078cb2dc32c4c7c2a5742ec4022e778b567848e513a",
+      "bytes": 384,
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "object": "04d2c7a7e136e030030edcf99945dfffb73e10d2",
+      "sha256": "30f5455822d85b289f0d9fe4f896910f9c9cd9537955a015198b4aeb2ccc2c12",
+      "bytes": 60,
+      "paths": [
+        "unity/ChangshanLongdan/Assets/Character/Runtime/PerformanceProbe.cs.meta"
+      ]
+    },
+    {
+      "object": "04e494827f3b3b5e2a7ced8584ec3040a74d1a1c",
+      "sha256": "d532eeb9e805c81df80998ff288d1fda0b0e3c43e124a881300528058948dc0a",
+      "bytes": 7156,
+      "paths": [
+        "README.md"
+      ]
+    },
+    {
+      "object": "05136eea7058ae44c6e5c644b5663ac78873e879",
+      "sha256": "8aad09a348c8e260468dbf3c5836409e9486842bed668ff632b814abd3f26fbb",
+      "bytes": 82216,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_PLAN.md"
+      ]
+    },
+    {
+      "object": "0535d59d726380c100d0e8c3c235588e981512e5",
+      "sha256": "02d34e296184aa886533c79f5e59c9f535bcac6e2fbeb6178376b255ce71b450",
+      "bytes": 9021,
+      "paths": [
+        "scripts/lib/e12-performance.mjs"
+      ]
+    },
+    {
+      "object": "068fd3d6108cb93c53e2101f467e45f747731811",
+      "sha256": "5f3c4da26557387a6cb891c8d67ec1960b459e3a1815fabb7e70f93ace50305d",
+      "bytes": 3396,
+      "paths": [
+        "docs/engineering/SESSION_RECONCILIATION_2026-10-08.sources.json"
+      ]
+    },
+    {
+      "object": "08101d79863a1415677942048faa78b1e0c1bc3f",
+      "sha256": "6d8b48f811276c90c7b77e0c78ab84c42a9b1ba921f6c35171d4aaf450ff58ff",
+      "bytes": 9672,
+      "paths": [
+        "openspec/changes/unity-migration-followup/design.md"
+      ]
+    },
+    {
+      "object": "0a0672909f96f352cc43b0ed24393a40b8c03a8e",
+      "sha256": "b90d2947266c32e3b7694bc58f2922a4e68f22641ecabadeccbdff8d8c23dfb4",
+      "bytes": 40282,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_PLAN.md"
+      ]
+    },
+    {
+      "object": "0cb1b2aee1bc5799341fc6d1036ef835a185b4be",
+      "sha256": "b21bdea0e0a26e3410bcc8fe7819cb3a709bcc167a261d5da4e5dba68f92983a",
+      "bytes": 74950,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "0d11ecd09708c2a976444b068d2ab8357e6a67f2",
+      "sha256": "6cabeb9ee662d4bc731bf7926201f910efec4a9f6f165dbd548f084f3e64f5c2",
+      "bytes": 35817,
+      "paths": [
+        "scripts/tests/e12-clock-contract.node.mjs"
+      ]
+    },
+    {
+      "object": "0d6307c98ecd0e8fa0945502fb1552f559da938c",
+      "sha256": "197686e468e865892f84fb2cb90bb82f69fb648c23756f42603e65e56496e926",
+      "bytes": 2086,
+      "paths": [
+        "scripts/lib/e12-process.mjs"
+      ]
+    },
+    {
+      "object": "105ee286d6a20838c4d6ca9e87a2765dea1dd351",
+      "sha256": "10bca36a6e4779c5cee936c6fca46a7cd2f4ee5bd26a96c562e3ce575108bdbf",
+      "bytes": 5297,
+      "paths": [
+        "src/view/character-skin.ts"
+      ]
+    },
+    {
+      "object": "127315c31dd49a02206d679956e3081d1aeca5e1",
+      "sha256": "6a74b7bf0908b1caae78576250daae63be0b2dbd80465ad49052889aad496130",
+      "bytes": 4488,
+      "paths": [
+        "tests/input.test.ts"
+      ]
+    },
+    {
+      "object": "13fe7a1b69d500af2d033854c7952686adec2156",
+      "sha256": "9d207af0a728cb413832ce85260e7a12990ade826c1d73a98bb62915edac8c6f",
+      "bytes": 18920,
+      "paths": [
+        "scripts/unity-validate.mjs"
+      ]
+    },
+    {
+      "object": "1473826a90a62f3894a6e9afc383d4b49da96ecb",
+      "sha256": "ded23f8683dcceb28a2813cc3243d47e97ad6e2e1ba8161361333b77bdf8200b",
+      "bytes": 1560,
+      "paths": [
+        "scripts/lib/e12-process.mjs"
+      ]
+    },
+    {
+      "object": "176e659a4282da5145e304e8904126b866339415",
+      "sha256": "462df2f650575712653537ef6e9319afa2b7837ea959529a1a5832fa6d5aa6d5",
+      "bytes": 19489,
+      "paths": [
+        "src/view/player-model.ts"
+      ]
+    },
+    {
+      "object": "18b38472b84927cf80614277af85bfde94eff40a",
+      "sha256": "8bc438379fcf05486d293fb802862b7c8ba7c7517c345d09db91aa6ecc8ed7a0",
+      "bytes": 52990,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "1a7853ae3a0fdf8e17adbddfc4aeff7107b4842a",
+      "sha256": "a82c48afde4764d5d0f34bf012e091ef75c44fb430adf33583cfd890c6e390f0",
+      "bytes": 5403,
+      "paths": [
+        "openspec/changes/fix-zhaoyun-deformation/specs/zhaoyun-deformation-quality/spec.md"
+      ]
+    },
+    {
+      "object": "1b262bfaed3062c0b0f807f0d4c50de121d0dbc6",
+      "sha256": "7c1b8c84bd23f98abcb576ce17e4b9e59e010bde51a2c4917f415665eb668b4b",
+      "bytes": 3580,
+      "paths": [
+        "openspec/changes/fix-zhaoyun-deformation/tasks.md"
+      ]
+    },
+    {
+      "object": "20fbde126c4366ea1aad5eb5b1d5e6e8d322ebbe",
+      "sha256": "2658b0bc0ccad3b81d6ec61b1d3999c9485ba536639e8f44a2421651ab359370",
+      "bytes": 84274,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_PLAN.md"
+      ]
+    },
+    {
+      "object": "2136a50bd07244aacea6f9369718ebf699a1abb1",
+      "sha256": "4d6c1626463b62cd3b88cb01a9d6d8e114583e605c76f53f13b971c832167dad",
+      "bytes": 13697,
+      "paths": [
+        "scripts/e12-player-clock.mjs"
+      ]
+    },
+    {
+      "object": "218c5f52b4826b647df501f170d06c40d0f74471",
+      "sha256": "9f8d2411f3ecb2b6d43fee10eb1c075b1fb11f7f315ac4cb5f3a6cdf8d7a3afc",
+      "bytes": 19501,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "23aae6f5ca442540b677a7339597a5f78964bdf9",
+      "sha256": "8f299d000e328e8f6985bc808a460b3d91e404060af84da8bcf038805dae6c3c",
+      "bytes": 28266,
+      "paths": [
+        "scripts/tests/e12-performance.node.mjs"
+      ]
+    },
+    {
+      "object": "258d97adf84c7cc1c8292454eec384dbc3a27320",
+      "sha256": "89d2af78ee807bae93886f3c57ead2530fdf6470e002b17005168a62defcda3f",
+      "bytes": 1562,
+      "paths": [
+        "scripts/e12-gpu-telemetry.ps1"
+      ]
+    },
+    {
+      "object": "26189f4565ac7b6998ece67fd3d9b48d3479116d",
+      "sha256": "c232257c8a2545520aa120cda96acb23d00a355d2e3339cba20b7ebf56f28a09",
+      "bytes": 782,
+      "paths": [
+        "art-source/QUATERNIUS-LICENSE.txt"
+      ]
+    },
+    {
+      "object": "28f3d2d337b8a3c401c2ff076b2812f02a06c234",
+      "sha256": "542f3a84372f6ad89628bc7dabf255bcb051418acd2e748169bb85d781c8bf62",
+      "bytes": 15938,
+      "paths": [
+        "scripts/tests/e12-performance.node.mjs"
+      ]
+    },
+    {
+      "object": "2aaa3c2ca33ee25000dc4fd9bdfcb784c18d8f3d",
+      "sha256": "70c4aeb9c2a447054970e8157c2800fad4ef5b0ee03ea8c58b469934115d56b6",
+      "bytes": 81126,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "2ac9da136c97ec14be91abeb8cfc9b12587cf08c",
+      "sha256": "7b757e7c40ec5300e72ec3145f677f54eebac7a0937c9edff682ce6b364d8166",
+      "bytes": 4993552,
+      "paths": [
+        "public/models/zhaoyun.glb"
+      ]
+    },
+    {
+      "object": "2bc13acbff603d10cac2da9ed08358d92bf3c014",
+      "sha256": "b03f0694887ab0b4278b9014e7a41d3353642a812762eaaaeb00d8aba403a4a9",
+      "bytes": 185,
+      "paths": [
+        ".gitattributes"
+      ]
+    },
+    {
+      "object": "2bef846ae28ccfaab3ed26ed690cf41feb6a4baa",
+      "sha256": "fef7730f76aa674a42e5f91e6da1dd413c39addfdd0461f6a9ecadcd2b2b6e28",
+      "bytes": 85735,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_PLAN.md"
+      ]
+    },
+    {
+      "object": "2c35a1de7d2e4bb6880073bd375dfaf4995df3ab",
+      "sha256": "97878dd2d45e8664cf937ea8e76b0144f3cd32b36d2e278e0c05b2ccfd3e203d",
+      "bytes": 362,
+      "paths": [
+        "tools/rea/package.json"
+      ]
+    },
+    {
+      "object": "2c8beb109057dc773209683f3d698826ecc57c0f",
+      "sha256": "335d75ef00ae47ca4d65fdeca25de8f3b6d1efd8a468ac7485a27e569d946382",
+      "bytes": 6694,
+      "paths": [
+        "docs/engineering/E12_PERFORMANCE.md"
+      ]
+    },
+    {
+      "object": "2d0c1dc0d8c43a4d2ad84a7fd04c43d3333ef365",
+      "sha256": "42320c6b35831e63845add07281fc89ad33714b19073d6f1fbc10eec14348d01",
+      "bytes": 12820,
+      "paths": [
+        "scripts/lib/e12-pdh-source-contract.mjs"
+      ]
+    },
+    {
+      "object": "2d2ff93c20cafd94a4fa3fa21770883288a7c3b0",
+      "sha256": "95cc0abfbf7ab858c883e4816bc49f9b9f4e6077a3242bc3b76f531becc9880e",
+      "bytes": 77319,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "2eb1e833f8e858fd8fc5a3b79dcff58722c7ff51",
+      "sha256": "5caffdb92c9f4e48700c59c009689005cb7a2cb3325f06f642c4304d8c6518a6",
+      "bytes": 8508,
+      "paths": [
+        "scripts/diagnostics/Capture-E12PlayerClockWindow.ps1"
+      ]
+    },
+    {
+      "object": "30c292520e14f562773aaf9e1d4060af099f162a",
+      "sha256": "b5610c89a5a29e901be127e0c271eee6cbd71e848efddd4d73696330cc88ba7f",
+      "bytes": 53375,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_PLAN.md"
+      ]
+    },
+    {
+      "object": "30cfff1a7c2d0d3a76ac2b856fa03ff0e4bfe802",
+      "sha256": "2c199bb858d67468deb1b054ce202658828806ddc9b3be57603f750f7084385a",
+      "bytes": 7520,
+      "paths": [
+        "scripts/tests/e12-performance.node.mjs"
+      ]
+    },
+    {
+      "object": "312400ba6cd59890c6c270b2759624251fd8de56",
+      "sha256": "7c5379f96a74580144afcc935c3e6de10ff90720c056508b2689b71e7bdb1d67",
+      "bytes": 16771,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "31661a5a2773477d6632b919a8cecf20fcf4f877",
+      "sha256": "c1522eb3bd195a7e6a0a098b854c04b9a2f1650c9b40968f6e7ba89291ce552b",
+      "bytes": 5066,
+      "paths": [
+        "docs/engineering/E12_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "32b7f60178088e50bec6efe6cf85d381f42c42a7",
+      "sha256": "afa1e8345354fb7c178f8ddc6589cbc5e61cd70e73456efeb5a7729b14b1f297",
+      "bytes": 5402,
+      "paths": [
+        "docs/engineering/E12_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "33107a695ba4e8aeb4644f06624cdf1004b25bad",
+      "sha256": "b71636371ee90f2b195f65e1a11310f8e5cc46cbba4ee5e19d83c28311174b79",
+      "bytes": 18662,
+      "paths": [
+        "scripts/tests/e12-clock-contract.node.mjs"
+      ]
+    },
+    {
+      "object": "33d63f70547e64afa84241d7a9e72547b585e9c5",
+      "sha256": "1d295e07f02fccf13c981425de294f2c1a10d18e764d5430285d85e6f826b287",
+      "bytes": 9574002,
+      "paths": [
+        "art-source/zhaoyun.blend"
+      ]
+    },
+    {
+      "object": "343457e49c6fc437a85c663d20bdbf37ec015c57",
+      "sha256": "72a23fc0d1b36c21f353c3c9df10ccabe23a23483e6b6cd4a83da15ff7600e23",
+      "bytes": 20471,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "350d96be476bbf3c3bb018a52436ae533460d7e0",
+      "sha256": "7a042578fd1b8f1ea89cc87f5479bab255977b729d358be274f30780e9935ef0",
+      "bytes": 5763,
+      "paths": [
+        "openspec/changes/unity-migration-followup/tasks.md"
+      ]
+    },
+    {
+      "object": "359cbaa06d33ca28ad3367d39515b970e5a3aa8d",
+      "sha256": "27616d281cd52dcf3355ddbc8b347cd9face0a638b7c50a3d7c7a8354fcd2d2a",
+      "bytes": 13772,
+      "paths": [
+        "unity/ChangshanLongdan/Assets/Character/Runtime/PerformanceProbe.cs"
+      ]
+    },
+    {
+      "object": "36240ee3158e63f3b873d5d9b89660fd66b62a3d",
+      "sha256": "4425cb615aabee7290727df8db7150d53b05744580121c1227131e63cf237c0d",
+      "bytes": 6641,
+      "paths": [
+        "scripts/e12-probe.mjs"
+      ]
+    },
+    {
+      "object": "36a7d0666e34ed9baa5e52cf03459a9e9dc64dcc",
+      "sha256": "5cd6d939192de4ccd902abc98af2226a8e8b64256273488c15565840328f9962",
+      "bytes": 62682,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_PLAN.md"
+      ]
+    },
+    {
+      "object": "3a1a4d04160a2e5710028c31b7d2271942a4c5c9",
+      "sha256": "e17d85fe92af09b32a99b8bb28923560c819a48c396762f58a56faac4a14aabb",
+      "bytes": 9309,
+      "paths": [
+        "openspec/changes/unity-migration-followup/specs/unity-migration-completion/spec.md"
+      ]
+    },
+    {
+      "object": "3c1ed9d2d7a9385ff3a660c5c56d38c370d26a8c",
+      "sha256": "e1c944e866b4ee26fa1a64455047f97b205aecc3aa5c86344eed2b9fd8f45ab9",
+      "bytes": 30529,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "3c8f0c64ce44ac8dfa8a55589b933abf3233514a",
+      "sha256": "69614c0c7c8c8b6a5246334ce6e580d17ef5371bdbc9ebb6cd0b1794ff88541c",
+      "bytes": 64135,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_PLAN.md"
+      ]
+    },
+    {
+      "object": "4179dc9118badc7bc8c73055d26f695019e4f128",
+      "sha256": "66227003856abd592c33f564a4bae0e023a4bbb07d6fb9a706eed38b7bc9e7eb",
+      "bytes": 14830,
+      "paths": [
+        "scripts/diagnostics/Capture-E12ClockComparison.ps1"
+      ]
+    },
+    {
+      "object": "43548b0222d8aa043a4ddb6d1a014b6b10284469",
+      "sha256": "fe13d98d3b0019e051207c7ce665ab869c170715a9d8b200f7242a573da1d362",
+      "bytes": 8857,
+      "paths": [
+        "openspec/changes/unity-migration-followup/design.md"
+      ]
+    },
+    {
+      "object": "459be31e2585f9760b4bb9738e5846615e6e383c",
+      "sha256": "03c72a864058210f8377f0e0f29d65ef77f59e44998b544c9fb1b26572652b59",
+      "bytes": 2042,
+      "paths": [
+        "scripts/e12-gpu-telemetry.ps1"
+      ]
+    },
+    {
+      "object": "45b3e5bf548273c3cb1503a9980b1c55aeaeba5f",
+      "sha256": "c1ff7d9cf790200fd52aceb51250064c0579a13ba6fb059eb943742a28908a67",
+      "bytes": 2808,
+      "paths": [
+        "unity/ChangshanLongdan/Assets/Foundation/Tests/EditMode/PerformanceTelemetryEditTests.cs"
+      ]
+    },
+    {
+      "object": "460b078a282c4fb77d4b77f469ad6657011cd501",
+      "sha256": "cdc28de7b7348d37b3590689e36f3975daae463b6a614c416408727fff12a846",
+      "bytes": 4711,
+      "paths": [
+        "src/view/character-preview.ts"
+      ]
+    },
+    {
+      "object": "49cbcb1e6e8eefb95dd604501710df97d42656bb",
+      "sha256": "92c8f6bbfd21e69919c8212393d590af777273ec47222ed0422a11277f50953e",
+      "bytes": 6851,
+      "paths": [
+        "docs/engineering/E12_PERFORMANCE.md"
+      ]
+    },
+    {
+      "object": "49f59594be81d9fe272f13e50114e0b1d45d4458",
+      "sha256": "29e67803c9d41297e0fecc9dcaa4cd4ffb762fd73167579e15e3136fdafd60fa",
+      "bytes": 76650,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_PLAN.md"
+      ]
+    },
+    {
+      "object": "49f60e7546a6617ba10b3a56974c9ff47feb6e66",
+      "sha256": "f0d5d964e1d335566e1bd8a10693001d22ef6ddcffdb0f51551b2d8596c16652",
+      "bytes": 13169,
+      "paths": [
+        "unity/ChangshanLongdan/Assets/Foundation/Tests/EditMode/PerformanceTelemetryEditTests.cs"
+      ]
+    },
+    {
+      "object": "4e464f40c526c1b7c3434b35656c63c861840b7d",
+      "sha256": "61683c342eac6fc0b29966f8cb937b1194834c397c56c9ad6dce912e39f516d7",
+      "bytes": 12835,
+      "paths": [
+        "openspec/changes/unity-migration-followup/specs/unity-migration-completion/spec.md"
+      ]
+    },
+    {
+      "object": "4ea41b6c6c1e360845c4e7c85bf411e77fce62cb",
+      "sha256": "fd0796b6bb4d5df0d99db6d1244189231b695f16c520b4bc9cb5fbd35e9bb52f",
+      "bytes": 5967,
+      "paths": [
+        "scripts/e12-probe.mjs"
+      ]
+    },
+    {
+      "object": "4eeb572121d402abdf98c3dad178d6ea87650671",
+      "sha256": "2f8145d8adb9b63834b0659298aa05f60ea76ef288a4d4652216a39bdedfb56e",
+      "bytes": 60,
+      "paths": [
+        "unity/ChangshanLongdan/Assets/Character/Runtime/E12ClockReady.cs.meta"
+      ]
+    },
+    {
+      "object": "4f3175bb8d925291d522ab75e26d13b593716227",
+      "sha256": "6c4b5e86adf255f0a80d53aa9cae8bfd282af5f7e3c61d82542be50ff9ec4d9c",
+      "bytes": 6861,
+      "paths": [
+        "scripts/diagnostics/Capture-E12ClockFingerprint.ps1"
+      ]
+    },
+    {
+      "object": "4fde37eb1c796f4bf318ba6a387c5930c3819be3",
+      "sha256": "b65559c9c2f1b6af692f63a03f14b2ecb51db34db6360bed86bd5cdcbd1c78e2",
+      "bytes": 47820,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "502e988fe642f25302862418886f0bb86c0a55b5",
+      "sha256": "07dbc76fd33c2f3920840abba2fa7abc097017a840b8049dd7312563defb4fe3",
+      "bytes": 5041,
+      "paths": [
+        "docs/engineering/REPO_HANDOFF_20261011.md"
+      ]
+    },
+    {
+      "object": "50d49453867d81e860d51fe5902dff450184c175",
+      "sha256": "f284983f547c69f32f853ab363c7978acea35ba7904614c4e6f402c71384d5fa",
+      "bytes": 4872,
+      "paths": [
+        "scripts/e12-gpu-telemetry.ps1"
+      ]
+    },
+    {
+      "object": "51c78e6fb78a23fe735ddddbcac5ad99fa178d2b",
+      "sha256": "d1b9be3573797d4e8a7ff09f08b5a3eb18c0307d415f631f78ca94bacd74d5d2",
+      "bytes": 7246,
+      "paths": [
+        "scripts/diagnostics/Capture-E12CounterSetInventory.ps1"
+      ]
+    },
+    {
+      "object": "52958c2a0ef2b96c819457008946fbb54aaad01c",
+      "sha256": "a930d6e7c36c6b2f5ca76b0ebcf4743bcd6883c5cc18a3cbc89793e9413ac757",
+      "bytes": 27017,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "568eee17061071eadd1c06888c0733346dd69050",
+      "sha256": "bcc9aafdd307c15a66307302449aa26655921d1069ae69ccbf1bb7695e3636fd",
+      "bytes": 3301,
+      "paths": [
+        "character.html"
+      ]
+    },
+    {
+      "object": "56a4e486df317bb62cd31f392e93186fb4878520",
+      "sha256": "a9b8fd8eb4dd2243719505513450bd2797327b214250d30c46d2997dad10172d",
+      "bytes": 32792,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "56d3147321a7db2f59834aab47708b954658beaa",
+      "sha256": "31b840bd95ee6b6e96ab4d006a1eb089415533651ba5969b8e99ccec53b82b6f",
+      "bytes": 64799,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "56e48df195980f9cf8678a738743b84f9254977a",
+      "sha256": "2ac5293272081c99658730656a9b389da67d45abe485e3c5a592e088f58d6e32",
+      "bytes": 7974,
+      "paths": [
+        "docs/engineering/UNITY_SPEC_V2_DECISION_RECORD.md"
+      ]
+    },
+    {
+      "object": "578b23e4a27b3ab7c250d672a88403c99f92ae2a",
+      "sha256": "4030416c5c434dfcfdc16b61625f8f32d66320cc37f1ef6fcd5832ce29d46ea0",
+      "bytes": 61742,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_PLAN.md"
+      ]
+    },
+    {
+      "object": "5825af4f52ffcc56dcbab3a4df9a96dbb0729422",
+      "sha256": "4263c16e78d152ff57a18a41b21a00145b939fd3c1eb716f6683b42df2051fea",
+      "bytes": 8744,
+      "paths": [
+        "docs/engineering/REA_SPEC_SUPPORT.md"
+      ]
+    },
+    {
+      "object": "5a86a4a03c81a1c046e604db6ba8b636468e94c8",
+      "sha256": "ee685dffd87c7db4b45e470939de5195f9f1056c6b15833fe250db885b25822f",
+      "bytes": 2587,
+      "paths": [
+        "openspec/changes/fix-zhaoyun-deformation/proposal.md"
+      ]
+    },
+    {
+      "object": "5b511e89e3310e0f76eaaf1b41b4783db6779bb0",
+      "sha256": "f15ab8e000091a9e6ad7f3a902c7545d60c40eaec565ed2038c5eecaaed20add",
+      "bytes": 21904,
+      "paths": [
+        "scripts/tests/e12-performance.node.mjs"
+      ]
+    },
+    {
+      "object": "5c5923b418ae0a428766d2e574e0bea6f6bd964a",
+      "sha256": "3205398972322f9fca10bb432d22c89a716479a5563d3e016176844581473963",
+      "bytes": 56712,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "5e3b94e3f124569fbe24b0f07c00c227f15e845f",
+      "sha256": "66c8e233a66eb1c8d048b3844b4f473f1d4d128dafd7f332cf1e30aeb0e4d548",
+      "bytes": 597,
+      "paths": [
+        "tsconfig.json"
+      ]
+    },
+    {
+      "object": "5ef94ad4df8aa017f29000923a6bed4e09ed739f",
+      "sha256": "b141a792c49028dbca741f5760c4204b0f5055477d162fc5c248e3c6efc9687a",
+      "bytes": 20828,
+      "paths": [
+        "unity/ChangshanLongdan/ProjectSettings/ProjectSettings.asset"
+      ]
+    },
+    {
+      "object": "5fe515c1835eb85579c13ff0b7fe86fd11b72338",
+      "sha256": "6a76f34dba2f5db30ca6c7a4e9ff84d970a48f33a1aecd2fe532abac152d642d",
+      "bytes": 4221,
+      "paths": [
+        "docs/engineering/E12_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "608a85a739a6f68f3987a09649edd4e26b7e4a6c",
+      "sha256": "be020ab9eef7f42c6de64f67f13e82c9598e2d0d1104a0516f77871052a09e46",
+      "bytes": 60,
+      "paths": [
+        "unity/ChangshanLongdan/Assets/Foundation/Tests/EditMode/E12ClockReadyEditTests.cs.meta"
+      ]
+    },
+    {
+      "object": "608cbbcee47ec3799895991069686ae70f42a86b",
+      "sha256": "5ffc72ae257f76b1abe429776075fb63a496ba4e10e8bd830ceec55968d65b74",
+      "bytes": 60,
+      "paths": [
+        "unity/ChangshanLongdan/Assets/Foundation/Tests/EditMode/PerformanceScopeEditTests.cs.meta"
+      ]
+    },
+    {
+      "object": "61928cf8262cdd86ae0aa43c4c5a35f755173d6d",
+      "sha256": "e36c386bf07867c9c36f56171cac7d69de2d5bde35e55268b0ae94e5d1c4fd23",
+      "bytes": 22665,
+      "paths": [
+        "scripts/diagnostics/Capture-E12ClockComparison.ps1"
+      ]
+    },
+    {
+      "object": "61d941126de83e735d7d705851b6577c1f8d0a1f",
+      "sha256": "89df299c4a4d9c310e8b6f2fdd5ae5928852b455857f474a2947132c95cb070e",
+      "bytes": 21135,
+      "paths": [
+        "scripts/tests/e12-clock-contract.node.mjs"
+      ]
+    },
+    {
+      "object": "626daa720422bfcf7191099d454d03e71ffaff8d",
+      "sha256": "8ab6202747cb34b0d021e1b0618078c5ad93c626bf55c611e779d99f9204eecc",
+      "bytes": 5921,
+      "paths": [
+        "src/core/input.ts"
+      ]
+    },
+    {
+      "object": "6354866e7f502d91612ba2f9600e352ea7d50e2a",
+      "sha256": "e82b4649c07f6931a6f4b6d92d7efc895874e3799293136ceb1be1a9034247ce",
+      "bytes": 6194,
+      "paths": [
+        "scripts/lib/e12-performance.mjs"
+      ]
+    },
+    {
+      "object": "638a155ab67748d66f9768e8a01f753f53ce42aa",
+      "sha256": "3ddf657732809386f99b3efa46f42ed228a5d6a4b4c5b37b891c1a4e094cb6df",
+      "bytes": 9358,
+      "paths": [
+        "unity/ChangshanLongdan/Assets/Foundation/Tests/PlayMode/ZhaoYunControllerPlayTests.cs"
+      ]
+    },
+    {
+      "object": "65e9c51c63dc7f6275843afb3199d177377ed7ba",
+      "sha256": "755793b05d9fe0606597dba9bbbf5606049034f4842784bc065d1290ebe35a4b",
+      "bytes": 43687,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "68c5733c103189eb66537027ad2bf95e5bcdd579",
+      "sha256": "182f41fc707fbefc5bce7d57657f8d4885c73d8edf96e6c9f297a542be102c01",
+      "bytes": 19256,
+      "paths": [
+        "scripts/unity-validate.mjs"
+      ]
+    },
+    {
+      "object": "6f931d63b5ffce330952dd02dd7e5e84bf340377",
+      "sha256": "e8493fc12d8631d3c90d0a0fb2e946092681dcf1fd620be117fa92d790068920",
+      "bytes": 2569,
+      "paths": [
+        "unity/ChangshanLongdan/Assets/Foundation/Tests/EditMode/E12ClockReadyEditTests.cs"
+      ]
+    },
+    {
+      "object": "6fa663d40996fb4fab14f93ad3d4b679c882ffae",
+      "sha256": "15d451292670686b4d2e65da3e281619d752ad43a70756ceca1204b5149b5a55",
+      "bytes": 1480,
+      "paths": [
+        "unity/ChangshanLongdan/Assets/Foundation/Tests/EditMode/PerformanceScopeEditTests.cs"
+      ]
+    },
+    {
+      "object": "718583174b20c2773ee62579c4a4f418e8088f60",
+      "sha256": "1012d569a104a01fe4397bce1ade367a0b21db5a416c5941d10392e988c81513",
+      "bytes": 6400,
+      "paths": [
+        "openspec/changes/fix-zhaoyun-deformation/design.md"
+      ]
+    },
+    {
+      "object": "75197077ac3a0c7bdb4205bb9052c166ab7d592c",
+      "sha256": "e2fc8a5878b54460222b9667facbd5e89ae5af20f50a359301d2a3d091871470",
+      "bytes": 2325,
+      "paths": [
+        "unity/ChangshanLongdan/Assets/Foundation/Tests/EditMode/PerformanceTelemetryEditTests.cs"
+      ]
+    },
+    {
+      "object": "75916b40831d1fb1a2f059eb355ad1df8a39e8d5",
+      "sha256": "853906777d9bf558ec7e5664c6112bb38e8033a567a20256108bcb16cdd0b252",
+      "bytes": 28980,
+      "paths": [
+        "src/game.ts"
+      ]
+    },
+    {
+      "object": "7838b127aec82984a1c541de50f466c15b298e73",
+      "sha256": "e6a93669237ab7eff303fa311969a510bdcedb2413e637bf38f52b9b6dd3c5ed",
+      "bytes": 7145,
+      "paths": [
+        "tests/character.test.ts"
+      ]
+    },
+    {
+      "object": "7a019518e76a3cb0aa21b8f3e62e4d7325555c8d",
+      "sha256": "4f6cbb9b4ed04b245eac38e02976e08f1d82cd553ca567aede8bd95e22fb8bac",
+      "bytes": 4096,
+      "paths": [
+        "docs/engineering/REA_SPEC_SUPPORT_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "7a8932d35cb92f3ee8c18472c0266dfdd0b31af2",
+      "sha256": "8c54295dd977cdd71d70e3ed2cc675431135b3906f2cd96a095110bc835c4488",
+      "bytes": 68214,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_PLAN.md"
+      ]
+    },
+    {
+      "object": "7b0a473dad6118485c063e5e3fd42103fc281d1f",
+      "sha256": "1cba02a61b4c46c0d5383f76d340ad3dff8a06bea093d25329f6ec90b4ab115d",
+      "bytes": 12156,
+      "paths": [
+        "openspec/changes/unity-migration-followup/design.md"
+      ]
+    },
+    {
+      "object": "7b0b68f2e35c187297fa252983cae262c987ffc6",
+      "sha256": "0b526fc4a106adb35adfef9c98875e3e16a1f119374041fb5284610fdf76ce33",
+      "bytes": 5049,
+      "paths": [
+        "src/view/camera-rig.ts"
+      ]
+    },
+    {
+      "object": "7e1046e718edf2d3d6c492ce7427f91461574b35",
+      "sha256": "30be39f412154b2ddb575e206041867fddb3afe3a16cdf3671b9d7f5e1b5b585",
+      "bytes": 54983,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_PLAN.md"
+      ]
+    },
+    {
+      "object": "7ec02bbcba6238a3a50ec30987a3ef3f06d79053",
+      "sha256": "46a77acdc39eff01abd4ead349c08b4db5e8bdb25d710d902cd6775724bbaa45",
+      "bytes": 60,
+      "paths": [
+        "unity/ChangshanLongdan/Assets/Character/Runtime/PerformanceFrameLedger.cs.meta"
+      ]
+    },
+    {
+      "object": "7f27b657dc1bd90e4a1253310eaf11fcd4c848e2",
+      "sha256": "b416bb8316a6d393a98609580eae1773ba2b97caca5e45120df195c1d3958b47",
+      "bytes": 16053,
+      "paths": [
+        "scripts/tests/e12-performance.node.mjs"
+      ]
+    },
+    {
+      "object": "801f68406e58015a49826ad697064399c2987b20",
+      "sha256": "af03201f2f44acd8be21e3b771902a8874c64d68ca7fa35e8b7a59949e2f43d6",
+      "bytes": 93613,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_PLAN.md"
+      ]
+    },
+    {
+      "object": "80592ef5be2e7462be213a84f387a61a317a1a8a",
+      "sha256": "c3954815e086e28a13ce618f657a4ae1a2023f080f2e0dec85afd90290bc9bf1",
+      "bytes": 28835,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "813969856f7449f3b30799ca40d49ec7c650926c",
+      "sha256": "d549717a6218561f574ec8fa0ff157bb79115ce00be22426475863b5741a2270",
+      "bytes": 7234,
+      "paths": [
+        "AGENTS.md"
+      ]
+    },
+    {
+      "object": "81a41a56e80e306026afb2f508a9ce98e2248582",
+      "sha256": "d2a2808d21c5b39257e416db3a6741c48a39c33d065fc7f5c61dbb9a03cdb3b2",
+      "bytes": 7564,
+      "paths": [
+        "openspec/changes/unity-migration-followup/tasks.md"
+      ]
+    },
+    {
+      "object": "8322e3aaa87f1d6de9bb56519a069e4d4eb14c44",
+      "sha256": "22595a7276cfb0e9f7596def1be52a8c95e6cf79eba062103cde7872e0448960",
+      "bytes": 10587,
+      "paths": [
+        "unity/ChangshanLongdan/Assets/Character/Runtime/PerformanceProbe.cs"
+      ]
+    },
+    {
+      "object": "83ab6a9c877b6648d642f8120505f2c84a325ab8",
+      "sha256": "9b73be778aab4d1b9212190f712c8f88a3dfd9c1441d9ac633b12e0e732f32d6",
+      "bytes": 3505,
+      "paths": [
+        "scripts/tests/e12-performance.node.mjs"
+      ]
+    },
+    {
+      "object": "83fbd8c37eb135eaa892548bf64850363618322e",
+      "sha256": "b65c1350c3c1825f25dac26419c86f98d7bc1bc6b0ee5f587c04ce4045d46d39",
+      "bytes": 18937,
+      "paths": [
+        "scripts/tests/e12-clock-contract.node.mjs"
+      ]
+    },
+    {
+      "object": "85a51304d80ca091546d96cc2b01e55e9baee930",
+      "sha256": "fc349085aaa11f3afd1701fc1faed89396d09bcb5f26317796d26940324d4643",
+      "bytes": 19221,
+      "paths": [
+        "scripts/unity-validate.mjs"
+      ]
+    },
+    {
+      "object": "860b0b82887251dd90f3d900c6680e3275d41be2",
+      "sha256": "d2247d46c89c5f43c6ca6a7c7ef8aa8e7ebe0db0823551bf495f67e753db7329",
+      "bytes": 6891,
+      "paths": [
+        "scripts/e12-probe.mjs"
+      ]
+    },
+    {
+      "object": "863f58ea278c94c5b4a6b2429f377d7262fe9354",
+      "sha256": "d51cd8705c0e4a7e073e668c38883c2b42d819e94b83765c560c577dd0132163",
+      "bytes": 3545,
+      "paths": [
+        "AGENTS.md"
+      ]
+    },
+    {
+      "object": "86d9c95f53c0672365b876aa27d3ba813aa298fa",
+      "sha256": "4cc06a0125754f705d5feeb18e77dfcd80bebc8706ae9d18d4bd1947565c21e6",
+      "bytes": 4732,
+      "paths": [
+        "src/view/camera-rig.ts"
+      ]
+    },
+    {
+      "object": "88c1210c37a4997cc601def6882980e2ec0d6959",
+      "sha256": "be6459e52add68212d3f6cff5aa3002e6395053e5a6d8a875f245ad33c691872",
+      "bytes": 60,
+      "paths": [
+        "unity/ChangshanLongdan/Assets/Foundation/Tests/PlayMode/PerformanceTelemetryPlayTests.cs.meta"
+      ]
+    },
+    {
+      "object": "891381dc49a19d1c88b1712f18e26c0b962ecec1",
+      "sha256": "28a91f29157e1092e688e7b991ab0a53be743b07cfc0b51b4ba6c16e95ef2da7",
+      "bytes": 6859,
+      "paths": [
+        "openspec/changes/fix-zhaoyun-deformation/design.md"
+      ]
+    },
+    {
+      "object": "89abc1403438639b9f937a349dc9b1f7967e17e6",
+      "sha256": "db30f8d7c5d2138d26be87a4ffd421d8b8a727a731d6a29896722e718bef28a1",
+      "bytes": 6617,
+      "paths": [
+        "openspec/changes/fix-zhaoyun-deformation/design.md"
+      ]
+    },
+    {
+      "object": "8a28a691b1bf3370f33569ed37c54a6c54624ae1",
+      "sha256": "7e30e945d2721eb29f19696977a47759a3a74cc8df396aa9b47952241e82fab0",
+      "bytes": 5825,
+      "paths": [
+        "docs/engineering/E12_PERFORMANCE.md"
+      ]
+    },
+    {
+      "object": "8e2e8b6609ebeafcafa30c21b3c990990eecd122",
+      "sha256": "5de726292aa776643df3ebe810d10f87157a35b5c1f037a1a60cdfbca1384129",
+      "bytes": 51303,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "8f165006f61e585cb6a9b31bf0c3888d82c8ec83",
+      "sha256": "8e7574cae8cf58fb4575ca84d06b9e6de647264d21167d7fef215987e9c0d146",
+      "bytes": 12141,
+      "paths": [
+        "scripts/lib/e12-performance.mjs"
+      ]
+    },
+    {
+      "object": "8f1d8a22e4dfdb59d23ee85134fe13b5a47eeabd",
+      "sha256": "954855c26de1bdfec2c0abc21c3e7a9bf35d3dfb6515d41c4d4ce54da480394a",
+      "bytes": 2797,
+      "paths": [
+        "tests/camera-rig.test.ts"
+      ]
+    },
+    {
+      "object": "902d88fcb64feedfed724e2767ef4fd4c7f958d8",
+      "sha256": "cd054b2e7d3bcad4a8b59a96b950b36077b6e2dc8bb13f54837029c0273d2cda",
+      "bytes": 12162,
+      "paths": [
+        "unity/ChangshanLongdan/Assets/Character/Runtime/PerformanceProbe.cs"
+      ]
+    },
+    {
+      "object": "9074a4e45356c99dc372e8520e010ad33a156787",
+      "sha256": "7b83397288c10b1124e614a004ce9c4fd1a71958c613670aba898c9a733ded18",
+      "bytes": 40896,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "928dd49d3495fea637f889d2a95358dc8795a72b",
+      "sha256": "88f38c116629ba5e14b4a189b1f855c3a37e1e735bcccef8cb86746f7c75ff61",
+      "bytes": 49248,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "935974d6877df4e05f58f2f34b0912cb5368335e",
+      "sha256": "974106947fef1e47c0c4ecd74b8c325863fca61e0669b365c970efa3d98e371a",
+      "bytes": 81886,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_PLAN.md"
+      ]
+    },
+    {
+      "object": "94a36aaa93572b8c924d579fb29b2d4744e6e1cf",
+      "sha256": "e8112e9508477fe0800d9e129c5e06ac9848ea9d471cfb085deadfbff84af84f",
+      "bytes": 3675,
+      "paths": [
+        "src/view/player-equipment.ts"
+      ]
+    },
+    {
+      "object": "9901a23be95551f8d1982891cc431f4f064854a8",
+      "sha256": "e49982cfdd9621ae77226310e218bbeb663ccb2ef1b125c3b2ada51025927df3",
+      "bytes": 18612,
+      "paths": [
+        "scripts/unity-validate.mjs"
+      ]
+    },
+    {
+      "object": "992eac05e06453a9b4c98cc019ad262e5a2ddea8",
+      "sha256": "9e685729aaa9705db4e2ed5c01db199450d73098eabac3b458418cd82dfbb313",
+      "bytes": 1023,
+      "paths": [
+        "src/view/camera-clearance.ts"
+      ]
+    },
+    {
+      "object": "99ff33d06cc450f9c21b22eabb6b459a3f8fa8aa",
+      "sha256": "9705f8aaa7f552bf81f6af23bccd61e9d2b3b320b726be1007866022416a7ee8",
+      "bytes": 61,
+      "paths": [
+        "unity/ChangshanLongdan/Assets/Foundation/Tests/EditMode/E12ClockReadyEditTests.cs.meta"
+      ]
+    },
+    {
+      "object": "9ac155d4dddc45754c9be94cea43d46521399d11",
+      "sha256": "8229dfa1c31b376dc0d76c1b7265b1ddc3a904162fec2dcef1dd2dc17df1b771",
+      "bytes": 79944,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_PLAN.md"
+      ]
+    },
+    {
+      "object": "9c1766c36f2f25cdf879d576205c818ab245e104",
+      "sha256": "d2d59776bb1b44a5305440401ac66e00871e34491b068918b6db18e68923d0ab",
+      "bytes": 24664,
+      "paths": [
+        "scripts/tests/e12-clock-contract.node.mjs"
+      ]
+    },
+    {
+      "object": "9ca9e4ccbdd1235db63ebba9bf846146e3b65756",
+      "sha256": "e4064f200696849664eb971277f730c07802d08544a40aa75a194edc2c561b5d",
+      "bytes": 5325,
+      "paths": [
+        "unity/ChangshanLongdan/Assets/Character/Runtime/E12ClockReady.cs"
+      ]
+    },
+    {
+      "object": "9de1316643e16e36354ffe67b7d62fc6e030e894",
+      "sha256": "d6308e3bd1d6cd459647dd4f023dcf7b2f1648bb4a4c3ad67ee3122ce632e6ae",
+      "bytes": 39765,
+      "paths": [
+        "package-lock.json"
+      ]
+    },
+    {
+      "object": "9e77c0fa1faf3028b881d31f1159ed6c0a11416b",
+      "sha256": "101d43d12922d32678dcc816eec6add09cbb7f820e34f481d8f2dc8d703991c1",
+      "bytes": 18313,
+      "paths": [
+        "src/world/castle.ts"
+      ]
+    },
+    {
+      "object": "a248b6287b0529758ee1bfb166e98c7a24c3d43e",
+      "sha256": "764504f1102b0968da2c064b74ddba1a490a81e927f8beee32033e50150a35ea",
+      "bytes": 8623,
+      "paths": [
+        "scripts/tests/e12-performance.node.mjs"
+      ]
+    },
+    {
+      "object": "a3141c149fe8bac3220205243bbdc3e4e3b13e4a",
+      "sha256": "1d79e29b114b6904c2d02407dc030c62edacc22166dd752eb2837ef3d11f01e1",
+      "bytes": 2760,
+      "paths": [
+        "unity/ChangshanLongdan/Assets/Foundation/Tests/EditMode/PerformanceTelemetryEditTests.cs"
+      ]
+    },
+    {
+      "object": "a328ecd13f59fa0b6fd9fcea7eee0ecd98d30623",
+      "sha256": "50fba249773079f1b40a0546d0170d378f6e65f69d87423de76354fadd26ff53",
+      "bytes": 3699,
+      "paths": [
+        "openspec/changes/fix-zhaoyun-deformation/tasks.md"
+      ]
+    },
+    {
+      "object": "a39a604b226dd517c91cc12b33279d7c2b89a28e",
+      "sha256": "5740f2d33253ac1e827d671180cc9cf0e9e25b6ff334b86bf77c33954fa1c760",
+      "bytes": 3082,
+      "paths": [
+        "openspec/changes/unity-migration-followup/proposal.md"
+      ]
+    },
+    {
+      "object": "a44a56f503e41d95dcb7e84b63032ad8a6681e8e",
+      "sha256": "2acea12cad67d63571953bffc4bc9dbe9d7dc08b61233c790f94510858b0c7a0",
+      "bytes": 1429,
+      "paths": [
+        "package.json"
+      ]
+    },
+    {
+      "object": "a4baf4a86c016da0e2e1b0ee3b982442c65aaa80",
+      "sha256": "97666c5cfb7d29d45692fffb04cae90d34d8bbc2c611c946a6d2c15f4228701c",
+      "bytes": 13950,
+      "paths": [
+        "unity/ChangshanLongdan/Assets/Character/Runtime/PerformanceProbe.cs"
+      ]
+    },
+    {
+      "object": "a75aa46265087ae2aa746a73bd11170b3b12fc3b",
+      "sha256": "849c04419a12cff125e375772d56decc47025ceef7bbfeadd8327ec961002dc7",
+      "bytes": 8483,
+      "paths": [
+        "unity/ChangshanLongdan/Assets/Character/Runtime/PerformanceFrameLedger.cs"
+      ]
+    },
+    {
+      "object": "a770e4f6dfd097e7af4eebe65c1c3cdd27420f35",
+      "sha256": "283e9c2ce3629ed18e3a44fdbbf498b931bd3d4171d687d077bbae8140ad9ef6",
+      "bytes": 12689,
+      "paths": [
+        "docs/engineering/UNITY_E12_PDH_SOURCE_PROPOSAL.md"
+      ]
+    },
+    {
+      "object": "a7b20a241fc2be3eef772a2accbd14fd70c13a4b",
+      "sha256": "11a1570fa97bff80b13d7a717652a8e12e17bb26be8fa37f83e4d2f11799d653",
+      "bytes": 7089,
+      "paths": [
+        "unity/ChangshanLongdan/Assets/Foundation/Tests/PlayMode/PerformanceTelemetryPlayTests.cs"
+      ]
+    },
+    {
+      "object": "aa0ac8b30b8747cbf101b8d6ed49af56e2a21d3d",
+      "sha256": "b0a78ac659cc428e3497bfd07dd34bf20f35934a2bd5f2187959a1ffc3f8dc62",
+      "bytes": 3580,
+      "paths": [
+        "openspec/changes/fix-zhaoyun-deformation/tasks.md"
+      ]
+    },
+    {
+      "object": "ac386f2ec23442fc56db521771debeacf80f3a54",
+      "sha256": "099525a35800b7fbe1e5172ffdfb4380faa406b352d02d97bab05f1e0d8f6668",
+      "bytes": 83959,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_PLAN.md"
+      ]
+    },
+    {
+      "object": "ac9bad71a3a529a6c5ed73db136b2c20ccc08a9d",
+      "sha256": "65cd15cd4cd11550f45771f5d51c6a67198fb6e543b6a2b70012e3678f67228e",
+      "bytes": 60254,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_PLAN.md"
+      ]
+    },
+    {
+      "object": "ad09bccef7c8904c5653d9f706ff74cbec9847f8",
+      "sha256": "c90dd1f943877c7a6f0823fea79096ff88768a654684b9a6f2db695fc8759675",
+      "bytes": 18612,
+      "paths": [
+        "scripts/unity-validate.mjs"
+      ]
+    },
+    {
+      "object": "adeb6264c25fbcc53fcfeb1258b196f207ba2f0b",
+      "sha256": "404b11e2de92d5c4abbadd542d3f8ff29d813a4fe2479f437e2f27ac93ebbcc7",
+      "bytes": 1968,
+      "paths": [
+        "public/THIRD_PARTY_LICENSES.txt"
+      ]
+    },
+    {
+      "object": "ae57c42ad3ca2193caef2a93e42e98428bc2572e",
+      "sha256": "4ad374507a59475630257a0ce87e302e3db65f82992e65c542fc26dd4c70e002",
+      "bytes": 25767,
+      "paths": [
+        "scripts/tests/unity-execution.node.mjs"
+      ]
+    },
+    {
+      "object": "af68d9a60d7cfcba774103b4041cca85a4fb2398",
+      "sha256": "ab22fd5614027d74dfea545839eed33aabf5720208ca8d30e2f34e2d01659ee6",
+      "bytes": 2036,
+      "paths": [
+        "tests/camera-rig.test.ts"
+      ]
+    },
+    {
+      "object": "af7a19369085dd75d6d5ab87838b7fdb6130d200",
+      "sha256": "431e863863b4bd3eca26036247dabfdb08bd2215bfc535c4ce124bbd1e073f0a",
+      "bytes": 19255,
+      "paths": [
+        "scripts/unity-validate.mjs"
+      ]
+    },
+    {
+      "object": "b01b344fcb3db6fcc51a4866e485749d4b407ff3",
+      "sha256": "f3b9a86bb5013e9677c53532f17fd399aecfcdf3760d4efeefc80bb09fc2d23e",
+      "bytes": 59252,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "b15a217def3de29d74d7dc6263e50835e6687b5a",
+      "sha256": "548e48c2d69a6fd41c63f211d87e82b995c39a0e7a5cb025fae8d1bb2ae20cba",
+      "bytes": 17463,
+      "paths": [
+        "unity/ChangshanLongdan/Assets/Character/Runtime/ZhaoYunController.cs"
+      ]
+    },
+    {
+      "object": "b25b863cf93e113f24b37c5fc7f995ca59d53b90",
+      "sha256": "bc0acc2b84e3fc9fd89ea1cc164e7e87f1db49499d1fdfdeaef57df04a29a277",
+      "bytes": 752,
+      "paths": [
+        "scripts/prepare-character.py"
+      ]
+    },
+    {
+      "object": "b3150e5f2c11e874ebf82f581e64fc664d3d39e9",
+      "sha256": "0618ea94d4c8bfddadbece07f3279f09dc1d3e34e8e4bb9f47c0010d112766dd",
+      "bytes": 170,
+      "paths": [
+        "openspec/changes/fix-zhaoyun-deformation/README.md"
+      ]
+    },
+    {
+      "object": "b596a339fbeb9405f0187b3da3dc7041f0aa7703",
+      "sha256": "cc2c1f071e15b0c6a159a6b155c1592357e478f0c84d7f230d4ee1258ec6889f",
+      "bytes": 4248,
+      "paths": [
+        "docs/character-validation.md"
+      ]
+    },
+    {
+      "object": "b6b858e1a83e531adb88780ec4a665a1e980f14d",
+      "sha256": "6a7e9bd4e576750cb89bc99bd9fe30f701a8f189a1627a69649c31321dae1dee",
+      "bytes": 12134,
+      "paths": [
+        "scripts/lib/e12-performance.mjs"
+      ]
+    },
+    {
+      "object": "b6c64bb5ddb477f9851e039770642fd767ee1a59",
+      "sha256": "899cdf9a9c26dbeef1cfb2dc136b17711cb8becd96f82d082e4a10bc6f6a06c4",
+      "bytes": 69122,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "b8343efe97d8cc87014903f55712a3b76434297b",
+      "sha256": "b4f1d351e44e4c5769d366e049d0da43bfccce6928720fe1d3b22639db672f46",
+      "bytes": 45402,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "b8af8aab36c17b6fa9d397370c14f208e0867527",
+      "sha256": "2cd92c4684a614e3f8631025df202aeab72a2c21a12140577dc81c566596d2d0",
+      "bytes": 18655,
+      "paths": [
+        "scripts/unity-validate.mjs"
+      ]
+    },
+    {
+      "object": "bb3d7d6181b76ac4d26a2652d2374b3291d83414",
+      "sha256": "8e45a9e24b0e986b08a4ebaf16ccc1f0edd2ec2bbdedac0e50730ea3f69b76e7",
+      "bytes": 77437,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_PLAN.md"
+      ]
+    },
+    {
+      "object": "bbe75c55809d91b6545715c130c8aa21683f4e0a",
+      "sha256": "2e594e25ccf6ed7687c4a0fa3d1eece1030d9c9ef44be452f6d9d3ebd04e53a5",
+      "bytes": 58898,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "bf960ed0212488bd3d501f65834f5b8f4a5a73ef",
+      "sha256": "4b6ff10b655d5e01cb01569dffed9d894852df63abebb8307958b018c58f6006",
+      "bytes": 626,
+      "paths": [
+        "package.json"
+      ]
+    },
+    {
+      "object": "c0f5823d31a118f5480cf08e74ddf86e64124a87",
+      "sha256": "b31c4e717825cc978190f2f62ecbaef12f0ac1bdf1e9c13bf5fb20e84e847eb9",
+      "bytes": 14282,
+      "paths": [
+        "scripts/tests/e12-pdh-source-contract.node.mjs"
+      ]
+    },
+    {
+      "object": "c458ced02bf44bfaebc32154ea63937c987d1e3a",
+      "sha256": "93c8c4f04cd3f1e6acaf231265cb1fbc8f50241458d6d36b729349bf0a361f20",
+      "bytes": 35328,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "c52111073e4b478102c495518e7e11830e5849ca",
+      "sha256": "d8fe3a3b72e87dad6cd89371c0836840ab994ea24fee67625f377097139d29b5",
+      "bytes": 25365,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "c5ade74a677e9a73f7222e75db30d973a038356a",
+      "sha256": "c40a40369412fcf16880a3724474d87dfe93b14657f8425d1e19203ffe25a6c8",
+      "bytes": 6344,
+      "paths": [
+        "openspec/changes/unity-migration-followup/tasks.md"
+      ]
+    },
+    {
+      "object": "c6295b6260ae6db1ea37e3b80085822d4cbb452b",
+      "sha256": "aa80a4952a1f9580071ada36650d9b32f6c9284a96829902a39c4964a90da537",
+      "bytes": 7228,
+      "paths": [
+        "unity/ChangshanLongdan/Assets/Foundation/Editor/FoundationBuild.cs"
+      ]
+    },
+    {
+      "object": "c6e4ef93318facbac8829869fbf61ea1a0299c83",
+      "sha256": "682f96632aafbd3eaf9d9ea2e2b4bac89ad549bd539bd5312c997c6b58d6c216",
+      "bytes": 24159,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "c7eb4ba1b3b2f07f8b558c39033fa4fff208222d",
+      "sha256": "565431cd26f5e26cb2ee5b3e05c9ec1d1794b43886fa0867c33f79501ad91834",
+      "bytes": 11646,
+      "paths": [
+        "docs/engineering/SESSION_RECONCILIATION_2026-10-08.md"
+      ]
+    },
+    {
+      "object": "c7faf118de4bf13845fe4dd60d683f7453cfd988",
+      "sha256": "108a3c6ba06aba8258cee850aff6960b681489349abfb785697d8ab5e4559b09",
+      "bytes": 54797,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "c8f408146923b4d30b1e70de183e270e8554a04c",
+      "sha256": "80b2cb859c00e08cefbc92367cd7462cf10b4e548f2ce9600c98839edbd1f298",
+      "bytes": 19406,
+      "paths": [
+        "scripts/unity-validate.mjs"
+      ]
+    },
+    {
+      "object": "c9e2f23dd9089383ffa3a822f75b411695c38d39",
+      "sha256": "ad5eb2971f70fb8c6a726ceb2276c7b747b16a32760550227c425a6909c32d8d",
+      "bytes": 22426,
+      "paths": [
+        "scripts/tests/e12-performance.node.mjs"
+      ]
+    },
+    {
+      "object": "cac48d8e73bf03900defc22989e69c9bc0d032ac",
+      "sha256": "c219ff1ac29a1143cabfafeef618589129d48067bb5c1c020a1ae997938d51d7",
+      "bytes": 60829,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "cb205cd19f2ccdf3e92286d345c7a357c4bf86e9",
+      "sha256": "1566dfdcc7ef28256807b07a53d6ac7d1a66adb13ab3abbae01ac8de634ba5d3",
+      "bytes": 4378,
+      "paths": [
+        "docs/references/mmorpg-github-sources.md"
+      ]
+    },
+    {
+      "object": "cb7e1ffc004237e46bead5379a2e78ec71696449",
+      "sha256": "fdd596ba3f37d7f22d230e3b0bb0cb3a44f541a51d0bf8b0f8105c94002c3204",
+      "bytes": 7716,
+      "paths": [
+        "index.html"
+      ]
+    },
+    {
+      "object": "cc078b4f7f4f00b69579973fa87e7984985207cb",
+      "sha256": "f4342dccff7e06f4ace31af050030ed3cc776c640edffc93005bba99a6421577",
+      "bytes": 2560,
+      "paths": [
+        "src/world/layout.ts"
+      ]
+    },
+    {
+      "object": "cd20825d8428e075392cad2825a6aaf22105e7fe",
+      "sha256": "9e2c8980a0355d0cd6b892165336f97c02197e4acf56e3371408c1ca61ea0097",
+      "bytes": 92906,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_PLAN.md"
+      ]
+    },
+    {
+      "object": "cd779916a5ec0d5a2be937eb44136f8f543c8b82",
+      "sha256": "8a355260d18129694d77cb7e4256239c29b8b14fa99b26e5d637913ea5645468",
+      "bytes": 29401,
+      "paths": [
+        "src/game.ts"
+      ]
+    },
+    {
+      "object": "cef95da7cfb753403d44a108ab2e48ea10d3e9a2",
+      "sha256": "ef8e74735d47009c53c3c167faf7c4497bd05096471a66397d879f4641f1b5c9",
+      "bytes": 5034,
+      "paths": [
+        "openspec/changes/fix-zhaoyun-deformation/specs/zhaoyun-deformation-quality/spec.md"
+      ]
+    },
+    {
+      "object": "d051778484c42c70206412c7537dcead31c81e04",
+      "sha256": "c9c0a6ea6efe8adca1752f75f69dc2e20f77a12d9e6ff65d7c02df58961528a7",
+      "bytes": 9965,
+      "paths": [
+        "docs/itch-page.md"
+      ]
+    },
+    {
+      "object": "d100eac2145957b6cb6f991adf7dab6baeb8bcd6",
+      "sha256": "68925b7ac68657518a465a2dec4de5f879cf2893666ea17e90301d1bf90462ee",
+      "bytes": 5078,
+      "paths": [
+        "openspec/changes/fix-zhaoyun-deformation/specs/zhaoyun-deformation-quality/spec.md"
+      ]
+    },
+    {
+      "object": "d494e51e6ca13b7b9c20701a6eed8567ce7cb0ec",
+      "sha256": "6b1167edc267122d02f203e9e14ac3a9684d5952c65421837af3e0781ebe8ab3",
+      "bytes": 40510,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "d4fdbe2e296feef4784f30adac60956aeef43555",
+      "sha256": "e880eb638ed41254d9aeb9e7cd6dbb7aa4d16c271c6253b5214465658847945b",
+      "bytes": 74724,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_PLAN.md"
+      ]
+    },
+    {
+      "object": "d5b3baee5b7e4d8ae8f34105e2ccc49baf44832f",
+      "sha256": "11a4c3c28341a3b4ac8f3da35624cce0552b58ddedd48cec915c4cb2dec3df9f",
+      "bytes": 4838,
+      "paths": [
+        "scripts/lib/e12-performance.mjs"
+      ]
+    },
+    {
+      "object": "d63f610f3881dd3f385bcc3d15324496c04ed2dd",
+      "sha256": "85c08956299638ea30e621cbcbb0388ae0ee028d0ed908e16f215d3fd1716c60",
+      "bytes": 4400,
+      "paths": [
+        "scripts/lib/e12-clock-contract.mjs"
+      ]
+    },
+    {
+      "object": "d640acf79c3b4de3f48b7b79a0234b118fbe9659",
+      "sha256": "567259fde2992717cf2b586323344df84bf5a97e1ad8a000ad70d4be8bb306dd",
+      "bytes": 71316,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "d6a1c2aa111a213bf173b0b5db04d3573e2d0e96",
+      "sha256": "b38c82badf86cd5b32f3a9fe41b9b7c025955c370ef5cac25e9b857f74fa0862",
+      "bytes": 5023,
+      "paths": [
+        "docs/engineering/REA_SPEC_SUPPORT_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "d6b65c99c240129bdd111760d259ee50a42c1209",
+      "sha256": "0d298e2b95c9e64f46752e35aa1e9f2fc0a30dde09a35c9dbadea7fd9a35eabc",
+      "bytes": 13391,
+      "paths": [
+        "scripts/e12-player-clock.mjs"
+      ]
+    },
+    {
+      "object": "d7217aed5d14b2d959b7934ae866b5852a5772ce",
+      "sha256": "5b0e8a7b2d23e28d85bcda57cc7ce1e776de82df815c0f0d6db7827863fb2250",
+      "bytes": 183,
+      "paths": [
+        "art-source/zhaoyun-stats.json"
+      ]
+    },
+    {
+      "object": "da904c03a256b1c818d55558637160af7200838a",
+      "sha256": "cd0a212a651a783465e49ad83ae25219c7f8d197bbcad757e9e6a4de1c9df23f",
+      "bytes": 21714,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "dc77016e13ed2143266d88223755c59b4a7b34b8",
+      "sha256": "202628c9bcc535a5ab03e1e5e459d267eb3bad6dcbeb186cf7955ff997815f7d",
+      "bytes": 10266,
+      "paths": [
+        "docs/engineering/UNITY_E12_PDH_SOURCE_PROPOSAL.md"
+      ]
+    },
+    {
+      "object": "dcfbbbc4973e9ef82918551329fb5f411cc7410d",
+      "sha256": "8d1afa9e5f9f6bca03b48a32b5a0d01cf46652f673ee785c7241e3603f53a10b",
+      "bytes": 6420,
+      "paths": [
+        "docs/art/requests/cl-zhaoyun-deformation-v1.md"
+      ]
+    },
+    {
+      "object": "ddb4a772ff1becb867a5734aba94364e83aa698f",
+      "sha256": "5f4f2ac5b2496b0f1ec6c1879e7fd98a0b814830f8a78833894e20e61eb71a5b",
+      "bytes": 6018284,
+      "paths": [
+        "art-source/quaternius-base.glb"
+      ]
+    },
+    {
+      "object": "de491454e5f0bae105f602e5af1084fab1dbaad6",
+      "sha256": "666e623723c07c1fd0b60cdc13b8635c016bfeadecac4c708a31502f6f240969",
+      "bytes": 13717,
+      "paths": [
+        "scripts/e12-player-clock.mjs"
+      ]
+    },
+    {
+      "object": "de9e722b0058e4cdcccf4e4fb43859f48d302228",
+      "sha256": "5b68a173bf0007f59ab8e497cd6eacab4c32f33f12c73d7798802747261fc9ee",
+      "bytes": 5341,
+      "paths": [
+        "scripts/lib/e12-performance.mjs"
+      ]
+    },
+    {
+      "object": "deafa52ad43a70fabf6394e1535a571f87d95f11",
+      "sha256": "0488d1c8d1096c39d8c8dd22cb650f551257e7caab653920c0c951d076bb2cda",
+      "bytes": 3718,
+      "paths": [
+        "scripts/render-character.py"
+      ]
+    },
+    {
+      "object": "e04a1afdd4c8c5be65b3d6c7de2b253f3f066acd",
+      "sha256": "0833d32c977995bd57dc7a77a2b93e16c4b1bf3a75a6ebc7592d36bfe5bc0f14",
+      "bytes": 9017,
+      "paths": [
+        "scripts/lib/e12-performance.mjs"
+      ]
+    },
+    {
+      "object": "e231a4002bf59fbc4b1440857a5cbd3a7b8cf776",
+      "sha256": "e109e21aa4f635326c53c00047904f5302dd635db0d2f84579686a0c761ba571",
+      "bytes": 11855,
+      "paths": [
+        "unity/ChangshanLongdan/Assets/Character/Runtime/PerformanceProbe.cs"
+      ]
+    },
+    {
+      "object": "e2c1349a8651e76fd4689e2528648a085c750652",
+      "sha256": "11e5aca0ab4db13092edee66ae1a7d71677b983b31c5801d60189be5eeebbf40",
+      "bytes": 220326,
+      "paths": [
+        "docs/references/MMORPG_GitHub_Source_Report_20261005.pdf"
+      ]
+    },
+    {
+      "object": "e4eb9f1f48ce3b4b319efb312aaae035dc5387b7",
+      "sha256": "af5e79edd5205ded98633a84056acf5fa600bd631101095f250694e09bb95cce",
+      "bytes": 29240,
+      "paths": [
+        "src/game.ts"
+      ]
+    },
+    {
+      "object": "e50032062c2a08f02e26a14a83ec4bf66ee56229",
+      "sha256": "37526d441ba8abced1df9b239173ddd900753c231e32a02a6dcfcd4cb71118d5",
+      "bytes": 34914,
+      "paths": [
+        "scripts/tests/e12-performance.node.mjs"
+      ]
+    },
+    {
+      "object": "e563f4e6d0a98dfb8ce34f3665768fe0417b764e",
+      "sha256": "3d2b6b9174afc547c6ffe2ce7fe4b09d7ab1a9e91022947d7884a712b48299b3",
+      "bytes": 42110,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_PLAN.md"
+      ]
+    },
+    {
+      "object": "e5aee0875d01069da7609dfefb47d15718055293",
+      "sha256": "8d53a71a79679787a7a5a0a060e5f58dc3a5823ca2f29569a30c686742b210af",
+      "bytes": 45030,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_PLAN.md"
+      ]
+    },
+    {
+      "object": "e6a214e53820eef2eebbab5916318bc74d29ff7a",
+      "sha256": "d15b02a78bf5da0c187f256ed91d3f501acd9e2dc06fdcb63fe9d0df9d55e34b",
+      "bytes": 67501,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_PLAN.md"
+      ]
+    },
+    {
+      "object": "e6dbfc16a9330347a3708ca5d409661746ad60de",
+      "sha256": "38a2e90fbca38d80cc1faf5827cbd565f34ab2c99feae21d1609594efbeec436",
+      "bytes": 3815,
+      "paths": [
+        "openspec/changes/fix-zhaoyun-deformation/tasks.md"
+      ]
+    },
+    {
+      "object": "e7231d9ca323e7daf0b48661e1b116a3c74ae0c6",
+      "sha256": "5e891905acac175526329a0f21ae4622efd4a5bb110f034823da8eeda64d6f9d",
+      "bytes": 8852,
+      "paths": [
+        "scripts/tests/e12-clock-contract.node.mjs"
+      ]
+    },
+    {
+      "object": "e8159b86990fa9360472c2b784ab8e48187e7cdc",
+      "sha256": "a9ee52f006c2e2fa9c87d139ad94c01e27216ea2bdfeb3c9300aeffb8b192310",
+      "bytes": 51056,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_PLAN.md"
+      ]
+    },
+    {
+      "object": "e8fb439c942b614354534d13dfbe8428237e9640",
+      "sha256": "b9949bf3e4114ff5077f5e1af4911377372b91b41c508034aece17ae9bc9b2ab",
+      "bytes": 4954,
+      "paths": [
+        "tests/input.test.ts"
+      ]
+    },
+    {
+      "object": "ea11803836809662d24247484addd44bd818e9f6",
+      "sha256": "1b2a0ba54339ee1e9b213fa9f04d7f649dd2a06791f3f54a019441e6420989ac",
+      "bytes": 10846,
+      "paths": [
+        "scripts/build-character.py"
+      ]
+    },
+    {
+      "object": "eb3633eef0a6d992e63337b73719933a42cf64a4",
+      "sha256": "6badbede3d7b1cd7522c5c3ed7dd907f77fb2b25aeca4d28ce8ffceb95584415",
+      "bytes": 13364,
+      "paths": [
+        "unity/ChangshanLongdan/Assets/Character/Runtime/PerformanceProbe.cs"
+      ]
+    },
+    {
+      "object": "ecb9262001f599af307a63e832e4e87d160f07d1",
+      "sha256": "954699761fcbc0eba9cc421456454afaf97df42479ebd5392ba710d07a95e5cc",
+      "bytes": 64773,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_PLAN.md"
+      ]
+    },
+    {
+      "object": "ecc732799088ebb0072d29dc5b59719cafce808f",
+      "sha256": "ed8d65c5067a377e0ad75dcdc219badf97819ce69dd6ee0d06bbb89eaf0bed56",
+      "bytes": 13467,
+      "paths": [
+        "scripts/diagnostics/Capture-E12PlayerClockWindow.ps1"
+      ]
+    },
+    {
+      "object": "ee19721931e412579b2e6095e7ae9752e545907e",
+      "sha256": "3225349957e12f3ac1dbc13148a68a0fc2ccdca5f0545e390db124531005ae68",
+      "bytes": 6668,
+      "paths": [
+        "docs/engineering/REA_SPEC_SUPPORT.md"
+      ]
+    },
+    {
+      "object": "efa1528d7c4f31f7b3f98e6489d386371805940b",
+      "sha256": "a5dc8c157e7a9838f0951bf0250b25e608fff1f6714f2fda7e1bcfab753b215c",
+      "bytes": 7385,
+      "paths": [
+        "scripts/lib/e12-clock-contract.mjs"
+      ]
+    },
+    {
+      "object": "efb8ae50e331310c73ad5ce8d6fb41516fa632e6",
+      "sha256": "da32caf095d07ba1e5081c5534f8fa35d4219002dc78ff6dc3dca555ae619c79",
+      "bytes": 44445,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_PLAN.md"
+      ]
+    },
+    {
+      "object": "f07770231894e38890083815b5b449072cb5a382",
+      "sha256": "74558e75a7e71a3a8167f2b633ed67b966beaaa476a00500ee518214f2b3e3b8",
+      "bytes": 38134,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "f1bd49e856aa97e857755d81f6fc23d1a608bfbb",
+      "sha256": "a2fa08a8521aed59442c955a8624ab2e8678a1e4b0ecf4942df6ac5f985cc9ec",
+      "bytes": 42790,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_PLAN.md"
+      ]
+    },
+    {
+      "object": "f30ab920f6752ef3fe741becb672f565c24a20b9",
+      "sha256": "b7145dc59a505ded6601d6edaa20ec6d8adfc193206ce11e8f28c6fb28bcbd00",
+      "bytes": 19022,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_STEP_RECORD.md"
+      ]
+    },
+    {
+      "object": "f488587a898e6c78a5b773de725386a8eb6541da",
+      "sha256": "d296e5f42cec1ca9c875132a5662112ad954ad952770c16891abd6a261220d6e",
+      "bytes": 65645,
+      "paths": [
+        "tools/rea/package-lock.json"
+      ]
+    },
+    {
+      "object": "f5e531c22e7cb3ed8508908db27954bd05aa5ecb",
+      "sha256": "5d489904ce1d6dc4b2a4c9946d82ae2d3aae3bfff9ff23c476df46872e886737",
+      "bytes": 90763,
+      "paths": [
+        "docs/engineering/UNITY_E12_CAPABILITY_PLAN.md"
+      ]
+    },
+    {
+      "object": "f6e490538d6484c1d40e0e3798ebbeb892f08b94",
+      "sha256": "77b2de7925ba7111bb0991a2ff59d2f38a8d0814c11df63a169f5cfdb93a0565",
+      "bytes": 17156,
+      "paths": [
+        "scripts/tests/e12-performance.node.mjs"
+      ]
+    },
+    {
+      "object": "fceac197b6c9102e8317dac805d136baf9c2d0e8",
+      "sha256": "8051933a625029fd6546e457d867bc777c8986047af010e1d14f61a100224d7e",
+      "bytes": 3467,
+      "paths": [
+        "art-source/README.md"
+      ]
+    },
+    {
+      "object": "ff9460f5828f85e4c9444013cc3d3ce92722ef27",
+      "sha256": "50ad81f6513312f94d0c14381c1895ec8db61255eb6335a075851f06ca83a76f",
+      "bytes": 60,
+      "paths": [
+        "unity/ChangshanLongdan/Assets/Foundation/Tests/EditMode/PerformanceTelemetryEditTests.cs.meta"
+      ]
+    }
+  ],
+  "limitations": [
+    "finite patterns, not exhaustive detection",
+    "no credential/config contents read"
+  ]
+}

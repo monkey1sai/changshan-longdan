@@ -1,0 +1,1447 @@
+{
+  "schemaVersion": 1,
+  "root": "C:\\Repos\\changshan-longdan",
+  "repos": [
+    {
+      "path": "C:\\Repos\\changshan-longdan",
+      "registered": true,
+      "head": "805db86f67ab2be152dea8abe57ca47f4e735fb7",
+      "branch": "main",
+      "status": "?? .claude/\n?? .worktrees/",
+      "caches": [],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 1,
+          "bytes": 3153,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\_clones\\e10-a",
+      "registered": false,
+      "head": "572ae5c228e32719c96c6551a8c656bb3492cba9",
+      "branch": "",
+      "status": "",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 16210,
+          "bytes": 780386531,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 71,
+          "bytes": 12096505,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 11,
+          "bytes": 34654,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 2,
+          "bytes": 1147,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\_clones\\e10-b",
+      "registered": false,
+      "head": "9f8e3856d78e94455e6e439917f628bd2c908fa0",
+      "branch": "",
+      "status": "",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 15041,
+          "bytes": 596901795,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Temp",
+          "files": 2,
+          "bytes": 8,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 55,
+          "bytes": 10552369,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 3,
+          "bytes": 2133,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 2,
+          "bytes": 725,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": [
+        "unity\\ChangshanLongdan\\Temp\\UnityLockfile"
+      ]
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\_clones\\e10-c",
+      "registered": false,
+      "head": "f8d4879b4d4dbd25ca5572c4b27ab08d398cf1ef",
+      "branch": "",
+      "status": "",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 18862,
+          "bytes": 952606601,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 407,
+          "bytes": 189129182,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 30,
+          "bytes": 671731,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 2,
+          "bytes": 1147,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\_clones\\e10-d",
+      "registered": false,
+      "head": "3d725df6392c6a55120ae8872c7bc25f278dcaab",
+      "branch": "",
+      "status": "",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 18862,
+          "bytes": 953146474,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 423,
+          "bytes": 232053389,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 30,
+          "bytes": 671060,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 2,
+          "bytes": 1147,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\_clones\\e10-m",
+      "registered": false,
+      "head": "d554e253ad3be00a8a6fb27471d433baf40b52b9",
+      "branch": "",
+      "status": "",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 18862,
+          "bytes": 952485538,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 407,
+          "bytes": 189139327,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 30,
+          "bytes": 673779,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 2,
+          "bytes": 1147,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\_clones\\e11-a",
+      "registered": false,
+      "head": "231437a3cda5b2d8e6e89ac0d20e52d2fdc94872",
+      "branch": "",
+      "status": "",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 16210,
+          "bytes": 780547361,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 73,
+          "bytes": 12124134,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 11,
+          "bytes": 37192,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 2,
+          "bytes": 1147,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\_clones\\e11-b",
+      "registered": false,
+      "head": "916116d8a42fe7dcfbbd4f93f903fb8d34463856",
+      "branch": "",
+      "status": "",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 18862,
+          "bytes": 952344175,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 451,
+          "bytes": 204612264,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 30,
+          "bytes": 673867,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 2,
+          "bytes": 1147,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\_clones\\e11-c",
+      "registered": false,
+      "head": "be04336f108db76bb75da31e8b68e065eb182307",
+      "branch": "",
+      "status": "",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 18874,
+          "bytes": 954707190,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 809,
+          "bytes": 384906510,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 11,
+          "bytes": 34541,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 2,
+          "bytes": 1147,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\_clones\\e12-a",
+      "registered": false,
+      "head": "3f45d134da9b6ca997e1de0c8b5b2a2eec60c447",
+      "branch": "",
+      "status": "",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 18886,
+          "bytes": 960752191,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 1158,
+          "bytes": 553235962,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 11,
+          "bytes": 34489,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 2,
+          "bytes": 1147,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\configure-jev-changshan",
+      "registered": true,
+      "head": "90bd16aedadadb32ff2684e69a06613482fb3eab",
+      "branch": "codex/configure-jev-changshan",
+      "status": "",
+      "caches": [],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 0,
+          "bytes": 0,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\e01-closeout-record",
+      "registered": true,
+      "head": "3ff380d3b89d31ad78c89bebd4a4323458b3ea43",
+      "branch": "codex/e01-closeout-record",
+      "status": "",
+      "caches": [],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 3,
+          "bytes": 2752,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\e03-r2-clone",
+      "registered": false,
+      "head": "462d3a62c43834d0292fbc8bc2b3f632a5d9aa66",
+      "branch": "",
+      "status": "M unity/ChangshanLongdan/Assets/Foundation/Scenes/Foundation.unity\n?? unity/ChangshanLongdan/Assets/Character.meta\n?? unity/ChangshanLongdan/Assets/Character/Editor.meta\n?? unity/ChangshanLongdan/Assets/Character/Editor/Changshan.Character.Editor.asmdef.meta\n?? unity/ChangshanLongdan/Assets/Character/Editor/CharacterSetup.cs.meta\n?? unity/ChangshanLongdan/Assets/Character/Editor/EditorSync.cs.meta\n?? unity/ChangshanLongdan/Assets/Character/Materials.meta\n?? unity/ChangshanLongdan/Assets/Character/Materials/\n?? unity/ChangshanLongdan/Assets/Character/Resources.meta\n?? unity/ChangshanLongdan/Assets/Character/Resources/\n?? unity/ChangshanLongdan/Assets/Character/Runtime.meta\n?? unity/ChangshanLongdan/Assets/Character/Runtime/Changshan.Character.asmdef.meta\n?? unity/ChangshanLongdan/Assets/Character/Runtime/CharacterImportReport.cs.meta\n?? unity/ChangshanLongdan/Assets/Character/Runtime/CharacterImportValidator.cs.meta\n?? unity/ChangshanLongdan/Assets/Character/Runtime/GlbJson.cs.meta\n?? unity/ChangshanLongdan/Assets/Character/Runtime/ZhaoYunCharacter.cs.meta\n?? unity/ChangshanLongdan/Assets/Character/Runtime/ZhaoYunContract.cs.meta\n?? unity/ChangshanLongdan/Assets/Character/ZhaoYun.prefab\n?? unity/ChangshanLongdan/Assets/Character/ZhaoYun.prefab.meta\n?? unity/ChangshanLongdan/Assets/Foundation/Runtime/CaptureGate.cs.meta\n?? unity/ChangshanLongdan/Assets/Foundation/Tests/EditMode/CharacterSourceEditTests.cs.meta\n?? unity/ChangshanLongdan/Assets/Foundation/Tests/PlayMode/CharacterImportPlayTests.cs.meta\n?? unity/ChangshanLongdan/Assets/StreamingAssets.meta\n?? unity/ChangshanLongdan/Assets/StreamingAssets/Characters.meta\n?? unity/ChangshanLongdan/Assets/StreamingAssets/Characters/zhaoyun.glb.meta",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 16128,
+          "bytes": 774879751,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 59,
+          "bytes": 11593310,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 26,
+          "bytes": 1196942,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 2,
+          "bytes": 847,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\e04-r1",
+      "registered": false,
+      "head": "8dd2eadb34172d5194afe65f839e46e02d49492a",
+      "branch": "claude/e04-input-moves",
+      "status": "M unity/ChangshanLongdan/Assets/Character/ZhaoYun.prefab\n?? unity/ChangshanLongdan/Assets/Character/Runtime/LogicDisplayMapping.cs.meta\n?? unity/ChangshanLongdan/Assets/Character/Runtime/RawInputSources.cs.meta\n?? unity/ChangshanLongdan/Assets/Character/Runtime/ZhaoYunController.cs.meta\n?? unity/ChangshanLongdan/Assets/Combat.meta\n?? unity/ChangshanLongdan/Assets/Combat/Runtime.meta\n?? unity/ChangshanLongdan/Assets/Combat/Runtime/Arena.cs.meta\n?? unity/ChangshanLongdan/Assets/Combat/Runtime/Changshan.Combat.asmdef.meta\n?? unity/ChangshanLongdan/Assets/Combat/Runtime/CombatMath.cs.meta\n?? unity/ChangshanLongdan/Assets/Combat/Runtime/Combo.cs.meta\n?? unity/ChangshanLongdan/Assets/Combat/Runtime/HitShape.cs.meta\n?? unity/ChangshanLongdan/Assets/Combat/Runtime/InputMapper.cs.meta\n?? unity/ChangshanLongdan/Assets/Combat/Runtime/MoveDefinition.cs.meta\n?? unity/ChangshanLongdan/Assets/Combat/Runtime/Moves.cs.meta\n?? unity/ChangshanLongdan/Assets/Combat/Runtime/Player.cs.meta\n?? unity/ChangshanLongdan/Assets/Combat/Runtime/PlayerDriver.cs.meta\n?? unity/ChangshanLongdan/Assets/Combat/Runtime/PlayerTuning.cs.meta\n?? unity/ChangshanLongdan/Assets/Combat/Runtime/PlayerTypes.cs.meta\n?? unity/ChangshanLongdan/Assets/Foundation/Tests/EditMode/CombatParity.cs.meta\n?? unity/ChangshanLongdan/Assets/Foundation/Tests/EditMode/CombatParityEditTests.cs.meta\n?? unity/ChangshanLongdan/Assets/Foundation/Tests/EditMode/CombatRuleEditTests.cs.meta\n?? unity/ChangshanLongdan/Assets/Foundation/Tests/EditMode/LogicDisplayMappingEditTests.cs.meta\n?? unity/ChangshanLongdan/Assets/Foundation/Tests/EditMode/MiniJson.cs.meta\n?? unity/ChangshanLongdan/Assets/Foundation/Tests/PlayMode/ZhaoYunControllerPlayTests.cs.meta",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 16140,
+          "bytes": 776014166,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 56,
+          "bytes": 11600659,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 26,
+          "bytes": 1194735,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 2,
+          "bytes": 847,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\e04-r5",
+      "registered": false,
+      "head": "ff20810e631be7b879cb4c49b11613c4dca55071",
+      "branch": "claude/e04-input-moves",
+      "status": "M unity/ChangshanLongdan/Assets/UniversalRenderPipelineGlobalSettings.asset\n M unity/ChangshanLongdan/Packages/manifest.json\n M unity/ChangshanLongdan/Packages/packages-lock.json\n M unity/ChangshanLongdan/ProjectSettings/EditorBuildSettings.asset\n M unity/ChangshanLongdan/ProjectSettings/GraphicsSettings.asset\n M unity/ChangshanLongdan/ProjectSettings/InputManager.asset\n M unity/ChangshanLongdan/ProjectSettings/ProjectSettings.asset\n M unity/ChangshanLongdan/ProjectSettings/QualitySettings.asset\n?? unity/ChangshanLongdan/ProjectSettings/PackageManagerSettings.asset\n?? unity/ChangshanLongdan/ProjectSettings/Packages/\n?? unity/ChangshanLongdan/ProjectSettings/URPProjectSettings.asset",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 35521,
+          "bytes": 1989551143,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 398,
+          "bytes": 188080310,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 58,
+          "bytes": 10644905,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 7,
+          "bytes": 52241,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\e05-b",
+      "registered": false,
+      "head": "fbd2f868a9dac650cb5927a2bd7ba30773fbae11",
+      "branch": "claude/e05-hit-clock",
+      "status": "M unity/ChangshanLongdan/Assets/Foundation/Scenes/Foundation.unity\n?? unity/ChangshanLongdan/Assets/Character/Materials/TrainingDummy.mat\n?? unity/ChangshanLongdan/Assets/Character/Materials/TrainingDummy.mat.meta\n?? unity/ChangshanLongdan/Assets/Character/Runtime/TrainingDummies.cs.meta\n?? unity/ChangshanLongdan/Assets/Combat/Runtime/CombatSimulation.cs.meta\n?? unity/ChangshanLongdan/Assets/Combat/Runtime/GameClock.cs.meta\n?? unity/ChangshanLongdan/Assets/Combat/Runtime/HitResolver.cs.meta\n?? unity/ChangshanLongdan/Assets/Combat/Runtime/HitTargets.cs.meta\n?? unity/ChangshanLongdan/Assets/Foundation/Tests/EditMode/HitParity.cs.meta\n?? unity/ChangshanLongdan/Assets/Foundation/Tests/EditMode/HitParityEditTests.cs.meta\n?? unity/ChangshanLongdan/Assets/Foundation/Tests/PlayMode/ZhaoYunHitPlayTests.cs.meta",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 16140,
+          "bytes": 775984928,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 56,
+          "bytes": 11613345,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 26,
+          "bytes": 1194907,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 2,
+          "bytes": 847,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\e06-animation",
+      "registered": true,
+      "head": "39cdc06ce2bc7237c643111dfeaa7604b6982160",
+      "branch": "claude/e08-crowd",
+      "status": "",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 16316,
+          "bytes": 854239860,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 0,
+          "bytes": 0,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 39,
+          "bytes": 3338664726,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 6,
+          "bytes": 54869,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\e06-b",
+      "registered": false,
+      "head": "3abec71ae34c9c2a9774246caee16f84c5581d01",
+      "branch": "claude/e06-animation",
+      "status": "A  unity/ChangshanLongdan/Assets/Animation.meta\nA  unity/ChangshanLongdan/Assets/Animation/Runtime.meta\nA  unity/ChangshanLongdan/Assets/Animation/Runtime/AnimationMetrics.cs.meta\nA  unity/ChangshanLongdan/Assets/Animation/Runtime/Changshan.Animation.asmdef.meta\nA  unity/ChangshanLongdan/Assets/Animation/Runtime/FootPlant.cs.meta\nA  unity/ChangshanLongdan/Assets/Animation/Runtime/PlayerPoses.cs.meta\nA  unity/ChangshanLongdan/Assets/Animation/Runtime/ProceduralRig.cs.meta\nA  unity/ChangshanLongdan/Assets/Animation/Runtime/RigNode.cs.meta\nA  unity/ChangshanLongdan/Assets/Animation/Runtime/SkinBinding.cs.meta\nA  unity/ChangshanLongdan/Assets/Animation/Runtime/ThreeMath.cs.meta\nA  unity/ChangshanLongdan/Assets/Character/Runtime/CharacterAnimation.cs.meta\nA  unity/ChangshanLongdan/Assets/Character/Runtime/RouteRecorder.cs.meta\nA  unity/ChangshanLongdan/Assets/Foundation/Tests/EditMode/RigParity.cs.meta\nA  unity/ChangshanLongdan/Assets/Foundation/Tests/EditMode/RigParityEditTests.cs.meta\nA  unity/ChangshanLongdan/Assets/Foundation/Tests/PlayMode/AnimatedCharacterPlayTests.cs.meta",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 16154,
+          "bytes": 777263724,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 56,
+          "bytes": 11625992,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 26,
+          "bytes": 1194844,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 2,
+          "bytes": 847,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\e07-b",
+      "registered": false,
+      "head": "c3c8698b55d734b7ca47af687040d798901e91a9",
+      "branch": "claude/e07-impact",
+      "status": "A  unity/ChangshanLongdan/Assets/Character/Runtime/CameraShake.cs.meta\nA  unity/ChangshanLongdan/Assets/Combat/Runtime/CombatEvents.cs.meta\nA  unity/ChangshanLongdan/Assets/Combat/Runtime/EnemyTypes.cs.meta\nA  unity/ChangshanLongdan/Assets/Combat/Runtime/Mulberry32.cs.meta\nA  unity/ChangshanLongdan/Assets/Combat/Runtime/SpatialHash.cs.meta\nA  unity/ChangshanLongdan/Assets/Foundation/Tests/EditMode/ReactionParity.cs.meta\nA  unity/ChangshanLongdan/Assets/Foundation/Tests/EditMode/ReactionParityEditTests.cs.meta\nA  unity/ChangshanLongdan/Assets/Foundation/Tests/PlayMode/ReactionPlayTests.cs.meta",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 16154,
+          "bytes": 777374044,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 56,
+          "bytes": 11636621,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 26,
+          "bytes": 1194145,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 2,
+          "bytes": 847,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\e07-closeout",
+      "registered": true,
+      "head": "4be6898653fb6369de42920ac7c7ffaff97ae7c1",
+      "branch": "docs/e07-closeout",
+      "status": "",
+      "caches": [],
+      "retained": [],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\e08-b",
+      "registered": false,
+      "head": "def285fa4a7f398168edabd2c4b9b860f23e9fe4",
+      "branch": "claude/e08-crowd",
+      "status": "",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 16173,
+          "bytes": 777391262,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 63,
+          "bytes": 11770635,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 11,
+          "bytes": 34386,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 2,
+          "bytes": 1147,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\e08-closeout",
+      "registered": true,
+      "head": "ee9d0fe970427f649eb52bbce34745b04f5b0817",
+      "branch": "docs/e08-closeout",
+      "status": "",
+      "caches": [],
+      "retained": [],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\e08-pm",
+      "registered": false,
+      "head": "02a4a7f960568d2f13fab212488da43ab30baa1d",
+      "branch": "",
+      "status": "",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 18831,
+          "bytes": 950322650,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 402,
+          "bytes": 188906435,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 30,
+          "bytes": 673670,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 2,
+          "bytes": 1147,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\e08-r1",
+      "registered": false,
+      "head": "3d0849b9b86f23fb24a80315f87cb769bbd0dce3",
+      "branch": "claude/e08-crowd",
+      "status": "",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 16173,
+          "bytes": 777565713,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 63,
+          "bytes": 11764655,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 11,
+          "bytes": 34230,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 2,
+          "bytes": 1147,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\e08-r2",
+      "registered": false,
+      "head": "6000f299ad77876e9cd3107a7a7af16ddace805f",
+      "branch": "",
+      "status": "",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 16196,
+          "bytes": 779205811,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 71,
+          "bytes": 12005449,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 11,
+          "bytes": 37305,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 2,
+          "bytes": 1147,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\e08-r3",
+      "registered": false,
+      "head": "853e5f414d492c9587a4ce66ca3d665b85cf7f42",
+      "branch": "",
+      "status": "M unity/ChangshanLongdan/Assets/Foundation/Tests/PlayMode/CrowdPlayTests.cs",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 16196,
+          "bytes": 779419800,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 73,
+          "bytes": 12053174,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 11,
+          "bytes": 37158,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 2,
+          "bytes": 1147,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\e08-r4",
+      "registered": false,
+      "head": "127dc72de5b405a074623a46150a14bbbeebe27f",
+      "branch": "",
+      "status": "",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 18831,
+          "bytes": 950491386,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 402,
+          "bytes": 188906538,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 30,
+          "bytes": 673880,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 2,
+          "bytes": 1147,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\e08-r5",
+      "registered": false,
+      "head": "45308db0a7b489d6935d7cc8697f9aed2c643c45",
+      "branch": "",
+      "status": "",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 18831,
+          "bytes": 949997580,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 402,
+          "bytes": 188906484,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 30,
+          "bytes": 673647,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 2,
+          "bytes": 1147,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\e09-camera",
+      "registered": true,
+      "head": "4f976eafa50b2740f16aa7e07d33fa94e1151995",
+      "branch": "claude/e09-camera",
+      "status": "",
+      "caches": [],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 1959,
+          "bytes": 399885066,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\e09-closeout",
+      "registered": true,
+      "head": "49cf02325718f82caafb3f203a9ccc0a4ce7bc87",
+      "branch": "docs/e09-closeout",
+      "status": "",
+      "caches": [],
+      "retained": [],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\e09-pm",
+      "registered": false,
+      "head": "bcbf5df1b8f4ec47499bf6131ecbf6a2ded65db3",
+      "branch": "",
+      "status": "",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 18862,
+          "bytes": 952201182,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 404,
+          "bytes": 189017570,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 30,
+          "bytes": 673741,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 2,
+          "bytes": 1147,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\e09-r1",
+      "registered": false,
+      "head": "baefe629f8d3eb02d96444c87fcbd4d1fb3d7ec2",
+      "branch": "",
+      "status": "",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 15013,
+          "bytes": 595603153,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Temp",
+          "files": 2,
+          "bytes": 8,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 55,
+          "bytes": 10542826,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 3,
+          "bytes": 2111,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 2,
+          "bytes": 725,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": [
+        "unity\\ChangshanLongdan\\Temp\\UnityLockfile"
+      ]
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\e09-r2",
+      "registered": false,
+      "head": "2286795bbb2e2aeb6227a9002f464df25489f284",
+      "branch": "",
+      "status": "",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 15013,
+          "bytes": 595392725,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Temp",
+          "files": 2,
+          "bytes": 8,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 55,
+          "bytes": 10546821,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 3,
+          "bytes": 2111,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 2,
+          "bytes": 725,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": [
+        "unity\\ChangshanLongdan\\Temp\\UnityLockfile"
+      ]
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\e09-r3",
+      "registered": false,
+      "head": "5f4c98e14bb2901cb6938fd2e2a5062cfa817f16",
+      "branch": "",
+      "status": "",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 16210,
+          "bytes": 780214204,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 71,
+          "bytes": 12050091,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 11,
+          "bytes": 37282,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 2,
+          "bytes": 1147,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\e09-r4",
+      "registered": false,
+      "head": "2219f972bb17f6dde910e9af676c58aaef077793",
+      "branch": "",
+      "status": "",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 18862,
+          "bytes": 951981843,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 1367,
+          "bytes": 349020718,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 30,
+          "bytes": 674327,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 2,
+          "bytes": 1147,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\e09-r5",
+      "registered": false,
+      "head": "cf6d6756ef015fee3908313391cc446a19834085",
+      "branch": "",
+      "status": "",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 18862,
+          "bytes": 952302355,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 404,
+          "bytes": 188644813,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 30,
+          "bytes": 671007,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 2,
+          "bytes": 1147,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\e09-r6",
+      "registered": false,
+      "head": "a6d15f791d0222a66d433d07deb5a6c7611268fd",
+      "branch": "",
+      "status": "",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 15013,
+          "bytes": 595379918,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Temp",
+          "files": 2,
+          "bytes": 8,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 55,
+          "bytes": 10543944,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 3,
+          "bytes": 2111,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 2,
+          "bytes": 725,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": [
+        "unity\\ChangshanLongdan\\Temp\\UnityLockfile"
+      ]
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\e09-r7",
+      "registered": false,
+      "head": "298ae300f27a663bb5b9039ccf0abc1614caefe4",
+      "branch": "",
+      "status": "",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 18862,
+          "bytes": 952624969,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 404,
+          "bytes": 189018083,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 30,
+          "bytes": 671060,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 2,
+          "bytes": 1147,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\e11-director",
+      "registered": true,
+      "head": "9036d2f6178941e94826ed11886e6489b4165428",
+      "branch": "claude/e11-director",
+      "status": "",
+      "caches": [],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 16,
+          "bytes": 3069763,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\e12-performance",
+      "registered": true,
+      "head": "3f45d134da9b6ca997e1de0c8b5b2a2eec60c447",
+      "branch": "codex/e12-performance",
+      "status": "",
+      "caches": [],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 3,
+          "bytes": 40070,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\fix-zhaoyun-deformation",
+      "registered": true,
+      "head": "fb7e7cd7ab8f116530ca488bb020bcb12be2f557",
+      "branch": "codex/fix-zhaoyun-deformation",
+      "status": "",
+      "caches": [],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 2,
+          "bytes": 38345,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\ref-mmorpg",
+      "registered": true,
+      "head": "8a9a703f8e3a302bb7e66c13a298c16f6b121287",
+      "branch": "claude/docs-mmorpg-sources",
+      "status": "",
+      "caches": [],
+      "retained": [],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\session-records-20261008",
+      "registered": true,
+      "head": "b92e0e71cc066c970d078f62750c12f7e85d1d51",
+      "branch": "codex/session-records-20261008",
+      "status": "",
+      "caches": [],
+      "retained": [],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\spec-unity-migration-followup",
+      "registered": true,
+      "head": "32bf015ddf979694a41977a69881e997256056c4",
+      "branch": "codex/spec-unity-migration-followup",
+      "status": "",
+      "caches": [],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 14,
+          "bytes": 47367,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\spec-zhaoyun-deformation",
+      "registered": true,
+      "head": "0aaf40f8bcfbaae846a1d20d07a669026aa8d1c9",
+      "branch": "codex/spec-zhaoyun-deformation",
+      "status": "",
+      "caches": [],
+      "retained": [],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\unity-e12-capability",
+      "registered": true,
+      "head": "784c0ebd9919c11836c49bd4e7645f4ba0e9152d",
+      "branch": "codex/unity-e12-capability",
+      "status": "",
+      "caches": [
+        {
+          "relative": "node_modules",
+          "files": 3219,
+          "bytes": 96933457,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "dist",
+          "files": 6,
+          "bytes": 4505103,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 15013,
+          "bytes": 595443382,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Temp",
+          "files": 2,
+          "bytes": 8,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 537,
+          "bytes": 38032776,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 3,
+          "bytes": 2739,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 2,
+          "bytes": 725,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": [
+        "unity\\ChangshanLongdan\\Temp\\UnityLockfile"
+      ]
+    },
+    {
+      "path": "C:\\Repos\\changshan-longdan\\.worktrees\\unity-e12-capability-validate",
+      "registered": true,
+      "head": "2329b486c6dd1942acab4d415792e51a5aa45d25",
+      "branch": "codex/unity-e12-capability-validate",
+      "status": "",
+      "caches": [
+        {
+          "relative": "unity/ChangshanLongdan/Library",
+          "files": 18923,
+          "bytes": 979926553,
+          "reparsePoints": 0
+        }
+      ],
+      "retained": [
+        {
+          "relative": "release",
+          "files": 2295,
+          "bytes": 1102486342,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/Logs",
+          "files": 11,
+          "bytes": 32623,
+          "reparsePoints": 0
+        },
+        {
+          "relative": "unity/ChangshanLongdan/UserSettings",
+          "files": 2,
+          "bytes": 1147,
+          "reparsePoints": 0
+        }
+      ],
+      "lockFiles": []
+    },
+    {
+      "path": "C:\\Users\\IOT\\Documents\\Codex\\2026-10-02\\agents-evoloot-changshan-longdan-mmo-asset\\work\\changshan-longdan",
+      "disposition": "OUTSIDE_WORKSPACE_PRESERVE"
+    }
+  ],
+  "policy": "preserve Git history, release evidence and uncommitted files; no deletes"
+}

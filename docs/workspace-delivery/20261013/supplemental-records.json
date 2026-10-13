@@ -1,0 +1,80 @@
+[
+  {
+    "path": "prior-handoff-20261011/inventory.py",
+    "source": "release/handoff-20261011/inventory.py",
+    "bytes": 3153,
+    "sha256": "7af0ec8e0f0d3d47cf70b7a47d86072003fa9e3d1d258298c6ad39e3e3569e4d"
+  },
+  {
+    "path": "prior-handoff-20261011/check-publication.py",
+    "source": "release/handoff-20261011/check-publication.py",
+    "bytes": 1604,
+    "sha256": "19d720e772527f169e1ed504a2d76be3090869769f385d09286c4a9bc255e9aa"
+  },
+  {
+    "path": "prior-handoff-20261011/verify-archive.py",
+    "source": "release/handoff-20261011/verify-archive.py",
+    "bytes": 3100,
+    "sha256": "3895c3b13d3801772880c3224df858a2b0871222393d612b208ac53d3871f15c"
+  },
+  {
+    "path": "prior-handoff-20261011/test-archive-verifier.py",
+    "source": "release/handoff-20261011/test-archive-verifier.py",
+    "bytes": 2097,
+    "sha256": "2b3530a3e72e361c696e7e39fb9964717742380b0721d45d5e78a599d125227b"
+  },
+  {
+    "path": "prior-handoff-20261011/inventory.json",
+    "source": "release/handoff-20261011/inventory.json",
+    "bytes": 44855,
+    "sha256": "3a3eca3aa11adef4ff1a6c7f12b186b7dd99261c39702e0cdbe01af5c2b314d6"
+  },
+  {
+    "path": "prior-handoff-20261011/archive-manifest.json",
+    "source": "release/handoff-20261011/archive-manifest.json",
+    "bytes": 24033382,
+    "sha256": "e569af770022dc84f73a01ea52ad72ac81ceabb40931c1a8cb2fd9016be06753"
+  },
+  {
+    "path": "prior-handoff-20261011/cleanup-plan.json",
+    "source": "release/handoff-20261011/cleanup-plan.json",
+    "bytes": 9399,
+    "sha256": "90f46e937675e5696f2ddabe82c360ce3509573d640e4eea40f7aa77b20c137e"
+  },
+  {
+    "path": "prior-handoff-20261011/delivery-status.json",
+    "source": "release/handoff-20261011/delivery-status.json",
+    "bytes": 1990,
+    "sha256": "acd64a0e7af0078a61e7e2e41f9839b8b9d778b57ea87df40de22ed94e128114"
+  },
+  {
+    "path": "prior-handoff-20261011/verifier-tests.json",
+    "source": "release/handoff-20261011/verifier-tests.json",
+    "bytes": 473,
+    "sha256": "8e1fbee895af7ea4dd58ad3bfca0f294fb7f67c11d2904b41e8ee28f1d92d331"
+  },
+  {
+    "path": "prior-handoff-20261011/final-bundle-verify.log",
+    "source": "release/handoff-20261011/final-bundle-verify.log",
+    "bytes": 10250,
+    "sha256": "b0dd735df53942b43a8f19a7507529077e08faffee951ffdefede117ab7b3514"
+  },
+  {
+    "path": "prior-e11-review-kit-manifest.json",
+    "source": ".worktrees/_evidence/e11/remote-9036d2f/e11-review-9036d2f-20261007-095903.zip#manifest.json",
+    "bytes": 16881,
+    "sha256": "4bee9d51143a9e4da92dcb87bfce13896ec007645ac4e15de09a0e245a904c09"
+  },
+  {
+    "path": "text-encoding-check.json",
+    "source": "release/handoff-20261013/text-encoding-check.json",
+    "bytes": 59,
+    "sha256": "018e66845732e484db1e53a91284e87b1c06d051279c470268b07cb94a5d4d45"
+  },
+  {
+    "path": "clone-refs.json",
+    "source": "release/handoff-20261013/clone-refs.json",
+    "bytes": 6628,
+    "sha256": "4e0632132e59438a46675c3ca59eebe9cfafbebeb1fbb826aeedfcfef47c1724"
+  }
+]

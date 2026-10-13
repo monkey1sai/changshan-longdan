@@ -1,0 +1,51 @@
+[
+  {
+    "object": "2ac9da136c97ec14be91abeb8cfc9b12587cf08c",
+    "paths": [
+      "public/models/zhaoyun.glb"
+    ],
+    "sha256": "7b757e7c40ec5300e72ec3145f677f54eebac7a0937c9edff682ce6b364d8166",
+    "format": "glTF2",
+    "externalUriCount": 0,
+    "embeddedResourceUris": 0,
+    "scriptExtensionCount": 0
+  },
+  {
+    "object": "33d63f70547e64afa84241d7a9e72547b585e9c5",
+    "paths": [
+      "art-source/zhaoyun.blend"
+    ],
+    "sha256": "1d295e07f02fccf13c981425de294f2c1a10d18e764d5430285d85e6f826b287",
+    "format": "Blender",
+    "textDatablockCount": 0,
+    "pythonSourceMarkers": 0,
+    "networkUriCount": 0,
+    "externalPathMarkers": 162,
+    "blockCount": 19218,
+    "autoExecution": "NOT_EXECUTED"
+  },
+  {
+    "object": "ddb4a772ff1becb867a5734aba94364e83aa698f",
+    "paths": [
+      "art-source/quaternius-base.glb"
+    ],
+    "sha256": "5f4f2ac5b2496b0f1ec6c1879e7fd98a0b814830f8a78833894e20e61eb71a5b",
+    "format": "glTF2",
+    "externalUriCount": 0,
+    "embeddedResourceUris": 0,
+    "scriptExtensionCount": 0
+  },
+  {
+    "object": "e2c1349a8651e76fd4689e2528648a085c750652",
+    "paths": [
+      "docs/references/MMORPG_GitHub_Source_Report_20261005.pdf"
+    ],
+    "sha256": "11e5aca0ab4db13092edee66ae1a7d71677b983b31c5801d60189be5eeebbf40",
+    "format": "PDF",
+    "pages": 3,
+    "activeContentKeys": [],
+    "textSecretPattern": false,
+    "attachmentCount": 0,
+    "encrypted": false
+  }
+]

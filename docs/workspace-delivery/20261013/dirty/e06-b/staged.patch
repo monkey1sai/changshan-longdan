@@ -1,0 +1,149 @@
+diff --git a/unity/ChangshanLongdan/Assets/Animation.meta b/unity/ChangshanLongdan/Assets/Animation.meta
+new file mode 100644
+index 0000000..950ee44
+--- /dev/null
++++ b/unity/ChangshanLongdan/Assets/Animation.meta
+@@ -0,0 +1,8 @@
++fileFormatVersion: 2
++guid: c9dec06dc2407704b883b3d9702a8c97
++folderAsset: yes
++DefaultImporter:
++  externalObjects: {}
++  userData: 
++  assetBundleName: 
++  assetBundleVariant: 
+diff --git a/unity/ChangshanLongdan/Assets/Animation/Runtime.meta b/unity/ChangshanLongdan/Assets/Animation/Runtime.meta
+new file mode 100644
+index 0000000..360c7c3
+--- /dev/null
++++ b/unity/ChangshanLongdan/Assets/Animation/Runtime.meta
+@@ -0,0 +1,8 @@
++fileFormatVersion: 2
++guid: cd14867d4b7f2f7489aef190b37aea91
++folderAsset: yes
++DefaultImporter:
++  externalObjects: {}
++  userData: 
++  assetBundleName: 
++  assetBundleVariant: 
+diff --git a/unity/ChangshanLongdan/Assets/Animation/Runtime/AnimationMetrics.cs.meta b/unity/ChangshanLongdan/Assets/Animation/Runtime/AnimationMetrics.cs.meta
+new file mode 100644
+index 0000000..b82077f
+--- /dev/null
++++ b/unity/ChangshanLongdan/Assets/Animation/Runtime/AnimationMetrics.cs.meta
+@@ -0,0 +1,2 @@
++fileFormatVersion: 2
++guid: e569e52f101465a4f8fb5a1349679c5c
+\ No newline at end of file
+diff --git a/unity/ChangshanLongdan/Assets/Animation/Runtime/Changshan.Animation.asmdef.meta b/unity/ChangshanLongdan/Assets/Animation/Runtime/Changshan.Animation.asmdef.meta
+new file mode 100644
+index 0000000..931d228
+--- /dev/null
++++ b/unity/ChangshanLongdan/Assets/Animation/Runtime/Changshan.Animation.asmdef.meta
+@@ -0,0 +1,7 @@
++fileFormatVersion: 2
++guid: e21d49b76f36d94418831f9644077cba
++AssemblyDefinitionImporter:
++  externalObjects: {}
++  userData: 
++  assetBundleName: 
++  assetBundleVariant: 
+diff --git a/unity/ChangshanLongdan/Assets/Animation/Runtime/FootPlant.cs.meta b/unity/ChangshanLongdan/Assets/Animation/Runtime/FootPlant.cs.meta
+new file mode 100644
+index 0000000..59d246b
+--- /dev/null
++++ b/unity/ChangshanLongdan/Assets/Animation/Runtime/FootPlant.cs.meta
+@@ -0,0 +1,2 @@
++fileFormatVersion: 2
++guid: d53b32d5bdaee4340a9b43f5a22483a6
+\ No newline at end of file
+diff --git a/unity/ChangshanLongdan/Assets/Animation/Runtime/PlayerPoses.cs.meta b/unity/ChangshanLongdan/Assets/Animation/Runtime/PlayerPoses.cs.meta
+new file mode 100644
+index 0000000..3891899
+--- /dev/null
++++ b/unity/ChangshanLongdan/Assets/Animation/Runtime/PlayerPoses.cs.meta
+@@ -0,0 +1,2 @@
++fileFormatVersion: 2
++guid: ba18edc37b0709d4b94864be09010d2a
+\ No newline at end of file
+diff --git a/unity/ChangshanLongdan/Assets/Animation/Runtime/ProceduralRig.cs.meta b/unity/ChangshanLongdan/Assets/Animation/Runtime/ProceduralRig.cs.meta
+new file mode 100644
+index 0000000..01b2712
+--- /dev/null
++++ b/unity/ChangshanLongdan/Assets/Animation/Runtime/ProceduralRig.cs.meta
+@@ -0,0 +1,2 @@
++fileFormatVersion: 2
++guid: 27425968bfe68894f940fddbeac07eda
+\ No newline at end of file
+diff --git a/unity/ChangshanLongdan/Assets/Animation/Runtime/RigNode.cs.meta b/unity/ChangshanLongdan/Assets/Animation/Runtime/RigNode.cs.meta
+new file mode 100644
+index 0000000..1d5d4e7
+--- /dev/null
++++ b/unity/ChangshanLongdan/Assets/Animation/Runtime/RigNode.cs.meta
+@@ -0,0 +1,2 @@
++fileFormatVersion: 2
++guid: f584933e26bf7fe468b00bbebcbc72e0
+\ No newline at end of file
+diff --git a/unity/ChangshanLongdan/Assets/Animation/Runtime/SkinBinding.cs.meta b/unity/ChangshanLongdan/Assets/Animation/Runtime/SkinBinding.cs.meta
+new file mode 100644
+index 0000000..45e327d
+--- /dev/null
++++ b/unity/ChangshanLongdan/Assets/Animation/Runtime/SkinBinding.cs.meta
+@@ -0,0 +1,2 @@
++fileFormatVersion: 2
++guid: 9d4b36ed6ef80cc4c9317fceb8f01cd0
+\ No newline at end of file
+diff --git a/unity/ChangshanLongdan/Assets/Animation/Runtime/ThreeMath.cs.meta b/unity/ChangshanLongdan/Assets/Animation/Runtime/ThreeMath.cs.meta
+new file mode 100644
+index 0000000..95562b0
+--- /dev/null
++++ b/unity/ChangshanLongdan/Assets/Animation/Runtime/ThreeMath.cs.meta
+@@ -0,0 +1,2 @@
++fileFormatVersion: 2
++guid: b7f368c66c24f3c4297d939433970506
+\ No newline at end of file
+diff --git a/unity/ChangshanLongdan/Assets/Character/Runtime/CharacterAnimation.cs.meta b/unity/ChangshanLongdan/Assets/Character/Runtime/CharacterAnimation.cs.meta
+new file mode 100644
+index 0000000..09a293e
+--- /dev/null
++++ b/unity/ChangshanLongdan/Assets/Character/Runtime/CharacterAnimation.cs.meta
+@@ -0,0 +1,2 @@
++fileFormatVersion: 2
++guid: 3a90668758d83254691c42c73a3d7932
+\ No newline at end of file
+diff --git a/unity/ChangshanLongdan/Assets/Character/Runtime/RouteRecorder.cs.meta b/unity/ChangshanLongdan/Assets/Character/Runtime/RouteRecorder.cs.meta
+new file mode 100644
+index 0000000..2ef530a
+--- /dev/null
++++ b/unity/ChangshanLongdan/Assets/Character/Runtime/RouteRecorder.cs.meta
+@@ -0,0 +1,2 @@
++fileFormatVersion: 2
++guid: 886deac1cba964444985ce4c84a33720
+\ No newline at end of file
+diff --git a/unity/ChangshanLongdan/Assets/Foundation/Tests/EditMode/RigParity.cs.meta b/unity/ChangshanLongdan/Assets/Foundation/Tests/EditMode/RigParity.cs.meta
+new file mode 100644
+index 0000000..c750d07
+--- /dev/null
++++ b/unity/ChangshanLongdan/Assets/Foundation/Tests/EditMode/RigParity.cs.meta
+@@ -0,0 +1,2 @@
++fileFormatVersion: 2
++guid: d0a3f56aa6937ea4dbf15cf239489321
+\ No newline at end of file
+diff --git a/unity/ChangshanLongdan/Assets/Foundation/Tests/EditMode/RigParityEditTests.cs.meta b/unity/ChangshanLongdan/Assets/Foundation/Tests/EditMode/RigParityEditTests.cs.meta
+new file mode 100644
+index 0000000..113a13a
+--- /dev/null
++++ b/unity/ChangshanLongdan/Assets/Foundation/Tests/EditMode/RigParityEditTests.cs.meta
+@@ -0,0 +1,2 @@
++fileFormatVersion: 2
++guid: 51c1eac89ef54de45b33f69295208558
+\ No newline at end of file
+diff --git a/unity/ChangshanLongdan/Assets/Foundation/Tests/PlayMode/AnimatedCharacterPlayTests.cs.meta b/unity/ChangshanLongdan/Assets/Foundation/Tests/PlayMode/AnimatedCharacterPlayTests.cs.meta
+new file mode 100644
+index 0000000..2cd4d00
+--- /dev/null
++++ b/unity/ChangshanLongdan/Assets/Foundation/Tests/PlayMode/AnimatedCharacterPlayTests.cs.meta
+@@ -0,0 +1,2 @@
++fileFormatVersion: 2
++guid: cbdc627d742fbf1498fe0e2f16577030
+\ No newline at end of file

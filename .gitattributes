@@ -1,5 +1,10 @@
 * text=auto eol=lf
 
+# Preserve the exact bytes of the reviewed workspace backup and its checksums.
+docs/workspace-delivery/20261013/** -text -diff
+docs/workspace-delivery/20261013/README.md text eol=lf diff
+docs/workspace-delivery/20261013/restore-files.py text eol=lf diff
+
 # 二進位素材
 *.png binary
 *.jpg binary

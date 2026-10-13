@@ -1,0 +1,409 @@
+diff --git a/unity/ChangshanLongdan/Assets/UniversalRenderPipelineGlobalSettings.asset b/unity/ChangshanLongdan/Assets/UniversalRenderPipelineGlobalSettings.asset
+index 11434e6..08cd126 100644
+--- a/unity/ChangshanLongdan/Assets/UniversalRenderPipelineGlobalSettings.asset
++++ b/unity/ChangshanLongdan/Assets/UniversalRenderPipelineGlobalSettings.asset
+@@ -72,21 +72,7 @@ MonoBehaviour:
+       - rid: 6811945242463043623
+       - rid: 6811945242463043624
+     m_RuntimeSettings:
+-      m_List:
+-      - rid: 6811945242463043591
+-      - rid: 6811945242463043593
+-      - rid: 6811945242463043599
+-      - rid: 6811945242463043601
+-      - rid: 6811945242463043602
+-      - rid: 6811945242463043606
+-      - rid: 6811945242463043608
+-      - rid: 6811945242463043609
+-      - rid: 6811945242463043611
+-      - rid: 6811945242463043613
+-      - rid: 6811945242463043617
+-      - rid: 6811945242463043619
+-      - rid: 6811945242463043620
+-      - rid: 6811945242463043622
++      m_List: []
+   m_AssetVersion: 11
+   m_ObsoleteDefaultVolumeProfile: {fileID: 0}
+   m_RenderingLayerNames:
+@@ -396,6 +382,11 @@ MonoBehaviour:
+       type: {class: RenderingDebuggerRuntimeResources, ns: UnityEngine.Rendering, asm: Unity.RenderPipelines.Core.Runtime}
+       data:
+         m_version: 0
++        m_PanelSettings: {fileID: 11400000, guid: fa69697be3070b04a893666f5947f18c, type: 2}
++        m_StyleSheets:
++        - {fileID: 7433441132597879392, guid: 0ff99fd36f66f1a41bcc1d3c90e0922a, type: 3}
++        - {fileID: 7433441132597879392, guid: 3a8aa4d508da46d4dace18b280f064aa, type: 3}
++        m_VisualTreeAsset: {fileID: 9197481963319205126, guid: b647ceb1e15264943b9b439971e71110, type: 3}
+     - rid: 6811945242463043616
+       type: {class: ProbeVolumeRuntimeResources, ns: UnityEngine.Rendering, asm: Unity.RenderPipelines.Core.Runtime}
+       data:
+diff --git a/unity/ChangshanLongdan/Packages/manifest.json b/unity/ChangshanLongdan/Packages/manifest.json
+index 96fbcce..0ff611c 100644
+--- a/unity/ChangshanLongdan/Packages/manifest.json
++++ b/unity/ChangshanLongdan/Packages/manifest.json
+@@ -1,11 +1,13 @@
+ {
+   "dependencies": {
+-    "com.unity.render-pipelines.universal": "17.6.0",
+-    "com.unity.test-framework": "1.8.0",
++    "com.unity.ai.assistant": "2.20.0-pre.1",
++    "com.unity.ai.inference": "2.6.1",
++    "com.unity.cloud.gltfast": "6.20.0",
++    "com.unity.nuget.mono-cecil": "1.11.6",
+     "com.unity.profiling.core": "1.0.3",
++    "com.unity.render-pipelines.universal": "17.6.0",
+     "com.unity.searcher": "4.9.5",
+-    "com.unity.nuget.mono-cecil": "1.11.6",
+-    "com.unity.modules.screencapture": "1.0.0",
+-    "com.unity.cloud.gltfast": "6.20.0"
++    "com.unity.test-framework": "1.8.0",
++    "com.unity.modules.screencapture": "1.0.0"
+   }
+ }
+diff --git a/unity/ChangshanLongdan/Packages/packages-lock.json b/unity/ChangshanLongdan/Packages/packages-lock.json
+index 919ffa4..3ac2ab2 100644
+--- a/unity/ChangshanLongdan/Packages/packages-lock.json
++++ b/unity/ChangshanLongdan/Packages/packages-lock.json
+@@ -1,5 +1,38 @@
+ {
+   "dependencies": {
++    "com.unity.2d.sprite": {
++      "version": "1.0.0",
++      "depth": 1,
++      "source": "builtin",
++      "dependencies": {}
++    },
++    "com.unity.ai.assistant": {
++      "version": "2.20.0-pre.1",
++      "depth": 0,
++      "source": "registry",
++      "dependencies": {
++        "com.unity.2d.sprite": "1.0.0",
++        "com.unity.mathematics": "1.3.2",
++        "com.unity.nuget.mono-cecil": "1.11.5",
++        "com.unity.modules.uielements": "1.0.0",
++        "com.unity.nuget.newtonsoft-json": "3.2.1",
++        "com.unity.modules.unitywebrequest": "1.0.0"
++      },
++      "url": "https://packages.unity.com"
++    },
++    "com.unity.ai.inference": {
++      "version": "2.6.1",
++      "depth": 0,
++      "source": "registry",
++      "dependencies": {
++        "com.unity.burst": "1.8.17",
++        "com.unity.dt.app-ui": "1.3.6",
++        "com.unity.collections": "2.4.3",
++        "com.unity.nuget.newtonsoft-json": "3.2.1",
++        "com.unity.modules.imageconversion": "1.0.0"
++      },
++      "url": "https://packages.unity.com"
++    },
+     "com.unity.burst": {
+       "version": "2.0.0",
+       "depth": 1,
+@@ -30,6 +63,18 @@
+         "com.unity.test-framework.performance": "3.2.0"
+       }
+     },
++    "com.unity.dt.app-ui": {
++      "version": "2.1.13",
++      "depth": 1,
++      "source": "registry",
++      "dependencies": {
++        "com.unity.modules.physics": "1.0.0",
++        "com.unity.modules.androidjni": "1.0.0",
++        "com.unity.modules.uielements": "1.0.0",
++        "com.unity.modules.screencapture": "1.0.0"
++      },
++      "url": "https://packages.unity.com"
++    },
+     "com.unity.ext.nunit": {
+       "version": "2.1.0",
+       "depth": 1,
+@@ -55,6 +100,13 @@
+       "dependencies": {},
+       "url": "https://packages.unity.com"
+     },
++    "com.unity.nuget.newtonsoft-json": {
++      "version": "3.2.2",
++      "depth": 1,
++      "source": "registry",
++      "dependencies": {},
++      "url": "https://packages.unity.com"
++    },
+     "com.unity.profiling.core": {
+       "version": "1.0.3",
+       "depth": 0,
+@@ -127,6 +179,26 @@
+         "com.unity.modules.jsonserialize": "1.0.0"
+       }
+     },
++    "com.unity.modules.androidjni": {
++      "version": "1.0.0",
++      "depth": 2,
++      "source": "builtin",
++      "dependencies": {
++        "com.unity.modules.jsonserialize": "1.0.0"
++      }
++    },
++    "com.unity.modules.animation": {
++      "version": "1.0.0",
++      "depth": 2,
++      "source": "builtin",
++      "dependencies": {}
++    },
++    "com.unity.modules.hierarchycore": {
++      "version": "1.0.0",
++      "depth": 2,
++      "source": "builtin",
++      "dependencies": {}
++    },
+     "com.unity.modules.imageconversion": {
+       "version": "1.0.0",
+       "depth": 1,
+@@ -145,6 +217,12 @@
+       "source": "builtin",
+       "dependencies": {}
+     },
++    "com.unity.modules.physics": {
++      "version": "1.0.0",
++      "depth": 2,
++      "source": "builtin",
++      "dependencies": {}
++    },
+     "com.unity.modules.screencapture": {
+       "version": "1.0.0",
+       "depth": 0,
+@@ -153,6 +231,25 @@
+         "com.unity.modules.imageconversion": "1.0.0"
+       }
+     },
++    "com.unity.modules.ui": {
++      "version": "1.0.0",
++      "depth": 2,
++      "source": "builtin",
++      "dependencies": {}
++    },
++    "com.unity.modules.uielements": {
++      "version": "1.0.0",
++      "depth": 1,
++      "source": "builtin",
++      "dependencies": {
++        "com.unity.modules.ui": "1.0.0",
++        "com.unity.modules.imgui": "1.0.0",
++        "com.unity.modules.jsonserialize": "1.0.0",
++        "com.unity.modules.hierarchycore": "1.0.0",
++        "com.unity.modules.physics": "1.0.0",
++        "com.unity.modules.animation": "1.0.0"
++      }
++    },
+     "com.unity.modules.unitywebrequest": {
+       "version": "1.0.0",
+       "depth": 1,
+diff --git a/unity/ChangshanLongdan/ProjectSettings/EditorBuildSettings.asset b/unity/ChangshanLongdan/ProjectSettings/EditorBuildSettings.asset
+index 8c703a3..3fad1ef 100644
+--- a/unity/ChangshanLongdan/ProjectSettings/EditorBuildSettings.asset
++++ b/unity/ChangshanLongdan/ProjectSettings/EditorBuildSettings.asset
+@@ -8,4 +8,5 @@ EditorBuildSettings:
+   - enabled: 1
+     path: Assets/Foundation/Scenes/Foundation.unity
+     guid: 16f289089f5225242867e33cf6992d04
+-  m_configObjects: {}
++  m_configObjects:
++    com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
+diff --git a/unity/ChangshanLongdan/ProjectSettings/GraphicsSettings.asset b/unity/ChangshanLongdan/ProjectSettings/GraphicsSettings.asset
+index cad18a4..bd736a2 100644
+--- a/unity/ChangshanLongdan/ProjectSettings/GraphicsSettings.asset
++++ b/unity/ChangshanLongdan/ProjectSettings/GraphicsSettings.asset
+@@ -74,8 +74,8 @@ GraphicsSettings:
+     numInternalDefines: 0
+     defines: []
+     compilerSettings: []
+-  m_LightsUseLinearIntensity: 0
+-  m_LightsUseColorTemperature: 0
++  m_LightsUseLinearIntensity: 1
++  m_LightsUseColorTemperature: 1
+   m_LogWhenShaderIsCompiled: 0
+   m_LightProbeOutsideHullStrategy: 1
+   m_CameraRelativeLightCulling: 0
+diff --git a/unity/ChangshanLongdan/ProjectSettings/InputManager.asset b/unity/ChangshanLongdan/ProjectSettings/InputManager.asset
+index 8068b20..992c2b0 100644
+--- a/unity/ChangshanLongdan/ProjectSettings/InputManager.asset
++++ b/unity/ChangshanLongdan/ProjectSettings/InputManager.asset
+@@ -293,4 +293,148 @@ InputManager:
+     type: 0
+     axis: 0
+     joyNum: 0
++  - serializedVersion: 3
++    m_Name: Enable Debug Button 1
++    descriptiveName: 
++    descriptiveNegativeName: 
++    negativeButton: 
++    positiveButton: left ctrl
++    altNegativeButton: 
++    altPositiveButton: joystick button 8
++    gravity: 0
++    dead: 0
++    sensitivity: 0
++    snap: 0
++    invert: 0
++    type: 0
++    axis: 0
++    joyNum: 0
++  - serializedVersion: 3
++    m_Name: Enable Debug Button 2
++    descriptiveName: 
++    descriptiveNegativeName: 
++    negativeButton: 
++    positiveButton: backspace
++    altNegativeButton: 
++    altPositiveButton: joystick button 9
++    gravity: 0
++    dead: 0
++    sensitivity: 0
++    snap: 0
++    invert: 0
++    type: 0
++    axis: 0
++    joyNum: 0
++  - serializedVersion: 3
++    m_Name: Debug Reset
++    descriptiveName: 
++    descriptiveNegativeName: 
++    negativeButton: 
++    positiveButton: left alt
++    altNegativeButton: 
++    altPositiveButton: joystick button 1
++    gravity: 0
++    dead: 0
++    sensitivity: 0
++    snap: 0
++    invert: 0
++    type: 0
++    axis: 0
++    joyNum: 0
++  - serializedVersion: 3
++    m_Name: Debug Next
++    descriptiveName: 
++    descriptiveNegativeName: 
++    negativeButton: 
++    positiveButton: page down
++    altNegativeButton: 
++    altPositiveButton: joystick button 5
++    gravity: 0
++    dead: 0
++    sensitivity: 0
++    snap: 0
++    invert: 0
++    type: 0
++    axis: 0
++    joyNum: 0
++  - serializedVersion: 3
++    m_Name: Debug Previous
++    descriptiveName: 
++    descriptiveNegativeName: 
++    negativeButton: 
++    positiveButton: page up
++    altNegativeButton: 
++    altPositiveButton: joystick button 4
++    gravity: 0
++    dead: 0
++    sensitivity: 0
++    snap: 0
++    invert: 0
++    type: 0
++    axis: 0
++    joyNum: 0
++  - serializedVersion: 3
++    m_Name: Debug Persistent
++    descriptiveName: 
++    descriptiveNegativeName: 
++    negativeButton: 
++    positiveButton: right shift
++    altNegativeButton: 
++    altPositiveButton: joystick button 2
++    gravity: 0
++    dead: 0
++    sensitivity: 0
++    snap: 0
++    invert: 0
++    type: 0
++    axis: 0
++    joyNum: 0
++  - serializedVersion: 3
++    m_Name: Debug Multiplier
++    descriptiveName: 
++    descriptiveNegativeName: 
++    negativeButton: 
++    positiveButton: left shift
++    altNegativeButton: 
++    altPositiveButton: joystick button 3
++    gravity: 0
++    dead: 0
++    sensitivity: 0
++    snap: 0
++    invert: 0
++    type: 0
++    axis: 0
++    joyNum: 0
++  - serializedVersion: 3
++    m_Name: Debug Horizontal
++    descriptiveName: 
++    descriptiveNegativeName: 
++    negativeButton: left
++    positiveButton: right
++    altNegativeButton: 
++    altPositiveButton: 
++    gravity: 1000
++    dead: 0.001
++    sensitivity: 1000
++    snap: 0
++    invert: 0
++    type: 0
++    axis: 0
++    joyNum: 0
++  - serializedVersion: 3
++    m_Name: Debug Horizontal
++    descriptiveName: 
++    descriptiveNegativeName: 
++    negativeButton: left
++    positiveButton: right
++    altNegativeButton: 
++    altPositiveButton: 
++    gravity: 1000
++    dead: 0.001
++    sensitivity: 1000
++    snap: 0
++    invert: 0
++    type: 2
++    axis: 5
++    joyNum: 0
+   m_UsePhysicalKeys: 1
+diff --git a/unity/ChangshanLongdan/ProjectSettings/ProjectSettings.asset b/unity/ChangshanLongdan/ProjectSettings/ProjectSettings.asset
+index bd586e1..7edf0c3 100644
+--- a/unity/ChangshanLongdan/ProjectSettings/ProjectSettings.asset
++++ b/unity/ChangshanLongdan/ProjectSettings/ProjectSettings.asset
+@@ -593,7 +593,7 @@ PlayerSettings:
+   webEnableSubmoduleStrippingCompatibility: 0
+   webProgressiveAssetLoading: 0
+   scriptingDefineSymbols:
+-    Standalone: GLTFAST_EDITOR_IMPORT_OFF
++    Standalone: GLTFAST_EDITOR_IMPORT_OFF;SENTIS_ANALYTICS_ENABLED
+   additionalCompilerArguments: {}
+   platformArchitecture: {}
+   scriptingBackend:
+diff --git a/unity/ChangshanLongdan/ProjectSettings/QualitySettings.asset b/unity/ChangshanLongdan/ProjectSettings/QualitySettings.asset
+index 6dcd2ca..20b740a 100644
+--- a/unity/ChangshanLongdan/ProjectSettings/QualitySettings.asset
++++ b/unity/ChangshanLongdan/ProjectSettings/QualitySettings.asset
+@@ -287,7 +287,7 @@ QualitySettings:
+     globalTextureMipmapLimit: 0
+     textureMipmapLimitSettings: []
+     anisotropicTextures: 2
+-    antiAliasing: 2
++    antiAliasing: 0
+     softParticles: 1
+     softVegetation: 1
+     realtimeReflectionProbes: 1

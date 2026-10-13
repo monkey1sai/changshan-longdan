@@ -1,0 +1,62 @@
+{
+  "status": "PASS_FIXED_CANDIDATE_CHECKS",
+  "sourceFileCount": 38546,
+  "zipPostvalidationCount": 4,
+  "knownPackageCacheMembers": [
+    "evidence/unity/official-packages/com.unity.cloud.gltfast-6.20.0.tgz",
+    "evidence/unity/official-packages/com.unity.nuget.mono-cecil-1.11.6.tgz",
+    "evidence/unity/official-packages/com.unity.profiling.core-1.0.3.tgz",
+    "evidence/unity/official-packages/com.unity.searcher-4.9.5.tgz",
+    "evidence/unity/official-packages/provenance.json"
+  ],
+  "heldZipUnmappedMembers": [
+    {
+      "path": "manifest.json",
+      "sha256": "4bee9d51143a9e4da92dcb87bfce13896ec007645ac4e15de09a0e245a904c09",
+      "bytes": 16881
+    }
+  ],
+  "dirtySnapshots": [
+    {
+      "path": ".worktrees/e03-r2-clone",
+      "stagedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "unstagedSha256": "951f7c84dcd662d8360db970ea6d7b6984ba4dfe8d351da4c60faca44e45c6e6"
+    },
+    {
+      "path": ".worktrees/e04-r1",
+      "stagedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "unstagedSha256": "4df808ef4b4c600593596b3f24df696d0fca79cbefd6f744017acbbbf5b8123d"
+    },
+    {
+      "path": ".worktrees/e04-r5",
+      "stagedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "unstagedSha256": "fad2a58c49970017d6058301d5ada3282c303b221e724d595f53d08adc8e388d"
+    },
+    {
+      "path": ".worktrees/e05-b",
+      "stagedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "unstagedSha256": "bd9f75e819228fa59a157e855d7904ca32e98da34f5eb2ec6248ba588dd89b43"
+    },
+    {
+      "path": ".worktrees/e06-b",
+      "stagedSha256": "e81a725832aa424280ec1d9efa242b199a0d6c3bc48fcae56dd42d0f3216738a",
+      "unstagedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".worktrees/e07-b",
+      "stagedSha256": "c7a7bbe2b75cf747c09c0dca5ae33f847fecdca40b3ae29eae79b6e7670006c3",
+      "unstagedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".worktrees/e08-r3",
+      "stagedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "unstagedSha256": "2c628727e2ac2ca9f5406b8e7f658b0d967c20287f987a212e7d8c179afe6fcb"
+    }
+  ],
+  "utf16": {
+    "uniqueTextObjects": 5113,
+    "utf16Objects": 0,
+    "paths": []
+  },
+  "noRemoteWrite": true
+}
