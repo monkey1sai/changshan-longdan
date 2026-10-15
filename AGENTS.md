@@ -1,5 +1,16 @@
 # Repository Guidelines
 
+## 主工作區、隔離開發與完工清理
+
+- 主工作區 `C:\Repos\changshan-longdan` 固定使用 `main`，與最新 `origin/main` 同步。開始任務及遠端合併後先核對分支、HEAD、tracked／untracked／ignored 狀態，再 `git fetch --no-tags origin main`，只允許以 `git merge --ff-only origin/main` 更新主工作區；核對兩者 SHA 相同。若有分歧、修改或路徑衝突會被覆寫，保留現況並回報阻礙，不以 reset、clean、stash 或強制切換消除問題。
+- 任何檔案修改都必須先建立本任務專用的 Git worktree 與 feature branch（預設 `codex/` 前綴），從已更新的 `origin/main` 開始；程式、測試、文件、治理、設定與驗收記錄均適用。主工作區僅供唯讀檢查與上述同步，不直接編輯、stage、commit 或開發；任務產物放在隔離 worktree 或指定的外部證據位置。臨時 clone 或直接在主工作區開 feature branch 不能替代 worktree 隔離。
+- 工作順序為：同步與狀態盤點 → 建立隔離 worktree → 修改及適用驗證 → 必要獨立審查與授權 → 合併至遠端 `origin/main` → 同步主工作區 → 保全證據並清理本任務 worktree。既有 SPEC、同版本驗收、必要人類核准、branch protection 與有效重試上限繼續適用。
+- **完工的必要條件是變更已 merge 到遠端 `origin/main`**；本地 commit／merge、push、PR 建立或 CI 通過均不算完工。以遠端讀回、更新後的 `origin/main` 及合併結果核對實際交付版本；squash／rebase merge 核對 PR 的 merged 狀態、合併 SHA 與交付內容，不只檢查原 feature HEAD 的 ancestry。合併不取代任務的測試、產品驗收與 post-merge 檢查；報告只有在這些條件及收尾清理完成後才可標示「已完成」。
+- 每個已合併的任務 worktree 都必須收尾清理，不能把「已合併但 worktree 尚未處理」當作完成。移除前重新核對完整路徑、HEAD、分支、狀態、遠端合併證據與備份；比對本次核准的清理範圍，有新變動即保留並列為待處理。
+- 清理須盤點 staged、unstaged、untracked 及 ignored 內容，包括驗收證據與未提交成果；Git commit／bundle 不能代替未追蹤或 ignored 檔案的備份。需保留的內容先存到待刪目錄以外，記錄原路徑、版本與雜湊並驗證可還原；備份不足或無法驗證時保留 worktree、回報清理受阻。既有共享驗收證據、還原備份與其他任務的 dirty 內容不得隨 worktree 刪除。
+- 僅在上述檢查通過後，以不帶 `--force` 的 `git worktree remove <本任務完整路徑>` 移除本任務 worktree，核對目錄已移除及 `git worktree list` 已無該項，並再次確認主工作區與最新 `origin/main` 同步。只在已授權範圍內清理本地任務分支；不得順帶刪除其他 worktree／clone、其他分支、遠端分支、tag、共享證據或還原備份。
+- 這些規則定義開發與收尾要求，不擴大任何任務的 push、PR、merge、遠端刪除或其他外部寫入授權；缺少具體授權或必要審查時，保留隔離 worktree，清楚列出尚未合併／尚未清理及下一步，不冒稱完工。
+
 ## Project Structure
 
 A PS2-style musou action game (Zhao Yun vs. 300 Wei soldiers) with a retained Vite/TypeScript/Three.js web implementation and an isolated Unity project at `unity/ChangshanLongdan`. The web source map below describes that implementation; inspect the current source for the assigned target rather than treating it as a complete Unity inventory. Web audio is synthesized with WebAudio.
