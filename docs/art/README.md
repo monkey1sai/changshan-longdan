@@ -19,6 +19,11 @@
 9. **Acceptance Gate** — 工程測試、視覺檢查、效能與授權全部通過才算完成。
 10. **Knowledge Capture** — 把可重用規則寫回 Art Bible / manifest / QA 紀錄，下一個 Agent 任務沿用。
 
+## 專案需求紀錄索引
+
+- [趙雲蒙皮形變修復需求](requests/cl-zhaoyun-deformation-v1.md)：2026-10-07 歷史診斷與需求，2026-10-16 補登來源／版本核對；狀態仍為 `PREPARED_NOT_SENT`，沒有修復交付或遊戲驗收。
+- 角色修復的現行門檻及進度以 [Unity follow-up SPEC](../../openspec/changes/unity-migration-followup/specs/unity-migration-completion/spec.md) 與 [tasks](../../openspec/changes/unity-migration-followup/tasks.md) 為準；本索引不改任務狀態或一般美術 SOP。
+
 ## Agent contract
 - 「build 成功」不等於「美術完成」。
 - 不得把 reference 當成可直接複製的成品素材。
