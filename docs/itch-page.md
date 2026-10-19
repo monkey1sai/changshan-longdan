@@ -5,7 +5,27 @@ itch.io 專案頁的填寫內容與上傳步驟。更新既有遊戲需作者明
 - 遊戲壓縮檔：執行 `npm run package:itch`，產生 `release/changshan-longdan-web.zip`
 - 封面與截圖：`release/itch/`（開發版以 `__game` 擺出場面後截圖並裁切；`release/` 不進版控）
 
-## 目前上架狀態（2026-10-02）
+## 2026-10-19 Web 發布與 Jev 實玩
+
+使用者指定以目前 main Web 版進行 Jev 讀圖實玩，取得最高 S 後更新既有專案。一般難度可見結算：完全勝利、300 KO、最大連擊 558、1:59、受傷 117、S；每步正常暫停觀察，未修改遊戲或評分。詳見 [Jev 實玩紀錄](engineering/JEV_VISION_PLAY.md)。
+
+| 項目 | 內容 |
+| --- | --- |
+| 遊戲來源 | `1553dcbc40eb644987e8f4ddbca591f123f75bd2`，current main Web |
+| 上傳輸入 | `changshan-longdan-web.zip`，3,015,735 bytes；SHA-256 `284fc08df83ecb32a715b3c28c23133680994d2abfb1895f123c27c95c1ed315`；6 個 dist 檔案 |
+| 發布前備份 | 從現有編輯頁下載：3,012,736 bytes；SHA-256 `93b6d72a6a31760c3c46767635a698a7df0ab9bfaaad022d5cc95a9ca80bdc0a`；外部 `jev-vision-play-itch-20261019-v1/rollback-live-before-20261019.zip` |
+| 發布 | 官方 butler `15.32.0`；`web` channel、build `2161073`、upload `19872833`、userversion `2026-10-19-main-1553dcbc-jev-s`；completed，正式編輯器選為 browser build 並 Saved，重新載入確認 |
+| 伺服器回下載 | `server-build-2161073.zip`，3,022,172 bytes；SHA-256 `6230988478ebfbff105322b02760002e29213f4afb50d26a82058ade2b09b592`。butler 重封裝造成 ZIP 雜湊／大小不同；六個檔案名稱、長度及內容逐位元等同輸入 ZIP／dist，PASS |
+| 公開 iframe | `https://html-classic.itch.zone/html/19872833-2161073/index.html?v=1792407786`；實際公開頁按 Run game，載入新版難度選單及作者趙雲模型 |
+| 正式站驗收 | 視窗模式基本操作 PASS：可見 Chrome、一般難度、英／中介面、出陣、鍵盤移動、滑鼠普攻／蓄力、命中、敵兵推進與受傷、1 KO、觀察到 8 HITS、暫停／恢復。初次 iframe 空白，重新載入後成功；受焦點影響的早期輸入不算通過。正式站未重跑 S，最高 S 證據來自上述同內容 production build 的本機實玩 |
+| 限制與錯誤 | Fullscreen 嘗試 FAIL：itch 外層頁 console 記錄 `TypeError: not granted`、`NotSupportedError: screen.orientation.lock() is not available on this device.`；保留錯誤，不宣稱全螢幕、穩定 FPS、主觀音效、手把或長時驗收通過 |
+| 原檔保全 | 舊 manual upload `19513683` 保留於 itch，停用其 browser 選取並隱藏以避免提供舊下載；外部 rollback 不變。第一次 hidden `html5` channel build `2161001`／upload `19872682` 保留隱藏，未刪除；其編輯器最初缺少啟用控制，一次經獨立審查的正常 `web` channel 替代成功 |
+| 登入事件 | 舊新建權杖曾經由回呼暫存標題暴露；使用者確認已撤銷，記為 USER_CONFIRMED，無遠端機器失效證據。官方工具只清除本次失效 provider 再重新登入；新回呼直接關閉，未讀取其內容／標題。受限 provider 目錄與新檔 ACL 核對 PASS，憑證未讀出或加入遊戲 ZIP。保留去敏事件紀錄及更正，不包含權杖值 |
+| 證據 | 外部 `jev-vision-play-itch-20261019-v1/`：`butler-push-web.jsonl`、`server-build-2161073-verification.json`、`itch-editor-after-save.txt`、`itch-live-embed.json`、`itch-live-console.json`、`itch-live-new-title-v2.png`、`itch-live-8hits-pause.png`、`itch-live-resume-keyboard-pause.png`、`publication-report.md` |
+
+保留 Public、$0 or donate／US$2、960×540、Fullscreen button 及所有既有媒體；不修改收款、稅務或其他帳號設定。遊戲來源已在 `origin/main`；本次讀圖 helper、tests 與文件另由 `codex/jev-vision-play-itch-20261019` 交付。使用者後續明確授權 commit／push to main，沿用隔離分支、審查與 CI 流程；repo 完工仍須核對實際 PR 合併、主工作區同步與證據保全後清理，不能由公開站發布結果代替。下表保留舊版歷史證據。
+
+## 既有上架狀態（2026-10-02）
 
 | 項目 | 內容 |
 | --- | --- |
