@@ -43,7 +43,7 @@
 
 ## 分期與必要決策
 
-1. **G00 決策／基準**：確認本設計、獨立審查替代引擎決策；更新 AGENTS／README／execution plan 路由及新 Godot SPEC/tasks，明示 Unity follow-up 已停用／被取代的範圍，不勾完成舊任務，不刪歷史缺口；鎖版本、template、來源 hashes 與測試基準。
+1. **G00 決策／基準**：確認本設計、獨立審查替代引擎決策；更新 AGENTS／README／execution plan 路由及新 Godot SPEC/tasks，明示 Unity follow-up 已停用／被取代的範圍，不勾完成舊任務，不刪歷史缺口；記錄既有 CLI／來源基準、測試基準與缺少 matching templates 的現況。執行檔／模板的正式來源、精確版本及 hashes 鎖定屬 G01 task 2.1，不是 G00 下載或實作範圍。
 2. **G01 雙平台基礎**：最小 Godot 工程、CLI runner、正負邊界測試，實際 Windows／Web 匯出與前景啟動。空場景只驗工具鏈。
 3. **G02 可玩切片**：原趙雲、原場景局部、移動／鏡頭／完整輸入與一招對一敵，先驗規則、座標、持槍、回退及雙平台成本。
 4. **G03 玩法完整性**：全部招式、受擊、無雙、敵群／Director、四難度、完整地圖、UI、VFX、音樂音效與流程；逐模組做 TS parity 與真實玩法驗收。
