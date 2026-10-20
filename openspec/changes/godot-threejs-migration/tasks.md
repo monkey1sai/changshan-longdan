@@ -36,5 +36,5 @@
 
 - [ ] 5.1 G03 DONE 後審查固定品質／合法 workload、硬體／driver／code/profile/assets/full-build hashes、各平台 timing／memory／真正 visible／前景來源與工具成本；未知維持 BLOCKED，Web或非.NET mapping變更必須先正式審查及人類批准。
 - [ ] 5.2 依 SPEC 原門檻跑兩平台20/50/100/200/300，每級seed7/11/23暖機30s＋採樣180s，各級通過才升級，完成30min soak與回歸；保留raw及失敗，不降門檻或借別平台數據。
-- [ ] 5.3 凍結單一版本，實際可見開啟 Godot project，Windows包及Web包完整S01–S08、四難度自然勝敗／重試／暫停／失焦、實體手把／聽感及使用者確認；若沿用Jev須另核對授權與實際executor/outcome，不把Choice當PASS。
+- [ ] 5.3 凍結單一版本，實際可見開啟 Godot project，Windows包及Web包完整S01–S08、四難度自然勝敗／重試／暫停／失焦、實體手把／聽感及使用者確認；另強制Windows與Web各完成至少一場Jev合法可見輸入自然勝利、實際300KO及既有最高S（battle秒數<300、受傷<400）。跑前鎖定難度／seed／包hash／模型與executor／觀察與暫停協議／授權及已用請求、token、cost、attempt預算，保存完整frame→decision→execution→outcome／連續session影片與結算證據，禁止DEV注入／清場／改速改分／隱藏觀察／人工代打；不把Choice當PASS、不借舊Three.js或另一平台結果、不重設預算。此新增測試不取代原四難度／品質／效能矩陣，能力／必要證據缺失仍阻擋移植完成。
 - [ ] 5.4 完成正式獨立 APPROVED、授權遠端 merge、post-merge 相容性／證據保全／清理及兩平台包交付才 Godot 移植 DONE；公開 itch 上傳／部署／付費另授權。

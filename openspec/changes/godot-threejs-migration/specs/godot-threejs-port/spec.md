@@ -80,7 +80,7 @@ MUST 依 G00→G01→G02→G03→G04，每期 scope review、適用正負邊界 
 
 適用正式核准 MUST 先依 [政策路由](../../../../../docs/governance/INDEPENDENT_REVIEW_OWNER_ACCEPTANCE_POLICY.md)核對生效與scope。該政策目前是 `ADOPTION_CANDIDATE_NOT_EFFECTIVE`：未合法啟用、超出scope或activation不可驗證時，原正式APPROVED要求仍有效，缺項HELD。只有依當時有效規則合法啟用且在明確scope內，才允許獨立精確版本審查接受＋人類owner精確核准作為該範圍載體；MUST 分列GitHub實際review，不以owner／advisory偽填APPROVED。實質獨立性、較嚴平台規則及必要獨立人類／專項批准仍適用；本候選不能批准自身或回填歷史核准。
 
-G04 SHALL 凍結同一 code/profile/asset/full-build，Windows 與 Web 各執行完整 S01–S08，保留四難度、自然勝敗、重試／暫停／失焦、聽感與實體手把證據；可見開啟指定 Godot project 並驗輸出包。若沿用歷史 Jev 支援流程，MUST 記錄去敏 state／合法 Choice／實際 executor／outcome，確認可用性及傳輸／呼叫授權；Choice、CI、Editor 或腳本不是自然操作／APPROVED。MUST 不繼續要求開 Unity 或默認可外傳 state。發布另授權。
+G04 SHALL 凍結同一 code/profile/asset/full-build，Windows 與 Web 各執行完整 S01–S08，保留四難度、自然勝敗、重試／暫停／失焦、聽感與實體手把證據；可見開啟指定 Godot project 並驗輸出包。最終驗收 MUST 使用下述「Jev-led natural victory at highest existing rank」流程，記錄去敏 state／合法 Choice／實際 executor／outcome，確認可用性及傳輸／呼叫授權；Choice、CI、Editor 或腳本不是自然操作／APPROVED。MUST 不繼續要求開 Unity 或默認可外傳 state。發布另授權。
 
 #### Scenario: Direction is approved but formal gate is absent
 - **WHEN** 使用者同意設計或 advisory 接受但適用正式核准／merge 尚缺
@@ -89,6 +89,38 @@ G04 SHALL 凍結同一 code/profile/asset/full-build，Windows 與 Web 各執行
 #### Scenario: Final report combines different candidates
 - **WHEN** CI、影片、資產或平台包不屬同一凍結版本
 - **THEN** 完整驗收 INCOMPLETE，重驗受影響項，不拼接舊 PASS。
+
+### Requirement: Jev-led natural victory at highest existing rank
+
+移植成功 MUST 另有 Jev AI 主導的自然破關最高成績證據：Windows 與 Web 各至少一場，使用同一凍結 code/profile/assets 並分別識別實際完整輸出包。沿用 `src/entities/battle.ts` 的既有最高 **S 評級**，不是新增數值總分或追求未定義的理論最高連擊。每場 MUST 同時符合 `win=true`、實際 `ko=300`、`rank=S`、battle `seconds < 300`、`damage < 400`；rank函式本身不檢查KO，因此300KO SHALL 獨立核對。不得改評分、傷害、敵數或難度參數迎合驗收。
+
+正式執行前 MUST 鎖定可審 protocol：各平台難度／seed／有效設定與完整package hashes、計分來源與battle-time語義、model/helper/executor版本及來源、觀察／動作時限與freshness、前景／focus、合法動作清單、所有請求／token／花費／attempt與停止預算。觀察期間合法暫停若被採用 SHALL 事先記明，battle time、實際wall time與暫停時段分列，不能改timeScale、竄改時鐘或把暫停未計入battle time冒稱連續實玩。這兩場S測試不替代或縮減原四難度／S01–S08矩陣，也不默認要求每一難度各一場S；所選難度／seed由跑前protocol明確核准，未定不得跑後補選通過條件。
+
+Jev MUST 以獲授權且僅含遊戲的最新可見截圖／UI觀察選擇固定有界合法動作，由已驗證executor映射為正常鍵鼠／手把輸入。執行前重核state／focus／版本／授權，執行後取得真實readback；Choice只作決策，不是執行器、結果裁判或審查批准，confidence不得作勝利證明。MUST 禁止DEV/debug hooks、狀態／health／musou注入、強制清場、timeScale作弊、改分、傳送及隱藏狀態餵模型；不得以人工代打／救場或主控自行替換Jev戰鬥決策完成。人類純setup協助須跑前限定並另記，不能當Jev遊玩輸入。
+
+每場 MUST 保存可存取的完整有序 frame／observation／decision／execution／outcome鏈、連續session影片（含暫停／setup時段）、正常結算勝利與300KO／S／time／damage讀回及畫面、stdout/stderr／失敗attempt、凍結版本／full-build及證據hashes、模型/helper/executor身分與實際請求用量／費用。確定性rank與完成條件由程式／證據核對，不由Jev聲稱PASS；精確邊界與防作弊判定必須有正負測試。缺鏈、陳舊截圖、不同包、executor不可用、provider錯誤、預算用盡、敗北或非S不得標最終完成。
+
+SHALL 優先重用 `scripts/jev-vision-player.py` 與其已記錄 `jev-1.14.0` 模型契約，但在eligible階段重新驗證Godot／Windows及Web能力，不假設Web executor已能操作Godot。MUST 另外取得provider使用、遊戲影像傳送與具體cost/attempt預算授權；本SPEC不立即授權呼叫、付費或讀取／輸出credentials。沿用既有失敗及實際已用預算，同一驗收任務跨平台、工具、目錄與resume不可重設；新的獨立任務預算需跑前明確核准。舊Three.js S紀錄僅供方法參考，不能借作Godot PASS。未執行保持NOT_RUN，能力／必要證據或門檻缺失保持BLOCKED；其他品質／效能／人工視聽、正式核准、merge／post-merge及階段順序仍須完成，Jev勝利不能取代。
+
+#### Scenario: Both platform packages reach the highest existing rank
+- **WHEN** 凍結同版的Windows及Web各完成Jev合法輸入自然勝利，兩場均300KO、S、battle秒數小於300、受傷小於400，且所有protocol／身份／證據鏈與其他必要gate可核對
+- **THEN** 只將此新增Jev最高評級驗收標PASS；仍須其餘完整矩陣及交付gates才可稱移植成功。
+
+#### Scenario: Strict rank boundary or missing population outcome
+- **WHEN** 任何一場時間等於300秒、受傷等於400、實際KO不是300、未自然勝利或結算不是S
+- **THEN** 該場不通過；不四捨五入或變更評分門檻，不單憑顯示S或Jevconfidence接受。
+
+#### Scenario: Hidden-state or human-assisted victory
+- **WHEN** 使用DEV注入／debug清場／timeScale作弊／隱藏資料觀察，或有人類戰鬥代打／替換Jev決策
+- **THEN** 本驗收拒絕該場，即使顯示勝利與S亦不採計；保留該attempt及違規證據，不重置預算。
+
+#### Scenario: One platform or evidence chain is incomplete
+- **WHEN** 只有Windows或Web通過，或影片／決策／執行／結算鏈缺失、身份／hash不符、observation過期或executor未驗證
+- **THEN** 新增最終gate保持未通過，不以舊Three.js、另一平台或其他SHA結果補齊。
+
+#### Scenario: Provider or budget stops the run
+- **WHEN** provider／工具不可用、授權不齊、usage不可信或任何既定停止預算到達
+- **THEN** 停止自動操作並保存失敗／未完成證據；按protocol安全暫停或結束，不人工救場／自動加額／換目錄續跑，最終驗收保持BLOCKED或NOT_RUN而非PASS。
 
 ### Requirement: Progress reports distinguish planning and product completion
 

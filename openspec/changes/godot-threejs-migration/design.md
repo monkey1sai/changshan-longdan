@@ -15,6 +15,8 @@
 3. **唯一 controller 位移權威**：保留 meter/second/radian 與原移動曲線、hit-stop/input/game/animation 時鐘；已知點測 Godot 朝向及模型邊界，不整世界任意翻 Z。
 4. **重用現有資產而非重製**：GLB／manifest／來源 hashes、程序士兵、城池 layout。MultiMesh 按空間分批，驗包圍盒、instance flash、動畫與 Web 成本；骨架或蒙皮缺陷交回美術契約，不隱藏或當成引擎替換已修復。Control/InputMap/音訊適配取代 DOM/WebAudio；AudioStreamGenerator 與離線合成方案待實際時序／延遲驗證，不增加音樂授權風險。
 5. **Evidence first**：Windows full package 與 Web ZIP 均鎖 code/profile/asset/full-build hashes；Windows 自然操作不代表 Web iframe 通過。原 Web 交付持續可重現，舊 Unity PASS 不作 Godot 證據。
+6. **Jev最高評級自然破關為硬gate**：依新增SPEC，Windows／Web各至少一場同版輸出包，由Jev依合法遊戲畫面選動作、實際executor操作，正常結算win=true、實際ko=300、既有rank=S（battle seconds<300且damage<400）。沒有數值總分，不新增計分系統；300KO獨立於rank函式核對。這是額外完成條件，不替代四難度／S01–S08、品質／效能／人工感官或正式交付gates，也不默認每難度各一場S。
+7. **跑前protocol與完整證據**：鎖定難度／seed／effective設定／完整包hash、model/helper/executor、state freshness／前景、固定有界合法action、battle與wall／pause時間語義、實際request/token/cost/attempt上限及停止條件；待eligible階段另核准provider／遊戲影像傳送／cost，現在不呼叫。連續session影片含setup與觀察暫停，保存有序frame／observation／decision／execution／outcome、terminal結算及stderr/失敗attempt/hash。禁止DEV/debug、health/musou/state注入、強制清場、timeScale／改分、hidden-state觀察、人工戰鬥代打或主控替換Jev決策；setup-only援助另記。不可用／非S／缺鏈／預算用盡皆不通過，不以confidence判PASS、不跨平台或目錄重開同任務預算。
 
 ## Risks / Trade-offs
 
@@ -33,4 +35,4 @@ G00 決策與 SPEC → G01 雙平台工具鏈 → G02 一招對一敵可玩切�
 - G01 尚缺固定官方 templates 的下載授權與 archive/executable checksum 對照；不能以本機 CLI 版本替代。
 - G02/G03 音訊合成方案、實際材質／MultiMesh 實作、字型供應由相應 scoped 實作及證據決定，不影響已批准的平台／來源方向。
 - G04 的 Web GPU/VRAM 與非 .NET allocation 對照尚未證明；必要數據不齊時保持 BLOCKED，改驗收契約須另行 review／人類批准。
-- 歷史 Jev 支援驗收保留「Choice 不等於執行器／PASS」原則；Godot 最終驗收若沿用，需確認可用且獲授權的實際 executor/state/choice/outcome，不要求開啟 Unity、不修改全域設定或擅自產生 provider 呼叫。
+- Jev最高S自然破關已是強制最終條件，保留「Choice不等於執行器／PASS」。現有`jev-vision-player.py`／`jev-1.14.0`契約及歷史Web S僅供重用／方法參考；Godot Windows／Web executor、模型實際能力／版本、跑前難度／seed／暫停協議及獨立task預算尚待eligible階段核對與批准，不能借舊紀錄當Godot PASS或自行重設已用預算。缺能力不刪此gate，保持BLOCKED。不要求開Unity、不修改全域設定、不讀出credentials或擅自呼叫provider。
