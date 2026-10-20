@@ -19,14 +19,18 @@
 
 ## 1. 每一步都要走的閉環
 
+### 適用正式核准路由（導入候選，尚未生效）
+
+[核准載體政策](../governance/INDEPENDENT_REVIEW_OWNER_ACCEPTANCE_POLICY.md)目前為 `ADOPTION_CANDIDATE_NOT_EFFECTIVE`。未合法啟用、超出scope或activation無法驗證時，以下原有正式核准（含GitHub正式APPROVED）要求照常，缺項HELD。只有按當時有效規則合法啟用且在明確scope內，才可採獨立精確版本審查接受＋人類owner精確核准作為該範圍載體。兩者皆不豁免實質獨立性、測試／證據、必要人類／專項、平台較嚴要求、修正預算及當次操作授權；本候選不批准自身。
+
 1. **開始前審查**：讀最新 AGENTS、變量規格、該步模板及前一步證據；核對 base/head、依賴、授權、工作樹與來源。指定實作者及不同於實作者的審查者；未知就標記待指定。記下可修改路徑與禁止事項。
 2. **最小實作**：只做該步交付；保持對照基準。先寫能抓到原問題的負例或測試，再實作；不先同時調傷害、動畫和敵數。每次修正有界，連續兩輪仍無法通過時停下並記錄阻擋原因，不重設期限無限重試。
 3. **本地驗證**：跑共通回歸及該步的正例、負例、邊界、渲染與情境驗證。原始 stdout/stderr、exit code、trace、影片與量測環境都保留；記錄產物 SHA-256。失敗、未執行與工具失敗分開。
 4. **形成候選 commit**：只 stage 本步檔案，檢查 diff、秘密與授權，再 commit/push 到該步 PR。允許未通過的工作以 Draft 保留，但不可宣稱 DONE。記錄 base SHA、candidate SHA、profile/asset hashes；禁止 force-push、整包 stage 不相關本機修改或夾帶生成輸出。
 5. **同版本最終審查與驗證**：以候選 SHA 跑 CI 和必要的遊玩／渲染測試；若測試是在 commit 前跑，須證明被測內容與候選 commit 完全相同，否則重跑。審查者檢查完整 diff、負例、證據與規格偏差，所有阻擋項關閉且沒有未解決 review threads。修改後必須重新核對新 SHA，不把舊 approval 或舊錄影當成新版本證據。
-6. **完成與晉級**：不同於實作者的正式 reviewer 對最終 SHA 給 APPROVED，最新 base 仍相容，所有適用門檻通過後才可標 `VERIFIED`。合併還需使用者授權與實際 GitHub 檢查；合併後保存 merge SHA、CI/相容性回歸才標 `DONE` 並開始下一步。來源或 base 改變時重做影響審查；有內容變更或相關風險就重跑受影響測試。
+6. **完成與晉級**：不同於實作者的正式 reviewer 對最終 SHA 給出符合上述適用路由的正式核准（未合法啟用／超出scope／activation未知時，仍須原正式 APPROVED），最新 base 仍相容，所有適用門檻通過後才可標 `VERIFIED`。合併還需使用者授權與實際 GitHub 檢查；合併後保存 merge SHA、CI/相容性回歸才標 `DONE` 並開始下一步。來源或 base 改變時重做影響審查；有內容變更或相關風險就重跑受影響測試。
 
-審查可以使用另一代理或人工，但必須留下真實身分、範圍、來源版本和結論。**自己檢查自己的文件只能寫 self-review；COMMENT、模型評分或「未發現問題」都不是 GitHub 正式 APPROVED。** 沒有 reviewer 或缺必要工具就停在 `AWAITING_REVIEW` / `BLOCKED`，不得冒名批准。
+審查可以使用另一代理或人工，但必須留下真實身分、範圍、來源版本和結論。**自己檢查自己的文件只能寫 self-review；COMMENT、模型評分、owner acceptance或「未發現問題」都不是 GitHub 正式 APPROVED。** 僅在政策已合法啟用且明確scope內，經其完整契約核對的獨立審查接受＋owner精確核准才可作另一正式載體；未啟用／scope外／activation未知仍採原要求，不能自行選較寬鬆路由。沒有 reviewer 或缺必要工具就停在 `AWAITING_REVIEW` / `BLOCKED`，不得冒名批准。
 
 ### 狀態與證據規則
 

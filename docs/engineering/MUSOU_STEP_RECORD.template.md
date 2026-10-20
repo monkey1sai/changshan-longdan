@@ -1,6 +1,6 @@
 # E__ 逐步實作、驗證與審查紀錄（空白模板）
 
-搭配 [執行計畫](./MUSOU_EXECUTION_PLAN.md)。複製到該步 PR 描述／評論並逐欄填寫；此檔本身不是任何步驟的證據。未知填 `null` 或 `NOT_RUN`，不要填0、PASS或捏造URL。最終結果引用不可變candidate SHA；不要為把SHA寫入同一commit而無窮產生新commit。
+搭配 [執行計畫](./MUSOU_EXECUTION_PLAN.md)。[核准載體政策](../governance/INDEPENDENT_REVIEW_OWNER_ACCEPTANCE_POLICY.md)仍為 `ADOPTION_CANDIDATE_NOT_EFFECTIVE`：未合法啟用／scope外／activation未知時保留原正式核准要求；只有合法啟用且在scope內才可採獨立審查接受＋人類owner精確核准。模板不是activation證據，較嚴平台／必要人類／專項gates照常。複製到該步 PR 描述／評論並逐欄填寫；此檔本身不是任何步驟的證據。未知填 `null` 或 `NOT_RUN`，不要填0、PASS或捏造URL。最終結果引用不可變candidate SHA；不要為把SHA寫入同一commit而無窮產生新commit。
 
 ## A. 開始前範圍審查
 
@@ -77,6 +77,20 @@ selfReviewScopeAndEvidence: null
 formalIndependentReview: NOT_RUN
 formalReviewCommitSha: null
 formalReviewUrlOrId: null
+policyVersionAndEffectiveScope: null
+activationDecisionAndThenEffectiveApprovalEvidence: null
+applicableApprovalRoute: LEGACY_FORMAL_GATE
+independentReviewVerdictAndHeadSha: null
+reviewerImplementationParticipation: unknown
+requestedModelAndRuntimeEvidenceOrLimitation: null
+ownerAcceptanceIdentityAndVerifiableSource: null
+ownerAcceptanceQuoteOrAuthorizedExcerpt: null
+ownerAcceptanceExactHeadScopeAndTime: null
+requiredHumanAndSpecialistSignoffs: []
+githubActualReviewStateIdAndCommit: null
+applicableFormalApprovalSatisfied: false
+operationAuthorizationSourceAndExactTuple: null
+retryBudgetAndConsumedRounds: null
 latestCiHeadShaAndResults: null
 unresolvedReviewThreads: null
 unresolvedBlockingFindings: null
@@ -85,7 +99,7 @@ baseDriftAssessment: NOT_RUN
 finalSameVersionVerdict: NOT_RUN
 ```
 
-COMMENT、advisory、計畫結構PASS與GitHub正式APPROVED分開列。新commit需更新CI與審查版本，不能保留舊head結論冒充最新；本地路徑列local_only，reviewer看不到產物就不能填已確認。連續兩輪修正仍不過，登錄BLOCKED與最小解除條件，不無限重試。
+COMMENT、advisory、計畫結構PASS、獨立審查接受、owner acceptance與GitHub實際正式APPROVED分開列。未合法啟用／scope外／activation未知時仍須原正式核准，缺項HELD；只有合法啟用且明確scope內才適用新載體，不能讓本模板或新機制批准其自身。新commit需更新CI與審查版本，不能保留舊head結論冒充最新；本地路徑列local_only，reviewer看不到產物就不能填已確認。連續兩輪修正仍不過，登錄BLOCKED與最小解除條件，不無限重試。
 
 ## E. 完成與下一步門檻
 
@@ -101,7 +115,7 @@ nextStepAllowed: false
 releaseOrPaidActionPerformed: false
 ```
 
-VERIFIED：該步承諾的實作、適用驗證、最終SHA的正式獨立APPROVED、最新CI與零未解決threads/阻擋項全部成立。DONE：另外有合併授權、merge SHA與合併後建置/相容性確認。兩者都不能靠填欄位自動成立，必須核對GitHub與原始產物。
+VERIFIED：該步承諾的實作、適用驗證、最終SHA的適用正式獨立核准、最新CI與零未解決threads/阻擋項全部成立；未合法啟用／scope外／activation未知時，適用核准仍是原正式APPROVED要求。只有合法啟用且明確scope內，才依完整政策核對獨立審查接受＋owner精確核准，必要人類／專項／平台較嚴要求照常。DONE：另外有合併授權、merge SHA與合併後建置/相容性確認。兩者都不能靠填欄位自動成立，必須核對GitHub與原始產物。
 
 ### 停止／回滾紀錄
 

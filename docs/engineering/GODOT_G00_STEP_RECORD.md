@@ -2,6 +2,8 @@
 
 依 `MUSOU_STEP_RECORD.template.md` A–E；本文件不是 runtime 通過證據。
 
+> **後續核對／保留以下原始紀錄**：PR51已merge為`ae2b2b49cd0154e9278c01e6db78ed15967f2edd`，candidate為`186503b0327f71583776204e8df0b6bd9d22fa52`；post-merge內容／hash核對與worktree清理有外部證據，並不產生GitHub正式APPROVED。以下原pending／未merge欄位屬原始快照，不倒填審查或新增產品PASS／DONE。Godot仍2/20、G00核准缺口保留。[核准載體政策候選](../governance/INDEPENDENT_REVIEW_OWNER_ACCEPTANCE_POLICY.md)為`ADOPTION_CANDIDATE_NOT_EFFECTIVE`，未生效：未合法啟用／scope外／activation未知仍採原正式要求；只有合法啟用且在明確scope內才可採獨立審查接受＋owner精確核准，必要人類／專項與平台較嚴規則不變。G01不可開始，#51過渡另需裁決。
+
 ## A. 開始前範圍審查
 
 ```text
