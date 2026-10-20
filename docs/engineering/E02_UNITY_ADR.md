@@ -1,5 +1,7 @@
 # E02 Unity 決策
 
+> **歷史決策／停止新開發（G00 候選）**：使用者已選定 Godot 直接移植 Three.js，交付 Windows 與 Web／itch.io；方向批准不代表 Godot 已實作或 formal APPROVED。[Godot 替代 ADR](./GODOT_ADR.md) 記錄新的範圍與待完成 gates。本文件以下的 ACCEPTED 是當時 Unity 決策的歷史狀態，不再是新 Unity 開發授權，也不將歷史缺口改寫為完成。
+
 提案日期：2026-10-03；決策接受日期：2026-10-04（Asia/Taipei）。`decisionStatus: ACCEPTED`。使用者已核准方向 1 與固定官方套件下載，原文、固定提案 hashes 與授權界線見 [E02_DECISION.md](./E02_DECISION.md)。下列盤點與三個方向保留原提案背景；實際工程驗證以 [E02_UNITY_VALIDATION.md](./E02_UNITY_VALIDATION.md) 及新收證紀錄為準。
 
 ## 來源與問題

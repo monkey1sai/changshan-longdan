@@ -1,3 +1,5 @@
+> **歷史設計／停止新開發（G00 候選）**：新路線為 [Godot 直接移植 Three.js](../godot-threejs-migration/design.md)，目標 Windows 與 Web／itch.io。下文 Unity 設計及缺口原樣保留；不要求先解完 Unity E12 才能審查 Godot，也不把已用完的同一問題修正額度重新開啟。
+
 ## Context
 
 現況與版本見 [移植盤點](../../../docs/engineering/UNITY_MIGRATION_RECONCILIATION_2026-10-08.md)。main 已有 Unity 工程與 E11；E12 工具在未合併分支。需求是整理後續，不重新移植全部功能，也不把歷史限定接受提升成完整 VERIFIED。

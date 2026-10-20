@@ -1,3 +1,5 @@
+> **歷史規格／路線已由使用者改選 Godot（G00 候選）**：現行新開發依 [Godot SPEC](../../../godot-threejs-migration/specs/godot-threejs-port/spec.md)。下文 requirement 保留歷史語義，不再要求新 Unity 實作或可見開啟 Unity；未驗證品質／效能與正式 review 缺口不因替代引擎自動通過。新的 G00 尚需正式審查、授權 merge 及 post-merge。
+
 ## ADDED Requirements
 
 ### Requirement: 可追溯的移植現況與平台範圍

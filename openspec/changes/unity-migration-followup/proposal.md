@@ -1,3 +1,5 @@
+> **歷史 change／停止新開發（G00 候選）**：使用者已同意 Godot 直接移植 Three.js，交付 Windows 與 Web／itch.io；新開發轉向 [Godot change](../godot-threejs-migration/proposal.md)。下文保留原 Unity 範圍與缺口，不再是新開發待辦；原 tasks 3/22 不改勾、不當成 Godot 進度，原兩輪用盡預算不重設。新 G00 正式 review／授權 merge／post-merge 仍待完成。
+
 ## Why
 
 Unity 功能移植已有 E02–E11 工程與合併紀錄，但主線台帳尚未同步 E11，E12 只有受阻的量測能力候選，E13 未開始。需要一份可追溯的後續規格，區分歷史限定接受、當前工程缺口、美術交付依賴及正式可玩版本驗收。

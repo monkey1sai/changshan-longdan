@@ -1,5 +1,7 @@
 # Unity 移植後續 SPEC
 
+> **歷史索引／停止新開發（G00 候選）**：使用者已改選 [Godot 直接移植 Three.js](../godot-threejs-migration/proposal.md)，交付 Windows 與 Web。下列進度及要求留作歷史，不繼續 Unity 待辦、不改勾或繼承 PASS。Godot G00 正式 gates 尚未通過。
+
 本 change 承接既有 E02–E13 工程規格，整理已移植功能與剩餘能力／品質／效能／整合驗收。趙雲資產製作交美術工程師；Unity runtime、量測、匯入與驗收由遊戲工程負責。
 
 - [現況盤點](../../../docs/engineering/UNITY_MIGRATION_RECONCILIATION_2026-10-08.md)
