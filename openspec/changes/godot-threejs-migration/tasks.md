@@ -1,5 +1,7 @@
 # Godot 直接移植 Three.js：進度與 gate
 
+> **核准路由導入候選，尚未生效**：[政策](../../../docs/governance/INDEPENDENT_REVIEW_OWNER_ACCEPTANCE_POLICY.md)標示 `ADOPTION_CANDIDATE_NOT_EFFECTIVE`。本清單下文「正式APPROVED／正式核准」在未合法啟用、scope外或activation未知時仍指原正式要求，缺項HELD；只有依法定當時有效規則啟用且屬明確scope，才可採政策完整契約下的獨立審查接受＋人類owner精確核准。GitHub實際review、必要人類／專項、平台較嚴門檻及當次操作授權分列，不自批、不回填歷史。此修訂不勾任何task、不標G00 DONE、不解鎖G01。
+
 以本清單 20 項 task 計數，每次交付報 completed/20、百分比、本次成果、未齊 gates 及下一 eligible；比例不是品質／工作量百分比。原 Unity 3/22 是歷史，不納入此計數。G00 尚未 DONE；G01 實作必須等 G00 正式 review、授權 merge、post-merge 與清理。規劃與唯讀盤點不等於執行下一期。
 
 ## 1. G00 引擎決策與移植契約（當前單元）

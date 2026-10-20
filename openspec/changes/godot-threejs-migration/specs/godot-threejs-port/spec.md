@@ -76,12 +76,14 @@ MUST 在 1920×1080、renderScale1 逐級 20/50/100/200/300，每級 seeds7/11/2
 
 ### Requirement: Phase gates and same-version final acceptance
 
-MUST 依 G00→G01→G02→G03→G04，每期 scope review、適用正負邊界 tests、raw evidence、exact-head 正式獨立 APPROVED、具體 merge 授權、遠端 merge、post-merge 相容性與本任務 worktree 清理才 DONE 及開始下一期實作。MUST 保留同一問題已用修正額度，兩輪未成功即停；新範圍須獨立審查，不按工具／分支重設。G00 文件不承諾 runtime render，但 MUST 記為 NOT_RUN 並取得文件範圍審查，不能轉成產品 PASS。
+MUST 依 G00→G01→G02→G03→G04，每期 scope review、適用正負邊界 tests、raw evidence、exact-head 適用正式獨立核准、具體 merge 授權、遠端 merge、post-merge 相容性與本任務 worktree 清理才 DONE 及開始下一期實作。MUST 保留同一問題已用修正額度，兩輪未成功即停；新範圍須獨立審查，不按工具／分支重設。G00 文件不承諾 runtime render，但 MUST 記為 NOT_RUN 並取得文件範圍審查，不能轉成產品 PASS。
+
+適用正式核准 MUST 先依 [政策路由](../../../../../docs/governance/INDEPENDENT_REVIEW_OWNER_ACCEPTANCE_POLICY.md)核對生效與scope。該政策目前是 `ADOPTION_CANDIDATE_NOT_EFFECTIVE`：未合法啟用、超出scope或activation不可驗證時，原正式APPROVED要求仍有效，缺項HELD。只有依當時有效規則合法啟用且在明確scope內，才允許獨立精確版本審查接受＋人類owner精確核准作為該範圍載體；MUST 分列GitHub實際review，不以owner／advisory偽填APPROVED。實質獨立性、較嚴平台規則及必要獨立人類／專項批准仍適用；本候選不能批准自身或回填歷史核准。
 
 G04 SHALL 凍結同一 code/profile/asset/full-build，Windows 與 Web 各執行完整 S01–S08，保留四難度、自然勝敗、重試／暫停／失焦、聽感與實體手把證據；可見開啟指定 Godot project 並驗輸出包。若沿用歷史 Jev 支援流程，MUST 記錄去敏 state／合法 Choice／實際 executor／outcome，確認可用性及傳輸／呼叫授權；Choice、CI、Editor 或腳本不是自然操作／APPROVED。MUST 不繼續要求開 Unity 或默認可外傳 state。發布另授權。
 
 #### Scenario: Direction is approved but formal gate is absent
-- **WHEN** 使用者同意設計或 advisory 接受但 formal APPROVED／merge 尚缺
+- **WHEN** 使用者同意設計或 advisory 接受但適用正式核准／merge 尚缺
 - **THEN** 本期保持 AWAITING_REVIEW/BLOCKED，不自批、不開始下一期 runtime。
 
 #### Scenario: Final report combines different candidates

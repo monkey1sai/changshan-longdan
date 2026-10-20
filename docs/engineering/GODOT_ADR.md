@@ -2,6 +2,8 @@
 
 ## 狀態與依據
 
+> **歷史快照與後續核對**：下列G00起始狀態／空templates觀察保留當時事實，不是目前即時狀態。PR51已merge為`ae2b2b49cd0154e9278c01e6db78ed15967f2edd`，其candidate仍是`186503b0327f71583776204e8df0b6bd9d22fa52`；實際merge、Astra advisory及工具安裝不能回填GitHub APPROVED或完整runtime PASS。G00仍有核准缺口，Godot2/20、G01未開始。[新核准載體](../governance/INDEPENDENT_REVIEW_OWNER_ACCEPTANCE_POLICY.md)仍為`ADOPTION_CANDIDATE_NOT_EFFECTIVE`：未合法啟用／scope外／activation未知沿用原正式要求；只有合法啟用且在明確scope內才可採獨立review接受＋owner精確核准，必要人類／專項及平台較嚴要求照常。本候選不批准自身或#51的過渡。
+
 `directionStatus: USER_APPROVED`；`formalIndependentApproval: PENDING`；`deliveryStatus: NOT_MERGED`。使用者先要求不再使用 Unity、全面改 Godot，明確以 Three.js 為移植來源、Windows 及 Web 都要，並對 [完整設計](./GODOT_MIGRATION_DESIGN.md) 及先進行決策／雙平台基礎回覆「同意」。
 
 這是新方向核准，不是工具安裝、遠端寫入、正式審查或品質已通過。scope advisory reviewer run `575e775d-5971-4e8c-b2f2-42c68235d0cf` 接受 G00 文件範圍；其結果不是 GitHub APPROVED。
