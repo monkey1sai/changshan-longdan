@@ -4,6 +4,12 @@
 
 **線上試玩**：[monkey1sai.itch.io/changshan-longdan](https://monkey1sai.itch.io/changshan-longdan)（itch.io，免費，歡迎自由贊助）
 
+## Godot 遷移方向
+
+使用者已選定直接將現有 Three.js 版移植到 **Godot，交付 Windows x64 與 Web／itch.io**，不再推進 Unity。原 Web source、線上遊戲及 Unity 歷史工程保留；目前 G00 僅更新決策／規格，尚沒有 Godot 可玩版或雙平台匯出。
+
+入口：[Godot 決策](docs/engineering/GODOT_ADR.md)、[遷移設計](docs/engineering/GODOT_MIGRATION_DESIGN.md)、[SPEC 與分期進度](openspec/changes/godot-threejs-migration/tasks.md)。正式審查、授權 merge 與 post-merge 尚未通過前不進 G01；下列功能與指令描述的是既有 Three.js 版，不是 Godot 已完成項目。
+
 ## 特色
 
 - **中英介面**：右上角可隨時切換繁體中文／English，涵蓋操作說明、招式指南、戰鬥提示與結算；不重開戰局，並在可用的瀏覽器儲存空間記住偏好。

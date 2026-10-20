@@ -1,3 +1,5 @@
+> **歷史進度／不再執行本 Unity 待辦（G00 候選）**：使用者已同意 Godot 直接移植 Three.js、Windows 與 Web 雙交付，改走 [Godot tasks](../godot-threejs-migration/tasks.md)。下文 3/22 與 Unity／Jev 特定要求是當時契約，不是現行 Godot 進度或要求繼續開 Unity；歷史未完成項仍保持未勾，資產品質／效能／review 缺口及已用預算保留。Godot 的實際 executor 證據另驗，不以 Jev Choice 代替。
+
 ## 進度回報與最終完成契約
 
 每次完成／受阻交付都回報已完成項目數／22、百分比、本次完成項目、剩餘gate與下一個eligible步驟。現在3/22（13.6%）只是任務計數，不代表遊戲工程品質或工作量比例。只有task本身約定的條件完成才勾選，不因文件格式、CI或Jev回應通過而勾選未驗收工程。

@@ -1,5 +1,7 @@
 # 《常山龍膽》可執行工程計畫
 
+> **路線替代通知（G00 候選）**：使用者已同意直接將 Three.js 移植至 Godot，目標 Windows 與 Web／itch.io。新工程依 [Godot ADR](./GODOT_ADR.md) 與 [G00–G04 tasks](../../openspec/changes/godot-threejs-migration/tasks.md)；不再執行本文件的 Unity 後續實作。以下 E00–E13 是保留的歷史計畫／台帳，缺口不勾完成；第 1 節的來源保全、實測、獨立 review、授權 merge、post-merge、兩輪上限與 S01–S08 門檻繼續約束 Godot。G00 正式 gates 未齊，不開始 G01。
+
 日期：2026-10-02（Asia/Taipei）｜計畫版本：1
 依據：[工程變量](./MUSOU_VARIABLES.md)、[候選 profile](./musou-profile.proposed.json)、[逐步證據模板](./MUSOU_STEP_RECORD.template.md)。
 
