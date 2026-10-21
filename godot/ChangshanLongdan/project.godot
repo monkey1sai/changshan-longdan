@@ -1,0 +1,19 @@
+; G01 toolchain bootstrap. Not the ported game.
+config_version=5
+
+[application]
+config/name="Changshan Longdan - G01 Toolchain"
+run/main_scene="res://scenes/bootstrap.tscn"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+
+[display]
+window/size/viewport_width=960
+window/size/viewport_height=540
+window/size/window_width_override=960
+window/size/window_height_override=540
+window/stretch/mode="canvas_items"
+
+[rendering]
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/default_filters/use_nearest_mipmap_filter=false
