@@ -1,0 +1,3728 @@
+{
+  "schemaVersion": 1,
+  "sourceFiles": [
+    {
+      "path": "src/combat/moves.ts",
+      "sha256": "abcb823a6c90e94663d3a4a7a1bb7967638e3ee14a887b29ceda42129c4fa084"
+    },
+    {
+      "path": "src/combat/combo.ts",
+      "sha256": "9c97700c0e339722b1f4e6485c3bc50fbfbad93b9839340ccf2cf5403da2f488"
+    },
+    {
+      "path": "src/combat/hitshape.ts",
+      "sha256": "c91ec5e9ac1fe886c25ce7cbabc72bef415133c12c99f98c5934263eaa29cc88"
+    },
+    {
+      "path": "src/combat/stamp.ts",
+      "sha256": "5b3c6289d19922d37503c7535e3d8923beaa0fc7af6d03b1338fee7e83a93deb"
+    },
+    {
+      "path": "src/core/math.ts",
+      "sha256": "f7eef9c26325e847a4bdf696912cf2eef4fe5454e938c9e86c8d3d7bb30bb7e5"
+    },
+    {
+      "path": "src/core/spatial-hash.ts",
+      "sha256": "99d56971c5b08121434047a9235bc01e11deb134fd0a36fcec7984628fb09a4f"
+    },
+    {
+      "path": "src/core/difficulty.ts",
+      "sha256": "3bd73dc44f9b579978ebc8802f970c8f6775700b0be48caecc1ceeeba96bfa14"
+    },
+    {
+      "path": "src/core/input.ts",
+      "sha256": "4ff29e01ffdc6ef8baa2ae42c58b81dc26654b6e7bf8a6589ec5143bbeae10e7"
+    },
+    {
+      "path": "src/entities/arena.ts",
+      "sha256": "4afe970cab55b92a20c53daff96f1422957ede4b116ce0982fd6080d87a242a4"
+    },
+    {
+      "path": "src/entities/player.ts",
+      "sha256": "c9151bc53f318b6e5f5525bb75830de682177ac92dfcde328209a091d1472ae9"
+    },
+    {
+      "path": "src/entities/enemies.ts",
+      "sha256": "b144030ade4f7626732e4f0bbd7221491a384783935d61c84cba7a589d5bcd72"
+    },
+    {
+      "path": "src/entities/battle.ts",
+      "sha256": "a10c4402c0baa563603c1443243d7813d1b98678e9ffc3ddf85442dc9577ba51"
+    },
+    {
+      "path": "src/entities/battle-director.ts",
+      "sha256": "a19d643144fd80fa1c33fec508fd5067c25913f8d5e9d20622551416bf259f50"
+    },
+    {
+      "path": "src/entities/dragon-strike.ts",
+      "sha256": "cbe9c21d17829cf32a91e945a183822249d6f884371fab5ee9a40e43b7d197e0"
+    },
+    {
+      "path": "src/entities/castle-setup.ts",
+      "sha256": "a7e0986849689fc6c9fb90fdc73d603f3df6e82dc7463e046d77c76a92deefae"
+    },
+    {
+      "path": "src/world/layout.ts",
+      "sha256": "1a18dd5fd551433c957bdf8ef713baca7e8c95d5780f2d2fe3ffaec83660eee1"
+    },
+    {
+      "path": "src/view/camera-rig.ts",
+      "sha256": "94b1f35d0363d196e935524d17672a2eea8c10d040c05762bb3d5ad31c2f0761"
+    },
+    {
+      "path": "src/game.ts",
+      "sha256": "cc9d37d62c86f8934d458090f8bfc6dd879b0bda4a5526008e143c5b1396b7ab"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "a89d1a31fff471207cefd77c09fe1b4463d668ce40d13a568413e204898108d8"
+    }
+  ],
+  "moves": {
+    "N1": {
+      "id": "N1",
+      "name": "刺",
+      "duration": 0.42,
+      "cancel": 0.2,
+      "hits": [
+        {
+          "t0": 0.1,
+          "t1": 0.16,
+          "shape": {
+            "kind": "line",
+            "range": 3.4,
+            "width": 1.3,
+            "offset": 0
+          },
+          "damage": 14,
+          "reaction": "flinch",
+          "push": 3,
+          "lift": 0,
+          "hitstop": 0.05,
+          "shake": 0.12,
+          "sfx": "pierce"
+        }
+      ],
+      "lunge": [
+        {
+          "t0": 0,
+          "t1": 0.12,
+          "distance": 0.35
+        }
+      ],
+      "trail": [
+        [
+          0.06,
+          0.2
+        ]
+      ],
+      "swings": [
+        0.06
+      ]
+    },
+    "N2": {
+      "id": "N2",
+      "name": "橫掃",
+      "duration": 0.46,
+      "cancel": 0.22,
+      "hits": [
+        {
+          "t0": 0.1,
+          "t1": 0.22,
+          "shape": {
+            "kind": "arc",
+            "range": 3.3,
+            "halfAngle": 1.3962634015954636,
+            "offset": 0
+          },
+          "damage": 14,
+          "reaction": "flinch",
+          "push": 3.5,
+          "lift": 0,
+          "hitstop": 0.05,
+          "shake": 0.12,
+          "sfx": "light"
+        }
+      ],
+      "lunge": [
+        {
+          "t0": 0,
+          "t1": 0.14,
+          "distance": 0.4
+        }
+      ],
+      "trail": [
+        [
+          0.06,
+          0.26
+        ]
+      ],
+      "swings": [
+        0.07
+      ]
+    },
+    "N3": {
+      "id": "N3",
+      "name": "回掃",
+      "duration": 0.46,
+      "cancel": 0.22,
+      "hits": [
+        {
+          "t0": 0.1,
+          "t1": 0.22,
+          "shape": {
+            "kind": "arc",
+            "range": 3.3,
+            "halfAngle": 1.3962634015954636,
+            "offset": 0
+          },
+          "damage": 15,
+          "reaction": "flinch",
+          "push": 3.5,
+          "lift": 0,
+          "hitstop": 0.05,
+          "shake": 0.12,
+          "sfx": "light"
+        }
+      ],
+      "lunge": [
+        {
+          "t0": 0,
+          "t1": 0.14,
+          "distance": 0.4
+        }
+      ],
+      "trail": [
+        [
+          0.05,
+          0.26
+        ]
+      ],
+      "swings": [
+        0.06
+      ]
+    },
+    "N4": {
+      "id": "N4",
+      "name": "雙突",
+      "duration": 0.55,
+      "cancel": 0.32,
+      "hits": [
+        {
+          "t0": 0.1,
+          "t1": 0.14,
+          "shape": {
+            "kind": "line",
+            "range": 3.6,
+            "width": 1.4,
+            "offset": 0
+          },
+          "damage": 11,
+          "reaction": "flinch",
+          "push": 3,
+          "lift": 0,
+          "hitstop": 0.05,
+          "shake": 0.12,
+          "sfx": "pierce"
+        },
+        {
+          "t0": 0.24,
+          "t1": 0.28,
+          "shape": {
+            "kind": "line",
+            "range": 3.8,
+            "width": 1.5,
+            "offset": 0
+          },
+          "damage": 12,
+          "reaction": "flinch",
+          "push": 4.5,
+          "lift": 0,
+          "hitstop": 0.05,
+          "shake": 0.12,
+          "sfx": "pierce"
+        }
+      ],
+      "lunge": [
+        {
+          "t0": 0,
+          "t1": 0.12,
+          "distance": 0.35
+        },
+        {
+          "t0": 0.17,
+          "t1": 0.26,
+          "distance": 0.35
+        }
+      ],
+      "trail": [
+        [
+          0.06,
+          0.32
+        ]
+      ],
+      "swings": [
+        0.07,
+        0.2
+      ]
+    },
+    "N5": {
+      "id": "N5",
+      "name": "旋槍",
+      "duration": 0.6,
+      "cancel": 0.36,
+      "hits": [
+        {
+          "t0": 0.12,
+          "t1": 0.3,
+          "shape": {
+            "kind": "circle",
+            "range": 3.4,
+            "offset": 0
+          },
+          "damage": 16,
+          "reaction": "knockback",
+          "push": 6.5,
+          "lift": 0,
+          "hitstop": 0.06,
+          "shake": 0.18,
+          "sfx": "light",
+          "radial": true
+        }
+      ],
+      "lunge": [
+        {
+          "t0": 0.05,
+          "t1": 0.3,
+          "distance": 0.5
+        }
+      ],
+      "trail": [
+        [
+          0.08,
+          0.34
+        ]
+      ],
+      "swings": [
+        0.1,
+        0.2
+      ]
+    },
+    "N6": {
+      "id": "N6",
+      "name": "龍牙突",
+      "duration": 0.85,
+      "cancel": 0.62,
+      "hits": [
+        {
+          "t0": 0.14,
+          "t1": 0.24,
+          "shape": {
+            "kind": "line",
+            "range": 4.8,
+            "width": 2.2,
+            "offset": 0
+          },
+          "damage": 26,
+          "reaction": "blowaway",
+          "push": 15,
+          "lift": 4.5,
+          "hitstop": 0.09,
+          "shake": 0.45,
+          "sfx": "heavy"
+        }
+      ],
+      "lunge": [
+        {
+          "t0": 0.08,
+          "t1": 0.22,
+          "distance": 1.7
+        }
+      ],
+      "trail": [
+        [
+          0.08,
+          0.3
+        ]
+      ],
+      "swings": [
+        0.1
+      ]
+    },
+    "C1": {
+      "id": "C1",
+      "name": "挑槍",
+      "duration": 0.72,
+      "cancel": 0.52,
+      "hits": [
+        {
+          "t0": 0.14,
+          "t1": 0.24,
+          "shape": {
+            "kind": "arc",
+            "range": 3.3,
+            "halfAngle": 1.0471975511965976,
+            "offset": 0
+          },
+          "damage": 18,
+          "reaction": "launch",
+          "push": 2,
+          "lift": 8,
+          "hitstop": 0.07,
+          "shake": 0.25,
+          "sfx": "heavy"
+        }
+      ],
+      "lunge": [
+        {
+          "t0": 0.05,
+          "t1": 0.2,
+          "distance": 0.5
+        }
+      ],
+      "trail": [
+        [
+          0.1,
+          0.3
+        ]
+      ],
+      "swings": [
+        0.12
+      ]
+    },
+    "C2": {
+      "id": "C2",
+      "name": "昇龍",
+      "duration": 0.78,
+      "cancel": 0.55,
+      "hits": [
+        {
+          "t0": 0.16,
+          "t1": 0.28,
+          "shape": {
+            "kind": "arc",
+            "range": 3.6,
+            "halfAngle": 1.3089969389957472,
+            "offset": 0
+          },
+          "damage": 20,
+          "reaction": "launch",
+          "push": 1.5,
+          "lift": 10.5,
+          "hitstop": 0.08,
+          "shake": 0.3,
+          "sfx": "heavy"
+        }
+      ],
+      "lunge": [
+        {
+          "t0": 0.05,
+          "t1": 0.22,
+          "distance": 0.6
+        }
+      ],
+      "trail": [
+        [
+          0.1,
+          0.32
+        ]
+      ],
+      "swings": [
+        0.14
+      ],
+      "height": {
+        "keys": [
+          [
+            0,
+            0
+          ],
+          [
+            0.14,
+            0
+          ],
+          [
+            0.24,
+            0.55
+          ],
+          [
+            0.4,
+            0
+          ]
+        ]
+      }
+    },
+    "C3": {
+      "id": "C3",
+      "name": "追龍",
+      "duration": 1.2,
+      "cancel": 1,
+      "hits": [
+        {
+          "t0": 0.14,
+          "t1": 0.24,
+          "shape": {
+            "kind": "arc",
+            "range": 3.5,
+            "halfAngle": 1.2217304763960306,
+            "offset": 0
+          },
+          "damage": 16,
+          "reaction": "launch",
+          "push": 1.5,
+          "lift": 10,
+          "hitstop": 0.06,
+          "shake": 0.2,
+          "sfx": "heavy"
+        },
+        {
+          "t0": 0.36,
+          "t1": 0.44,
+          "shape": {
+            "kind": "arc",
+            "range": 3.4,
+            "halfAngle": 1.4835298641951802,
+            "offset": 0
+          },
+          "damage": 12,
+          "reaction": "launch",
+          "push": 1,
+          "lift": 6,
+          "hitstop": 0.05,
+          "shake": 0.12,
+          "sfx": "light",
+          "yMin": -4,
+          "yMax": 5
+        },
+        {
+          "t0": 0.52,
+          "t1": 0.6,
+          "shape": {
+            "kind": "arc",
+            "range": 3.4,
+            "halfAngle": 1.4835298641951802,
+            "offset": 0
+          },
+          "damage": 12,
+          "reaction": "launch",
+          "push": 1,
+          "lift": 6,
+          "hitstop": 0.05,
+          "shake": 0.12,
+          "sfx": "light",
+          "yMin": -4,
+          "yMax": 5
+        },
+        {
+          "t0": 0.68,
+          "t1": 0.76,
+          "shape": {
+            "kind": "arc",
+            "range": 3.4,
+            "halfAngle": 1.4835298641951802,
+            "offset": 0
+          },
+          "damage": 13,
+          "reaction": "launch",
+          "push": 1,
+          "lift": 6,
+          "hitstop": 0.05,
+          "shake": 0.12,
+          "sfx": "light",
+          "yMin": -4,
+          "yMax": 5
+        },
+        {
+          "t0": 0.88,
+          "t1": 0.98,
+          "shape": {
+            "kind": "circle",
+            "range": 3.4,
+            "offset": 0
+          },
+          "damage": 24,
+          "reaction": "knockdown",
+          "push": 4,
+          "lift": 0,
+          "hitstop": 0.1,
+          "shake": 0.45,
+          "sfx": "heavy",
+          "radial": true,
+          "yMin": -1,
+          "yMax": 5,
+          "fx": "shockwave"
+        }
+      ],
+      "lunge": [
+        {
+          "t0": 0.05,
+          "t1": 0.22,
+          "distance": 0.6
+        },
+        {
+          "t0": 0.3,
+          "t1": 0.8,
+          "distance": 0.8
+        }
+      ],
+      "trail": [
+        [
+          0.1,
+          0.95
+        ]
+      ],
+      "swings": [
+        0.14,
+        0.37,
+        0.53,
+        0.69,
+        0.86
+      ],
+      "height": {
+        "keys": [
+          [
+            0,
+            0
+          ],
+          [
+            0.12,
+            0
+          ],
+          [
+            0.34,
+            3.1
+          ],
+          [
+            0.8,
+            3.3
+          ],
+          [
+            0.9,
+            0
+          ]
+        ]
+      }
+    },
+    "C4": {
+      "id": "C4",
+      "name": "迴龍掃",
+      "duration": 0.9,
+      "cancel": 0.7,
+      "armor": true,
+      "hits": [
+        {
+          "t0": 0.14,
+          "t1": 0.3,
+          "shape": {
+            "kind": "circle",
+            "range": 3.9,
+            "offset": 0
+          },
+          "damage": 16,
+          "reaction": "knockback",
+          "push": 7,
+          "lift": 0,
+          "hitstop": 0.05,
+          "shake": 0.2,
+          "sfx": "light",
+          "radial": true
+        },
+        {
+          "t0": 0.36,
+          "t1": 0.52,
+          "shape": {
+            "kind": "circle",
+            "range": 4.1,
+            "offset": 0
+          },
+          "damage": 18,
+          "reaction": "blowaway",
+          "push": 12,
+          "lift": 3.5,
+          "hitstop": 0.08,
+          "shake": 0.35,
+          "sfx": "heavy",
+          "radial": true
+        }
+      ],
+      "lunge": [
+        {
+          "t0": 0.1,
+          "t1": 0.5,
+          "distance": 0.8
+        }
+      ],
+      "trail": [
+        [
+          0.1,
+          0.56
+        ]
+      ],
+      "swings": [
+        0.14,
+        0.26,
+        0.38,
+        0.5
+      ]
+    },
+    "C5": {
+      "id": "C5",
+      "name": "百烈槍",
+      "duration": 1.35,
+      "cancel": 1.12,
+      "armor": true,
+      "hits": [
+        {
+          "t0": 0.11,
+          "t1": 0.15,
+          "shape": {
+            "kind": "arc",
+            "range": 3.6,
+            "halfAngle": 0.5585053606381855,
+            "offset": 0
+          },
+          "damage": 7,
+          "reaction": "flinch",
+          "push": 1.2,
+          "lift": 0,
+          "hitstop": 0.025,
+          "shake": 0.08,
+          "sfx": "pierce"
+        },
+        {
+          "t0": 0.19,
+          "t1": 0.23,
+          "shape": {
+            "kind": "arc",
+            "range": 3.6,
+            "halfAngle": 0.5585053606381855,
+            "offset": 0
+          },
+          "damage": 7,
+          "reaction": "flinch",
+          "push": 1.2,
+          "lift": 0,
+          "hitstop": 0.025,
+          "shake": 0.08,
+          "sfx": "pierce"
+        },
+        {
+          "t0": 0.27,
+          "t1": 0.31,
+          "shape": {
+            "kind": "arc",
+            "range": 3.6,
+            "halfAngle": 0.5585053606381855,
+            "offset": 0
+          },
+          "damage": 7,
+          "reaction": "flinch",
+          "push": 1.2,
+          "lift": 0,
+          "hitstop": 0.025,
+          "shake": 0.08,
+          "sfx": "pierce"
+        },
+        {
+          "t0": 0.35,
+          "t1": 0.38999999999999996,
+          "shape": {
+            "kind": "arc",
+            "range": 3.6,
+            "halfAngle": 0.5585053606381855,
+            "offset": 0
+          },
+          "damage": 7,
+          "reaction": "flinch",
+          "push": 1.2,
+          "lift": 0,
+          "hitstop": 0.025,
+          "shake": 0.08,
+          "sfx": "pierce"
+        },
+        {
+          "t0": 0.43,
+          "t1": 0.47,
+          "shape": {
+            "kind": "arc",
+            "range": 3.6,
+            "halfAngle": 0.5585053606381855,
+            "offset": 0
+          },
+          "damage": 7,
+          "reaction": "flinch",
+          "push": 1.2,
+          "lift": 0,
+          "hitstop": 0.025,
+          "shake": 0.08,
+          "sfx": "pierce"
+        },
+        {
+          "t0": 0.51,
+          "t1": 0.55,
+          "shape": {
+            "kind": "arc",
+            "range": 3.6,
+            "halfAngle": 0.5585053606381855,
+            "offset": 0
+          },
+          "damage": 7,
+          "reaction": "flinch",
+          "push": 1.2,
+          "lift": 0,
+          "hitstop": 0.025,
+          "shake": 0.08,
+          "sfx": "pierce"
+        },
+        {
+          "t0": 0.59,
+          "t1": 0.63,
+          "shape": {
+            "kind": "arc",
+            "range": 3.6,
+            "halfAngle": 0.5585053606381855,
+            "offset": 0
+          },
+          "damage": 7,
+          "reaction": "flinch",
+          "push": 1.2,
+          "lift": 0,
+          "hitstop": 0.025,
+          "shake": 0.08,
+          "sfx": "pierce"
+        },
+        {
+          "t0": 0.67,
+          "t1": 0.7100000000000001,
+          "shape": {
+            "kind": "arc",
+            "range": 3.6,
+            "halfAngle": 0.5585053606381855,
+            "offset": 0
+          },
+          "damage": 7,
+          "reaction": "flinch",
+          "push": 1.2,
+          "lift": 0,
+          "hitstop": 0.025,
+          "shake": 0.08,
+          "sfx": "pierce"
+        },
+        {
+          "t0": 0.9,
+          "t1": 1,
+          "shape": {
+            "kind": "line",
+            "range": 4.8,
+            "width": 2.4,
+            "offset": 0
+          },
+          "damage": 30,
+          "reaction": "blowaway",
+          "push": 17,
+          "lift": 4.5,
+          "hitstop": 0.11,
+          "shake": 0.55,
+          "sfx": "heavy"
+        }
+      ],
+      "lunge": [
+        {
+          "t0": 0.08,
+          "t1": 0.72,
+          "distance": 0.9
+        },
+        {
+          "t0": 0.82,
+          "t1": 0.96,
+          "distance": 1.3
+        }
+      ],
+      "trail": [
+        [
+          0.08,
+          1.05
+        ]
+      ],
+      "swings": [
+        0.1,
+        0.26,
+        0.42,
+        0.58,
+        0.88
+      ]
+    },
+    "C6": {
+      "id": "C6",
+      "name": "天龍破",
+      "duration": 1.3,
+      "cancel": 1.08,
+      "armor": true,
+      "hits": [
+        {
+          "t0": 0.1,
+          "t1": 0.2,
+          "shape": {
+            "kind": "arc",
+            "range": 3.2,
+            "halfAngle": 1.2217304763960306,
+            "offset": 0
+          },
+          "damage": 14,
+          "reaction": "launch",
+          "push": 2,
+          "lift": 7,
+          "hitstop": 0.05,
+          "shake": 0.2,
+          "sfx": "light"
+        },
+        {
+          "t0": 0.56,
+          "t1": 0.66,
+          "shape": {
+            "kind": "circle",
+            "range": 6.5,
+            "offset": 0
+          },
+          "damage": 42,
+          "reaction": "blowaway",
+          "push": 16,
+          "lift": 6.5,
+          "hitstop": 0.15,
+          "shake": 0.95,
+          "sfx": "heavy",
+          "radial": true,
+          "yMin": -1,
+          "yMax": 4,
+          "fx": "shockwave"
+        }
+      ],
+      "lunge": [
+        {
+          "t0": 0.12,
+          "t1": 0.52,
+          "distance": 2.2
+        }
+      ],
+      "trail": [
+        [
+          0.08,
+          0.6
+        ]
+      ],
+      "swings": [
+        0.1,
+        0.4
+      ],
+      "height": {
+        "keys": [
+          [
+            0,
+            0
+          ],
+          [
+            0.12,
+            0
+          ],
+          [
+            0.36,
+            3.6
+          ],
+          [
+            0.48,
+            3.8
+          ],
+          [
+            0.56,
+            0
+          ]
+        ]
+      }
+    },
+    "JA": {
+      "id": "JA",
+      "name": "落鳳",
+      "duration": 0.5,
+      "cancel": 0.42,
+      "airborne": true,
+      "hits": [
+        {
+          "t0": 0.14,
+          "t1": 0.22,
+          "shape": {
+            "kind": "circle",
+            "range": 2.8,
+            "offset": 0
+          },
+          "damage": 16,
+          "reaction": "knockdown",
+          "push": 5,
+          "lift": 0,
+          "hitstop": 0.06,
+          "shake": 0.3,
+          "sfx": "heavy",
+          "radial": true,
+          "fx": "shockwave"
+        }
+      ],
+      "lunge": [
+        {
+          "t0": 0,
+          "t1": 0.16,
+          "distance": 1.2
+        }
+      ],
+      "trail": [
+        [
+          0.02,
+          0.2
+        ]
+      ],
+      "swings": [
+        0.04
+      ],
+      "height": {
+        "keys": [
+          [
+            0,
+            1
+          ],
+          [
+            0.16,
+            0
+          ]
+        ],
+        "relative": true
+      }
+    },
+    "JC": {
+      "id": "JC",
+      "name": "旋空",
+      "duration": 0.6,
+      "cancel": 0.5,
+      "airborne": true,
+      "hits": [
+        {
+          "t0": 0.08,
+          "t1": 0.34,
+          "shape": {
+            "kind": "circle",
+            "range": 3.3,
+            "offset": 0
+          },
+          "damage": 14,
+          "reaction": "knockdown",
+          "push": 4,
+          "lift": 0,
+          "hitstop": 0.05,
+          "shake": 0.2,
+          "sfx": "light",
+          "radial": true,
+          "yMin": -3,
+          "yMax": 3
+        }
+      ],
+      "lunge": [],
+      "trail": [
+        [
+          0.06,
+          0.36
+        ]
+      ],
+      "swings": [
+        0.08,
+        0.22
+      ],
+      "height": {
+        "keys": [
+          [
+            0,
+            1
+          ],
+          [
+            0.3,
+            1.05
+          ],
+          [
+            0.46,
+            0
+          ]
+        ],
+        "relative": true
+      }
+    },
+    "DASH": {
+      "id": "DASH",
+      "name": "疾風突",
+      "duration": 0.46,
+      "cancel": 0.28,
+      "hits": [
+        {
+          "t0": 0.1,
+          "t1": 0.18,
+          "shape": {
+            "kind": "line",
+            "range": 4.2,
+            "width": 1.55,
+            "offset": 0
+          },
+          "damage": 20,
+          "reaction": "knockback",
+          "push": 8,
+          "lift": 0,
+          "hitstop": 0.07,
+          "shake": 0.26,
+          "sfx": "pierce"
+        }
+      ],
+      "lunge": [
+        {
+          "t0": 0,
+          "t1": 0.16,
+          "distance": 2.25
+        }
+      ],
+      "trail": [
+        [
+          0.05,
+          0.22
+        ]
+      ],
+      "swings": [
+        0.06
+      ]
+    },
+    "COUNTER": {
+      "id": "COUNTER",
+      "name": "龍膽返",
+      "duration": 0.58,
+      "cancel": 0.4,
+      "armor": true,
+      "hits": [
+        {
+          "t0": 0.12,
+          "t1": 0.22,
+          "shape": {
+            "kind": "arc",
+            "range": 4.1,
+            "halfAngle": 1.4835298641951802,
+            "offset": 0
+          },
+          "damage": 34,
+          "reaction": "blowaway",
+          "push": 13,
+          "lift": 3,
+          "hitstop": 0.1,
+          "shake": 0.48,
+          "sfx": "heavy",
+          "fx": "shockwave"
+        }
+      ],
+      "lunge": [
+        {
+          "t0": 0.02,
+          "t1": 0.16,
+          "distance": 0.85
+        }
+      ],
+      "trail": [
+        [
+          0.06,
+          0.26
+        ]
+      ],
+      "swings": [
+        0.08
+      ]
+    },
+    "MUSOU": {
+      "id": "MUSOU",
+      "name": "蒼龍破陣",
+      "duration": 3.6,
+      "cancel": 3.6,
+      "armor": true,
+      "hits": [
+        {
+          "t0": 0.32,
+          "t1": 0.37,
+          "shape": {
+            "kind": "circle",
+            "range": 4.4,
+            "offset": 0
+          },
+          "damage": 11,
+          "reaction": "launch",
+          "push": 2.5,
+          "lift": 3.2,
+          "hitstop": 0.012,
+          "shake": 0.12,
+          "sfx": "light",
+          "radial": true,
+          "yMin": -1,
+          "yMax": 6
+        },
+        {
+          "t0": 0.44,
+          "t1": 0.49,
+          "shape": {
+            "kind": "circle",
+            "range": 4.4,
+            "offset": 0
+          },
+          "damage": 11,
+          "reaction": "launch",
+          "push": 2.5,
+          "lift": 3.2,
+          "hitstop": 0.012,
+          "shake": 0.12,
+          "sfx": "light",
+          "radial": true,
+          "yMin": -1,
+          "yMax": 6
+        },
+        {
+          "t0": 0.56,
+          "t1": 0.6100000000000001,
+          "shape": {
+            "kind": "circle",
+            "range": 4.4,
+            "offset": 0
+          },
+          "damage": 11,
+          "reaction": "launch",
+          "push": 2.5,
+          "lift": 3.2,
+          "hitstop": 0.012,
+          "shake": 0.12,
+          "sfx": "light",
+          "radial": true,
+          "yMin": -1,
+          "yMax": 6
+        },
+        {
+          "t0": 0.6799999999999999,
+          "t1": 0.73,
+          "shape": {
+            "kind": "circle",
+            "range": 4.4,
+            "offset": 0
+          },
+          "damage": 11,
+          "reaction": "launch",
+          "push": 2.5,
+          "lift": 3.2,
+          "hitstop": 0.012,
+          "shake": 0.12,
+          "sfx": "light",
+          "radial": true,
+          "yMin": -1,
+          "yMax": 6
+        },
+        {
+          "t0": 0.8,
+          "t1": 0.8500000000000001,
+          "shape": {
+            "kind": "circle",
+            "range": 4.4,
+            "offset": 0
+          },
+          "damage": 11,
+          "reaction": "launch",
+          "push": 2.5,
+          "lift": 3.2,
+          "hitstop": 0.012,
+          "shake": 0.12,
+          "sfx": "light",
+          "radial": true,
+          "yMin": -1,
+          "yMax": 6
+        },
+        {
+          "t0": 0.9199999999999999,
+          "t1": 0.97,
+          "shape": {
+            "kind": "circle",
+            "range": 4.4,
+            "offset": 0
+          },
+          "damage": 11,
+          "reaction": "launch",
+          "push": 2.5,
+          "lift": 3.2,
+          "hitstop": 0.012,
+          "shake": 0.12,
+          "sfx": "light",
+          "radial": true,
+          "yMin": -1,
+          "yMax": 6
+        },
+        {
+          "t0": 1.04,
+          "t1": 1.09,
+          "shape": {
+            "kind": "circle",
+            "range": 4.4,
+            "offset": 0
+          },
+          "damage": 11,
+          "reaction": "launch",
+          "push": 2.5,
+          "lift": 3.2,
+          "hitstop": 0.012,
+          "shake": 0.12,
+          "sfx": "light",
+          "radial": true,
+          "yMin": -1,
+          "yMax": 6
+        },
+        {
+          "t0": 1.16,
+          "t1": 1.21,
+          "shape": {
+            "kind": "circle",
+            "range": 4.4,
+            "offset": 0
+          },
+          "damage": 11,
+          "reaction": "launch",
+          "push": 2.5,
+          "lift": 3.2,
+          "hitstop": 0.012,
+          "shake": 0.12,
+          "sfx": "light",
+          "radial": true,
+          "yMin": -1,
+          "yMax": 6
+        },
+        {
+          "t0": 1.28,
+          "t1": 1.33,
+          "shape": {
+            "kind": "circle",
+            "range": 4.4,
+            "offset": 0
+          },
+          "damage": 11,
+          "reaction": "launch",
+          "push": 2.5,
+          "lift": 3.2,
+          "hitstop": 0.012,
+          "shake": 0.12,
+          "sfx": "light",
+          "radial": true,
+          "yMin": -1,
+          "yMax": 6
+        },
+        {
+          "t0": 1.4000000000000001,
+          "t1": 1.4500000000000002,
+          "shape": {
+            "kind": "circle",
+            "range": 4.4,
+            "offset": 0
+          },
+          "damage": 11,
+          "reaction": "launch",
+          "push": 2.5,
+          "lift": 3.2,
+          "hitstop": 0.012,
+          "shake": 0.12,
+          "sfx": "light",
+          "radial": true,
+          "yMin": -1,
+          "yMax": 6
+        },
+        {
+          "t0": 1.52,
+          "t1": 1.57,
+          "shape": {
+            "kind": "circle",
+            "range": 4.4,
+            "offset": 0
+          },
+          "damage": 11,
+          "reaction": "launch",
+          "push": 2.5,
+          "lift": 3.2,
+          "hitstop": 0.012,
+          "shake": 0.12,
+          "sfx": "light",
+          "radial": true,
+          "yMin": -1,
+          "yMax": 6
+        },
+        {
+          "t0": 1.64,
+          "t1": 1.69,
+          "shape": {
+            "kind": "circle",
+            "range": 4.4,
+            "offset": 0
+          },
+          "damage": 11,
+          "reaction": "launch",
+          "push": 2.5,
+          "lift": 3.2,
+          "hitstop": 0.012,
+          "shake": 0.12,
+          "sfx": "light",
+          "radial": true,
+          "yMin": -1,
+          "yMax": 6
+        },
+        {
+          "t0": 1.76,
+          "t1": 1.81,
+          "shape": {
+            "kind": "circle",
+            "range": 4.4,
+            "offset": 0
+          },
+          "damage": 11,
+          "reaction": "launch",
+          "push": 2.5,
+          "lift": 3.2,
+          "hitstop": 0.012,
+          "shake": 0.12,
+          "sfx": "light",
+          "radial": true,
+          "yMin": -1,
+          "yMax": 6
+        },
+        {
+          "t0": 1.8800000000000001,
+          "t1": 1.9300000000000002,
+          "shape": {
+            "kind": "circle",
+            "range": 4.4,
+            "offset": 0
+          },
+          "damage": 11,
+          "reaction": "launch",
+          "push": 2.5,
+          "lift": 3.2,
+          "hitstop": 0.012,
+          "shake": 0.12,
+          "sfx": "light",
+          "radial": true,
+          "yMin": -1,
+          "yMax": 6
+        },
+        {
+          "t0": 2,
+          "t1": 2.05,
+          "shape": {
+            "kind": "circle",
+            "range": 4.4,
+            "offset": 0
+          },
+          "damage": 11,
+          "reaction": "launch",
+          "push": 2.5,
+          "lift": 3.2,
+          "hitstop": 0.012,
+          "shake": 0.12,
+          "sfx": "light",
+          "radial": true,
+          "yMin": -1,
+          "yMax": 6
+        },
+        {
+          "t0": 2.1199999999999997,
+          "t1": 2.1699999999999995,
+          "shape": {
+            "kind": "circle",
+            "range": 4.4,
+            "offset": 0
+          },
+          "damage": 11,
+          "reaction": "launch",
+          "push": 2.5,
+          "lift": 3.2,
+          "hitstop": 0.012,
+          "shake": 0.12,
+          "sfx": "light",
+          "radial": true,
+          "yMin": -1,
+          "yMax": 6
+        },
+        {
+          "t0": 2.2399999999999998,
+          "t1": 2.2899999999999996,
+          "shape": {
+            "kind": "circle",
+            "range": 4.4,
+            "offset": 0
+          },
+          "damage": 11,
+          "reaction": "launch",
+          "push": 2.5,
+          "lift": 3.2,
+          "hitstop": 0.012,
+          "shake": 0.12,
+          "sfx": "light",
+          "radial": true,
+          "yMin": -1,
+          "yMax": 6
+        },
+        {
+          "t0": 2.36,
+          "t1": 2.4099999999999997,
+          "shape": {
+            "kind": "circle",
+            "range": 4.4,
+            "offset": 0
+          },
+          "damage": 11,
+          "reaction": "launch",
+          "push": 2.5,
+          "lift": 3.2,
+          "hitstop": 0.012,
+          "shake": 0.12,
+          "sfx": "light",
+          "radial": true,
+          "yMin": -1,
+          "yMax": 6
+        },
+        {
+          "t0": 2.48,
+          "t1": 2.53,
+          "shape": {
+            "kind": "circle",
+            "range": 4.4,
+            "offset": 0
+          },
+          "damage": 11,
+          "reaction": "launch",
+          "push": 2.5,
+          "lift": 3.2,
+          "hitstop": 0.012,
+          "shake": 0.12,
+          "sfx": "light",
+          "radial": true,
+          "yMin": -1,
+          "yMax": 6
+        },
+        {
+          "t0": 3.02,
+          "t1": 3.12,
+          "shape": {
+            "kind": "circle",
+            "range": 9.5,
+            "offset": 0
+          },
+          "damage": 70,
+          "reaction": "blowaway",
+          "push": 20,
+          "lift": 8,
+          "hitstop": 0.22,
+          "shake": 1,
+          "sfx": "heavy",
+          "radial": true,
+          "yMin": -2,
+          "yMax": 8,
+          "fx": "blast"
+        }
+      ],
+      "lunge": [
+        {
+          "t0": 2.95,
+          "t1": 3.1,
+          "distance": 2.5
+        }
+      ],
+      "trail": [
+        [
+          0.3,
+          3.2
+        ]
+      ],
+      "swings": [
+        0.35,
+        0.8,
+        1.25,
+        1.7,
+        2.15,
+        2.98
+      ]
+    }
+  },
+  "difficulties": {
+    "beginner": {
+      "id": "beginner",
+      "name": "初級",
+      "enemyDamage": 0.65,
+      "captainHp": 0.75,
+      "windup": 1.25,
+      "maxAttackers": 2,
+      "engageRange": 22
+    },
+    "normal": {
+      "id": "normal",
+      "name": "普通",
+      "enemyDamage": 1,
+      "captainHp": 1,
+      "windup": 1,
+      "maxAttackers": 4,
+      "engageRange": 26
+    },
+    "hard": {
+      "id": "hard",
+      "name": "上級",
+      "enemyDamage": 1.25,
+      "captainHp": 1.35,
+      "windup": 0.9,
+      "maxAttackers": 5,
+      "engageRange": 30
+    },
+    "chaos": {
+      "id": "chaos",
+      "name": "修羅",
+      "enemyDamage": 1.55,
+      "captainHp": 1.7,
+      "windup": 0.8,
+      "maxAttackers": 6,
+      "engageRange": 34
+    }
+  },
+  "phases": [
+    {
+      "id": "opening",
+      "minKo": 0,
+      "engageBonus": 0,
+      "attackerBonus": 0
+    },
+    {
+      "id": "pressure",
+      "minKo": 60,
+      "engageBonus": 4,
+      "attackerBonus": 0
+    },
+    {
+      "id": "surge",
+      "minKo": 150,
+      "engageBonus": 8,
+      "attackerBonus": 1
+    },
+    {
+      "id": "finale",
+      "minKo": 240,
+      "engageBonus": 12,
+      "attackerBonus": 2
+    }
+  ],
+  "capacity": 320,
+  "playerStart": {
+    "x": 0,
+    "z": 42,
+    "facing": 3.141592653589793
+  },
+  "spawns": [
+    {
+      "x": -36.59531809873879,
+      "z": 22.124783303029837,
+      "yaw": 0.143072289833799,
+      "kind": 0
+    },
+    {
+      "x": -34.72038851771504,
+      "z": 22.308578107412906,
+      "yaw": -0.028343493584543467,
+      "kind": 0
+    },
+    {
+      "x": -33.21350694699213,
+      "z": 22.19597007436678,
+      "yaw": 0.01599768118467182,
+      "kind": 0
+    },
+    {
+      "x": -31.50807116404176,
+      "z": 22.20312622440979,
+      "yaw": -0.10321549081709236,
+      "kind": 0
+    },
+    {
+      "x": -36.294364045374095,
+      "z": 24.007361018285156,
+      "yaw": -0.09085882196668535,
+      "kind": 0
+    },
+    {
+      "x": -34.85281656263396,
+      "z": 23.91729893516749,
+      "yaw": 0.010421857656911015,
+      "kind": 0
+    },
+    {
+      "x": -33.2814679007046,
+      "z": 24.191178441792726,
+      "yaw": -0.07573992172256112,
+      "kind": 0
+    },
+    {
+      "x": -31.448888161778452,
+      "z": 23.876316683739425,
+      "yaw": -0.10690278417896479,
+      "kind": 0
+    },
+    {
+      "x": -36.53814238794148,
+      "z": 25.61638048524037,
+      "yaw": 0.014370429469272493,
+      "kind": 0
+    },
+    {
+      "x": -34.695250521972774,
+      "z": 25.5298072360456,
+      "yaw": 0.1238822123967111,
+      "kind": 2
+    },
+    {
+      "x": -33.17851570080966,
+      "z": 25.748649933561683,
+      "yaw": 0.05402727231848985,
+      "kind": 0
+    },
+    {
+      "x": -31.41360411848873,
+      "z": 25.749752257671208,
+      "yaw": 0.126361458026804,
+      "kind": 0
+    },
+    {
+      "x": -19.268948606308548,
+      "z": 22.11599138956517,
+      "yaw": -0.09751753590535372,
+      "kind": 1
+    },
+    {
+      "x": -17.857207594346256,
+      "z": 22.270126289781185,
+      "yaw": -0.14394716571550817,
+      "kind": 1
+    },
+    {
+      "x": -16.364757505897433,
+      "z": 22.407206342276186,
+      "yaw": -0.03930920844431966,
+      "kind": 1
+    },
+    {
+      "x": -14.629313718527555,
+      "z": 22.287465051282197,
+      "yaw": 0.1338663512142375,
+      "kind": 1
+    },
+    {
+      "x": -19.318687565624714,
+      "z": 24.075318987015635,
+      "yaw": -0.05080562273506075,
+      "kind": 1
+    },
+    {
+      "x": -17.857466190680864,
+      "z": 23.85551648195833,
+      "yaw": -0.11001202196348459,
+      "kind": 1
+    },
+    {
+      "x": -16.034786052722485,
+      "z": 23.928970785066486,
+      "yaw": -0.09288734192959965,
+      "kind": 1
+    },
+    {
+      "x": -14.547116500977426,
+      "z": 23.934708371572196,
+      "yaw": -0.1369105997728184,
+      "kind": 1
+    },
+    {
+      "x": -19.326298489142207,
+      "z": 25.86854870887473,
+      "yaw": 0.014361792895942926,
+      "kind": 1
+    },
+    {
+      "x": -17.669368990231305,
+      "z": 25.762097752746193,
+      "yaw": 0.12596340340096504,
+      "kind": 1
+    },
+    {
+      "x": -16.35318344226107,
+      "z": 25.711971635743975,
+      "yaw": 0.04474980791565031,
+      "kind": 1
+    },
+    {
+      "x": -14.443574036378413,
+      "z": 25.884199357032774,
+      "yaw": 0.10138724260032177,
+      "kind": 1
+    },
+    {
+      "x": -2.3623061674647037,
+      "z": 22.485548317339273,
+      "yaw": 0.14025189732201396,
+      "kind": 0
+    },
+    {
+      "x": -0.7805726928636432,
+      "z": 22.427407195977867,
+      "yaw": -0.1482900174334645,
+      "kind": 0
+    },
+    {
+      "x": 0.8064293964765966,
+      "z": 22.23122254703194,
+      "yaw": 0.06728147843386978,
+      "kind": 0
+    },
+    {
+      "x": 2.419798040762544,
+      "z": 22.402166541107,
+      "yaw": 0.14308018754236398,
+      "kind": 0
+    },
+    {
+      "x": -2.376978670433164,
+      "z": 24.129263794608413,
+      "yaw": -0.02100175986997783,
+      "kind": 0
+    },
+    {
+      "x": -0.743059439957142,
+      "z": 24.095421467442065,
+      "yaw": 0.015509012597613036,
+      "kind": 0
+    },
+    {
+      "x": 0.7249535309150815,
+      "z": 23.894734071474524,
+      "yaw": -0.14720555450767278,
+      "kind": 0
+    },
+    {
+      "x": 2.2096291226334874,
+      "z": 24.177358763013036,
+      "yaw": 0.10001067384146153,
+      "kind": 0
+    },
+    {
+      "x": -2.347759437654168,
+      "z": 25.50576048595831,
+      "yaw": 0.0356688208412379,
+      "kind": 0
+    },
+    {
+      "x": -0.7620413454249502,
+      "z": 25.786739900987595,
+      "yaw": 0.14845819033216684,
+      "kind": 0
+    },
+    {
+      "x": 0.7111989615485073,
+      "z": 25.894510109722614,
+      "yaw": 0.04499132533092052,
+      "kind": 0
+    },
+    {
+      "x": 2.5219669763930144,
+      "z": 25.74975956538692,
+      "yaw": 0.09904167002532631,
+      "kind": 0
+    },
+    {
+      "x": 14.455625663418322,
+      "z": 22.497679448034614,
+      "yaw": 0.0020794991869479418,
+      "kind": 1
+    },
+    {
+      "x": 16.226755965687335,
+      "z": 22.16435289848596,
+      "yaw": -0.031150116864591834,
+      "kind": 1
+    },
+    {
+      "x": 17.684267617296427,
+      "z": 22.425416887924076,
+      "yaw": 0.10847019364591688,
+      "kind": 1
+    },
+    {
+      "x": 19.494367720000444,
+      "z": 22.363382080476732,
+      "yaw": 0.1470728692598641,
+      "kind": 1
+    },
+    {
+      "x": 14.643723986763506,
+      "z": 24.094582054857163,
+      "yaw": 0.13661658607888966,
+      "kind": 1
+    },
+    {
+      "x": 16.19568791715428,
+      "z": 23.891909340396523,
+      "yaw": 0.025202311179600655,
+      "kind": 1
+    },
+    {
+      "x": 17.918272658530622,
+      "z": 24.14156775707379,
+      "yaw": -0.09302406683564186,
+      "kind": 1
+    },
+    {
+      "x": 19.42195839183405,
+      "z": 23.991081976052374,
+      "yaw": 0.00769372321665287,
+      "kind": 1
+    },
+    {
+      "x": 14.47208235533908,
+      "z": 25.600252988096326,
+      "yaw": -0.01831076389644295,
+      "kind": 1
+    },
+    {
+      "x": 16.191004805639384,
+      "z": 25.568336351495237,
+      "yaw": -0.14903668959159402,
+      "kind": 2
+    },
+    {
+      "x": 17.669261107593776,
+      "z": 25.509642173536122,
+      "yaw": -0.11783149824477732,
+      "kind": 1
+    },
+    {
+      "x": 19.550522028282284,
+      "z": 25.89312630482018,
+      "yaw": -0.1319640688598156,
+      "kind": 1
+    },
+    {
+      "x": 31.4697818974033,
+      "z": 22.2620149650611,
+      "yaw": -0.0003013351466506719,
+      "kind": 0
+    },
+    {
+      "x": 33.29293372491375,
+      "z": 22.247299023065718,
+      "yaw": -0.041995245264843106,
+      "kind": 0
+    },
+    {
+      "x": 34.91661038631573,
+      "z": 22.38429368129,
+      "yaw": 0.09003427263814956,
+      "kind": 0
+    },
+    {
+      "x": 36.41199593069032,
+      "z": 22.41932863686234,
+      "yaw": -0.02635034713894129,
+      "kind": 0
+    },
+    {
+      "x": 31.625054608285428,
+      "z": 23.91705846423283,
+      "yaw": 0.008177653374150395,
+      "kind": 0
+    },
+    {
+      "x": 33.31059338366613,
+      "z": 23.832005398068578,
+      "yaw": -0.07434065225534141,
+      "kind": 0
+    },
+    {
+      "x": 34.93073708033189,
+      "z": 24.130949723813682,
+      "yaw": 0.08240122329443693,
+      "kind": 0
+    },
+    {
+      "x": 36.371931936684994,
+      "z": 23.94276478914544,
+      "yaw": 0.12609789508860558,
+      "kind": 0
+    },
+    {
+      "x": 31.5005328303203,
+      "z": 25.64456410994753,
+      "yaw": -0.006910588452592492,
+      "kind": 0
+    },
+    {
+      "x": 33.33212273232639,
+      "z": 25.661615270841867,
+      "yaw": 0.14236989277414977,
+      "kind": 0
+    },
+    {
+      "x": 34.82051256392151,
+      "z": 25.674525809846816,
+      "yaw": -0.04843212857376784,
+      "kind": 0
+    },
+    {
+      "x": 36.414816255308686,
+      "z": 25.61730189025402,
+      "yaw": 0.11525715196039527,
+      "kind": 0
+    },
+    {
+      "x": -36.371096511930226,
+      "z": 8.49441596781835,
+      "yaw": 0.10230144776869565,
+      "kind": 1
+    },
+    {
+      "x": -34.801745583117004,
+      "z": 8.274722640123219,
+      "yaw": 0.05930149869527668,
+      "kind": 1
+    },
+    {
+      "x": -33.027573698386554,
+      "z": 8.320261840615423,
+      "yaw": 0.04721135760191828,
+      "kind": 1
+    },
+    {
+      "x": -31.7350461053662,
+      "z": 8.377320753503591,
+      "yaw": -0.03275918054860085,
+      "kind": 1
+    },
+    {
+      "x": -36.356115103513,
+      "z": 10.142411406058818,
+      "yaw": -0.03485453235916793,
+      "kind": 1
+    },
+    {
+      "x": -34.881846599280834,
+      "z": 9.836208340153098,
+      "yaw": 0.05503830802626908,
+      "kind": 1
+    },
+    {
+      "x": -33.10714867617935,
+      "z": 10.185851921327412,
+      "yaw": -0.0547745541902259,
+      "kind": 1
+    },
+    {
+      "x": -31.696144752483818,
+      "z": 9.826962287351488,
+      "yaw": 0.06610712727997452,
+      "kind": 1
+    },
+    {
+      "x": -36.22952558873221,
+      "z": 11.813674845360218,
+      "yaw": 0.09863448275718838,
+      "kind": 1
+    },
+    {
+      "x": -34.61490458892658,
+      "z": 11.590604461543261,
+      "yaw": 0.14362739778589456,
+      "kind": 1
+    },
+    {
+      "x": -33.28696308648214,
+      "z": 11.715372432302683,
+      "yaw": -0.03267162828706205,
+      "kind": 1
+    },
+    {
+      "x": -31.51457698773593,
+      "z": 11.80404102364555,
+      "yaw": 0.03711890364065766,
+      "kind": 1
+    },
+    {
+      "x": -19.309790414385496,
+      "z": 8.348601503204556,
+      "yaw": 0.028257454955019055,
+      "kind": 0
+    },
+    {
+      "x": -17.8912331645377,
+      "z": 8.432778058946134,
+      "yaw": -0.005220412882044911,
+      "kind": 0
+    },
+    {
+      "x": -16.344071148894727,
+      "z": 8.38901553535834,
+      "yaw": -0.010831156326457857,
+      "kind": 0
+    },
+    {
+      "x": -14.576186000928283,
+      "z": 8.3205207769759,
+      "yaw": 0.11640872249845415,
+      "kind": 0
+    },
+    {
+      "x": -19.218786742165683,
+      "z": 9.861318129394203,
+      "yaw": -0.11947403778322041,
+      "kind": 0
+    },
+    {
+      "x": -17.88523507937789,
+      "z": 10.009546872135251,
+      "yaw": -0.032173029310069975,
+      "kind": 0
+    },
+    {
+      "x": -16.035976989381016,
+      "z": 10.142906100302934,
+      "yaw": 0.009034087182953954,
+      "kind": 0
+    },
+    {
+      "x": -14.436816328577697,
+      "z": 9.911492406390607,
+      "yaw": -0.002063008560799062,
+      "kind": 0
+    },
+    {
+      "x": -19.229625079873948,
+      "z": 11.770371968578546,
+      "yaw": 0.08873786826152354,
+      "kind": 0
+    },
+    {
+      "x": -17.866586201265456,
+      "z": 11.86382810631767,
+      "yaw": 0.14088571937754749,
+      "kind": 2
+    },
+    {
+      "x": -16.062883502151816,
+      "z": 11.501070408988744,
+      "yaw": -0.09975576207507401,
+      "kind": 0
+    },
+    {
+      "x": -14.498950418457389,
+      "z": 11.54181318245828,
+      "yaw": -0.12524340022355318,
+      "kind": 0
+    },
+    {
+      "x": -2.235270714387298,
+      "z": 8.208508165553212,
+      "yaw": 0.02679125815629959,
+      "kind": 1
+    },
+    {
+      "x": -0.8951310592703522,
+      "z": 8.417565124295653,
+      "yaw": 0.06587438830174505,
+      "kind": 1
+    },
+    {
+      "x": 0.622996595222503,
+      "z": 8.278665594011546,
+      "yaw": 0.1438521038275212,
+      "kind": 1
+    },
+    {
+      "x": 2.232949874270708,
+      "z": 8.134180602803827,
+      "yaw": -0.03563860345166176,
+      "kind": 1
+    },
+    {
+      "x": -2.2843102418817582,
+      "z": 10.076525798533112,
+      "yaw": -0.06841396016534418,
+      "kind": 1
+    },
+    {
+      "x": -0.8009842287749053,
+      "z": 9.84254144122824,
+      "yaw": -0.005195376137271523,
+      "kind": 1
+    },
+    {
+      "x": 0.7748603220097721,
+      "z": 10.017706900741905,
+      "yaw": -0.09959856374189258,
+      "kind": 1
+    },
+    {
+      "x": 2.508909317851067,
+      "z": 9.921282378863543,
+      "yaw": 0.05755360156763345,
+      "kind": 1
+    },
+    {
+      "x": -2.2670116784051064,
+      "z": 11.514778936561196,
+      "yaw": -0.09538518839981407,
+      "kind": 1
+    },
+    {
+      "x": -0.7131265235133469,
+      "z": 11.85717368684709,
+      "yaw": -0.06543309115804731,
+      "kind": 1
+    },
+    {
+      "x": 0.9359393424354494,
+      "z": 11.757742438465357,
+      "yaw": -0.05327320410870016,
+      "kind": 1
+    },
+    {
+      "x": 2.2379095117561523,
+      "z": 11.542694771382957,
+      "yaw": 0.1465200428618118,
+      "kind": 1
+    },
+    {
+      "x": 14.677372769359499,
+      "z": 8.203106121439488,
+      "yaw": 0.005381588917225599,
+      "kind": 0
+    },
+    {
+      "x": 16.028318313416094,
+      "z": 8.306384683866055,
+      "yaw": -0.022054480109363794,
+      "kind": 0
+    },
+    {
+      "x": 17.911679600086064,
+      "z": 8.164908037520945,
+      "yaw": 0.0723462687805295,
+      "kind": 0
+    },
+    {
+      "x": 19.26818346288055,
+      "z": 8.195550257526339,
+      "yaw": -0.08861059716437011,
+      "kind": 0
+    },
+    {
+      "x": 14.752156731672585,
+      "z": 9.812321100570262,
+      "yaw": -0.13996794924605638,
+      "kind": 0
+    },
+    {
+      "x": 16.376109068095683,
+      "z": 10.168432566989214,
+      "yaw": -0.00487823118455708,
+      "kind": 0
+    },
+    {
+      "x": 17.83026095023379,
+      "z": 10.082030141539871,
+      "yaw": -0.09879641686566173,
+      "kind": 0
+    },
+    {
+      "x": 19.407231896184385,
+      "z": 9.829796245135366,
+      "yaw": 0.02858102002646774,
+      "kind": 0
+    },
+    {
+      "x": 14.688598013296723,
+      "z": 11.8380789979361,
+      "yaw": -0.12907474651001394,
+      "kind": 0
+    },
+    {
+      "x": 16.228069846332073,
+      "z": 11.648160370532423,
+      "yaw": -0.13326248831581325,
+      "kind": 0
+    },
+    {
+      "x": 17.968175329547375,
+      "z": 11.609124263282865,
+      "yaw": -0.10343246860429645,
+      "kind": 0
+    },
+    {
+      "x": 19.313403759058563,
+      "z": 11.63903112625703,
+      "yaw": 0.08799044508486986,
+      "kind": 0
+    },
+    {
+      "x": 31.729445170611143,
+      "z": 8.446413194015623,
+      "yaw": 0.08207064263988285,
+      "kind": 1
+    },
+    {
+      "x": 33.28307988280431,
+      "z": 8.445905595086515,
+      "yaw": 0.04128140194807201,
+      "kind": 1
+    },
+    {
+      "x": 34.88082326287403,
+      "z": 8.37521829204634,
+      "yaw": -0.05740146262105554,
+      "kind": 1
+    },
+    {
+      "x": 36.361330593284215,
+      "z": 8.363951596990228,
+      "yaw": -0.0517850139643997,
+      "kind": 1
+    },
+    {
+      "x": 31.496692166477445,
+      "z": 9.998604322783649,
+      "yaw": 0.02946394155733287,
+      "kind": 1
+    },
+    {
+      "x": 33.270068211853506,
+      "z": 9.970609129965306,
+      "yaw": 0.0633542007766664,
+      "kind": 1
+    },
+    {
+      "x": 34.69663945809006,
+      "z": 10.095167316030711,
+      "yaw": 0.005851261597126722,
+      "kind": 1
+    },
+    {
+      "x": 36.37606126880273,
+      "z": 9.956678892951459,
+      "yaw": 0.09466029927134513,
+      "kind": 1
+    },
+    {
+      "x": 31.449859439674768,
+      "z": 11.721558437775819,
+      "yaw": 0.012067706580273807,
+      "kind": 1
+    },
+    {
+      "x": 33.26379725420848,
+      "z": 11.75080694425851,
+      "yaw": -0.12667798006441444,
+      "kind": 2
+    },
+    {
+      "x": 34.76752801258117,
+      "z": 11.878097707498817,
+      "yaw": 0.06369672934524714,
+      "kind": 1
+    },
+    {
+      "x": 36.40473602861166,
+      "z": 11.778102258779107,
+      "yaw": -0.05509563856758177,
+      "kind": 1
+    },
+    {
+      "x": -36.20974064590409,
+      "z": -5.874798873253167,
+      "yaw": 0.07879360488150268,
+      "kind": 0
+    },
+    {
+      "x": -34.82137083252891,
+      "z": -5.810194821935148,
+      "yaw": -0.002335880440659821,
+      "kind": 0
+    },
+    {
+      "x": -33.30982466954738,
+      "z": -5.558071439526976,
+      "yaw": 0.1499072158243507,
+      "kind": 0
+    },
+    {
+      "x": -31.586171528790146,
+      "z": -5.522096482571214,
+      "yaw": -0.100050780759193,
+      "kind": 0
+    },
+    {
+      "x": -36.407325667142864,
+      "z": -4.130410683434457,
+      "yaw": -0.1371712513267994,
+      "kind": 0
+    },
+    {
+      "x": -34.719418729748575,
+      "z": -3.8949990111403165,
+      "yaw": -0.08521009495016187,
+      "kind": 0
+    },
+    {
+      "x": -33.39737497270107,
+      "z": -4.007220186013728,
+      "yaw": 0.04947293617296964,
+      "kind": 0
+    },
+    {
+      "x": -31.675213488470764,
+      "z": -3.985609087906778,
+      "yaw": 0.13208885388448835,
+      "kind": 0
+    },
+    {
+      "x": -36.48241554563865,
+      "z": -2.2795550127513704,
+      "yaw": 0.058543154317885635,
+      "kind": 0
+    },
+    {
+      "x": -34.879977212008086,
+      "z": -2.4584186994470656,
+      "yaw": 0.04035611918661743,
+      "kind": 0
+    },
+    {
+      "x": -33.352380351070316,
+      "z": -2.281278777681291,
+      "yaw": -0.013970485841855406,
+      "kind": 0
+    },
+    {
+      "x": -31.53119652885944,
+      "z": -2.1724519075825808,
+      "yaw": 0.07236828091554344,
+      "kind": 0
+    },
+    {
+      "x": -19.36999696334824,
+      "z": -5.589164182916284,
+      "yaw": 0.008109752903692424,
+      "kind": 1
+    },
+    {
+      "x": -17.698943213373422,
+      "z": -5.6545260841958225,
+      "yaw": 0.034503672388382256,
+      "kind": 1
+    },
+    {
+      "x": -16.160266685392706,
+      "z": -5.629939625319094,
+      "yaw": 0.07910113872494548,
+      "kind": 1
+    },
+    {
+      "x": -14.511141710635274,
+      "z": -5.549393185786903,
+      "yaw": 0.10778978622984141,
+      "kind": 1
+    },
+    {
+      "x": -19.330136281158772,
+      "z": -3.949299528170377,
+      "yaw": -0.10493771885521709,
+      "kind": 1
+    },
+    {
+      "x": -17.898008390609174,
+      "z": -3.802295757550746,
+      "yaw": -0.08898409253451973,
+      "kind": 1
+    },
+    {
+      "x": -16.03762366492301,
+      "z": -4.184908602107316,
+      "yaw": 0.07414228285197168,
+      "kind": 1
+    },
+    {
+      "x": -14.59253585403785,
+      "z": -3.8700708650052547,
+      "yaw": -0.06860464971978217,
+      "kind": 1
+    },
+    {
+      "x": -19.52678537853062,
+      "z": -2.3691179217770695,
+      "yaw": 0.060160599136725064,
+      "kind": 1
+    },
+    {
+      "x": -17.741664217133074,
+      "z": -2.368723105918616,
+      "yaw": -0.11765050159301609,
+      "kind": 1
+    },
+    {
+      "x": -16.275482078269125,
+      "z": -2.124644960928708,
+      "yaw": -0.12161935516633093,
+      "kind": 1
+    },
+    {
+      "x": -14.739527834020555,
+      "z": -2.398716105520725,
+      "yaw": 0.06985156971495599,
+      "kind": 1
+    },
+    {
+      "x": -2.5997900040820245,
+      "z": -5.614281529840082,
+      "yaw": -0.1487331880023703,
+      "kind": 0
+    },
+    {
+      "x": -0.6094765371643007,
+      "z": -5.696870891842991,
+      "yaw": 0.1414440279593691,
+      "kind": 0
+    },
+    {
+      "x": 0.8435867176391185,
+      "z": -5.745569492224604,
+      "yaw": 0.08105529870372265,
+      "kind": 0
+    },
+    {
+      "x": 2.3099618364125494,
+      "z": -5.753106694482267,
+      "yaw": 0.048472926230169834,
+      "kind": 0
+    },
+    {
+      "x": -2.293996192514897,
+      "z": -3.984185638092458,
+      "yaw": 0.07156073951628059,
+      "kind": 0
+    },
+    {
+      "x": -0.8479577057994903,
+      "z": -3.9543238749727605,
+      "yaw": -0.07615047090221196,
+      "kind": 0
+    },
+    {
+      "x": 0.6254361598752439,
+      "z": -4.04052815893665,
+      "yaw": -0.0824629076058045,
+      "kind": 0
+    },
+    {
+      "x": 2.5049459206871694,
+      "z": -4.13480904949829,
+      "yaw": -0.052761759236454965,
+      "kind": 0
+    },
+    {
+      "x": -2.560961530078203,
+      "z": -2.3660670694895085,
+      "yaw": 0.13032273869030178,
+      "kind": 0
+    },
+    {
+      "x": -0.6447618089616299,
+      "z": -2.2664670939557254,
+      "yaw": 0.06893812450580299,
+      "kind": 2
+    },
+    {
+      "x": 0.945014731399715,
+      "z": -2.4937839101068673,
+      "yaw": -0.09099258603528142,
+      "kind": 0
+    },
+    {
+      "x": 2.282906119991094,
+      "z": -2.334806633275002,
+      "yaw": -0.011666559311561285,
+      "kind": 0
+    },
+    {
+      "x": 14.461075252480805,
+      "z": -5.717468342371285,
+      "yaw": -0.03911429001018405,
+      "kind": 1
+    },
+    {
+      "x": 16.003602149058132,
+      "z": -5.89750446844846,
+      "yaw": 0.040339359920471905,
+      "kind": 1
+    },
+    {
+      "x": 17.77027908191085,
+      "z": -5.779519260209054,
+      "yaw": -0.13708870655391364,
+      "kind": 1
+    },
+    {
+      "x": 19.375434838607905,
+      "z": -5.59117395747453,
+      "yaw": 0.10957125204149633,
+      "kind": 1
+    },
+    {
+      "x": 14.616620189603418,
+      "z": -3.912450030632317,
+      "yaw": 0.14574214050080628,
+      "kind": 1
+    },
+    {
+      "x": 16.384664481785148,
+      "z": -4.0666426283307375,
+      "yaw": 0.10961719234474003,
+      "kind": 1
+    },
+    {
+      "x": 17.9266893603839,
+      "z": -3.8806795459240675,
+      "yaw": 0.1309652839321643,
+      "kind": 1
+    },
+    {
+      "x": 19.47793431635946,
+      "z": -3.9176784293726086,
+      "yaw": -0.053743005031719804,
+      "kind": 1
+    },
+    {
+      "x": 14.521201072819531,
+      "z": -2.1818412026390432,
+      "yaw": -0.04778456250205636,
+      "kind": 1
+    },
+    {
+      "x": 16.304817124269903,
+      "z": -2.4753500293940305,
+      "yaw": 0.022681800322607158,
+      "kind": 1
+    },
+    {
+      "x": 17.83127341605723,
+      "z": -2.404038736782968,
+      "yaw": -0.012393158907070755,
+      "kind": 1
+    },
+    {
+      "x": 19.465202523674815,
+      "z": -2.1380220663733778,
+      "yaw": -0.0600342430640012,
+      "kind": 1
+    },
+    {
+      "x": 31.405611651763323,
+      "z": -5.669959150534123,
+      "yaw": -0.005818597041070461,
+      "kind": 0
+    },
+    {
+      "x": 33.01754264971242,
+      "z": -5.879931176640094,
+      "yaw": -0.029326057294383645,
+      "kind": 0
+    },
+    {
+      "x": 34.67322753826156,
+      "z": -5.629060434736312,
+      "yaw": 0.07000826597213745,
+      "kind": 0
+    },
+    {
+      "x": 36.51926894914359,
+      "z": -5.591286807134748,
+      "yaw": 0.0842952047009021,
+      "kind": 0
+    },
+    {
+      "x": 31.60137740187347,
+      "z": -3.8283227667212487,
+      "yaw": 0.12312744066584855,
+      "kind": 0
+    },
+    {
+      "x": 33.21125411130488,
+      "z": -3.8217643804848196,
+      "yaw": 0.12718649650923908,
+      "kind": 0
+    },
+    {
+      "x": 34.735452870558944,
+      "z": -3.836098292283714,
+      "yaw": 0.08861354165710508,
+      "kind": 0
+    },
+    {
+      "x": 36.39801692841574,
+      "z": -4.040166802238673,
+      "yaw": -0.06573361430782824,
+      "kind": 0
+    },
+    {
+      "x": 31.59871859997511,
+      "z": -2.1166039419360456,
+      "yaw": 0.06997671760618686,
+      "kind": 0
+    },
+    {
+      "x": 33.13788655772805,
+      "z": -2.195581893995404,
+      "yaw": 0.07483273758552968,
+      "kind": 0
+    },
+    {
+      "x": 34.853338022530075,
+      "z": -2.2114915695041417,
+      "yaw": 0.03611644101329148,
+      "kind": 0
+    },
+    {
+      "x": 36.52837152229622,
+      "z": -2.466364437155425,
+      "yaw": 0.087174217030406,
+      "kind": 0
+    },
+    {
+      "x": -36.23282268196344,
+      "z": -19.828486467618493,
+      "yaw": -0.028346291324123737,
+      "kind": 1
+    },
+    {
+      "x": -34.70437124101445,
+      "z": -19.589037198293955,
+      "yaw": 0.0032551039941608904,
+      "kind": 1
+    },
+    {
+      "x": -33.22993828086183,
+      "z": -19.522475773561744,
+      "yaw": 0.14710298103746025,
+      "kind": 1
+    },
+    {
+      "x": -31.73974886639044,
+      "z": -19.636849088408052,
+      "yaw": -0.07951033681165427,
+      "kind": 1
+    },
+    {
+      "x": -36.37195093780756,
+      "z": -18.011941615492105,
+      "yaw": 0.013322039251215756,
+      "kind": 1
+    },
+    {
+      "x": -34.83676541252061,
+      "z": -17.92881761295721,
+      "yaw": 0.032125355768948795,
+      "kind": 1
+    },
+    {
+      "x": -33.06455936916173,
+      "z": -18.16046424722299,
+      "yaw": -0.09202450707089156,
+      "kind": 1
+    },
+    {
+      "x": -31.455691984575243,
+      "z": -18.17106152884662,
+      "yaw": 0.09483942263759672,
+      "kind": 1
+    },
+    {
+      "x": -36.472945204097776,
+      "z": -16.243264563661068,
+      "yaw": -0.046244576037861404,
+      "kind": 1
+    },
+    {
+      "x": -34.67601534752175,
+      "z": -16.41163557516411,
+      "yaw": -0.1060283416416496,
+      "kind": 2
+    },
+    {
+      "x": -33.21298623792828,
+      "z": -16.256949456036093,
+      "yaw": -0.11932510603219271,
+      "kind": 1
+    },
+    {
+      "x": -31.4114038662985,
+      "z": -16.47455374374986,
+      "yaw": 0.03752297507598996,
+      "kind": 1
+    },
+    {
+      "x": -19.3945935241878,
+      "z": -19.830948093440384,
+      "yaw": 0.09104007803834975,
+      "kind": 0
+    },
+    {
+      "x": -17.62828790983185,
+      "z": -19.631003105733544,
+      "yaw": -0.14031125244218856,
+      "kind": 0
+    },
+    {
+      "x": -16.326088883448392,
+      "z": -19.66470783976838,
+      "yaw": -0.0824239777168259,
+      "kind": 0
+    },
+    {
+      "x": -14.678006279375404,
+      "z": -19.72604177268222,
+      "yaw": -0.09923844435252249,
+      "kind": 0
+    },
+    {
+      "x": -19.558304762933403,
+      "z": -18.008644976094367,
+      "yaw": 0.05652001951821148,
+      "kind": 0
+    },
+    {
+      "x": -17.621109525021165,
+      "z": -17.938383876439183,
+      "yaw": 0.0480602876516059,
+      "kind": 0
+    },
+    {
+      "x": -16.212194063235074,
+      "z": -18.058835493121297,
+      "yaw": -0.12405020731966943,
+      "kind": 0
+    },
+    {
+      "x": -14.671075208857655,
+      "z": -17.97123202495277,
+      "yaw": 0.03592792383860797,
+      "kind": 0
+    },
+    {
+      "x": -19.242023100703953,
+      "z": -16.47032987512648,
+      "yaw": -0.07325382884591818,
+      "kind": 0
+    },
+    {
+      "x": -17.971407347731294,
+      "z": -16.304310430586337,
+      "yaw": 0.06314867483451962,
+      "kind": 0
+    },
+    {
+      "x": -16.026658352836964,
+      "z": -16.467079999577255,
+      "yaw": 0.08088533654808998,
+      "kind": 0
+    },
+    {
+      "x": -14.418501643836498,
+      "z": -16.32009527049959,
+      "yaw": 0.1144686366431415,
+      "kind": 0
+    },
+    {
+      "x": -2.2653780640102927,
+      "z": -19.714515281375498,
+      "yaw": -0.13410441940650344,
+      "kind": 1
+    },
+    {
+      "x": -0.9030453354120255,
+      "z": -19.57634880375117,
+      "yaw": -0.10663953758776187,
+      "kind": 1
+    },
+    {
+      "x": 0.7469737943261863,
+      "z": -19.58336367197335,
+      "yaw": 0.053304829727858306,
+      "kind": 1
+    },
+    {
+      "x": 2.364277948159725,
+      "z": -19.696420099399983,
+      "yaw": 0.08398034996353089,
+      "kind": 1
+    },
+    {
+      "x": -2.3207550916820767,
+      "z": -17.934241322334856,
+      "yaw": -0.06343834635335951,
+      "kind": 1
+    },
+    {
+      "x": -0.9257622571662069,
+      "z": -17.82057281434536,
+      "yaw": 0.0982137617887929,
+      "kind": 1
+    },
+    {
+      "x": 0.7479924903251232,
+      "z": -18.001964916009456,
+      "yaw": 0.036151478555984794,
+      "kind": 1
+    },
+    {
+      "x": 2.533428482525051,
+      "z": -18.16102891517803,
+      "yaw": -0.13342038576956838,
+      "kind": 1
+    },
+    {
+      "x": -2.495199912507087,
+      "z": -16.144834136869758,
+      "yaw": 0.09817227877210825,
+      "kind": 1
+    },
+    {
+      "x": -0.6130637568421662,
+      "z": -16.184494072571397,
+      "yaw": -0.013396969833411276,
+      "kind": 1
+    },
+    {
+      "x": 0.7311538034118712,
+      "z": -16.350756167434156,
+      "yaw": -0.12230624731164425,
+      "kind": 1
+    },
+    {
+      "x": 2.389856979902834,
+      "z": -16.42219521990046,
+      "yaw": -0.11585991703905164,
+      "kind": 1
+    },
+    {
+      "x": 14.533669045567512,
+      "z": -19.687305429577826,
+      "yaw": -0.07202323875389993,
+      "kind": 0
+    },
+    {
+      "x": 16.253467021882532,
+      "z": -19.52175159174949,
+      "yaw": 0.14945759014226495,
+      "kind": 0
+    },
+    {
+      "x": 17.63022321248427,
+      "z": -19.52963890368119,
+      "yaw": 0.10075668920762837,
+      "kind": 0
+    },
+    {
+      "x": 19.48342891614884,
+      "z": -19.55006239823997,
+      "yaw": -0.015196551592089234,
+      "kind": 0
+    },
+    {
+      "x": 14.714379266649484,
+      "z": -17.833107443153857,
+      "yaw": 0.09898445578292012,
+      "kind": 0
+    },
+    {
+      "x": 16.135964889638124,
+      "z": -18.146092654485255,
+      "yaw": -0.027860815403982997,
+      "kind": 0
+    },
+    {
+      "x": 17.6237811813131,
+      "z": -18.190635949280114,
+      "yaw": 0.08415692641865462,
+      "kind": 0
+    },
+    {
+      "x": 19.233316527772693,
+      "z": -18.113750526029616,
+      "yaw": -0.020878553576767444,
+      "kind": 0
+    },
+    {
+      "x": 14.495982360839843,
+      "z": -16.12620221711695,
+      "yaw": 0.062264263350516554,
+      "kind": 0
+    },
+    {
+      "x": 16.141641563642768,
+      "z": -16.107386963721364,
+      "yaw": -0.05386928482912481,
+      "kind": 2
+    },
+    {
+      "x": 17.701065484434366,
+      "z": -16.26311394069344,
+      "yaw": 0.00038311625830829145,
+      "kind": 0
+    },
+    {
+      "x": 19.581603338383136,
+      "z": -16.17497448725626,
+      "yaw": -0.13674369002692402,
+      "kind": 0
+    },
+    {
+      "x": 31.747497845627368,
+      "z": -19.518686920963226,
+      "yaw": 0.0892440494382754,
+      "kind": 1
+    },
+    {
+      "x": 33.004322223551576,
+      "z": -19.714753441140054,
+      "yaw": -0.08336177521850914,
+      "kind": 1
+    },
+    {
+      "x": 34.80414741924032,
+      "z": -19.87693809662014,
+      "yaw": -0.10239743669517339,
+      "kind": 1
+    },
+    {
+      "x": 36.533609739318486,
+      "z": -19.845729571674017,
+      "yaw": -0.10638698008842766,
+      "kind": 1
+    },
+    {
+      "x": 31.623172792512925,
+      "z": -17.845270522497593,
+      "yaw": -0.01710542372893542,
+      "kind": 1
+    },
+    {
+      "x": 33.35212917486206,
+      "z": -17.82953555472195,
+      "yaw": -0.04628834249451756,
+      "kind": 1
+    },
+    {
+      "x": 34.601727410499,
+      "z": -18.18566659456119,
+      "yaw": -0.011136745428666472,
+      "kind": 1
+    },
+    {
+      "x": 36.58177378149703,
+      "z": -17.853636665735394,
+      "yaw": -0.007347340579144657,
+      "kind": 1
+    },
+    {
+      "x": 31.605001837573948,
+      "z": -16.215993885602803,
+      "yaw": 0.08013222066219895,
+      "kind": 1
+    },
+    {
+      "x": 33.15882083093748,
+      "z": -16.47131849033758,
+      "yaw": 0.051271551218815145,
+      "kind": 1
+    },
+    {
+      "x": 34.6650903086178,
+      "z": -16.443313273228707,
+      "yaw": -0.0030010990099981426,
+      "kind": 1
+    },
+    {
+      "x": 36.42455865843221,
+      "z": -16.49757463457063,
+      "yaw": -0.07489539475645869,
+      "kind": 1
+    },
+    {
+      "x": -32.205039287079124,
+      "z": -43.66920722546056,
+      "yaw": 0.08540568756870925,
+      "kind": 0
+    },
+    {
+      "x": -30.647471110709013,
+      "z": -43.63000799734146,
+      "yaw": -0.022668804321438075,
+      "kind": 0
+    },
+    {
+      "x": -29.060097576119006,
+      "z": -43.71604851651937,
+      "yaw": 0.08043297424446791,
+      "kind": 0
+    },
+    {
+      "x": -27.64029523804784,
+      "z": -43.865438875649126,
+      "yaw": 0.09775515769142658,
+      "kind": 0
+    },
+    {
+      "x": -32.541577581502494,
+      "z": -42.148791692685336,
+      "yaw": -0.08701331096235662,
+      "kind": 0
+    },
+    {
+      "x": -30.907014489918947,
+      "z": -41.87700827103108,
+      "yaw": -0.14445190716069192,
+      "kind": 0
+    },
+    {
+      "x": -29.183547030296175,
+      "z": -42.06209534788504,
+      "yaw": 0.018049384653568267,
+      "kind": 0
+    },
+    {
+      "x": -27.755418543145062,
+      "z": -42.16727939331904,
+      "yaw": -0.13737039954867214,
+      "kind": 0
+    },
+    {
+      "x": -32.30568463616073,
+      "z": -40.39320501228794,
+      "yaw": -0.06748958642128855,
+      "kind": 0
+    },
+    {
+      "x": -30.7340331771411,
+      "z": -40.27053951714188,
+      "yaw": -0.06722347280010581,
+      "kind": 0
+    },
+    {
+      "x": -29.212795700039713,
+      "z": -40.34375536851584,
+      "yaw": -0.0975254661636427,
+      "kind": 0
+    },
+    {
+      "x": -27.433163709286603,
+      "z": -40.37924247011542,
+      "yaw": 0.08070332072675228,
+      "kind": 0
+    },
+    {
+      "x": 25.588071436807514,
+      "z": -44.63538028970361,
+      "yaw": 0.11038497718982399,
+      "kind": 1
+    },
+    {
+      "x": 27.34952098028734,
+      "z": -44.77394398776815,
+      "yaw": 0.07780113788321615,
+      "kind": 1
+    },
+    {
+      "x": 28.831893700361253,
+      "z": -44.63491470012814,
+      "yaw": 0.14851046595722436,
+      "kind": 1
+    },
+    {
+      "x": 30.5183233525604,
+      "z": -44.649344156589365,
+      "yaw": -0.03791454085148871,
+      "kind": 1
+    },
+    {
+      "x": 25.400445831660182,
+      "z": -42.87280550301075,
+      "yaw": 0.11620319655630737,
+      "kind": 1
+    },
+    {
+      "x": 27.327427819464354,
+      "z": -43.0914323640056,
+      "yaw": 0.027852110168896615,
+      "kind": 1
+    },
+    {
+      "x": 28.800660395342856,
+      "z": -43.09617226682603,
+      "yaw": -0.042654424952343103,
+      "kind": 1
+    },
+    {
+      "x": 30.36561615783721,
+      "z": -42.822807834576814,
+      "yaw": 0.127534361067228,
+      "kind": 1
+    },
+    {
+      "x": 25.619974333420398,
+      "z": -41.200786091666664,
+      "yaw": -0.03884166427887976,
+      "kind": 1
+    },
+    {
+      "x": 27.225051679834724,
+      "z": -41.46436199853196,
+      "yaw": -0.09693003322463482,
+      "kind": 2
+    },
+    {
+      "x": 28.871906523406505,
+      "z": -41.36051053963601,
+      "yaw": 0.018187041277997196,
+      "kind": 1
+    },
+    {
+      "x": 30.489998819958416,
+      "z": -41.4239484578371,
+      "yaw": 0.06900851712562144,
+      "kind": 1
+    },
+    {
+      "x": -28.58712424878031,
+      "z": 32.48844481175765,
+      "yaw": 0.0080085514113307,
+      "kind": 0
+    },
+    {
+      "x": -26.84929523020983,
+      "z": 32.333514980785544,
+      "yaw": 0.07371072499081492,
+      "kind": 0
+    },
+    {
+      "x": -25.243730005808175,
+      "z": 32.368459396343674,
+      "yaw": -0.015168523066677153,
+      "kind": 0
+    },
+    {
+      "x": -23.72091241627932,
+      "z": 32.24276488944888,
+      "yaw": -0.01726773048285395,
+      "kind": 0
+    },
+    {
+      "x": -28.553680706210432,
+      "z": 33.87922939285636,
+      "yaw": 0.027761858515441416,
+      "kind": 0
+    },
+    {
+      "x": -26.717243409343066,
+      "z": 33.93434702316299,
+      "yaw": -0.12338990306016057,
+      "kind": 0
+    },
+    {
+      "x": -25.0916744120419,
+      "z": 34.17674290649593,
+      "yaw": -0.1064794631442055,
+      "kind": 0
+    },
+    {
+      "x": -23.572826067358257,
+      "z": 33.85626551304013,
+      "yaw": 0.07522377606946974,
+      "kind": 0
+    },
+    {
+      "x": -28.53258334873244,
+      "z": 35.8352140141651,
+      "yaw": -0.03609606698155403,
+      "kind": 0
+    },
+    {
+      "x": -26.6026808639057,
+      "z": 35.68673132332042,
+      "yaw": 0.026268280413933098,
+      "kind": 0
+    },
+    {
+      "x": -25.272070411033926,
+      "z": 35.69785149879754,
+      "yaw": 0.04221656669396907,
+      "kind": 0
+    },
+    {
+      "x": -23.580152431223542,
+      "z": 35.8550094996579,
+      "yaw": -0.1109470160678029,
+      "kind": 0
+    },
+    {
+      "x": 23.45160237848759,
+      "z": 32.24221881516277,
+      "yaw": -0.1115305486600846,
+      "kind": 1
+    },
+    {
+      "x": 25.02953371219337,
+      "z": 32.255544611439106,
+      "yaw": -0.14926193933933973,
+      "kind": 1
+    },
+    {
+      "x": 26.835357785597445,
+      "z": 32.47799882488325,
+      "yaw": 0.03276899869088083,
+      "kind": 1
+    },
+    {
+      "x": 28.593492399621752,
+      "z": 32.120948968548326,
+      "yaw": 0.04669297880027443,
+      "kind": 1
+    },
+    {
+      "x": 23.5144489585422,
+      "z": 34.15460498854518,
+      "yaw": 0.07030182732269168,
+      "kind": 1
+    },
+    {
+      "x": 25.02110201427713,
+      "z": 33.8660906534642,
+      "yaw": 0.1474274600157514,
+      "kind": 1
+    },
+    {
+      "x": 26.903506940882654,
+      "z": 34.090630794968455,
+      "yaw": 0.0886773229110986,
+      "kind": 1
+    },
+    {
+      "x": 28.371300271805374,
+      "z": 34.169704182259736,
+      "yaw": 0.04666507914662361,
+      "kind": 1
+    },
+    {
+      "x": 23.572168055828662,
+      "z": 35.73862464567647,
+      "yaw": 0.07204222201835364,
+      "kind": 1
+    },
+    {
+      "x": 25.25701226890087,
+      "z": 35.545827347785234,
+      "yaw": 0.13408627258613706,
+      "kind": 1
+    },
+    {
+      "x": 26.949164900090548,
+      "z": 35.864637746009976,
+      "yaw": -0.06604425294790417,
+      "kind": 1
+    },
+    {
+      "x": 28.475212982855737,
+      "z": 35.864983497839425,
+      "yaw": -0.015563259227201342,
+      "kind": 1
+    },
+    {
+      "x": -2.4138958987779917,
+      "z": -25.227817970048637,
+      "yaw": -0.004368474707007408,
+      "kind": 0
+    },
+    {
+      "x": -0.7587358251214028,
+      "z": -25.259613511525092,
+      "yaw": 0.004747749678790569,
+      "kind": 0
+    },
+    {
+      "x": 0.9717257488518953,
+      "z": -25.335352082457394,
+      "yaw": 0.019726256746798752,
+      "kind": 0
+    },
+    {
+      "x": 2.229459465760738,
+      "z": -25.252270340546964,
+      "yaw": 0.01055169382598251,
+      "kind": 0
+    },
+    {
+      "x": -2.38005950069055,
+      "z": -23.3095033663325,
+      "yaw": 0.08192209191620349,
+      "kind": 0
+    },
+    {
+      "x": -0.6926150186918676,
+      "z": -23.423319874331355,
+      "yaw": -0.01433300559874624,
+      "kind": 0
+    },
+    {
+      "x": 0.910714550409466,
+      "z": -23.34534929431975,
+      "yaw": -0.007029827171936631,
+      "kind": 0
+    },
+    {
+      "x": 2.264091374352575,
+      "z": -23.589257270097733,
+      "yaw": 0.11306611848995089,
+      "kind": 0
+    },
+    {
+      "x": -2.374858879856766,
+      "z": -21.693315030168744,
+      "yaw": 0.1361227744957432,
+      "kind": 0
+    },
+    {
+      "x": -0.8124064826406538,
+      "z": -21.87086841603741,
+      "yaw": -0.01799220344983041,
+      "kind": 2
+    },
+    {
+      "x": 0.8456258855760098,
+      "z": -21.99807312367484,
+      "yaw": -0.006036155833862722,
+      "kind": 0
+    },
+    {
+      "x": 2.4493207246996467,
+      "z": -21.93159106615931,
+      "yaw": -0.060574809741228815,
+      "kind": 0
+    }
+  ],
+  "layout": {
+    "limit": 55,
+    "inner": 56,
+    "wallHeight": 9,
+    "wallThickness": 6,
+    "gateHalf": 6,
+    "keep": {
+      "minX": -20,
+      "maxX": 20,
+      "minZ": -55,
+      "maxZ": -31,
+      "height": 2.6
+    },
+    "stairs": {
+      "minX": -6,
+      "maxX": 6,
+      "minZ": -31,
+      "maxZ": -26.5
+    },
+    "barracks": [
+      {
+        "minX": 40,
+        "maxX": 53,
+        "minZ": -28,
+        "maxZ": -13
+      },
+      {
+        "minX": 40,
+        "maxX": 53,
+        "minZ": -6,
+        "maxZ": 7
+      },
+      {
+        "minX": 40,
+        "maxX": 53,
+        "minZ": 14,
+        "maxZ": 28
+      },
+      {
+        "minX": -53,
+        "maxX": -40,
+        "minZ": -28,
+        "maxZ": -13
+      },
+      {
+        "minX": -53,
+        "maxX": -40,
+        "minZ": -6,
+        "maxZ": 7
+      },
+      {
+        "minX": -53,
+        "maxX": -40,
+        "minZ": 14,
+        "maxZ": 28
+      }
+    ],
+    "braziers": [
+      {
+        "x": -8,
+        "z": 40
+      },
+      {
+        "x": 8,
+        "z": 40
+      },
+      {
+        "x": -8,
+        "z": 26
+      },
+      {
+        "x": 8,
+        "z": 26
+      },
+      {
+        "x": -8,
+        "z": 12
+      },
+      {
+        "x": 8,
+        "z": 12
+      },
+      {
+        "x": -8,
+        "z": -2
+      },
+      {
+        "x": 8,
+        "z": -2
+      },
+      {
+        "x": -8,
+        "z": -16
+      },
+      {
+        "x": 8,
+        "z": -16
+      },
+      {
+        "x": -11,
+        "z": -28.5
+      },
+      {
+        "x": 11,
+        "z": -28.5
+      },
+      {
+        "x": -38,
+        "z": 10.5
+      },
+      {
+        "x": 38,
+        "z": 10.5
+      },
+      {
+        "x": -38,
+        "z": -9.5
+      },
+      {
+        "x": 38,
+        "z": -9.5
+      }
+    ],
+    "obstacles": [
+      {
+        "minX": -20,
+        "maxX": 20,
+        "minZ": -55,
+        "maxZ": -31,
+        "height": 2.6
+      },
+      {
+        "minX": -6,
+        "maxX": 6,
+        "minZ": -31,
+        "maxZ": -26.5
+      },
+      {
+        "minX": 40,
+        "maxX": 53,
+        "minZ": -28,
+        "maxZ": -13
+      },
+      {
+        "minX": 40,
+        "maxX": 53,
+        "minZ": -6,
+        "maxZ": 7
+      },
+      {
+        "minX": 40,
+        "maxX": 53,
+        "minZ": 14,
+        "maxZ": 28
+      },
+      {
+        "minX": -53,
+        "maxX": -40,
+        "minZ": -28,
+        "maxZ": -13
+      },
+      {
+        "minX": -53,
+        "maxX": -40,
+        "minZ": -6,
+        "maxZ": 7
+      },
+      {
+        "minX": -53,
+        "maxX": -40,
+        "minZ": 14,
+        "maxZ": 28
+      },
+      {
+        "minX": -32.2,
+        "maxX": -27.8,
+        "minZ": 41.8,
+        "maxZ": 46.2
+      },
+      {
+        "minX": 33.8,
+        "maxX": 38.2,
+        "minZ": -49.2,
+        "maxZ": -44.8
+      },
+      {
+        "minX": -8.6,
+        "maxX": -7.4,
+        "minZ": 39.4,
+        "maxZ": 40.6
+      },
+      {
+        "minX": 7.4,
+        "maxX": 8.6,
+        "minZ": 39.4,
+        "maxZ": 40.6
+      },
+      {
+        "minX": -8.6,
+        "maxX": -7.4,
+        "minZ": 25.4,
+        "maxZ": 26.6
+      },
+      {
+        "minX": 7.4,
+        "maxX": 8.6,
+        "minZ": 25.4,
+        "maxZ": 26.6
+      },
+      {
+        "minX": -8.6,
+        "maxX": -7.4,
+        "minZ": 11.4,
+        "maxZ": 12.6
+      },
+      {
+        "minX": 7.4,
+        "maxX": 8.6,
+        "minZ": 11.4,
+        "maxZ": 12.6
+      },
+      {
+        "minX": -8.6,
+        "maxX": -7.4,
+        "minZ": -2.6,
+        "maxZ": -1.4
+      },
+      {
+        "minX": 7.4,
+        "maxX": 8.6,
+        "minZ": -2.6,
+        "maxZ": -1.4
+      },
+      {
+        "minX": -8.6,
+        "maxX": -7.4,
+        "minZ": -16.6,
+        "maxZ": -15.4
+      },
+      {
+        "minX": 7.4,
+        "maxX": 8.6,
+        "minZ": -16.6,
+        "maxZ": -15.4
+      },
+      {
+        "minX": -11.6,
+        "maxX": -10.4,
+        "minZ": -29.1,
+        "maxZ": -27.9
+      },
+      {
+        "minX": 10.4,
+        "maxX": 11.6,
+        "minZ": -29.1,
+        "maxZ": -27.9
+      },
+      {
+        "minX": -38.6,
+        "maxX": -37.4,
+        "minZ": 9.9,
+        "maxZ": 11.1
+      },
+      {
+        "minX": 37.4,
+        "maxX": 38.6,
+        "minZ": 9.9,
+        "maxZ": 11.1
+      },
+      {
+        "minX": -38.6,
+        "maxX": -37.4,
+        "minZ": -10.1,
+        "maxZ": -8.9
+      },
+      {
+        "minX": 37.4,
+        "maxX": 38.6,
+        "minZ": -10.1,
+        "maxZ": -8.9
+      }
+    ]
+  },
+  "dragon": {
+    "duration": 3.6,
+    "start": 0.35,
+    "end": 2.55,
+    "interval": 0.12,
+    "hit": {
+      "t0": 0,
+      "t1": 0,
+      "shape": {
+        "kind": "circle",
+        "range": 2.8
+      },
+      "damage": 16,
+      "reaction": "launch",
+      "push": 7,
+      "lift": 7,
+      "hitstop": 0,
+      "shake": 0.05,
+      "radial": true,
+      "yMin": -8,
+      "yMax": 2,
+      "sfx": "light"
+    }
+  }
+}
