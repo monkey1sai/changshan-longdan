@@ -20,6 +20,12 @@ Pre-flight: runner消費staged-project的8-case JSON，schema/runId/candidate/ti
 
 上述開發期Godot報告記錄base HEAD及dirty source manifest，沒有假稱新實作已在base commit。正式候選SHA／clean export／QA身份與最終review記在worktree外的不可自引用manifest。
 
+## 第一候選QA與修正輪次
+
+`e72ade6` clean候選實際Windows／Web export、兩平台ZIP與8 cases PASS。Web在headed Chrome的子路徑iframe可見渲染、WebGL2、single-thread、embedded身分與counter 0→1皆已觀察且當時無console errors；但額外按原生Quit後引擎出現`Pages in use exist at exit in PagedAllocator`，不能算整個Web console gate PASS。保留原始console與截圖，產品修正輪1/2：Web不提供原生程式Quit，由host關頁面，Windows保留Quit。先新增兩個UI平台配置cases觀察8/10、2 failed的RED，再加入最小平台配置，下一個clean候選重新export／QA，不能挪用舊包PASS。
+
+Windows普通前景呼叫失敗；診斷確認owned PID不在前景，且後續可見點命中檢查不是owned window，因此沒有送出輸入、沒有拍其他視窗。前景自動化2/2已用盡，維持ENVIRONMENT_FAILURE／未驗；不改ACL、不接管別的視窗、不再自動重試，需操作者解除遮蔽／焦點條件。暫時啟動的舊exe不算QA PASS，runtime.log為空，不以此假造版本／按鈕／退出證據。
+
 ## 待驗證／候選狀態
 
 - [x] 獨立實作前scope接受與工具來源核對。
@@ -34,7 +40,7 @@ Pre-flight: runner消費staged-project的8-case JSON，schema/runId/candidate/ti
 
 本任務外部證據：`C:/Repos/changshan-longdan-godot-evidence/g01-20261021/`。包含baseline／來源hash／RED-GREEN／Godot raw logs與reports；產物不可覆寫，新的run使用新目錄。獨立review需親讀完整diff/source/tests/evidence，區分提供者結果與自行重跑。
 
-TDD預期RED與本任務fixture刪除只涉及本任務新建暫存；無操作舊worktree／原資產／credentials。正式失敗修正最多兩輪，不因換run目錄／方法重計；目前無正式候選修正輪次。若runtime/export有錯先定位，保留raw並依同一上限處置，不無限重跑。
+TDD預期RED與本任務fixture刪除只涉及本任務新建暫存；無操作舊worktree／原資產／credentials。正式失敗修正最多兩輪，不因換run目錄／方法重計；產品修正輪已用1/2；Windows焦點自動化已用2/2，保留缺口而非換方法重設。若runtime/export有錯先定位，保留raw並依同一上限處置，不無限重跑。
 
 ## 下一步與授權
 

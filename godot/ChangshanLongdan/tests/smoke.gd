@@ -33,6 +33,14 @@ func run_cases() -> void:
 		record_case("button_changes_visible_counter", scene.get("click_count") == 1 and scene.get_node("HUD/Panel/VBox/Counter").text == "Verified clicks: 1")
 		scene.get_node("HUD/Panel/VBox/CountButton").pressed.emit()
 		record_case("second_press_accumulates_once", scene.get("click_count") == 2 and scene.get_node("HUD/Panel/VBox/Counter").text == "Verified clicks: 2")
+		if scene.has_method("configure_platform_actions"):
+			scene.call("configure_platform_actions", "Web")
+			record_case("web_has_no_unsupported_app_quit", not scene.get_node("HUD/Panel/VBox/QuitButton").visible)
+			scene.call("configure_platform_actions", "Windows")
+			record_case("windows_app_quit_is_available", scene.get_node("HUD/Panel/VBox/QuitButton").visible)
+		else:
+			record_case("web_has_no_unsupported_app_quit", false)
+			record_case("windows_app_quit_is_available", false)
 		record_case("compatibility_renderer_configured", ProjectSettings.get_setting("rendering/renderer/rendering_method") == "gl_compatibility")
 		var state: Dictionary = scene.call("runtime_state")
 		var identity: Dictionary = state.get("build", {})

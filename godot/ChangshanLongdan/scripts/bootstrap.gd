@@ -7,7 +7,12 @@ func _ready() -> void:
 	$Camera3D.look_at(Vector3(0.0, 0.6, 0.0))
 	$HUD/Panel/VBox/CountButton.pressed.connect(increment_counter)
 	$HUD/Panel/VBox/QuitButton.pressed.connect(quit_bootstrap)
+	configure_platform_actions(OS.get_name())
 	print("G01_READY " + JSON.stringify(runtime_state()))
+
+func configure_platform_actions(platform_name: String) -> void:
+	# A browser page is closed by its host; native SceneTree.quit tears down Web workers noisily.
+	$HUD/Panel/VBox/QuitButton.visible = platform_name != "Web"
 
 func increment_counter() -> void:
 	click_count += 1

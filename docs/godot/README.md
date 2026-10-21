@@ -37,4 +37,6 @@ runner將project複製到新證據目錄的`staged-project`，驗source hashes�
 
 Windows需從此run的exe前景開啟、按「Verify input」看計數變化，再按Quit正常退出；記實際PID／完整payload身份與截圖／logs。Web需從loopback HTTP正確MIME提供`web/`，在子路徑iframe測WebGL2、正常啟動及同一按鈕，保存console/network／畫面／readback。不用日常登入瀏覽器、不接管未知視窗、不上傳itch。
 
+原生Quit只在Windows顯示；Web由iframe host／使用者關頁面結束，避免Godot Web的原生退出路徑產生worker allocator錯誤。已知Windows焦點限制與未完成驗證見progress，不以Web輸入成功替代Windows PASS。
+
 G01可見輸入計數不是自然戰鬥；最終移植仍須同版雙平台完整玩法／資產／品質／效能與人類裝置驗收，另有Jev合法操作自然300KO勝利且最高S（time<300、damage<400）的證據與預算。此工具鏈不呼叫Jev或任何付費provider。
