@@ -40,6 +40,7 @@
 - 重用 S01–S08 的完整驗收情境：17 招、判定／多段去重、持槍與腳植、受擊／起身、300 兵、鏡頭／屋簷、可見資產回退、四難度與自然勝敗；不能把 20 人初期切片當最終交付。
 - 效能沿用既有可比較門檻與 20→50→100→200→300 分級／固定 seeds／長測，為每平台先審量測方法與支援矩陣。瀏覽器拿不到 GPU／VRAM 等數據時明記 UNKNOWN／BLOCKED，不能填零、借用 Windows 結果或暗刪門檻；若需變更驗收契約，另提出明確差異供審查。
 - unit/headless、真實 render、自然操作、實體手把與使用者視聽確認分開；build、截圖及模型評分都不能替代完整遊玩。Godot 與新資產證據不能沿用 Unity 的 PASS。
+- **新增強制最終驗收：Jev AI自然破關取得既有最高S評級。** Windows與Web各至少一場、同一凍結code/profile/assets與各自完整包身份；正常win=true、實際ko=300、rank=S、battle seconds<300且damage<400，300KO獨立核對，不新增數值總分／改評分。由Jev依最新合法可見遊戲畫面選固定有界動作、驗證executor正常輸入及readback；禁止DEV/debug／state/health/musou注入／清場／timeScale作弊／改分／hidden-state觀察／人工戰鬥代打或主控替換AI決策，setup-only協助另記。跑前鎖難度／seed／設定／包hash／模型helper與executor／前景freshness／battle-wall-pause協議／合法action與預算及停止條件；另獲provider／影像傳送／cost授權。保存完整frame→observation→decision→execution→outcome、連續session影片含setup/暫停、結算畫面與真實結果／logs／用量費用／失敗attempt與hash。不可用、非S、缺鏈或預算用盡即不通過，不跨工具／目錄／resume重開同任務額度。現有helper與Web S紀錄僅供方法參考，不能當Godot PASS；此gate額外保留，不縮減原四難度／S01–S08／品質效能與人工驗收，也不默認每難度各需S。詳[正式要求](../../openspec/changes/godot-threejs-migration/specs/godot-threejs-port/spec.md)與[本次step record](GODOT_JEV_ACCEPTANCE_STEP_RECORD.md)。
 
 ## 分期與必要決策
 
@@ -47,7 +48,7 @@
 2. **G01 雙平台基礎**：最小 Godot 工程、CLI runner、正負邊界測試，實際 Windows／Web 匯出與前景啟動。空場景只驗工具鏈。
 3. **G02 可玩切片**：原趙雲、原場景局部、移動／鏡頭／完整輸入與一招對一敵，先驗規則、座標、持槍、回退及雙平台成本。
 4. **G03 玩法完整性**：全部招式、受擊、無雙、敵群／Director、四難度、完整地圖、UI、VFX、音樂音效與流程；逐模組做 TS parity 與真實玩法驗收。
-5. **G04 雙平台交付**：全部 S01–S08、分級效能／長測、Windows 包及 Web iframe 相容性、使用者體驗確認。
+5. **G04 雙平台交付**：全部 S01–S08、分級效能／長測、Windows 包及 Web iframe 相容性、使用者體驗確認，並強制Windows／Web各有Jev合法輸入自然300KO勝利與最高S評級的完整同版證據；未通過不稱移植成功。
 
 每期只在已授權範圍內執行；適用測試、實際證據、exact-head 獨立審查、必要人類批准、另行 merge 授權與 post-merge 檢查齊備才進下一實作期。沿用適用的兩輪失敗上限，不因換工具或分支重設同一問題預算。公開 itch 上傳另需授權。
 
