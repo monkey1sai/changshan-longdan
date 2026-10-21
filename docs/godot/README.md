@@ -29,7 +29,7 @@ Modes：
 
 runner將project複製到新證據目錄的`staged-project`，驗source hashes後只在副本寫入`build_identity.json`及custom-template絕對路徑，確保匯出使用已hash的指定模板。source與cache不混，原工程不被import/export重寫。
 
-輸出有`run.json`、每階stdout/stderr、`godot-tests.json`、`windows/`、`web/`、`windows.zip`、`web.zip`。runtime輸出`G01_READY`／`G01_COUNTER`／`G01_QUIT`的JSON，含embedded run/candidate/source/lock身分，用來綁定畫面／輸入與真正輸出包。
+輸出有`run.json`、每階stdout/stderr、`godot-tests.json`、`windows/`、`web/`、`windows.zip`、`web.zip`。`inventory.versionProbe`保存完整版本探測stdout/stderr/exit/timeout/error；postflight盤點在檢查前保存於`postflightInventory`，失敗也不丟棄診斷。runtime輸出`G01_READY`／`G01_COUNTER`／`G01_QUIT`的JSON，含embedded run/candidate/source/lock身分，用來綁定畫面／輸入與真正輸出包。
 
 若checkout尚有修改，`run.json`明記dirty status及project source hashes，不能僅用HEAD當作新檔案已提交的證據；正式候選以clean commit再跑export與獨立review。GitHub實際review狀態照實，不偽造approval。
 

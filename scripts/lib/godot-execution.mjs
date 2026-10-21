@@ -51,7 +51,19 @@ export async function runProcess(executable, args, { timeoutMs = 60000, cwd, max
     let stdout = '', stderr = '', used = 0, timedOut = false, outputLimited = false, errorMessage = null
     const env = Object.fromEntries(['PATH', 'Path', 'SystemRoot', 'SYSTEMROOT', 'WINDIR', 'TEMP', 'TMP', 'USERPROFILE', 'APPDATA', 'LOCALAPPDATA', 'HOME']
       .filter(key => process.env[key]).map(key => [key, process.env[key]]))
-    const child = spawn(executable, args, { cwd, env, shell: false, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] })
+    const finish = (exitCode, signal) => {
+      const finished = Date.now()
+      resolve({ exitCode, signal, stdout, stderr, timedOut, outputLimited, error: errorMessage,
+        startedAtMs: started, finishedAtMs: finished, durationMs: finished - started })
+    }
+    let child
+    try {
+      child = spawn(executable, args, { cwd, env, shell: false, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] })
+    } catch (error) {
+      errorMessage = `${error.code ?? 'SPAWN_ERROR'}: ${error.message}`
+      finish(null, null)
+      return
+    }
     const collect = (data, channel) => {
       const available = Math.max(0, maxOutputBytes - used)
       const part = data.subarray(0, available).toString('utf8')
@@ -66,8 +78,7 @@ export async function runProcess(executable, args, { timeoutMs = 60000, cwd, max
     const timer = setTimeout(() => { timedOut = true; child.kill('SIGKILL') }, timeoutMs)
     child.on('close', (exitCode, signal) => {
       clearTimeout(timer)
-      resolve({ exitCode, signal, stdout, stderr, timedOut, outputLimited, error: errorMessage,
-        startedAtMs: started, finishedAtMs: Date.now(), durationMs: Date.now() - started })
+      finish(exitCode, signal)
     })
   })
 }
@@ -85,7 +96,7 @@ function setting(text, section, key) {
 export async function inspectGodot({ executable, project, templates, lockPath }) {
   const blockers = []
   const inventory = { schemaVersion: 1, ready: false, blockers, version: null, executableSha256: null, templateVersion: null,
-    project: path.resolve(project), templates: path.resolve(templates), templateHashes: {}, renderer: null }
+    project: path.resolve(project), templates: path.resolve(templates), templateHashes: {}, renderer: null, versionProbe: null }
   let lock
   try {
     assertNoLinks(lockPath)
@@ -126,6 +137,7 @@ export async function inspectGodot({ executable, project, templates, lockPath })
   }
   if (blockers.length === 0) {
     const result = await runProcess(executable, ['--version'], { timeoutMs: 10000 })
+    inventory.versionProbe = result
     inventory.version = result.stdout.trim()
     if (result.exitCode !== 0 || result.timedOut || result.outputLimited || result.error) blockers.push('VERSION_PROBE_FAILED')
     if (inventory.version !== lock.version) blockers.push('VERSION_MISMATCH')
@@ -269,6 +281,8 @@ export async function validateGodot({ mode, executable, project, templates, lock
     if (JSON.stringify(initialSource) !== JSON.stringify(tree(project, { skipImportCache: true }))) throw new Error('SOURCE_CHANGED_DURING_RUN')
     // Re-read hashed templates/executable after export as well: a concurrent replacement invalidates the run.
     const after = await inspectGodot({ executable, project, templates, lockPath })
+    run.postflightInventory = after
+    save()
     if (!after.ready || hashFile(lockPath) !== run.toolchainLockSha256 || after.executableSha256 !== run.inventory.executableSha256 || JSON.stringify(after.templateHashes) !== JSON.stringify(run.inventory.templateHashes))
       throw new Error('TOOLCHAIN_CHANGED_DURING_RUN')
     run.status = 'PASS'
