@@ -47,6 +47,10 @@ func run_cases() -> void:
 		record_case("staged_build_identity_matches_run", identity.get("candidate") == values["--candidate"] and identity.get("runId") == values["--run-id"])
 		scene.queue_free()
 		await process_frame
+	if FileAccess.file_exists("res://tests/gameplay.gd"):
+		var gameplay_suite = load("res://tests/gameplay.gd").new()
+		var gameplay_cases = await gameplay_suite.run()
+		cases.append_array(gameplay_cases)
 	var failures: int = 0
 	for item in cases:
 		if not item["pass"]:

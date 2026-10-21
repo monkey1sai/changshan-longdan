@@ -12,13 +12,18 @@ Preimplementation: Astra reviewer94a8d22f及follow-up281b32f5 ACCEPT_SCOPE。req
 
 ## Tasks
 - Task1: complete — Node4/4 GREEN after missing exporter RED; source --write/--check PASS; runtime17 moves/4 profiles/300spawns/capacity320 and13 player source traces generated BEFORE Godot rule implementation. Originals untouched. Evidence reference-red.log/reference-green.log。Canonical fixtures are unit evidence, not natural wins/Jev。
-- Task2: IN_PROGRESS — math/rng/hash/arena/hitshape and first Godot tests。
-- Task3: pending — Player complete state machine。
-- Task4: pending — enemy SoA/AI/hit reactions。
+- Task2: complete — math/rng/hash/arena/hitshape；math-red為缺3模組，math-green實際Godot45/45 PASS。
+- Task3: complete — Player完整狀態機，舊TS對照擴為18情境涵蓋全部17招；player-red缺模組，player-green-2合併Godot741/741 PASS。
+- Task4: IN_PROGRESS — enemy SoA/AI/hit reactions。
 - Task5: pending — dragon/battle/outcomes。
 - Task6: pending — input/camera/procedural fallback。
 - Task7: pending — actual main game scene/GUI/runner integration。
 - Task8: pending — native instructions and independent final review。
+
+## Rulings / diagnostics
+
+- Task3: Ruling: golden clock使用整數stepNumerator=1、stepDenominator=60在Godot還原，而不是JSON浮點dt — precision-probe.log實測JSON_DT=.016666666666666659、原生1/60=.016666666666666666，造成101個採樣不合（player-green-1）；clock-ratio-red→green與player-green-2已驗證，未改招式邊界／擴容差。成本若判錯是時間契約不合，已由全部741案例約束。此問題修正輪1/2已用且GREEN。
+- Task2/3 checkpoint合併保存，因共用gameplay測試聚合器；各自RED/GREEN原件仍分開，沒有把中途FAIL標PASS。
 
 ## Evidence and limits
 

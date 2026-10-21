@@ -59,10 +59,12 @@ test('old-TS oracle pins non-ID spatial ordering and single-last-stamp interleav
 test('source traces include real player routes, battle samples and dragon trajectory rather than Godot outputs', t => {
   const dir = fixture(t); assert.equal(invoke(dir, '--write').status, 0)
   const r = read(dir, 'tests/reference_cases.json')
+  assert.equal(r.stepNumerator / r.stepDenominator, 1 / 60)
   const chain = r.player.find(c => c.id === 'normal_chain')
   assert.deepEqual(chain.moves.slice(0,6), ['N1','N2','N3','N4','N5','N6'])
   assert.deepEqual(r.player.find(c => c.id === 'charge_branch').moves, ['N1','N2','N3','C4'])
   assert.ok(r.player.some(c => c.id === 'parry_counter'))
+  assert.deepEqual([...new Set(r.player.flatMap(c => c.moves))].sort(), ['N1','N2','N3','N4','N5','N6','C1','C2','C3','C4','C5','C6','JA','JC','DASH','COUNTER','MUSOU'].sort())
   assert.ok(r.battle.length >= 4); assert.ok(r.dragon.length > 10)
   assert.equal(r.rank.length, 7)
   assert.equal(r.math.rng.length, 12)

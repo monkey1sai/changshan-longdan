@@ -32,6 +32,11 @@ function playerCases() {
   const definitions = [
     {id:'normal_chain',n:300,input:f=>({attack:f%6===0})},
     {id:'charge_branch',n:90,input:f=>({attack:[0,12,24].includes(f),charge:f===36})},
+    {id:'charge_1',n:90,input:f=>({charge:f===0})},
+    {id:'charge_2',n:90,input:f=>({attack:f===0,charge:f===12})},
+    {id:'charge_3',n:120,input:f=>({attack:[0,12].includes(f),charge:f===24})},
+    {id:'charge_5',n:150,input:f=>({attack:[0,12,24,36].includes(f),charge:f===56})},
+    {id:'charge_6',n:150,input:f=>({attack:[0,12,24,36,56].includes(f),charge:f===78})},
     {id:'jump_attack',n:90,input:f=>({jump:f===0,attack:f===10})},
     {id:'jump_charge',n:90,input:f=>({jump:f===0,charge:f===10})},
     {id:'dodge_dash',n:60,input:f=>({dodge:f===0,attack:f===8,moveX:f<30?1:0})},
@@ -127,7 +132,7 @@ export function buildReference(){
   const d=new DragonStrike();d.start({x:0,y:0,z:0},0);const dragon=[]
   for(let i=0;i<37;i++){d.update(.1,{x:1,y:0,z:2},.3);dragon.push({dt:.1,active:d.active,striking:d.striking,elapsed:d.elapsed,headPos:vec(d.headPos)})}
   const ranks=[{win:true,ko:300,seconds:299,damage:399},{win:true,ko:300,seconds:300,damage:399},{win:true,ko:300,seconds:299,damage:400},{win:true,ko:300,seconds:480,damage:0},{win:false,ko:200,seconds:1,damage:0},{win:false,ko:100,seconds:1,damage:0},{win:false,ko:99,seconds:1,damage:0}].map(input=>({input,expected:rank(input)}))
-  const cases={schemaVersion:1,sourceFiles,fixtureOnly:true,contracts:contracts(),math:mathCases(),player:playerCases(),enemy:enemyCases(),battle:battleCases(),dragon,rank:ranks}
+  const cases={schemaVersion:1,sourceFiles,fixtureOnly:true,stepNumerator:1,stepDenominator:60,contracts:contracts(),math:mathCases(),player:playerCases(),enemy:enemyCases(),battle:battleCases(),dragon,rank:ranks}
   return {runtime,cases}
 }
 function main(){
