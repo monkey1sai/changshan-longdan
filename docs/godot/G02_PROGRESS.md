@@ -14,9 +14,9 @@ Preimplementation: Astra reviewer94a8d22f及follow-up281b32f5 ACCEPT_SCOPE。req
 - Task1: complete — Node4/4 GREEN after missing exporter RED; source --write/--check PASS; runtime17 moves/4 profiles/300spawns/capacity320 and13 player source traces generated BEFORE Godot rule implementation. Originals untouched. Evidence reference-red.log/reference-green.log。Canonical fixtures are unit evidence, not natural wins/Jev。
 - Task2: complete — math/rng/hash/arena/hitshape；math-red為缺3模組，math-green實際Godot45/45 PASS。
 - Task3: complete — Player完整狀態機，舊TS對照擴為18情境涵蓋全部17招；player-red缺模組，player-green-2合併Godot741/741 PASS。
-- Task4: IN_PROGRESS — enemy SoA/AI/hit reactions。
-- Task5: pending — dragon/battle/outcomes。
-- Task6: pending — input/camera/procedural fallback。
+- Task4: complete — Enemy SoA/AI/四難度seeded traces、nearest格網順序與last-stamp交錯；enemies-red缺模組，enemies-green-1 Godot817/817 PASS。
+- Task5: complete — Dragon軌跡、Battle/pressure/hitstop/combo/KO/原rank、constructor/start/retry RNG與Player/Dragon交錯；battle-red缺兩模組，battle-green-1 979/979，補直接邊界後battle-edges-green合併991/991 PASS。fixture小場勝利不算自然300KO/S。
+- Task6: IN_PROGRESS — input/camera/procedural fallback。
 - Task7: pending — actual main game scene/GUI/runner integration。
 - Task8: pending — native instructions and independent final review。
 
