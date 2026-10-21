@@ -13,7 +13,7 @@ import * as L from '../src/world/layout.ts'
 import { castleSetup } from '../src/entities/castle-setup.ts'
 import { Arena } from '../src/entities/arena.ts'
 import { Player } from '../src/entities/player.ts'
-import { EnemyStore, Kind } from '../src/entities/enemies.ts'
+import { EnemyStore, Kind, State } from '../src/entities/enemies.ts'
 import { Battle, rank } from '../src/entities/battle.ts'
 import { BattleDirector } from '../src/entities/battle-director.ts'
 import { DragonStrike, DRAGON_HIT, DRAGON_DURATION, DRAGON_STRIKE_START, DRAGON_STRIKE_END, DRAGON_HIT_INTERVAL } from '../src/entities/dragon-strike.ts'
@@ -96,6 +96,36 @@ function enemyCases(){
     return result
   })
 }
+function enemyReactionCases(){
+  return ['flinch','launch','knockback','blowaway','knockdown','flinch'].map((reaction,index)=>{
+    const seed=index===5?2:7,spawns=[{x:0,z:1,yaw:0,kind:Kind.Captain},{x:.3,z:2,yaw:0,kind:Kind.Spear}]
+    const e=new EnemyStore(8,seed);e.reset(spawns)
+    if(reaction==='flinch'){e.state[0]=State.Windup;e.stateTime[0]=.1}
+    const window={...DRAGON_HIT,shape:{kind:'circle',range:4},damage:1,reaction,push:5,lift:7,yMin:-1,yMax:20},hits=[]
+    const before=enemySnapshot(e);e.applyHit(123,window,0,0,0,0,hits)
+    const result={id:`${reaction}_${seed}`,seed,spawns,window,before,initial:enemySnapshot(e),hits:plain(hits),frames:168,samples:[]}
+    for(let f=0;f<result.frames;f++){e.update(STEP,0,0,0,new Arena(30,[]));if([0,12,24,48,72,100,144,167].includes(f))result.samples.push({frame:f,expected:enemySnapshot(e),strikes:plain(e.strikes)})}
+    return result
+  })
+}
+function armyCases(){
+  const ids=[0,1,9,17,58,149,250,299],spawns=castleSetup().spawns()
+  return Object.keys(DIFFICULTIES).flatMap(profile=>[42,1000].map(position=>{
+    const e=new EnemyStore(320,7);e.setPressure(DIFFICULTIES[profile]);e.reset(spawns)
+    const player={x:position===1000?1000:0,y:0,z:position},result={profile,player,ids,frames:32,samples:[]}
+    for(let f=0;f<result.frames;f++){
+      e.update(STEP,player.x,player.y,player.z,new Arena(L.PLAY_LIMIT,L.obstacles()))
+      if([0,12,24,31].includes(f)){
+        const expected=enemySnapshot(e)
+        for(const key of enemyFields)expected.fields[key]=ids.map(i=>e[key][i])
+        expected.engagedCount=Array.from(e.engaged).slice(0,e.count).filter(v=>v===1).length
+        expected.marchCount=Array.from(e.state).slice(0,e.count).filter(v=>v===State.March).length
+        result.samples.push({frame:f,expected})
+      }
+    }
+    return result
+  }))
+}
 function battleCases(){
   return Object.keys(DIFFICULTIES).map(profile=>{
     const spawns=[{x:0,z:2,yaw:Math.PI,kind:0},{x:1,z:3,yaw:Math.PI,kind:1}]
@@ -132,7 +162,7 @@ export function buildReference(){
   const d=new DragonStrike();d.start({x:0,y:0,z:0},0);const dragon=[]
   for(let i=0;i<37;i++){d.update(.1,{x:1,y:0,z:2},.3);dragon.push({dt:.1,active:d.active,striking:d.striking,elapsed:d.elapsed,headPos:vec(d.headPos)})}
   const ranks=[{win:true,ko:300,seconds:299,damage:399},{win:true,ko:300,seconds:300,damage:399},{win:true,ko:300,seconds:299,damage:400},{win:true,ko:300,seconds:480,damage:0},{win:false,ko:200,seconds:1,damage:0},{win:false,ko:100,seconds:1,damage:0},{win:false,ko:99,seconds:1,damage:0}].map(input=>({input,expected:rank(input)}))
-  const cases={schemaVersion:1,sourceFiles,fixtureOnly:true,stepNumerator:1,stepDenominator:60,contracts:contracts(),math:mathCases(),player:playerCases(),enemy:enemyCases(),battle:battleCases(),dragon,rank:ranks}
+  const cases={schemaVersion:1,sourceFiles,fixtureOnly:true,stepNumerator:1,stepDenominator:60,contracts:contracts(),math:mathCases(),player:playerCases(),enemy:enemyCases(),enemyReactions:enemyReactionCases(),army:armyCases(),battle:battleCases(),dragon,rank:ranks}
   return {runtime,cases}
 }
 function main(){

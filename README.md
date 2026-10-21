@@ -1,16 +1,24 @@
 # 常山龍膽
 
-在瀏覽器裡玩的 PS2 風格一騎當千動作遊戲（musou-like）：趙雲單騎對上三百名魏兵。以 Vite + TypeScript + Three.js 製作；趙雲採用使用者提供的 Blender 蒙皮模型，敵兵、城池與龍維持程序式體素外觀，音效與配樂以 WebAudio 即時合成。
+目前主要開發方向是 **Godot 原生移植**，不是繼續開發網頁版。工程位於 `godot/ChangshanLongdan/project.godot`，使用 Godot **4.7.2 / GDScript / Compatibility**；Windows x64 與 Web 共用同一工程，開發先以原生版本為主。
 
-**線上試玩**：[monkey1sai.itch.io/changshan-longdan](https://monkey1sai.itch.io/changshan-longdan)（itch.io，免費，歡迎自由贊助）
+## Godot 原生開發
 
-## Godot 遷移方向
+1. 用 Godot 4.7.2 匯入 `godot/ChangshanLongdan/project.godot`。
+2. 按 **F5**，主場景為 `scenes/game.tscn`，不是 G01 方塊計數診斷。
+3. 選擇難度後按 **To Battle / Enter / J**；WASD移動，J普攻、K蓄力、L無雙、Space跳躍、Shift閃避、F防禦、Q/E旋轉、滾輪縮放、R回正、Esc/P暫停。結算後可重試並保留難度。
 
-使用者已選定直接將現有 Three.js 版移植到 **Godot，交付 Windows x64 與 Web／itch.io**，不再推進 Unity。原 Web source、線上遊戲及 Unity 歷史工程保留；目前 G00 僅更新決策／規格，尚沒有 Godot 可玩版或雙平台匯出。
+G02已移植原版17招、300兵SoA/AI、四難度、蒼龍判定、碰撞、連擊、HP/無雙/KO與原評級規則，並接上原生選單、鏡頭、HUD與勝敗／重試；規則對照及主場景接線有headless測試。**目前使用程序化fallback人形／武器／城池／龍頭，還不是原GLB、骨架動畫、完整特效或音效的移植完成版。** 可見原生操作、手感、實體手把及效能仍待相應證據；headless不代替它們，也不等於Jev自然300KO／S驗收。
 
-入口：[Godot 決策](docs/engineering/GODOT_ADR.md)、[遷移設計](docs/engineering/GODOT_MIGRATION_DESIGN.md)、[SPEC 與分期進度](openspec/changes/godot-threejs-migration/tasks.md)。正式審查、授權 merge 與 post-merge 尚未通過前不進 G01；下列功能與指令描述的是既有 Three.js 版，不是 Godot 已完成項目。
+操作與檢查：[Godot README](docs/godot/README.md)；範圍：[G02 SPEC](docs/godot/G02_SPEC.md)；進度與限制：[G02 progress](docs/godot/G02_PROGRESS.md)。舊Three.js與Unity保留，不再以空場景網頁QA取代Godot玩法開發。
 
-## 特色
+## 原 Three.js 版（保留對照）
+
+以下特色、網頁操作／指令及模型驗收描述的是保留的 Vite + TypeScript + Three.js 版，不代表 Godot 美術與音效已完成。
+
+**原版線上試玩**：[monkey1sai.itch.io/changshan-longdan](https://monkey1sai.itch.io/changshan-longdan)（itch.io，免費，歡迎自由贊助）
+
+## 原版特色
 
 - **中英介面**：右上角可隨時切換繁體中文／English，涵蓋操作說明、招式指南、戰鬥提示與結算；不重開戰局，並在可用的瀏覽器儲存空間記住偏好。
 

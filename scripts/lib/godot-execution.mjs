@@ -117,7 +117,12 @@ export async function inspectGodot({ executable, project, templates, lockPath })
     const presets = fs.readFileSync(path.join(project, 'export_presets.cfg'), 'utf8')
     inventory.renderer = setting(config, 'rendering', 'renderer/rendering_method')
     if (inventory.renderer !== '"gl_compatibility"') blockers.push('RENDERER_MISMATCH')
-    if (setting(config, 'application', 'run/main_scene') !== '"res://scenes/bootstrap.tscn"') blockers.push('MAIN_SCENE_MISMATCH')
+    inventory.mainScene = JSON.parse(setting(config, 'application', 'run/main_scene') ?? 'null')
+    if (!['res://scenes/bootstrap.tscn', 'res://scenes/game.tscn'].includes(inventory.mainScene)) blockers.push('MAIN_SCENE_MISMATCH')
+    if (inventory.mainScene === 'res://scenes/game.tscn' && ['preset.0', 'preset.1'].some(p => {
+      const filters = JSON.parse(setting(presets, p, 'include_filter') ?? '""').split(',').map(value => value.trim())
+      return !filters.includes('data/*.json') || !filters.includes('build_identity.json')
+    })) blockers.push('RUNTIME_JSON_NOT_EXPORTED')
     if (setting(presets, 'preset.0', 'platform') !== '"Windows Desktop"' || setting(presets, 'preset.1', 'platform') !== '"Web"' ||
       setting(presets, 'preset.0.options', 'binary_format/architecture') !== '"x86_64"' ||
       setting(presets, 'preset.1.options', 'variant/thread_support') !== 'false') blockers.push('EXPORT_PRESET_MISMATCH')
@@ -237,7 +242,7 @@ export async function validateGodot({ mode, executable, project, templates, lock
   output = claimOutput(output, repoRoot)
   const run = { schemaVersion: 1, runId: randomUUID(), candidate, checkoutStatus, mode, status: 'FAIL',
     startedAt: new Date().toISOString(), steps: [], testSummary: null, payloads: {}, sourceFiles: [],
-    limitation: 'G01 toolchain only; not gameplay, migration-complete, or Jev victory evidence' }
+    limitation: 'Headless import/rule/export checks only; not visible gameplay, final assets/audio, physical controller/performance, migration-complete, or natural Jev victory evidence' }
   const save = () => fs.writeFileSync(path.join(output, 'run.json'), JSON.stringify(run, null, 2) + '\n')
   save()
   try {

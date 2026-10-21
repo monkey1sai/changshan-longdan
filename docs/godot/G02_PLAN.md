@@ -33,9 +33,9 @@
 
 **Interfaces:** exporter imports authoritative TS MOVES/DIFFICULTIES/layout/castleSetup/Player/Enemies/Battle/Dragon; writes schemaVersion1 + used-source SHA256 + runtime data; `--check` compares bytes without writing. Golden contains fixed controls/steps, expected state/events, not callable Godot functions.
 
-- [ ] Write Node tests first: generated reference missing/stale rejects, export17 move IDs/4 profiles/300 spawns and320 capacity, trace cases include N1→N6、N3→C4、hash反例query=[1,0]/nearest=1、1,1,2,1命中數[1,0,1,1]、實際Player/Dragon/Player交錯，以及constructor/start/retry RNG生命周期；derived data cannot mutate source; observe RED.
-- [ ] Implement minimal exporter using existing Node TS stripping, stable JSON and readonly source hashes; generate fixtures **before** GDScript implementation. No new package.
-- [ ] Run `node --test scripts/tests/godot-reference.node.mjs` and `node --experimental-strip-types scripts/godot-reference.mjs --check`; require PASS and no source changes. Save checkpoint.
+- [x] Write Node tests first: generated reference missing/stale rejects, export17 move IDs/4 profiles/300 spawns and320 capacity, trace cases include N1→N6、N3→C4、hash反例query=[1,0]/nearest=1、1,1,2,1命中數[1,0,1,1]、實際Player/Dragon/Player交錯，以及constructor/start/retry RNG生命周期；derived data cannot mutate source; observe RED.
+- [x] Implement minimal exporter using existing Node TS stripping, stable JSON and readonly source hashes; generate fixtures **before** GDScript implementation. No new package.
+- [x] Run `node --test scripts/tests/godot-reference.node.mjs` and `node --experimental-strip-types scripts/godot-reference.mjs --check`; require PASS and no source changes. Save checkpoint.
 
 ## Task 2: Math, arena and spatial grid
 
@@ -43,9 +43,9 @@
 
 **Interfaces:** SimMath static damp/dampAngle/sampleKeys/smoothstep/next_stamp; RNG instance seed7 with unsigned32 mulberry32; Arena.new(limit,obstacles).constrain(pos:Vector3,radius)->Vector3; SpatialHash.new(cellSize).clear/insert/query按cell X、cell Z遞增，再按cell內插入順序回傳，不全域排序。
 
-- [ ] Add Godot cases first: seed7 first outputs equal golden, negative-angle wrap, sample heights, edge/corner/interior rectangle push, radius-aware arc/circle/line and reach, hash order at negative/cell boundaries；id0=(1,0)、id1=(-1,0)、query(0,0,3)必須[1,0]，不能偷偷sort。 Observe RED with missing core.
-- [ ] Port source math and unsigned low32 operations; preserve constrain tie priority. Packed arrays later keep Float32 rounding; no engine rigidbody substitution.
-- [ ] Execute focused SceneTree tests and source golden assertions; GREEN before dependent models. Save checkpoint.
+- [x] Add Godot cases first: seed7 first outputs equal golden, negative-angle wrap, sample heights, edge/corner/interior rectangle push, radius-aware arc/circle/line and reach, hash order at negative/cell boundaries；id0=(1,0)、id1=(-1,0)、query(0,0,3)必須[1,0]，不能偷偷sort。 Observe RED with missing core.
+- [x] Port source math and unsigned low32 operations; preserve constrain tie priority. Packed arrays later keep Float32 rounding; no engine rigidbody substitution.
+- [x] Execute focused SceneTree tests and source golden assertions; GREEN before dependent models. Save checkpoint.
 
 ## Task 3: Player and complete move routing
 
@@ -53,9 +53,9 @@
 
 **Interfaces:** Player.new(moves), reset/queue/clearQueuedActions/update/takeHit/gainMusou per SPEC; readable state/events/activeHits; aim callable returns target Dictionary or null; Arena from Task2。
 
-- [ ] Add failing source-trace and direct assertions for all combo routes, long-buffer N5→N6, C priority, JA/JC landing, dodge invulnerability/DASH, parry12 gauge/COUNTER, chip/backhit, lethal block, armor, hit-window crossing, 同window重用同一stamp identity（敵方僅比較last stamp）and musou100 consume/complete invulnerability.
-- [ ] Port source state machine without animation-controlled damage or new cancel rules; maintain source field names and scalar precision. Run actual Godot tests until GREEN.
-- [ ] Compare snapshots and event sequences against old-TS golden, not copied Godot output. Save checkpoint.
+- [x] Add failing source-trace and direct assertions for all combo routes, long-buffer N5→N6, C priority, JA/JC landing, dodge invulnerability/DASH, parry12 gauge/COUNTER, chip/backhit, lethal block, armor, hit-window crossing, 同window重用同一stamp identity（敵方僅比較last stamp）and musou100 consume/complete invulnerability.
+- [x] Port source state machine without animation-controlled damage or new cancel rules; maintain source field names and scalar precision. Run actual Godot tests until GREEN.
+- [x] Compare snapshots and event sequences against old-TS golden, not copied Godot output. Save checkpoint.
 
 ## Task 4: 300-enemy simulation
 
@@ -63,9 +63,9 @@
 
 **Interfaces:** Enemies.new(capacity,seed,profile), setPressure/reset/update/nearest/applyHit and SoA/strikes/kills; consumes shared rng/hash/arena; windows consume source canonical shapes。
 
-- [ ] Write RED assertions for 300/capacity, Float32 seeded reset properties, captain HP/damage, engagement54 and minimum20 logic, token budget per profile, windup→strike/recover, crowd collision, directional/radial/height hit filtering, 連續last-stamp抑制、1,1,2,1→[1,0,1,1]與Player/Dragon/Player各自命中[1,1,1]，flinch/air/knockdown/getup/death/kill consumption.
-- [ ] Port update/hash/separate ordering；nearest等距取第一個hash query候選（上述反例為id1），engagement距離sort才以原id次序穩定tie； reuse PackedFloat32Array/byte/int arrays, not300 per-enemy physics bodies. GREEN against fixtures.
-- [ ] Verify reset RNG lifetime: Battle constructor已reset normal，首次Game.start再reset所選難度，retry再reset同難度，三者共享同一EnemyStore RNG連續狀態，不能把首次start當成fresh constructor或retry時重seed； save checkpoint.
+- [x] Write RED assertions for 300/capacity, Float32 seeded reset properties, captain HP/damage, engagement54 and minimum20 logic, token budget per profile, windup→strike/recover, crowd collision, directional/radial/height hit filtering, 連續last-stamp抑制、1,1,2,1→[1,0,1,1]與Player/Dragon/Player各自命中[1,1,1]，flinch/air/knockdown/getup/death/kill consumption.
+- [x] Port update/hash/separate ordering；nearest等距取第一個hash query候選（上述反例為id1），engagement距離sort才以原id次序穩定tie； reuse PackedFloat32Array/byte/int arrays, not300 per-enemy physics bodies. GREEN against fixtures.
+- [x] Verify reset RNG lifetime: Battle constructor已reset normal，首次Game.start再reset所選難度，retry再reset同難度，三者共享同一EnemyStore RNG連續狀態，不能把首次start當成fresh constructor或retry時重seed； save checkpoint.
 
 ## Task 5: Battle, dragon and outcomes
 
@@ -73,9 +73,9 @@
 
 **Interfaces:** Dragon consumes canonical hit/duration and shared stamps; Battle.new(reference, optional setup), reset/interrupt/step/result and public readonly-view use fields; player/SoA from Tasks3/4; events/hits/kills reset everystep。
 
-- [ ] Write RED for phase60/150/240, hitstop queue, combo2.4, musou gain and dragon rhythm.35..2.55/.12, height trajectory/stop3.6, kills once, damage/chip/parry, source victory-before-defeat priority, result frozen time and original S/A/B/C/D boundaries (7 source-derived boundary cases minimum).
-- [ ] Port exact source call order and result slowmo; do not expose debug/heal/clear in runtime input. GREEN against seeded small-scenario and actual300-start traces.
-- [ ] Save gameplay-model checkpoint; still not natural300KO/S proof.
+- [x] Write RED for phase60/150/240, hitstop queue, combo2.4, musou gain and dragon rhythm.35..2.55/.12, height trajectory/stop3.6, kills once, damage/chip/parry, source victory-before-defeat priority, result frozen time and original S/A/B/C/D boundaries (7 source-derived boundary cases minimum).
+- [x] Port exact source call order and result slowmo; do not expose debug/heal/clear in runtime input. GREEN against seeded small-scenario and actual300-start traces.
+- [x] Save gameplay-model checkpoint; still not natural300KO/S proof.
 
 ## Task 6: Native input, camera and procedural presentation
 
@@ -83,9 +83,9 @@
 
 **Interfaces:** GameInput.sample(dt) returns source InputFrame keys and clear(); CameraRig snap/recenter/update/to_controls; GameView.update(battle,simDt) only reads models, owns player tip/tipBase and enemy MultiMeshes; world geometry reads canonical obstacles/layout。
 
-- [ ] RED tests: real InputMap key/mouse/pad bindings, normalization/deadzone, .18 held attack/.48 charge priority, clear-after-pause/focus, camera world basis/zoom/recenter and finite look-at,300 instance capacity and shared obstacle positions, explicit fallback status and tip/tipBase presence.
-- [ ] Compose Godot built-in input/Camera3D/Control/MultiMesh with minimal adapters; no View-owned HP/damage. Visible humanoid/spear/flash/dragon path are fallback, not original asset readiness.
-- [ ] GREEN structural/rule checks. Do not perform blocked native focus or browser QA; preserve visual/handfeel gaps.
+- [x] RED tests: real InputMap key/mouse/pad bindings, normalization/deadzone, .18 held attack/.48 charge priority, clear-after-pause/focus, camera world basis/zoom/recenter and finite look-at,300 instance capacity and shared obstacle positions, explicit fallback status and tip/tipBase presence.
+- [x] Compose Godot built-in input/Camera3D/Control/MultiMesh with minimal adapters; no View-owned HP/damage. Visible humanoid/spear/flash/dragon path are fallback, not original asset readiness.
+- [x] GREEN structural/rule checks. Do not perform blocked native focus or browser QA; preserve visual/handfeel gaps.
 
 ## Task 7: Playable main, UI and validation integration
 
@@ -93,15 +93,15 @@
 
 **Interfaces:** Game owns title/playing/paused/ended and start_battle/set_paused/tick; all GUI/key entrypaths call these; aggregate gameplay cases into existing fresh JSON report schema. Runner inventory reports mainScene and accepts explicit bootstrap diagnostic or game path only.
 
-- [ ] RED tests: game PackedScene is real configured main;300 battle binds view/HUD; difficulty start and retry preserve selected profile; controls and button use same start; pause/focus clear queued keys; result delay2.4, Enter retry and no ghost action; unrelated mainScene rejected by inventory；新game選單的應用Quit僅原生顯示，Web隱藏（headless驗配置，不開瀏覽器）。
-- [ ] Wire native F5 entry, title/HUD/pause/results and frozen-result stats; add `data/*.json` to both export include filters while excluding tests; retain bootstrap for diagnostics only. Preserve all process/hash/report checks and old meaningful diagnostic cases.
-- [ ] GREEN Node tests + canonical check + actual Godot import and combined nonzero tests through existing runner. Save checkpoint.
+- [x] RED tests: game PackedScene is real configured main;300 battle binds view/HUD; difficulty start and retry preserve selected profile; controls and button use same start; pause/focus clear queued keys; result delay2.4, Enter retry and no ghost action; unrelated mainScene rejected by inventory；新game選單的應用Quit僅原生顯示，Web隱藏（headless驗配置，不開瀏覽器）。
+- [x] Wire native F5 entry, title/HUD/pause/results and frozen-result stats; add `data/*.json` to both export include filters while excluding tests; retain bootstrap for diagnostics only. Preserve all process/hash/report checks and old meaningful diagnostic cases.
+- [x] GREEN Node tests + canonical check + actual Godot import and combined nonzero tests through existing runner. Save checkpoint.
 
 ## Task 8: Reviewable native delivery
 
 **Files:** update `README.md`, `docs/godot/README.md`; create/update `docs/godot/G02_PROGRESS.md`。
 
-- [ ] Reconcile scope vs source. Root README makes Godot import/F5 the primary developer path; legacy Web remains reference and its unrelated instructions are preserved, deleted governance not restored.
-- [ ] Record tested / visual-not-run / final-asset-not-ready / no-Jev separately. Actual command results and raw logs outside repo; don't repeat unaffected308 tests merely for a new label.
+- [x] Reconcile scope vs source. Root README makes Godot import/F5 the primary developer path; legacy Web remains reference and its unrelated instructions are preserved, deleted governance not restored.
+- [x] Record tested / visual-not-run / final-asset-not-ready / no-Jev separately. Actual command results and raw logs outside repo; don't repeat unaffected308 tests merely for a new label.
 - [ ] Freeze candidate, give complete diff and source/tests/raw evidence to fresh independent Astra reviewer. Fix only concrete authorized findings within existing limits and rerun affected checks.
 - [ ] Continue next authorized needed step unless concrete runtime/tool/authorization blocker; no push/PR/merge or new UI attempt budget inferred. Do not claim whole migration complete.

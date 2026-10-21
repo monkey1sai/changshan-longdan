@@ -1,42 +1,52 @@
-# Godot G01 工具鏈
+# Godot 原生工程
 
-這是雙平台工具鏈場景，**不是移植完成的遊戲**。只有3D方塊、可見G01範圍提示與輸入計數按鈕，沒有角色、敵兵、戰鬥或分數。
+## 從這裡開發
 
-範圍：[G01_SPEC.md](G01_SPEC.md)；進度與限制：[G01_PROGRESS.md](G01_PROGRESS.md)。既有Three.js source與package/lock保留。沒有恢復使用者於`82e98e4`刪除的舊治理文件。
+- 匯入 `godot/ChangshanLongdan/project.godot`，Godot **4.7.2 / GDScript / Compatibility**。
+- **F5 → `scenes/game.tscn` → 選難度 → To Battle / Enter / J**。Windows原生開發優先；相同工程保留單執行緒Web preset。
+- `scenes/bootstrap.tscn`仍是G01診斷，不再是主要遊戲。
+- G02：原17招／300兵／四難度／蒼龍／HP、無雙、連擊、KO、原評級，接上原生輸入、鏡頭、HUD、暫停、失焦、結果延遲與重試。
+- **美術為明示的程序化fallback**：人形、武器 `tip/tipBase`、MultiMesh敵軍、共用城池碰撞layout、龍頭／尾跡。原GLB、骨架／完整動作、音效／音樂／完整特效尚未移植完成；不宣稱最終品質。
 
-## 前置
+## 控制
 
-Node符合根目錄package.json；Godot與模板必須完全匹配`godot/toolchain.json`。使用實際exe，不能把可變的WinGet symlink當固定執行檔。工具不下載、安裝、登入或讀credentials；不匹配就BLOCKED。
+WASD／方向鍵移動；J／左鍵按住連攻（0.18s）；K／右鍵蓄力（抑制普攻repeat 0.48s）；L無雙；Space跳；Shift閃避；F防禦／成功招架後J反擊。Q/E鏡頭旋轉，滾輪縮放5.5–13，R回正。Esc/P暫停，Enter繼續／開始／結算後重試。失焦自動暫停並清pending input。
 
-PowerShell範例（自行替換實際exe及外部證據位置）：
+標準手把：左搖桿移動，右搖桿水平轉鏡；X/□普攻、Y/△蓄力、B/○無雙、A/×跳躍／確認、RB/R1或RT/R2閃避、LB/L1防禦、Start暫停、右搖桿按下回正。採Godot原生語義enum（不是照抄瀏覽器數字index）；實體硬體仍NOT_RUN。
 
-```powershell
-$Godot = 'C:/path/to/Godot_v4.7.2-stable_win64.exe'
-$Templates = "$env:APPDATA/Godot/export_templates/4.7.2.stable"
-$Out = "C:/task-evidence/g01-$([Guid]::NewGuid())"
-node --test scripts/tests/godot-execution.node.mjs
-node scripts/godot-validate.mjs --mode export --godot $Godot --project godot/ChangshanLongdan --templates $Templates --lock godot/toolchain.json --out $Out
+Web隱藏原生Quit；關閉頁面由host處理。Windows有原生Quit，不在Web呼叫SceneTree.quit。
+
+## 規則／呈現分離
+
+- `core/*.gd`：RefCounted純模擬；不用物理body／動畫決定傷害。
+- `scripts/game*.gd`、`camera_rig.gd`：原生輸入／Node3D／MultiMesh／Camera3D／Control適配。正式主場景是真的遊戲接線，不載入Three.js或WebView。
+- `data/reference.json`：由不可改的舊TS產生的17招、難度、300兵、layout、原規則常數；兩個export preset都明確包含 `data/*.json`。
+- `tests/reference_cases.json`：舊TS先產生的golden traces；只做測試，不匯入遊戲payload。Godot不產生自己的expected。
+- RNG跨constructor／首次開始／retry共用；格網cell-X/cell-Z/insertion順序、單一last-stamp與原事件順序都保留。
+
+## 本機確定性檢查
+
+Node v22.22.0可用現有type stripping讀舊TS，不新增npm依賴：
+
+```sh
+node --test scripts/tests/godot-reference.node.mjs scripts/tests/godot-execution.node.mjs
+node --experimental-strip-types scripts/godot-reference.mjs --check
 ```
 
-Modes：
-- `inventory`：實際版本、exe／template hashes、renderer／preset盤點，**不代表測試或匯出已通過**。
-- `tests`：再執行import與SceneTree測試，驗fresh run/candidate-bound JSON及非零、無failed/skipped的實際cases。
-- `export`：先完成上述步驟，再輸出Windows x64、single-thread Web與各自ZIP；保存完整payload SHA-256 manifest。
+產生reference僅在source契約確實變更時手動 `--write`；原 `src/`、`tests/`、`public/` 與package/lock不動。
 
-`--timeout-ms`可指定1–600000毫秒，每個owned process單獨有界。PASS exit0、執行失敗／BLOCKED exit1、參數／安全路徑錯誤exit2。輸出目錄必須是**不存在的repo外路徑**；任何現有run、symlink/junction或repo內路徑均拒絕，不覆寫證據。
+```sh
+node scripts/godot-validate.mjs --mode inventory --godot <Godot-4.7.2-exe> --project godot/ChangshanLongdan --templates <4.7.2.stable-dir> --lock godot/toolchain.json --out <fresh-external-dir>
+node scripts/godot-validate.mjs --mode tests --godot <Godot-4.7.2-exe> --project godot/ChangshanLongdan --templates <4.7.2.stable-dir> --lock godot/toolchain.json --out <fresh-external-dir>
+node scripts/godot-validate.mjs --mode export --godot <Godot-4.7.2-exe> --project godot/ChangshanLongdan --templates <4.7.2.stable-dir> --lock godot/toolchain.json --out <fresh-external-dir>
+```
 
-## 產物與身份
+交付前先freeze乾淨候選；Runner記錄HEAD／dirty狀態，仍鎖版本／exe與templates雜湊、fresh外部輸出、完整payload清單與bounded subprocess。僅明確允許bootstrap與game兩個main scene，不放寬成任意路徑；game必須在兩preset包含runtime JSON及build identity。
 
-runner將project複製到新證據目錄的`staged-project`，驗source hashes後只在副本寫入`build_identity.json`及custom-template絕對路徑，確保匯出使用已hash的指定模板。source與cache不混，原工程不被import/export重寫。
+## 證據界線
 
-輸出有`run.json`、每階stdout/stderr、`godot-tests.json`、`windows/`、`web/`、`windows.zip`、`web.zip`。`inventory.versionProbe`保存完整版本探測stdout/stderr/exit/timeout/error；postflight盤點在檢查前保存於`postflightInventory`，失敗也不丟棄診斷。runtime輸出`G01_READY`／`G01_COUNTER`／`G01_QUIT`的JSON，含embedded run/candidate/source/lock身分，用來綁定畫面／輸入與真正輸出包。
+Headless能證明source對照、引擎解析／import、場景接線與GUI訊號／合成輸入事件；**不能證明可見自然操作、手感、音畫、手把、performance或Jev自然勝利**。既有原生foreground失敗／額度不重置；本次不新增native/browser focus嘗試，也不公開部署／上傳。
 
-若checkout尚有修改，`run.json`明記dirty status及project source hashes，不能僅用HEAD當作新檔案已提交的證據；正式候選以clean commit再跑export與獨立review。GitHub實際review狀態照實，不偽造approval。
+最終Jev／雙平台驗收仍須自然合法操作、`win=true`、實際`ko=300`、原`rank=S`（`seconds<300`、`damage<400`），無DEV清場／補值／timeScale救援。小場fixture勝利不算。
 
-## 真實QA不等於headless
-
-Windows需從此run的exe前景開啟、按「Verify input」看計數變化，再按Quit正常退出；記實際PID／完整payload身份與截圖／logs。Web需從loopback HTTP正確MIME提供`web/`，在子路徑iframe測WebGL2、正常啟動及同一按鈕，保存console/network／畫面／readback。不用日常登入瀏覽器、不接管未知視窗、不上傳itch。
-
-原生Quit只在Windows顯示；Web由iframe host／使用者關頁面結束，避免Godot Web的原生退出路徑產生worker allocator錯誤。已知Windows焦點限制與未完成驗證見progress，不以Web輸入成功替代Windows PASS。
-
-G01可見輸入計數不是自然戰鬥；最終移植仍須同版雙平台完整玩法／資產／品質／效能與人類裝置驗收，另有Jev合法操作自然300KO勝利且最高S（time<300、damage<400）的證據與預算。此工具鏈不呼叫Jev或任何付費provider。
+範圍／計畫／證據索引：`G02_SPEC.md`、`G02_PLAN.md`、`G02_PROGRESS.md`。G01歷史文件／review仍為歷史工具鏈證據，不當作完整玩法移植驗收。

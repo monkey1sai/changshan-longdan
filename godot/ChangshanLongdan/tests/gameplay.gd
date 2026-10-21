@@ -6,6 +6,10 @@ func check(name: String, passed: bool) -> void:
 
 func run() -> Array[Dictionary]:
 	cases.clear()
+	check("oracle_hp_array_tolerance_strict",difference({"fields":{"hp":[229.0005]}},{"fields":{"hp":[229.0]}})!="")
+	check("oracle_discrete_counts_exact",difference({"ko":300.0005},{"ko":300.0})!="")
+	check("oracle_rejects_nan",difference({"pos":[NAN]},{"pos":[0.0]})!="")
+	check("oracle_accepts_valid_position_rounding",difference({"pos":[1.0005]},{"pos":[1.0]})=="")
 	var required = ["sim_math", "arena", "spatial_hash"]
 	for name in required:
 		check(name + "_available", FileAccess.file_exists("res://core/" + name + ".gd"))
@@ -207,6 +211,154 @@ func run() -> Array[Dictionary]:
 	simultaneous.player.hp = 0
 	simultaneous.step(1.0/60.0,{})
 	check("source_victory_before_defeat_priority", simultaneous.outcome == "victory")
+	var adapters = ["game_input", "camera_rig", "game_view"]
+	var adapters_ready: bool = true
+	for name in adapters:
+		var present: bool = FileAccess.file_exists("res://scripts/" + name + ".gd")
+		check(name + "_available", present)
+		adapters_ready = adapters_ready and present
+	if not adapters_ready:
+		return cases
+	var I = load("res://scripts/game_input.gd")
+	var C = load("res://scripts/camera_rig.gd")
+	var V = load("res://scripts/game_view.gd")
+	var input = I.new()
+	input.clear()
+	check("input_actions_installed", InputMap.has_action("cld_attack") and InputMap.has_action("cld_guard") and InputMap.has_action("cld_recenter"))
+	check("input_native_pad_semantics", I.PAD_BUTTONS.attack == JOY_BUTTON_X and I.PAD_BUTTONS.guard == JOY_BUTTON_LEFT_SHOULDER and I.PAD_BUTTONS.recenter == JOY_BUTTON_RIGHT_STICK)
+	check("input_deadzone", I.deadzone(0.1) == 0.0 and absf(I.deadzone(0.6) - 0.5) < 1e-12)
+	Input.action_press("cld_move_right")
+	Input.action_press("cld_move_forward")
+	var frame = input.sample(1.0/60.0)
+	check("input_diagonal_normalized", absf(frame.moveX - sqrt(0.5)) < 1e-6 and absf(frame.moveY - sqrt(0.5)) < 1e-6)
+	input.clear()
+	Input.action_press("cld_attack")
+	var pulses: int = 0
+	for _frame in range(12):
+		if input.sample(1.0/60.0).attack: pulses += 1
+	check("input_hold_attack_pulses", pulses == 2)
+	Input.action_press("cld_charge")
+	frame = input.sample(1.0/60.0)
+	check("input_charge_priority", frame.charge and not frame.attack)
+	input.clear()
+	frame = input.sample(1.0/60.0)
+	check("input_focus_clear_has_no_ghost_actions", not frame.attack and not frame.charge and frame.moveX == 0 and frame.moveY == 0)
+	var rig = C.new()
+	Engine.get_main_loop().root.add_child(rig.camera)
+	rig.snap(Vector3.ZERO, PI)
+	var controls = rig.to_controls({"moveX":0.0,"moveY":1.0,"attack":true})
+	check("camera_relative_forward", absf(controls.moveX) < 1e-6 and absf(controls.moveZ + 1.0) < 1e-6 and controls.attack)
+	rig.update(1.0/60.0,Vector3.ZERO,0.0,-100.0,false,false,0.0)
+	check("camera_zoom_clamped", rig.distance == 5.5 and rig.camera.position.is_finite())
+	rig.recenter(0.0)
+	rig.update(1.0/60.0,Vector3.ZERO,0.0,0.0,false,false,0.0)
+	check("camera_recenter_moves", rig.yaw != PI)
+	var view = V.new(runtime)
+	Engine.get_main_loop().root.add_child(view)
+	view.update(battle, 1.0/60.0)
+	check("fallback_clearly_identified", view.assetStatus == "procedural_fallback")
+	check("weapon_tip_contract", view.has_node("Player/Weapon/tip") and view.has_node("Player/Weapon/tipBase"))
+	check("enemy_instancing_capacity", view.enemyMeshes.body.multimesh.instance_count == 320)
+	check("world_uses_same_obstacle_layout", view.obstacleMeshes.size() == runtime.layout.obstacles.size() and absf(view.obstacleMeshes[0].mesh.size.x - 40.0) < 1e-6)
+	view.free()
+	rig.camera.free()
+	check("playable_main_scene_available", FileAccess.file_exists("res://scenes/game.tscn"))
+	if not FileAccess.file_exists("res://scenes/game.tscn"):
+		return cases
+	var game = load("res://scenes/game.tscn").instantiate()
+	Engine.get_main_loop().root.add_child(game)
+	game.set_physics_process(false)
+	check("f5_enters_game_not_bootstrap", ProjectSettings.get_setting("application/run/main_scene") == "res://scenes/game.tscn" and game.mode == "title")
+	game.difficultySelect.select(2)
+	game.startButton.pressed.emit()
+	check("native_start_binds_three_hundred_and_difficulty", game.mode == "playing" and game.battle.enemies.aliveCount == 300 and game.battle.difficulty == "hard" and game.hudLabel.text.contains("300"))
+	game.battle.player.queue({"attack":true})
+	Input.action_press("cld_charge")
+	game.set_paused(true)
+	var time_before: float = game.battle.battleTime
+	game.tick(1.0/60.0,{"attack":true})
+	check("pause_freezes_battle", game.mode == "paused" and game.battle.battleTime == time_before)
+	game.resumeButton.pressed.emit()
+	game.tick(1.0/60.0,game.controls.sample(1.0/60.0))
+	check("resume_clears_pending_actions", game.mode == "playing" and game.battle.player.move == null)
+	game._notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
+	check("native_focus_loss_pauses", game.mode == "paused")
+	game.set_paused(false)
+	game.battle.outcome = "victory"
+	game.mode = "ended"
+	game.endTimer = 0.03
+	game.resultShown = false
+	game.tick(0.01,{})
+	check("result_delay_not_skipped", not game.resultShown)
+	game.tick(0.03,{})
+	check("result_gui_present", game.resultShown and game.resultPanel.visible)
+	game.difficultySelect.select(0)
+	game.retryButton.pressed.emit()
+	check("retry_preserves_difficulty_and_resets", game.mode == "playing" and game.battle.difficulty == "hard" and game.battle.ko == 0 and game.battle.player.hp == 1000)
+	game.configure_platform_actions("Web")
+	check("game_web_no_application_quit", not game.quitButton.visible)
+	game.configure_platform_actions("Windows")
+	check("game_native_application_quit_available", game.quitButton.visible)
+	game.mode = "title"
+	game.difficultySelect.select(1)
+	game.tick(1.0/60.0,{"confirm":true})
+	check("keyboard_confirm_uses_same_start", game.mode == "playing" and game.battle.difficulty == "normal")
+	game.free()
+	var keyed = load("res://scenes/game.tscn").instantiate()
+	Engine.get_main_loop().root.add_child(keyed)
+	keyed.set_physics_process(false)
+	var key_event = InputEventKey.new()
+	key_event.physical_keycode = KEY_J
+	key_event.pressed = true
+	Input.parse_input_event(key_event)
+	Input.flush_buffered_events()
+	keyed.tick(1.0/60.0,keyed.controls.sample(1.0/60.0))
+	check("native_key_event_starts_and_attacks", keyed.mode == "playing" and keyed.battle.player.move != null and keyed.battle.player.move.id == "N1")
+	key_event.pressed = false
+	Input.parse_input_event(key_event)
+	Input.flush_buffered_events()
+	keyed.controls.clear()
+	keyed.free()
+	for trace in reference.enemyReactions:
+		var soldiers = E.new(8,int(trace.seed),runtime.difficulties.normal)
+		soldiers.reset(trace.spawns)
+		if trace.window.reaction == "flinch":
+			soldiers.state[0] = 3
+			soldiers.stateTime[0] = 0.1
+		check("enemy_reaction_before_" + trace.id,difference(enemy_snapshot(soldiers),trace.before)=="")
+		var out_hits: Array = []
+		soldiers.applyHit(123,trace.window,0,0,0,0,out_hits)
+		check("enemy_reaction_initial_" + trace.id,difference(enemy_snapshot(soldiers),trace.initial)=="" and difference(out_hits,trace.hits)=="")
+		var samples: Dictionary = {}
+		for sample in trace.samples: samples[int(sample.frame)] = sample
+		for step_index in range(int(trace.frames)):
+			soldiers.update(1.0/60.0,0,0,0,A.new(30,[]))
+			if samples.has(step_index):
+				var mismatch = difference(enemy_snapshot(soldiers),samples[step_index].expected)
+				check("enemy_reaction_" + trace.id + "_" + str(step_index),mismatch=="" and difference(soldiers.strikes,samples[step_index].strikes)=="")
+				if mismatch!="": print("G02_REACTION_MISMATCH ",trace.id," frame=",step_index," ",mismatch)
+	for trace in reference.army:
+		var soldiers = E.new(320,7,runtime.difficulties[trace.profile])
+		soldiers.reset(runtime.spawns)
+		var samples: Dictionary = {}
+		for sample in trace.samples: samples[int(sample.frame)] = sample.expected
+		var army_arena = A.new(runtime.layout.limit,runtime.layout.obstacles)
+		for step_index in range(int(trace.frames)):
+			soldiers.update(1.0/60.0,trace.player.x,trace.player.y,trace.player.z,army_arena)
+			if samples.has(step_index):
+				var actual = enemy_snapshot(soldiers)
+				for key in actual.fields:
+					var selected: Array = []
+					for id in trace.ids: selected.append(soldiers.get(key)[int(id)])
+					actual.fields[key] = selected
+				actual.engagedCount = 0
+				actual.marchCount = 0
+				for id in range(soldiers.count):
+					if soldiers.engaged[id] == 1: actual.engagedCount += 1
+					if soldiers.state[id] == 1: actual.marchCount += 1
+				var mismatch = difference(actual,samples[step_index])
+				check("army_" + trace.profile + "_" + str(trace.player.z) + "_" + str(step_index),mismatch=="")
+				if mismatch!="": print("G02_ARMY_MISMATCH ",trace.profile," player=",trace.player.z," frame=",step_index," ",mismatch)
 	return cases
 
 func enemy_snapshot(e: Variant) -> Dictionary:
@@ -233,8 +385,10 @@ func difference(actual: Variant, expected: Variant, at: String = "root") -> Stri
 			if found != "":
 				return found
 	elif expected is float or expected is int:
-		var tolerance: float = 0.0001 if at.ends_with(".hp") else 0.001
-		if not (actual is float or actual is int) or absf(float(actual) - float(expected)) > tolerance:
+		var property_name: String = at.get_slice(".",at.get_slice_count(".")-1).get_slice("[",0)
+		var discrete: bool = property_name in ["ko","combo","maxCombo","count","aliveCount","attackerCount","engagedCount","marchCount","state","kind","alive","engaged","token","id","start","index","normalCount"]
+		var tolerance: float = 0.0 if discrete else (0.0001 if property_name in ["hp","maxHp"] else 0.001)
+		if not (actual is float or actual is int) or not is_finite(float(actual)) or not is_finite(float(expected)) or absf(float(actual) - float(expected)) > tolerance:
 			return at + " actual=" + str(actual) + " expected=" + str(expected)
 	elif actual != expected:
 		return at + " actual=" + str(actual) + " expected=" + str(expected)

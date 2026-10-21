@@ -26,7 +26,7 @@ func run_cases() -> void:
 		var scene = packed.instantiate()
 		root.add_child(scene)
 		await process_frame
-		record_case("main_scene_matches_configuration", ProjectSettings.get_setting("application/run/main_scene") == "res://scenes/bootstrap.tscn")
+		record_case("main_scene_matches_configuration", ProjectSettings.get_setting("application/run/main_scene") == "res://scenes/game.tscn")
 		record_case("toolchain_scope_is_visible", scene.get_node("HUD/Panel/VBox/Status").text.contains("NOT THE PORTED GAME"))
 		record_case("counter_starts_at_zero", scene.get("click_count") == 0 and scene.get_node("HUD/Panel/VBox/Counter").text == "Verified clicks: 0")
 		scene.get_node("HUD/Panel/VBox/CountButton").pressed.emit()

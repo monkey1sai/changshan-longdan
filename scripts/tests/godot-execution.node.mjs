@@ -229,6 +229,26 @@ test('inventory rejects absent and mismatched template versions or incomplete lo
   assert.ok(result.blockers.includes('LOCK_INVALID'))
 })
 
+test('inventory accepts the explicit playable main only with runtime JSON included in both presets', async t => {
+  const options = inventoryFixture(t)
+  const file = path.join(options.project, 'project.godot')
+  fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('res://scenes/bootstrap.tscn', 'res://scenes/game.tscn'))
+  const presets = path.join(options.project, 'export_presets.cfg')
+  const original = fs.readFileSync(presets, 'utf8')
+  fs.writeFileSync(presets, original.replace('[preset.0]', '[preset.0]\ninclude_filter="build_identity.json,data/*.json"').replace('[preset.1]', '[preset.1]\ninclude_filter="build_identity.json,data/*.json"'))
+  let result = await inspectGodot(options)
+  assert.equal(result.mainScene, 'res://scenes/game.tscn')
+  assert.equal(result.blockers.includes('MAIN_SCENE_MISMATCH'), false)
+  assert.equal(result.blockers.includes('RUNTIME_JSON_NOT_EXPORTED'), false)
+  assert.ok(result.blockers.includes('VERSION_MISMATCH'))
+  fs.writeFileSync(presets, original)
+  result = await inspectGodot(options)
+  assert.ok(result.blockers.includes('RUNTIME_JSON_NOT_EXPORTED'))
+  fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('res://scenes/game.tscn', 'res://scenes/not-approved.tscn'))
+  result = await inspectGodot(options)
+  assert.ok(result.blockers.includes('MAIN_SCENE_MISMATCH'))
+})
+
 test('inventory blocks missing executable/project/lock without spawning or installing', async t => {
   const { root } = fixture(t)
   const result = await inspectGodot({ executable: path.join(root, 'missing.exe'), project: path.join(root, 'missing-project'), templates: path.join(root, 'missing-templates'), lockPath: path.join(root, 'missing-lock.json') })
