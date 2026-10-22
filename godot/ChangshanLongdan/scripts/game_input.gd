@@ -8,6 +8,7 @@ var padPrevious: Dictionary = {}
 var pressed: Dictionary = {}
 var attackRepeat: float = 0.0
 var wheel: float = 0.0
+var mouseAttack: bool = false
 
 func _init() -> void:
 	for key in KEYS:
@@ -21,16 +22,26 @@ func _init() -> void:
 	for pair in [["attack",MOUSE_BUTTON_LEFT],["charge",MOUSE_BUTTON_RIGHT]]:
 		var event = InputEventMouseButton.new()
 		event.button_index = pair[1]
-		var name: String = "cld_" + pair[0]
+		# Mouse bindings are event-owned, never globally polled as keyboard actions.
+		var keyboard_name: String = "cld_" + pair[0]
+		for old_event in InputMap.action_get_events(keyboard_name):
+			if old_event is InputEventMouseButton: InputMap.action_erase_event(keyboard_name,old_event)
+		var name: String = "cld_mouse_" + pair[0]
+		if not InputMap.has_action(name): InputMap.add_action(name)
 		if not InputMap.action_has_event(name,event): InputMap.action_add_event(name,event)
 
 static func deadzone(value: float) -> float:
 	return 0.0 if absf(value) < 0.2 else (value - signf(value) * 0.2) / 0.8
 
 func accept_event(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed:
-		if event.button_index == MOUSE_BUTTON_WHEEL_UP: wheel -= 1
-		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN: wheel += 1
+	if event is InputEventMouseButton:
+		if event.is_action("cld_mouse_attack"):
+			mouseAttack = event.pressed
+			if event.pressed: pressed.attack = true
+		elif event.is_action_pressed("cld_mouse_charge"): pressed.charge = true
+		elif event.pressed and event.button_index == MOUSE_BUTTON_WHEEL_UP: wheel -= 1
+		elif event.pressed and event.button_index == MOUSE_BUTTON_WHEEL_DOWN: wheel += 1
+		return
 	if event is InputEventKey and event.echo: return
 	for action in ACTIONS:
 		if event.is_action_pressed("cld_" + action): pressed[action] = true
@@ -40,8 +51,27 @@ func clear() -> void:
 	previous.clear()
 	attackRepeat = 0
 	wheel = 0
+	mouseAttack = false
 	for key in KEYS: Input.action_release("cld_" + key)
 	# Like source clear(), keep pad previous buttons until physical release.
+
+# Decode physical edges before merging actions (RB and RT can both dodge).
+func poll_pad(buttons: Dictionary, right_trigger: float) -> Dictionary:
+	var edges: Dictionary = {}
+	var held: Dictionary = {}
+	var trigger_down: bool = right_trigger > 0.5
+	for action in PAD_BUTTONS:
+		var code: int = PAD_BUTTONS[action]
+		var value: bool = buttons.get(code,false)
+		var edge: bool = value and not padPrevious.get(code,false)
+		if action == "dodge":
+			edge = edge or (trigger_down and not padPrevious.get("rightTrigger",false))
+			value = value or trigger_down
+		edges[action] = edge
+		held[action] = value
+	padPrevious = buttons.duplicate()
+	padPrevious["rightTrigger"] = trigger_down
+	return {"pressed":edges,"down":held}
 
 func sample(dt: float) -> Dictionary:
 	var device: int = -1
@@ -52,14 +82,14 @@ func sample(dt: float) -> Dictionary:
 		down[action] = Input.is_action_pressed("cld_" + action)
 		if down[action] and not previous.get(action,false): pressed[action] = true
 		previous[action] = down[action]
+	down.attack = down.attack or mouseAttack
 	if device >= 0:
-		for action in PAD_BUTTONS:
-			var value: bool = Input.is_joy_button_pressed(device,PAD_BUTTONS[action])
-			if action == "dodge": value = value or Input.get_joy_axis(device,JOY_AXIS_TRIGGER_RIGHT) > 0.5
-			if action in ACTIONS:
-				if value and not padPrevious.get(action,false): pressed[action] = true
-				padPrevious[action] = value
-				down[action] = down.get(action,false) or value
+		var buttons: Dictionary = {}
+		for code in PAD_BUTTONS.values(): buttons[code] = Input.is_joy_button_pressed(device,code)
+		var pad = poll_pad(buttons,Input.get_joy_axis(device,JOY_AXIS_TRIGGER_RIGHT))
+		for action in ACTIONS:
+			if pad.pressed[action]: pressed[action] = true
+			down[action] = down[action] or pad.down[action]
 	else: padPrevious.clear()
 	var mx: float = Input.get_action_strength("cld_move_right") - Input.get_action_strength("cld_move_left")
 	var my: float = Input.get_action_strength("cld_move_forward") - Input.get_action_strength("cld_move_back")

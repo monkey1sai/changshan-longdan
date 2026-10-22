@@ -243,6 +243,17 @@ func run() -> Array[Dictionary]:
 	input.clear()
 	frame = input.sample(1.0/60.0)
 	check("input_focus_clear_has_no_ghost_actions", not frame.attack and not frame.charge and frame.moveX == 0 and frame.moveY == 0)
+	check("independent_pad_edge_poll_available",input.has_method("poll_pad"))
+	if input.has_method("poll_pad"):
+		var sequences = [
+			[[true,0.0,true],[true,0.0,false],[true,1.0,true],[true,1.0,false],[false,1.0,false],[true,1.0,true]],
+			[[false,1.0,true],[false,1.0,false],[true,1.0,true],[true,1.0,false],[true,0.0,false],[true,1.0,true]]]
+		for sequence_index in range(sequences.size()):
+			var pad_input = I.new()
+			for step_index in range(sequences[sequence_index].size()):
+				var step_data = sequences[sequence_index][step_index]
+				var polled = pad_input.poll_pad({JOY_BUTTON_RIGHT_SHOULDER:step_data[0]},step_data[1])
+				check("pad_rb_rt_independent_edges_"+str(sequence_index)+"_"+str(step_index),polled.pressed.dodge == step_data[2])
 	var rig = C.new()
 	Engine.get_main_loop().root.add_child(rig.camera)
 	rig.snap(Vector3.ZERO, PI)
@@ -314,11 +325,14 @@ func run() -> Array[Dictionary]:
 	Input.flush_buffered_events()
 	keyed.tick(1.0/60.0,keyed.controls.sample(1.0/60.0))
 	check("native_key_event_starts_and_attacks", keyed.mode == "playing" and keyed.battle.player.move != null and keyed.battle.player.move.id == "N1")
-	key_event.pressed = false
-	Input.parse_input_event(key_event)
+	var release_event = InputEventKey.new()
+	release_event.physical_keycode = KEY_J
+	release_event.pressed = false
+	Input.parse_input_event(release_event)
 	Input.flush_buffered_events()
 	keyed.controls.clear()
 	keyed.free()
+	await menu_mouse_cases()
 	for trace in reference.enemyReactions:
 		var soldiers = E.new(8,int(trace.seed),runtime.difficulties.normal)
 		soldiers.reset(trace.spawns)
@@ -360,6 +374,63 @@ func run() -> Array[Dictionary]:
 				check("army_" + trace.profile + "_" + str(trace.player.z) + "_" + str(step_index),mismatch=="")
 				if mismatch!="": print("G02_ARMY_MISMATCH ",trace.profile," player=",trace.player.z," frame=",step_index," ",mismatch)
 	return cases
+
+# Route real Godot input events through the GUI, without touching an OS cursor.
+func route_mouse(button_index: int, down: bool, at: Vector2) -> void:
+	var event = InputEventMouseButton.new()
+	event.button_index = button_index
+	event.pressed = down
+	# parse_input_event enters in window pixels; UI rectangles use viewport units.
+	var window_point: Vector2 = Engine.get_main_loop().root.get_final_transform() * at
+	event.position = window_point
+	event.global_position = window_point
+	event.button_mask = (1 << (button_index-1)) if down else 0
+	Input.parse_input_event(event)
+	Input.flush_buffered_events()
+
+func menu_mouse_cases() -> void:
+	for target in ["quitButton","startButton"]:
+		var menu_game = load("res://scenes/game.tscn").instantiate()
+		Engine.get_main_loop().root.add_child(menu_game)
+		menu_game.set_physics_process(false)
+		menu_game.controls.clear()
+		# Replace only actual application exit; retain real GUI hit-testing/signals.
+		var exits = {"count":0}
+		menu_game.quitButton.pressed.disconnect(menu_game.quit_native)
+		menu_game.quitButton.pressed.connect(func(): exits.count += 1)
+		await Engine.get_main_loop().process_frame
+		await Engine.get_main_loop().process_frame
+		var at: Vector2 = menu_game.get(target).get_global_rect().get_center()
+		route_mouse(MOUSE_BUTTON_LEFT,true,at)
+		check("title_" + target + "_gui_received_press",menu_game.get(target).is_pressed())
+		menu_game.tick(1.0/60.0,menu_game.controls.sample(1.0/60.0))
+		check("title_" + target + "_held_mouse_does_not_start",menu_game.mode == "title" and menu_game.battle.player.move == null)
+		route_mouse(MOUSE_BUTTON_LEFT,false,at)
+		menu_game.tick(1.0/60.0,menu_game.controls.sample(1.0/60.0))
+		if target == "startButton":
+			check("start_mouse_release_starts_without_n1",menu_game.mode == "playing" and menu_game.battle.player.move == null)
+			# The same accepted button must still attack on the gameplay surface.
+			route_mouse(MOUSE_BUTTON_LEFT,true,Vector2(20,220))
+			menu_game.tick(1.0/60.0,menu_game.controls.sample(1.0/60.0))
+			check("gameplay_mouse_still_attacks",menu_game.battle.player.move != null and menu_game.battle.player.move.id == "N1")
+			route_mouse(MOUSE_BUTTON_LEFT,false,Vector2(20,220))
+			check("gameplay_mouse_release_clears_repeat",not menu_game.controls.sample(0.25).attack)
+			# Controller lifecycle fixture, not a natural-win claim: release may
+			# arrive after the same accepted gameplay hold enters the result mode.
+			route_mouse(MOUSE_BUTTON_LEFT,true,Vector2(20,220))
+			menu_game.controls.sample(1.0/60.0)
+			menu_game.battle.outcome = "victory"
+			menu_game.mode = "ended"
+			menu_game.resultShown = true
+			route_mouse(MOUSE_BUTTON_LEFT,false,Vector2(20,220))
+			check("ended_mouse_release_does_not_repeat",not menu_game.controls.sample(0.25).attack)
+			menu_game.tick(1.0/60.0,{"confirm":true})
+			for _step in range(15): menu_game.tick(1.0/60.0,menu_game.controls.sample(1.0/60.0))
+			check("keyboard_retry_has_no_released_mouse_ghost",menu_game.battle.player.move == null)
+		else:
+			check("quit_mouse_release_only_activates_quit",menu_game.mode == "title" and exits.count == 1)
+		menu_game.controls.clear()
+		menu_game.free()
 
 func enemy_snapshot(e: Variant) -> Dictionary:
 	var fields: Dictionary = {}
