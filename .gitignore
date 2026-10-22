@@ -21,6 +21,10 @@ Thumbs.db
 # 上架用的打包輸出
 release
 
+# Godot import cache and local exports (source and script UID files stay tracked)
+/godot/ChangshanLongdan/.godot/
+/godot/ChangshanLongdan/exports/
+
 # E02 隔離 Unity 工程的本機產物
 /unity/ChangshanLongdan/Library/
 /unity/ChangshanLongdan/Temp/

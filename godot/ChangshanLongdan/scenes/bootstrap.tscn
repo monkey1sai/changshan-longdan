@@ -1,0 +1,94 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/bootstrap.gd" id="1"]
+
+[sub_resource type="StandardMaterial3D" id="GroundMaterial"]
+albedo_color = Color(0.14, 0.18, 0.21, 1)
+roughness = 0.9
+
+[sub_resource type="PlaneMesh" id="GroundMesh"]
+material = SubResource("GroundMaterial")
+size = Vector2(16, 16)
+
+[sub_resource type="StandardMaterial3D" id="CubeMaterial"]
+albedo_color = Color(0.24, 0.68, 0.7, 1)
+roughness = 0.45
+
+[sub_resource type="BoxMesh" id="CubeMesh"]
+material = SubResource("CubeMaterial")
+
+[sub_resource type="Environment" id="WorldEnvironment"]
+background_mode = 1
+background_color = Color(0.07, 0.09, 0.13, 1)
+ambient_light_source = 3
+ambient_light_color = Color(0.7, 0.8, 1, 1)
+ambient_light_energy = 0.65
+
+[sub_resource type="StyleBoxFlat" id="PanelStyle"]
+content_margin_left = 20.0
+content_margin_top = 16.0
+content_margin_right = 20.0
+content_margin_bottom = 16.0
+bg_color = Color(0.04, 0.06, 0.09, 0.94)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_left = 8
+corner_radius_bottom_right = 8
+
+[node name="Bootstrap" type="Node3D"]
+script = ExtResource("1")
+
+[node name="Ground" type="MeshInstance3D" parent="."]
+mesh = SubResource("GroundMesh")
+
+[node name="Cube" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.5, 0)
+mesh = SubResource("CubeMesh")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("WorldEnvironment")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-45, -35, 0)
+light_energy = 1.2
+shadow_enabled = true
+
+[node name="Camera3D" type="Camera3D" parent="."]
+position = Vector3(4, 3, 5)
+current = true
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="Panel" type="PanelContainer" parent="HUD"]
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 430.0
+offset_bottom = 260.0
+theme_override_styles/panel = SubResource("PanelStyle")
+
+[node name="VBox" type="VBoxContainer" parent="HUD/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="HUD/Panel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "CHANGSHAN LONGDAN / G01"
+
+[node name="Status" type="Label" parent="HUD/Panel/VBox"]
+layout_mode = 2
+text = "Windows + Web toolchain verification\nNOT THE PORTED GAME"
+
+[node name="Counter" type="Label" parent="HUD/Panel/VBox"]
+layout_mode = 2
+text = "Verified clicks: 0"
+
+[node name="CountButton" type="Button" parent="HUD/Panel/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(360, 36)
+text = "Verify input"
+
+[node name="QuitButton" type="Button" parent="HUD/Panel/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(360, 36)
+text = "Quit toolchain demo"
