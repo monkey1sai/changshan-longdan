@@ -333,6 +333,7 @@ func run() -> Array[Dictionary]:
 	keyed.controls.clear()
 	keyed.free()
 	await menu_mouse_cases()
+	release_lifecycle_cases()
 	for trace in reference.enemyReactions:
 		var soldiers = E.new(8,int(trace.seed),runtime.difficulties.normal)
 		soldiers.reset(trace.spawns)
@@ -431,6 +432,67 @@ func menu_mouse_cases() -> void:
 			check("quit_mouse_release_only_activates_quit",menu_game.mode == "title" and exits.count == 1)
 		menu_game.controls.clear()
 		menu_game.free()
+
+func route_key(code: int, down: bool) -> void:
+	var event = InputEventKey.new()
+	event.physical_keycode = code
+	event.pressed = down
+	Input.parse_input_event(event)
+	Input.flush_buffered_events()
+
+# Lifecycle fixtures only: these do not assert natural wins or physical input.
+func release_lifecycle_cases() -> void:
+	for outcome in ["victory","defeat"]:
+		for shown in [false,true]:
+			var game = load("res://scenes/game.tscn").instantiate()
+			Engine.get_main_loop().root.add_child(game)
+			game.set_physics_process(false)
+			game.start_battle()
+			route_mouse(MOUSE_BUTTON_LEFT,true,Vector2(20,220))
+			game.tick(1.0/60.0,game.controls.sample(1.0/60.0))
+			game.battle.outcome = outcome
+			game.mode = "ended"
+			game.endTimer = 0.0 if shown else 2.4
+			game.resultShown = shown
+			game.resultPanel.visible = shown
+			route_mouse(MOUSE_BUTTON_LEFT,false,Vector2(20,220))
+			var replayed: bool = false
+			for _step in range(20):
+				var frame = game.controls.sample(1.0/60.0)
+				replayed = replayed or frame.attack
+				game.tick(1.0/60.0,frame)
+			check("release_"+outcome+"_shown_"+str(shown),not replayed)
+			for _step in range(160):
+				if game.resultShown: break
+				game.tick(1.0/60.0,game.controls.sample(1.0/60.0))
+			route_key(KEY_ENTER,true)
+			game.tick(1.0/60.0,game.controls.sample(1.0/60.0))
+			route_key(KEY_ENTER,false)
+			check("routed_enter_retry_"+outcome+"_"+str(shown),game.mode=="playing")
+			for _step in range(20): game.tick(1.0/60.0,game.controls.sample(1.0/60.0))
+			check("routed_retry_no_ghost_"+outcome+"_"+str(shown),game.battle.player.move==null)
+			game.controls.clear()
+			game.free()
+	var game = load("res://scenes/game.tscn").instantiate()
+	Engine.get_main_loop().root.add_child(game)
+	game.set_physics_process(false)
+	game.start_battle()
+	route_key(KEY_J,true)
+	game.controls.sample(1.0/60.0)
+	game.battle.outcome = "victory"
+	game.mode = "ended"
+	route_mouse(MOUSE_BUTTON_LEFT,false,Vector2(20,220))
+	check("unrelated_release_preserves_keyboard_j_hold",game.controls.sample(0.25).attack)
+	route_key(KEY_J,false)
+	game.start_battle()
+	route_mouse(MOUSE_BUTTON_LEFT,true,Vector2(20,220))
+	route_mouse(MOUSE_BUTTON_LEFT,false,Vector2(20,220))
+	var click = game.controls.sample(1.0/60.0)
+	game.tick(1.0/60.0,click)
+	check("quick_click_press_survives_release",click.attack and game.battle.player.move!=null)
+	check("quick_click_does_not_become_hold",not game.controls.sample(0.25).attack)
+	game.controls.clear()
+	game.free()
 
 func enemy_snapshot(e: Variant) -> Dictionary:
 	var fields: Dictionary = {}

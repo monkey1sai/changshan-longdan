@@ -18,7 +18,7 @@ Preimplementation: Astra reviewer94a8d22f及follow-up281b32f5 ACCEPT_SCOPE。req
 - Task5: complete — Dragon軌跡、Battle/pressure/hitstop/combo/KO/原rank、constructor/start/retry RNG與Player/Dragon交錯；battle-red缺兩模組，battle-green-1 979/979，補直接邊界後battle-edges-green合併991/991 PASS。fixture小場勝利不算自然300KO/S。
 - Task6: complete — NativeInput鍵鼠／語義手把映射、following Camera3D、共用layout城池、fallback人形／tip／tipBase、320容量MultiMesh和龍頭尾跡；adapters-red→adapters-green-1 PASS。
 - Task7: complete（source/headless）— F5改為game.tscn；四難度開始、HUD、暫停／失焦清pending、結果延遲／重試、Web隱藏Quit。runner只新增game明確allowlist與雙preset runtime JSON門檻，既有保護不放寬。entry-red→entry-green-1 1020/1020，Input.parse_input_event連通後native-key-green 1021/1021 PASS；Node22/22 PASS。未做可見前台驗收。
-- Task8: HELD — 61520b4 exact-head import／1117 assertions／雙平台export／封裝headless startup與ZIP驗證已保存；獨立full review回報BLOCK（F1），另F2/F3。修改中最新回歸為1138/1140，不能以先前GREEN交付目前dirty候選。F1兩輪額度已用完，等待使用者明確增授一輪處理結算mouse-up遺留；其餘保持既有授權界線。
+- Task8: IN_REVIEW — 9fe4bb3歷史候選為1138/1140、獨立BLOCK；使用者「修完後合併」已增授F1一輪（總額3輪，不重置前2輪）。R3只讓全模式release送達、press仍限playing；保留舊回歸並補victory/defeat、結果顯示前後、路由Enter retry、J hold與quick-click。pr56-f1-r3/red為1145/1155（10條預期FAIL），同一最小修正後green為1155/1155、stderr空。待新凍結候選匯出、exact-head獨立複審／CI後正常合併；不宣稱整體移植／可見驗收完成。
 
 ## Rulings / diagnostics
 
@@ -36,6 +36,13 @@ Preimplementation: Astra reviewer94a8d22f及follow-up281b32f5 ACCEPT_SCOPE。req
 - F3：f3-warning-red確認既有warning；release改成獨立InputEventKey，f3-warning-green為1138/1138、stderr空白。
 - 後補F1 lifecycle回歸重現：playing按住後進入ended，再放開；Game._input忽略ended mouse-up，keyboard retry(false)會重播殘留hold。ended-mouse-release-red實際1138/1140（ended_mouse_release_does_not_repeat、keyboard_retry_has_no_released_mouse_ghost失敗）。未再修產品；F1修復2/2已用盡，需新增明確額度。此fixture不是自然勝利證據。獨立診斷e3030e69已確認有效產品lifecycle回歸（f1-lifecycle-independent-diagnosis.md），建議全模式接收release但僅playing接收press；不是額外修正授權。無新增前台／browser操作。
 
+## PR56 F1 third round — explicitly authorized
+
+- 使用者「修完後合併」回應額外一輪請求，僅增授F1 round3，原2輪保留；目前3/3已用、GREEN，若需第四輪必須再獲明確授權。已沿用e3030e69診斷與PR exact-head reviewer3aa9bf8f的來源證據，不另建技術批准流程。
+- 原C:/Repos/changshan-longdan-godot-g01已按授權安全封存清理，branch／commits／完整ZIP與bundle保留。本輪由Pi用普通git worktree add建立C:/Repos/changshan-longdan-godot-pr56-fix，沿用同一PR branch；非Codex App-managed。只恢復已驗原依賴為一般檔案，不新增npm依賴或連結。
+- game.gd既有_input seam只轉送所有模式的mouse-button release，press仍限制playing，非mouse行為不變。不恢復全域mouse polling、不在keyboard retry粗暴clear所有合法輸入、不改傷害／評級／容差。實際RED→GREEN與命令證據在外部pr56-f1-r3/。
+- Native foreground2+1仍耗盡、沒有browser／前台新增操作；fixture lifecycle與合成Enter不是自然通關證據。exact-head review、CI、merge與cleanup回執由外部handoff保存，與目前來源freeze進度分開。
+
 ## Native adapter rulings
 
 - Godot pad使用原生語義enum：瀏覽器button4/5等數字不可直接搬用。鍵盤與pad軸分別讀取再相加／正規化，保留source deadzone與混合輸入；mapping有結構檢查，實體手把NOT_RUN。
@@ -44,7 +51,7 @@ Preimplementation: Astra reviewer94a8d22f及follow-up281b32f5 ACCEPT_SCOPE。req
 
 ## GitHub checkpoint authorization
 
-使用者新增要求：commit、open PR、check CI、merge、clear worktree。授權目的地為monkey1sai/changshan-longdan、head codex/godot-native-gameplay-20261021、base main；本任務local worktree C:/Repos/changshan-longdan-godot-g01。先誠實保存目前WIP與兩條RED回歸，PR保持Draft／BLOCK。既有Game CI只驗舊Web，不取代Godot1140回歸或必要獨立審查。新增操作授權不增加F1修正額度，不解除merge gate，也不授權部署／保護繞過／遠端branch刪除。清理只在已合併或成果保全、無使用且獨立確認不再需要時執行；未合併branch／commits保留。Authorization Envelope與GitHub操作回執在外部pr-checkpoint-20261021/。
+使用者新增要求：commit、open PR、check CI、merge、clear worktree。授權目的地為monkey1sai/changshan-longdan、head codex/godot-native-gameplay-20261021、base main；本任務local worktree C:/Repos/changshan-longdan-godot-g01。先誠實保存WIP與兩條RED回歸；該舊候選為BLOCK。PR後來已由外部轉為Ready（本session未更改其Ready狀態），不等於品質通過；本輪依使用者增授修正後重驗／複審／CI才可合併。既有Game CI只驗舊Web，不取代Godot1140回歸或必要獨立審查。先前Git操作授權本身未增加F1額度；本輪「修完後合併」另明確增授一輪，但不解除merge gate，也不授權部署／保護繞過／遠端branch刪除。清理只在已合併或成果保全、無使用且獨立確認不再需要時執行；未合併branch／commits保留。Authorization Envelope與GitHub操作回執在外部pr-checkpoint-20261021/。
 
 ## Evidence and limits
 

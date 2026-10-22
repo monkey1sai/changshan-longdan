@@ -159,7 +159,11 @@ func _input(event: InputEvent) -> void:
 	if mode == "title" and event is InputEventKey and difficultySelect.has_focus() and event.physical_keycode not in [KEY_J,KEY_ENTER]:
 		controls.clear()
 		return
-	if not event is InputEventMouseButton or mode == "playing": controls.accept_event(event)
+	if event is InputEventMouseButton:
+		# A surface-owned press must be releasable after any mode transition.
+		if mode == "playing" or not event.pressed: controls.accept_event(event)
+	else:
+		controls.accept_event(event)
 	if event is InputEventKey and event.pressed and not event.echo and event.physical_keycode in [KEY_J,KEY_ENTER] and mode == "title":
 		get_viewport().set_input_as_handled()
 
