@@ -8,9 +8,9 @@
 2. 按 **F5**，主場景為 `scenes/game.tscn`，不是 G01 方塊計數診斷。
 3. 選擇難度後按 **To Battle / Enter / J**；WASD移動，J普攻、K蓄力、L無雙、Space跳躍、Shift閃避、F防禦、Q/E旋轉、滾輪縮放、R回正、Esc/P暫停。結算後可重試並保留難度。
 
-G02已移植原版17招、300兵SoA/AI、四難度、蒼龍判定、碰撞、連擊、HP/無雙/KO與原評級規則，並接上原生選單、鏡頭、HUD與勝敗／重試；規則對照及主場景接線有headless測試。**目前使用程序化fallback人形／武器／城池／龍頭，還不是原GLB、骨架動畫、完整特效或音效的移植完成版。** 可見原生操作、手感、實體手把及效能仍待相應證據；headless不代替它們，也不等於Jev自然300KO／S驗收。
+G02已移植原版17招、300兵SoA/AI、四難度、蒼龍判定、碰撞、連擊、HP/無雙/KO與原評級規則，並接上原生選單、鏡頭、HUD與勝敗／重試。G03本機候選已接入原趙雲GLB／貼圖、來源程序動作取樣、戰鬥音樂／音效、槍光與命中特效，增加敵兵肢體動作與攻擊預警；城池／敵兵／龍頭仍為程序化呈現。可見原生操作、實際蒙皮渲染、手感、人耳、實體手把及效能仍待相應證據；headless不代替它們，也不等於Jev自然300KO／S驗收或已發布。
 
-操作與檢查：[Godot README](docs/godot/README.md)；範圍：[G02 SPEC](docs/godot/G02_SPEC.md)；進度與限制：[G02 progress](docs/godot/G02_PROGRESS.md)。舊Three.js與Unity保留，不再以空場景網頁QA取代Godot玩法開發。
+操作與檢查：[Godot README](docs/godot/README.md)；當前候選：[G03 SPEC](docs/godot/G03_SPEC.md)、[G03 progress](docs/godot/G03_PROGRESS.md)；玩法基準：[G02 progress](docs/godot/G02_PROGRESS.md)。舊Three.js與Unity保留，不再以空場景網頁QA取代Godot玩法開發。
 
 ## 原 Three.js 版（保留對照）
 

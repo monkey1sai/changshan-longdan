@@ -51,6 +51,9 @@ func run_cases() -> void:
 		var gameplay_suite = load("res://tests/gameplay.gd").new()
 		var gameplay_cases = await gameplay_suite.run()
 		cases.append_array(gameplay_cases)
+	if FileAccess.file_exists("res://tests/presentation.gd"):
+		var presentation_suite = load("res://tests/presentation.gd").new()
+		cases.append_array(await presentation_suite.run())
 	var failures: int = 0
 	for item in cases:
 		if not item["pass"]:
