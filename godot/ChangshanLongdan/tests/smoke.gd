@@ -71,4 +71,6 @@ func run_cases() -> void:
 	file.store_string(JSON.stringify(report))
 	file.close()
 	print("G01_TEST_SUMMARY " + JSON.stringify(report))
-	quit(0 if failures == 0 else 1)
+	# Leave the process_frame coroutine continuation before engine teardown so
+	# suite locals (including SkinReference resources) release on the normal stack.
+	call_deferred("quit",0 if failures == 0 else 1)

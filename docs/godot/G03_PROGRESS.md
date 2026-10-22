@@ -26,6 +26,10 @@
 | `boundary-final/` | **5872/5872 PASS，0 fail、0 skip，stderr空**；原1155項加4717項呈現檢查，180組來源probes；新增中斷、真實小場命中／擊破、runtime fallback |
 | `full-basis/` | 5872/5872 PASS，stderr空；補齊來源basis第三軸比較，三軸皆維持原0.08門檻 |
 | `frozen-export/` | 首次乾淨候選`aca749d950e3e636c10cdf134df31f167fc4ebd2`雙平台匯出PASS，5872項；`packaged-startup.json`實際Windows包headless啟動PASS。最終測試補強後以以下新凍結證據為準 |
+| `frozen-export-final/` | FAIL保留：5872項assertions通過，但退出時47 Objects／4 resources殘留，strict stderr gate正確攔下，不能算匯出PASS |
+| `cleanup-verbose*.json` | 同一失敗staged候選四次verbose診斷皆無殘留，記為間歇，未取得失敗時的物件類型 |
+| `cleanup-deferred/` | 5872項PASS，明確延後quit讓async stack返回；單次成功不當作已證根因 |
+| `cleanup-mixer/` | **5873/5873 PASS，stderr空**，新增可觀測的audio mix drain；全部資源退出gate仍保留 |
 | Node suites | `node --test scripts/tests/godot-reference.node.mjs scripts/tests/godot-execution.node.mjs scripts/tests/godot-presentation.node.mjs`：25項；原runner guards不變 |
 | 來源保護 | `git diff --exit-code -- src tests public package.json package-lock.json godot/ChangshanLongdan/core godot/toolchain.json scripts/lib/godot-execution.mjs`無差異；原combat、TS、資產及工具鏈保護未改 |
 
@@ -33,7 +37,9 @@
 
 ## 凍結交付的讀回位置
 
-候選形成乾淨本機commit後，使用同一釘選runner寫入全新 `frozen-export-final/`。最終head、dirty狀態、sourceTree／toolchain hash、測試、Windows／Web payload與ZIP均以其`run.json`及manifest讀回；若該目錄不存在、非PASS或identity不符，不能算匯出完成。獨立完成審查記在證據根目錄的`review-final.md`，必須綁定完整base/head；沒有ACCEPT不算review完成。匯出原生包的無畫面啟動另記`packaged-startup-final.json`，不冒充可見遊玩。
+候選形成乾淨本機commit後，使用同一釘選runner寫入全新 `release-export/`。最終head、dirty狀態、sourceTree／toolchain hash、測試、Windows／Web payload與ZIP均以其`run.json`及manifest讀回；若該目錄不存在、非PASS或identity不符，不能算匯出完成。獨立完成審查記在證據根目錄的`review-final.md`，必須綁定完整base/head；沒有ACCEPT不算review完成。匯出原生包的無畫面啟動另記`packaged-startup-final.json`，不冒充可見遊玩。
+
+退出殘留診斷（INFERRED）：末段parry／ready＋40次hit＋music可形成43個playback及4個WAV，吻合47/4。官方AudioServer的stop先標記fade-out deletion，由mix及主thread update回收；尚未取得失敗verbose類型，因此不冒稱根因已完全證實。harness在最後fixture釋放後以5ms timer觀測`get_time_since_last_mix`下降，最多1秒；實際觀察到mix後再讓主thread回收，新增assertion確保有觀測到，並延後quit讓coroutine返回。不是略過stderr或改遊戲；12聲部是節點上限，不是非同步退場瞬間底層playback物件數上限。
 
 ## 未驗及保留項目
 

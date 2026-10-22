@@ -178,5 +178,20 @@ func run() -> Array[Dictionary]:
 	game.view.update(game.battle,0)
 	check("runtime_asset_failure_displays_fallback",game.view.playerVisual.visible and not game.view.character.visible and game.view.assetStatus=="procedural_fallback")
 	game.free()
-	await Engine.get_main_loop().process_frame
+	# AudioStreamPlayer.stop queues fade-out deletion in AudioServer. The last
+	# rapid play/steal fixture must cross an actual mix before engine teardown;
+	# voice-node capacity does not bound transient mixer playback references.
+	var since_mix: float = AudioServer.get_time_since_last_mix()
+	var drain_deadline: int = Time.get_ticks_msec()+1000
+	var mixed: bool = false
+	while Time.get_ticks_msec()<drain_deadline:
+		await Engine.get_main_loop().create_timer(0.005).timeout
+		var next_since_mix: float = AudioServer.get_time_since_last_mix()
+		if next_since_mix < since_mix:
+			mixed = true
+			break
+		since_mix = next_since_mix
+	# Let the main-thread AudioServer update collect references retired by mix.
+	await Engine.get_main_loop().create_timer(0.005).timeout
+	check("audio_mixer_drained_before_teardown",mixed)
 	return cases
