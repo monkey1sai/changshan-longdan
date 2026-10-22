@@ -81,7 +81,7 @@ func run() -> Array[Dictionary]:
 			var history_dependent: bool = probe.get("offGrid",false) and hero.data.bones[i] in ["cape_01","cape_02"]
 			if not history_dependent:
 				positions_ok = positions_ok and pose[i].origin.distance_to(expected.origin)<0.025
-				bases_ok = bases_ok and pose[i].basis.x.distance_to(expected.basis.x)<0.08 and pose[i].basis.y.distance_to(expected.basis.y)<0.08
+				bases_ok = bases_ok and pose[i].basis.x.distance_to(expected.basis.x)<0.08 and pose[i].basis.y.distance_to(expected.basis.y)<0.08 and pose[i].basis.z.distance_to(expected.basis.z)<0.08
 			var binding: Dictionary = hero.skinBindings[0]
 			var bind_index: int = binding.bones.find(hero.boneIndices[i])
 			var actual: Transform3D = hero.skeleton.get_bone_global_pose(hero.boneIndices[i])*binding.skin.get_bind_pose(bind_index)

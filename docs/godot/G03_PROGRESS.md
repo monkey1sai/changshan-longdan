@@ -24,6 +24,8 @@
 | `render-bind/` | FAIL保留：真實readback不可用＋上述6個取樣差異。當次binary確認headless／無有效skeleton RID；Dummy不提供實際render矩陣 |
 | `adaptive-body/` | 5453/5453 PASS，stderr空；自適應取樣＋CPU資源接線 |
 | `boundary-final/` | **5872/5872 PASS，0 fail、0 skip，stderr空**；原1155項加4717項呈現檢查，180組來源probes；新增中斷、真實小場命中／擊破、runtime fallback |
+| `full-basis/` | 5872/5872 PASS，stderr空；補齊來源basis第三軸比較，三軸皆維持原0.08門檻 |
+| `frozen-export/` | 首次乾淨候選`aca749d950e3e636c10cdf134df31f167fc4ebd2`雙平台匯出PASS，5872項；`packaged-startup.json`實際Windows包headless啟動PASS。最終測試補強後以以下新凍結證據為準 |
 | Node suites | `node --test scripts/tests/godot-reference.node.mjs scripts/tests/godot-execution.node.mjs scripts/tests/godot-presentation.node.mjs`：25項；原runner guards不變 |
 | 來源保護 | `git diff --exit-code -- src tests public package.json package-lock.json godot/ChangshanLongdan/core godot/toolchain.json scripts/lib/godot-execution.mjs`無差異；原combat、TS、資產及工具鏈保護未改 |
 
@@ -31,12 +33,13 @@
 
 ## 凍結交付的讀回位置
 
-候選形成乾淨本機commit後，使用同一釘選runner寫入全新 `frozen-export/`。最終head、dirty狀態、sourceTree／toolchain hash、測試、Windows／Web payload與ZIP均以其`run.json`及manifest讀回；若該目錄不存在、非PASS或identity不符，不能算匯出完成。獨立完成審查記在證據根目錄的`review-final.md`，必須綁定完整base/head；沒有ACCEPT不算review完成。匯出原生包的無畫面啟動另記`packaged-startup.json`，不冒充可見遊玩。
+候選形成乾淨本機commit後，使用同一釘選runner寫入全新 `frozen-export-final/`。最終head、dirty狀態、sourceTree／toolchain hash、測試、Windows／Web payload與ZIP均以其`run.json`及manifest讀回；若該目錄不存在、非PASS或identity不符，不能算匯出完成。獨立完成審查記在證據根目錄的`review-final.md`，必須綁定完整base/head；沒有ACCEPT不算review完成。匯出原生包的無畫面啟動另記`packaged-startup-final.json`，不冒充可見遊玩。
 
 ## 未驗及保留項目
 
 - **NOT_RUN**：真實render／GPU蒙皮、可見玩家操作、畫面／人耳／手感、實體手把、長測與效能、兩平台Jev合法自然300KO／最高S。小場fixture只驗接線，不是自然破關。
 - CPU `A * correctedBind == D * originalBind`、原bind／每角色Skin隔離／Skin.changed與SkinReference為PASS；headless Dummy的RenderingServer readback為NOT_RUN，另有明確stdout標記，沒有把它列成render PASS。
 - 中間移速採walk／run band與phase對位、跨狀態混合、披風loop尾段及來源跳點極短區間為呈現近似；沒有宣稱連續時間全域幾何誤差保證。
+- `title.wav`保留來源標題樂曲烘焙資產，目前沒有標題播放呼叫路徑；實際接線為出陣後的戰鬥音樂／音效。
 - 原foreground焦點2＋1與舊F1 3/3預算原樣保留，未新增前台嘗試。沒有provider／付費／push／PR／merge／deploy／遠端寫入。
 - 本機候選worktree與分支仍需供開發／驗收，尚未合併，保留它們及本次外置證據；主控負責後續交付。原main未知`.claude/`、`.codex/config.toml`及其他worktrees未動；無寫入subagent worktree需清理。
