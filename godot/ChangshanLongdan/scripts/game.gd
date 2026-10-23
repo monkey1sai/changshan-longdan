@@ -3,6 +3,9 @@ const BattleModel = preload("res://core/battle.gd")
 const NativeInput = preload("res://scripts/game_input.gd")
 const CameraModel = preload("res://scripts/camera_rig.gd")
 const Presentation = preload("res://scripts/game_view.gd")
+const Sound = preload("res://scripts/battle_audio.gd")
+var audio: Node
+var soundButton: Button
 var reference: Dictionary
 var battle: Variant
 var controls: Variant
@@ -32,6 +35,8 @@ func _ready() -> void:
 	rig = CameraModel.new()
 	view = Presentation.new(reference)
 	add_child(view)
+	audio = Sound.new()
+	add_child(audio)
 	add_child(rig.camera)
 	rig.snap(battle.player.pos,battle.player.facing)
 	build_ui()
@@ -109,10 +114,12 @@ func build_ui() -> void:
 	difficultySelect.focus_entered.connect(func(): controls.clear())
 	startButton = button(column,"To Battle!  [Enter / J]",func(): start_battle())
 	quitButton = button(column,"Quit",quit_native)
-	var note = label(column,"Procedural fallback art; original character, audio and final visual migration are pending.",14)
+	soundButton = button(column,"Sound: On",toggle_sound)
+	var note = label(column,"Hold J to chain attacks. Guard at the right moment, then J to counter.",14)
 	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	pausePanel = panel("PAUSED")
 	resumeButton = button(pausePanel.get_node("Column"),"Resume [Esc / P / Enter]",func(): set_paused(false))
+	button(pausePanel.get_node("Column"),"Toggle sound",toggle_sound)
 	pausePanel.visible = false
 	resultPanel = panel("BATTLE RESULT")
 	resultLabel = label(resultPanel.get_node("Column"),"",20)
@@ -121,6 +128,10 @@ func build_ui() -> void:
 
 func configure_platform_actions(platform_name: String) -> void:
 	quitButton.visible = platform_name != "Web"
+
+func toggle_sound() -> void:
+	audio.set_muted(not audio.muted)
+	soundButton.text = "Sound: Off" if audio.muted else "Sound: On"
 
 func quit_native() -> void:
 	if OS.has_feature("web"): return
@@ -131,6 +142,9 @@ func start_battle(clear_input: bool = true) -> void:
 	if mode == "title": selectedDifficulty = reference.difficulties.keys()[difficultySelect.selected]
 	if clear_input: controls.clear()
 	battle.reset(selectedDifficulty)
+	view.reset()
+	audio.reset()
+	audio.begin(true)
 	mode = "playing"
 	endTimer = 0
 	resultShown = false
@@ -148,6 +162,7 @@ func set_paused(paused: bool) -> void:
 	controls.clear()
 	battle.interrupt()
 	pausePanel.visible = paused
+	audio.set_suspended(paused)
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and controls != null:
@@ -186,6 +201,9 @@ func tick(real_dt: float, frame: Dictionary) -> void:
 	if mode in ["playing","ended"]:
 		if mode == "playing" and frame.get("recenter",false): rig.recenter(battle.player.facing)
 		sim_dt = battle.step(real_dt,rig.to_controls(frame))
+		# Consume the step's buffers before the next step clears them. Never replay on pause/title.
+		view.consume(battle.events,battle)
+		audio.consume(battle.events)
 		if mode == "ended":
 			endTimer -= real_dt
 			if endTimer <= 0 and not resultShown:
@@ -200,10 +218,11 @@ func tick(real_dt: float, frame: Dictionary) -> void:
 			elif event.type == "hit": rig.addTrauma(event.window.shake)
 			elif event.type == "hurt": rig.addTrauma(0.45)
 	view.update(battle,sim_dt)
+	audio.update(battle.player.state == "musou")
 	rig.update(real_dt,battle.player.pos,frame.get("camTurn",0.0) if mode=="playing" else 0.0,frame.get("zoom",0.0),battle.player.state=="musou",mode=="title",clock)
 	update_hud()
 
 func update_hud() -> void:
 	var p = battle.player
 	hudLabel.visible = mode != "title"
-	hudLabel.text = "HP %.0f / %.0f     MUSOU %.0f / 100     KO %d / 300\nENEMIES %d    COMBO %d    TIME %.1fs    %s\n%s  /  %s    [procedural fallback]" % [p.hp,p.maxHp,p.musou,battle.ko,battle.enemies.aliveCount,battle.combo,battle.battleTime,p.move.id if p.move!=null else p.state,battle.difficulty,battle.phase]
+	hudLabel.text = "HP %.0f / %.0f     MUSOU %.0f / 100     KO %d / 300\nENEMIES %d    COMBO %d    TIME %.1fs    %s\n%s  /  %s" % [p.hp,p.maxHp,p.musou,battle.ko,battle.enemies.aliveCount,battle.combo,battle.battleTime,p.move.id if p.move!=null else p.state,battle.difficulty,battle.phase]

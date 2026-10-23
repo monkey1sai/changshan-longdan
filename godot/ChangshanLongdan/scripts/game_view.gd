@@ -1,6 +1,11 @@
 extends Node3D
-# Read-only procedural presentation. This is not the original GLB/animation/art acceptance.
+# Read-only native presentation. Original Zhao Yun; procedural environment/enemies.
+const Character = preload("res://scripts/character_view.gd")
+const Effects = preload("res://scripts/battle_effects.gd")
 var assetStatus: String = "procedural_fallback"
+var character: Node3D
+var effects: Node3D
+var enemyThreat: MultiMeshInstance3D
 var reference: Dictionary
 var enemyMeshes: Dictionary = {}
 var obstacleMeshes: Array = []
@@ -114,6 +119,41 @@ func _init(data: Dictionary) -> void:
 		dragonParts.append(node)
 		dragonRoot.add_child(node)
 	dragonRoot.visible = false
+	character = Character.new()
+	add_child(character)
+	if character.assetStatus == "ready":
+		assetStatus = "zhaoyun_ready_environment_procedural"
+		playerVisual.visible = false
+	effects = Effects.new()
+	add_child(effects)
+	# One additional instanced mesh for all windup telegraphs.
+	enemyThreat = MultiMeshInstance3D.new()
+	enemyThreat.name = "EnemyWindupTelegraphs"
+	var ring_mesh = TorusMesh.new()
+	ring_mesh.inner_radius = 0.55
+	ring_mesh.outer_radius = 0.63
+	ring_mesh.rings = 16
+	ring_mesh.ring_segments = 4
+	ring_mesh.material = material(Color.WHITE,true)
+	var markers = MultiMesh.new()
+	markers.transform_format = MultiMesh.TRANSFORM_3D
+	markers.use_colors = true
+	markers.mesh = ring_mesh
+	markers.instance_count = int(data.capacity)
+	enemyThreat.multimesh = markers
+	add_child(enemyThreat)
+
+func reset() -> void:
+	character.reset()
+	effects.reset()
+	dragonHistory.clear()
+	dragonRoot.visible = false
+	hurtFlash = 0
+
+func consume(events: Array, battle: Variant) -> void:
+	for event in events:
+		if event.type == "hurt": hurtFlash = 0.18
+	effects.consume(events,battle)
 
 func update(battle: Variant, sim_dt: float) -> void:
 	var p = battle.player
@@ -128,10 +168,15 @@ func update(battle: Variant, sim_dt: float) -> void:
 		weapon.rotation.y = sin(p.moveTime/p.move.duration*PI*2.0)*0.9
 		weapon.rotation.x = -0.35
 	elif p.state == "guard": weapon.rotation.z = 0.6
-	for event in battle.events:
-		if event.type == "hurt": hurtFlash = 0.18
 	hurtFlash = maxf(0,hurtFlash-sim_dt)
 	playerMaterial.albedo_color = Color.WHITE if hurtFlash>0 else Color(0.1,0.62,0.72)
+	character.update(p,sim_dt,hurtFlash>0)
+	playerVisual.visible = character.assetStatus != "ready"
+	character.visible = not playerVisual.visible
+	assetStatus = "zhaoyun_ready_environment_procedural" if not playerVisual.visible else "procedural_fallback"
+	var tip_world: Vector3 = p.pos + Basis(Vector3.UP,p.facing)*character.tip
+	var base_world: Vector3 = p.pos + Basis(Vector3.UP,p.facing)*character.tipBase
+	effects.update(sim_dt,tip_world,base_world,p.move != null and not p.activeHits.is_empty())
 	var e = battle.enemies
 	for i in range(int(reference.capacity)):
 		var present: bool = i < e.count and e.alive[i] == 1
@@ -147,9 +192,19 @@ func update(battle: Variant, sim_dt: float) -> void:
 			color = color.lerp(Color.WHITE,e.flash[i])
 		var offsets = {"body":Vector3(0,1.12,0),"head":Vector3(0,1.76,0),"leg_l":Vector3(-.21,.36,stride),"leg_r":Vector3(.21,.36,-stride),"weapon":Vector3(.5,1.15,.25)}
 		for key in enemyMeshes:
-			var transform = Transform3D(basis,origin) * Transform3D(Basis.IDENTITY,offsets[key])
+			var limb = Basis.IDENTITY
+			if present:
+				if key == "leg_l": limb = Basis(Vector3.RIGHT,sin(e.phase[i])*e.moveBlend[i]*0.55)
+				elif key == "leg_r": limb = Basis(Vector3.RIGHT,-sin(e.phase[i])*e.moveBlend[i]*0.55)
+				elif key == "weapon":
+					var windup: float = clampf(e.stateTime[i]*3.0,0,1) if e.state[i]==3 else 0.0
+					limb = Basis(Vector3.RIGHT,-0.7-windup*0.8 if e.state[i]!=4 else 0.9)
+			var transform = Transform3D(basis,origin) * Transform3D(limb,offsets[key])
 			enemyMeshes[key].multimesh.set_instance_transform(i,transform)
 			enemyMeshes[key].multimesh.set_instance_color(i,color)
+		var warning: bool = present and e.state[i] == 3
+		enemyThreat.multimesh.set_instance_transform(i,Transform3D(Basis.IDENTITY.scaled(Vector3.ONE*(e.scale[i] if warning else 0.001)),Vector3(e.x[i],0.04,e.z[i]) if warning else Vector3(0,-1000,0)))
+		enemyThreat.multimesh.set_instance_color(i,Color(1,0.12,0.04) if e.kind[i]==2 else Color(1,0.7,0.06))
 	dragonRoot.visible = battle.dragon.active
 	if battle.dragon.active:
 		if sim_dt>0 or dragonHistory.is_empty(): dragonHistory.push_front(battle.dragon.headPos)

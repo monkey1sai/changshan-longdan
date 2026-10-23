@@ -6,7 +6,9 @@
 - **F5 → `scenes/game.tscn` → 選難度 → To Battle / Enter / J**。Windows原生開發優先；相同工程保留單執行緒Web preset。
 - `scenes/bootstrap.tscn`仍是G01診斷，不再是主要遊戲。
 - G02：原17招／300兵／四難度／蒼龍／HP、無雙、連擊、KO、原評級，接上原生輸入、鏡頭、HUD、暫停、失焦、結果延遲與重試。
-- **美術為明示的程序化fallback**：人形、武器 `tip/tipBase`、MultiMesh敵軍、共用城池碰撞layout、龍頭／尾跡。原GLB、骨架／完整動作、音效／音樂／完整特效尚未移植完成；不宣稱最終品質。
+- G03本機候選：原趙雲GLB／貼圖與21骨蒙皮、來源17招／空中變體及移動等44組動作取樣；槍尖／trail與root仍由呈現層對位。城池、MultiMesh敵軍及龍頭仍為程序化呈現，敵軍增加肢體動作及攻擊預警。原模型載入或姿勢失敗會顯示fallback。
+- 15個本機合成PCM資產包含戰鬥音樂與命中／招架／跳躍等音效，標題與暫停選單可切換音訊。按出陣開始音訊；暫停凍結、重試清除；保留靜音設定。來源音階／節奏相同，音色為Godot移植近似，未做人耳驗收。
+- 粒子384、衝擊圈24、槍光點24、音效聲部12固定上限，使用獨立呈現RNG；不以特效或動畫決定戰鬥。
 
 ## 控制
 
@@ -31,6 +33,8 @@ Node v22.22.0可用現有type stripping讀舊TS，不新增npm依賴：
 ```sh
 node --test scripts/tests/godot-reference.node.mjs scripts/tests/godot-execution.node.mjs
 node --experimental-strip-types scripts/godot-reference.mjs --check
+node --test scripts/tests/godot-presentation.node.mjs
+node --experimental-strip-types scripts/godot-presentation.mjs --check
 ```
 
 產生reference僅在source契約確實變更時手動 `--write`；原 `src/`、`tests/`、`public/` 與package/lock不動。
@@ -49,4 +53,4 @@ Headless能證明source對照、引擎解析／import、場景接線與GUI訊號
 
 最終Jev／雙平台驗收仍須自然合法操作、`win=true`、實際`ko=300`、原`rank=S`（`seconds<300`、`damage<400`），無DEV清場／補值／timeScale救援。小場fixture勝利不算。
 
-範圍／計畫／證據索引：`G02_SPEC.md`、`G02_PLAN.md`、`G02_PROGRESS.md`。G01歷史文件／review仍為歷史工具鏈證據，不當作完整玩法移植驗收。
+範圍／證據索引：`G03_SPEC.md`、`G03_PROGRESS.md`；玩法基準：`G02_SPEC.md`、`G02_PLAN.md`、`G02_PROGRESS.md`。G01歷史文件／review仍為歷史工具鏈證據，不當作完整玩法移植驗收。

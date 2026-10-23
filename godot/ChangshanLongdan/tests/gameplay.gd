@@ -267,7 +267,7 @@ func run() -> Array[Dictionary]:
 	var view = V.new(runtime)
 	Engine.get_main_loop().root.add_child(view)
 	view.update(battle, 1.0/60.0)
-	check("fallback_clearly_identified", view.assetStatus == "procedural_fallback")
+	check("character_ready_environment_identified", view.assetStatus == "zhaoyun_ready_environment_procedural" and view.character.assetStatus == "ready")
 	check("weapon_tip_contract", view.has_node("Player/Weapon/tip") and view.has_node("Player/Weapon/tipBase"))
 	check("enemy_instancing_capacity", view.enemyMeshes.body.multimesh.instance_count == 320)
 	check("world_uses_same_obstacle_layout", view.obstacleMeshes.size() == runtime.layout.obstacles.size() and absf(view.obstacleMeshes[0].mesh.size.x - 40.0) < 1e-6)
